@@ -456,13 +456,11 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass()).info("RESTful call PUT (Mapping): /clone "
         + mapProject.getId() + ", " + mapProject);
 
-    String user = null;
-
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-          "clone a map project", securityService);
+      authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "clone a map project",
+          securityService);
 
       mappingService.setTransactionPerOperation(false);
       mappingService.beginTransaction();
@@ -5141,10 +5139,25 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
 
       // look for logs first in the project log dir, second in the
       // remover/loader log dir
-      final File projectLogDir =
-          new File(this.getReleaseDirectoryPath(mapProject, "logs"));
+      String rootPath = ConfigUtility.getConfigProperties()
+          .getProperty("map.principle.source.document.dir");
+      if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
+        rootPath += "/";
+      }
+      File logFile = null;
+      File logDir = null;
+      if (logTypes.get(0).toString().contains("Terminology")) {
+        logDir = new File(rootPath + "logs");
+      } else {
+        logDir = new File(rootPath + mapProject.getId() + "/logs");
+      }
       for (String logType : logTypes) {
-        File logFile = new File(projectLogDir, logType + ".log");
+        if (logType.contains("Terminology")) {
+          logFile = new File(logDir, logType.replace("Terminology",
+              "_" + mapProject.getSourceTerminology()) + ".log");
+        } else {
+          logFile = new File(logDir, logType + ".log");
+        }
         if (!logFile.exists()) {
           final Properties config = ConfigUtility.getConfigProperties();
           final String removerLoaderLogDir =

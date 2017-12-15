@@ -43,6 +43,7 @@ import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
+import org.ihtsdo.otf.mapping.jpa.helpers.LoggerUtility;
 import org.ihtsdo.otf.mapping.jpa.helpers.TerminologyUtility;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
@@ -144,6 +145,21 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   /** Records that will not be PUBLISHED because they've been edited during the release period */
   private Set<Long> recentlyEditedRecords = new HashSet<>();
 
+  /** The begin log. */
+  private static Logger beginLog;
+  
+  /** The process log. */
+  private static Logger processLog;
+  
+  /** The preview finish log. */
+  private static Logger previewFinishLog;
+  
+  /** The finish log. */
+  private static Logger finishLog;
+  
+  /** The current logger. */
+  private static Logger logger;
+  
   /**
    * The Enum for statistics reporting.
    */
@@ -208,6 +224,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     metadataService = new MetadataServiceJpa();
     this.testModeFlag = testModeFlag;
 
+    //initialize logger - done in setMapProject()
+    
   }
 
   /* see superclass */
@@ -221,6 +239,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   /* see superclass */
   @Override
   public void processRelease() throws Exception {
+    
+    // set the logger
+    logger = processLog;
 
     // Keep track of all of the created files
     final List<String> createdFilenames = new ArrayList<>();
@@ -234,7 +255,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
 
     // get all scope concept terminology ids for this project
-    Logger.getLogger("processRelease").info("  Get scope concepts for map project");
+    logger.info("  Get scope concepts for map project");
     Set<String> scopeConceptTerminologyIds = new HashSet<>();
     for (final SearchResult sr : mappingService
         .findConceptsInScope(mapProject.getId(), null).getSearchResults()) {
@@ -242,11 +263,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
 
     // Log config
-    Logger.getLogger("processRelease")
+    logger
         .info("  pattern = " + mapProject.getMapRefsetPattern().toString());
-    Logger.getLogger("processRelease")
+    logger
         .info("  rule-based = " + mapProject.isRuleBased());
-    Logger.getLogger("processRelease").info("  record count = " + mapRecords.size());
+    logger.info("  record count = " + mapRecords.size());
 
     // check that either/both snapshot and delta files have been specified
     if (!writeSnapshot && !writeDelta) {
@@ -320,7 +341,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     //
     // Compute default preferred names
     //
-    Logger.getLogger("processRelease").info("  Compute default preferred names");
+    logger.info("  Compute default preferred names");
     computeDefaultPreferredNames();
 
     // instantiate the project specific handler
@@ -351,7 +372,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
 
     // create a list from the set and sort by concept id
-    Logger.getLogger("processRelease").info("  Sorting records");
+    logger.info("  Sorting records");
     Collections.sort(mapRecords, new Comparator<MapRecord>() {
       @Override
       public int compare(MapRecord o1, MapRecord o2) {
@@ -364,7 +385,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Get maps
     // NOTE for simple or complex case, we get complex map records
     // and write the appropriate level of detail
-    Logger.getLogger("processRelease").info("  Retrieving maps");
+    logger.info("  Retrieving maps");
 
     // retrieve the complex map ref set members for this project's refset id
     // This also handles simple members
@@ -395,9 +416,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
 
     // output size of each collection
-    Logger.getLogger("processRelease").info("    Cached distinct UUID-quintuples = "
+    logger.info("    Cached distinct UUID-quintuples = "
         + prevMembersHashMap.keySet().size());
-    Logger.getLogger("processRelease")
+    logger
         .info("    Existing complex ref set members for project = "
             + prevMemberList.getCount());
 
@@ -430,7 +451,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           "Unable to find default map relation for up propagated records");
     }
 
-    Logger.getLogger("processRelease").info("  Processing release");
+    logger.info("  Processing release");
     // cycle over the map records marked for publishing
     int ct = 0;
     final Map<String, ComplexMapRefSetMember> activeMembersMap =
@@ -441,7 +462,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         continue;
       }
 
-      Logger.getLogger("processRelease")
+      logger
           .info("    Processing record for " + mapRecord.getConceptId());
 
       ct++;
@@ -450,13 +471,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       if (!contentService.getConcept(mapRecord.getConceptId(),
           mapProject.getSourceTerminology(),
           mapProject.getSourceTerminologyVersion()).isActive()) {
-        Logger.getLogger("processRelease").info(
+        logger.info(
             "      Skipping inactive concept " + mapRecord.getConceptId());
         continue;
       }
 
       if (ct % 5000 == 0) {
-        Logger.getLogger("processRelease").info("    count = " + ct);
+        logger.info("    count = " + ct);
       }
 
       // instantiate map of entries by group
@@ -479,7 +500,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         }
 
       } else {
-        Logger.getLogger("processRelease")
+        logger
             .debug("  DO NOT up propagate " + mapRecord.getConceptId());
 
       }
@@ -487,9 +508,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       // /////////////////////////////////////////////////////
       // Add the original (non-propagated) entries
       // /////////////////////////////////////////////////////
-      Logger.getLogger("processRelease").debug("     Adding original entries");
+      logger.debug("     Adding original entries");
       for (MapEntry me : mapRecord.getMapEntries()) {
-        Logger.getLogger("processRelease").debug("       Adding entry " + me.getId());
+        logger.debug("       Adding entry " + me.getId());
 
         List<MapEntry> existingEntries = entriesByGroup.get(me.getMapGroup());
         if (existingEntries == null)
@@ -623,9 +644,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
           // add this entry to the list of members to write
           if (activeMembersMap.containsKey(member.getTerminologyId())) {
-            Logger.getLogger("processRelease").error(
+            logger.error(
                 activeMembersMap.get(member.getTerminologyId()).toString());
-            Logger.getLogger("processRelease").error(member.toString());
+            logger.error(member.toString());
             throw new Exception("Duplicate id found");
           }
 
@@ -635,9 +656,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           if (result != null && !result.isValid()) {
             // LEt it pass if in test mode
             if (testModeFlag) {
-              Logger.getLogger("processRelease")
+              logger
               .info("      WARNING: invalid map entry: " + member);
-              Logger.getLogger("processRelease")
+              logger
               .info("        errors = " + result.getErrors());
               //continue;
             } else {
@@ -685,11 +706,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       }
     }
 
-    Logger.getLogger("processRelease")
+    logger
         .info("  prev inactive members = " + prevInactiveMembersMap.size());
-    Logger.getLogger("processRelease")
+    logger
         .info("  prev active members = " + prevActiveMembersMap.size());
-    Logger.getLogger("processRelease")
+    logger
         .info("  active members = " + activeMembersMap.size());
 
     // Write human readable file
@@ -723,10 +744,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     FileInputStream fis = null;
     
     // write the concept errors
-    Logger.getLogger("processRelease")
+    logger
         .info("Concept errors (" + conceptErrors.keySet().size() + ")");
     for (final String terminologyId : conceptErrors.keySet()) {
-      Logger.getLogger("processRelease")
+      logger
           .info("  " + terminologyId + ": " + conceptErrors.get(terminologyId));
     }
 
@@ -806,8 +827,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           mapRecord.getConceptId(), mapProject.getSourceTerminology(),
           mapProject.getSourceTerminologyVersion());
       if (treePosition != null) {
-        Logger.getLogger(getClass())
-            .debug("  Tree position: " + treePosition.getAncestorPath() + " - "
+        logger.debug("  Tree position: " + treePosition.getAncestorPath() + " - "
                 + mapRecord.getConceptId());
       }
     } catch (Exception e) {
@@ -841,8 +861,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       // avoid re-rendering nodes already rendered
       if (!descendantsProcessed.contains(tp.getTerminologyId())) {
-        Logger.getLogger(getClass())
-            .debug("  Processing descendant " + tp.getTerminologyId());
+        logger.debug("  Processing descendant " + tp.getTerminologyId());
 
         // add this descendant to the processed list
         descendantsProcessed.add(tp.getTerminologyId());
@@ -863,8 +882,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
           if (mr != null) {
 
-            Logger.getLogger(getClass())
-                .debug("     Adding entries from map record " + mr.getId()
+            logger.debug("     Adding entries from map record " + mr.getId()
                     + ", " + mr.getConceptId() + ", " + mr.getConceptName());
 
             // cycle over the entries
@@ -909,9 +927,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               // if not a duplicate entry, add it to the map
               if (!isDuplicateEntry) {
 
-                Logger.getLogger(getClass())
-                    .debug("  Entry is not a duplicate of parent");
-                Logger.getLogger(getClass()).debug("    entry = " + me);
+                logger.debug("  Entry is not a duplicate of parent");
+                logger.debug("    entry = " + me);
 
                 // create new map entry to prevent
                 // hibernate-managed entity modification (leave id unset)
@@ -949,9 +966,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
               } else {
 
-                Logger.getLogger(getClass())
-                    .debug("  Entry IS DUPLICATE of parent, do not write");
-                Logger.getLogger(getClass()).debug("    entry = " + me);
+                logger.debug("  Entry IS DUPLICATE of parent, do not write");
+                logger.debug("    entry = " + me);
               }
             }
           } else {
@@ -973,8 +989,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    */
   private String writeModuleDependencyFile(Set<String> moduleDependencies,
     String refSetId) throws Exception {
-    Logger.getLogger("processRelease").info("  Write module dependency file");
-    Logger.getLogger("processRelease")
+    logger.info("  Write module dependency file");
+    logger
         .info("    count = " + moduleDependencies.size());
     // Open file
     String filename = null;
@@ -1021,7 +1037,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     String pattern = getPatternForType(mapProject);
     filename = outputDir + "/der2_" + pattern + mapProject.getMapRefsetPattern()
         + "Delta_INT_" + effectiveTime + ".txt";
-    Logger.getLogger("processRelease").info("  delta:  " + filename);
+    logger.info("  delta:  " + filename);
 
     // Write headers (subject to pattern)
     writer = new BufferedWriter(new FileWriter(filename));
@@ -1032,7 +1048,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     Map<String, ComplexMapRefSetMember> tmpActiveMembers =
         new HashMap<>(activeMembers);
 
-    Logger.getLogger("processRelease").info("  Computing delta entries");
+    logger.info("  Computing delta entries");
 
     // cycle over all previously active members
     for (final ComplexMapRefSetMember member : prevActiveMembers.values()) {
@@ -1061,7 +1077,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       writer.write(getOutputLine(c, false));
     }
 
-    Logger.getLogger("processRelease").info("  Writing complete.");
+    logger.info("  Writing complete.");
 
     // case 2: previously active no longer present
     // Copy previously active map of uuids to write into temp map
@@ -1087,7 +1103,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       c.setActive(true);
     }
 
-    Logger.getLogger("processRelease").info("  Writing complete.");
+    logger.info("  Writing complete.");
 
     writer.flush();
     writer.close();
@@ -1212,7 +1228,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   private String writeActiveSnapshotFile(
     Map<String, ComplexMapRefSetMember> members) throws Exception {
 
-    Logger.getLogger("processRelease").info("Writing active snapshot...");
+    logger.info("Writing active snapshot...");
     // Set pattern
     final String pattern = getPatternForType(mapProject);
     String filename = null;
@@ -1221,7 +1237,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         + "ActiveSnapshot_INT_" + effectiveTime + ".txt";
 
     // write headers
-    Logger.getLogger("processRelease").info("  active snapshot:  " + filename);
+    logger.info("  active snapshot:  " + filename);
 
     writer = new BufferedWriter(new FileWriter(filename));
     writer.write(getHeader(mapProject));
@@ -1248,7 +1264,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       writer.write(line);
     }
 
-    Logger.getLogger("processRelease").info("  Writing complete.");
+    logger.info("  Writing complete.");
 
     // Close
     writer.flush();
@@ -1271,7 +1287,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     Map<String, ComplexMapRefSetMember> prevActiveMembers,
     Map<String, ComplexMapRefSetMember> currentActiveMembers) throws Exception {
 
-    Logger.getLogger("processRelease").info("Writing snapshot...");
+    logger.info("Writing snapshot...");
     String pattern = getPatternForType(mapProject);
     String filename = null;
     BufferedWriter writer = null;
@@ -1279,7 +1295,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         + "Snapshot_INT_" + effectiveTime + ".txt";
 
     // write headers
-    Logger.getLogger("processRelease").info("  snapshot file:  " + filename);
+    logger.info("  snapshot file:  " + filename);
 
     writer = new BufferedWriter(new FileWriter(filename));
     writer.write(getHeader(mapProject));
@@ -1336,7 +1352,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       writer.write(line);
     }
 
-    Logger.getLogger("processRelease").info("  Writing complete.");
+    logger.info("  Writing complete.");
 
     // Close
     writer.flush();
@@ -1756,7 +1772,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Construct advice only if using Extended Map pattern
     if (mapProject.getMapRefsetPattern().equals(MapRefsetPattern.ExtendedMap)) {
 
-      Logger.getLogger(getClass()).debug("  RULE: " + mapEntry.getRule());
+      logger.debug("  RULE: " + mapEntry.getRule());
 
       String[] comparatorComponents; // used for parsing age rules
 
@@ -1775,7 +1791,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           // Add an AND clause
           advice += " AND ";
         }
-        Logger.getLogger(getClass()).debug("    PART : " + part);
+        logger.debug("    PART : " + part);
 
         // if map rule is IFA (age)
         if (part.contains("AGE AT ONSET OF CLINICAL FINDING")
@@ -1854,7 +1870,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         advice += " CHOOSE " + mapEntry.getTargetId();
       }
 
-      Logger.getLogger(getClass()).debug("    ADVICE: " + advice);
+      logger.debug("    ADVICE: " + advice);
     }
 
     return advice;
@@ -2044,7 +2060,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
                 dpnAcceptabilityId));
       }
       if (ct % 5000 == 0) {
-        Logger.getLogger(getClass()).info("    count = " + ct);
+        logger.info("    count = " + ct);
       }
     }
 
@@ -2087,17 +2103,17 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
               // Report info if semantic tag cannot be found
               if (!description.getTerm().trim().endsWith(")")) {
-                Logger.getLogger(getClass())
+                logger
                     .warn("Could not find semantic tag for concept "
                         + concept.getTerminologyId() + ", name selected="
                         + description.getTerm());
                 for (final Description d : concept.getDescriptions()) {
-                  Logger.getLogger(getClass())
+                  logger
                       .warn("Description " + d.getTerminologyId() + ", active="
                           + d.isActive() + ", typeId = " + d.getTypeId());
                   for (final LanguageRefSetMember l : d
                       .getLanguageRefSetMembers()) {
-                    Logger.getLogger(getClass())
+                    logger
                         .warn("    Language Refset Member "
                             + l.getTerminologyId() + ", active = "
                             + l.isActive() + ", refsetId=" + l.getRefSetId()
@@ -2121,6 +2137,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   /* see superclass */
   @Override
   public void beginRelease() throws Exception {
+    
+    logger = beginLog;
 
     // instantiate required services
     final MappingService mappingService = new MappingServiceJpa();
@@ -2155,7 +2173,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
 
     // get the report definition
-    Logger.getLogger("beginRelease").info("  Create release QA report");
+    beginLog.info("  Create release QA report");
     ReportDefinition reportDefinition = null;
     for (final ReportDefinition rd : mapProject.getReportDefinitions()) {
       if (rd.getName().equals("Release QA"))
@@ -2182,22 +2200,22 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     reportService.addReport(report);
 
     // get all scope concept terminology ids for this project
-    Logger.getLogger("beginRelease").info("  Get scope concepts for map project");
+    beginLog.info("  Get scope concepts for map project");
     final Set<String> scopeConceptTerminologyIds = new HashSet<>();
     for (final SearchResult sr : mappingService
         .findConceptsInScope(mapProject.getId(), null).getSearchResults()) {
       scopeConceptTerminologyIds.add(sr.getTerminologyId());
     }
 
-    Logger.getLogger("beginRelease")
+    beginLog
         .info("    count = " + scopeConceptTerminologyIds.size());
 
     // get all map records for this project
-    Logger.getLogger("beginRelease").info("  Get records for map project");
+    beginLog.info("  Get records for map project");
     final MapRecordList mapRecords =
         mappingService.getMapRecordsForMapProject(mapProject.getId());
 
-    Logger.getLogger("beginRelease").info("    count = " + mapRecords.getCount());
+    beginLog.info("    count = " + mapRecords.getCount());
 
     // create a temp set of scope terminology ids
     Set<String> conceptsWithNoRecord =
@@ -2226,7 +2244,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // for each map record, check for errors
     // NOTE: Report Result names are constructed from error lists assigned
     // Each individual result is stored as a Report Result Item
-    Logger.getLogger("beginRelease").info("  Validate records");
+    beginLog.info("  Validate records");
     boolean errorFlag = false;
     int pubCt = 0;
     while (mapRecordsToProcess.size() != 0) {
@@ -2234,7 +2252,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       // extract the concept and remove it from list
       final MapRecord mapRecord = mapRecordsToProcess.get(0);
       mapRecordsToProcess.remove(0);
-      Logger.getLogger("beginRelease").debug("    concept = "
+      beginLog.debug("    concept = "
           + mapRecord.getConceptId() + " " + mapRecord.getConceptName());
 
       // first, remove this concept id from the dynamic conceptsWithNoRecord set
@@ -2291,7 +2309,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         // specific validation checks
         ValidationResult result = algorithmHandler.validateRecord(mapRecord);
         if (!result.isValid()) {
-          Logger.getLogger("beginRelease").debug("    FAILED");
+          beginLog.debug("    FAILED");
           errorFlag = true;
           resultMessages.add("Map record failed validation check");
         } else {
@@ -2445,9 +2463,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     report.addResult(pubCtResult);
 
     // CHECK: In-scope concepts with no map record
-    Logger.getLogger(
-
-        "beginRelease").debug("  Report in scope concepts with no record");
+    beginLog.debug("  Report in scope concepts with no record");
     for (final String terminologyId : conceptsWithNoRecord) {
 
       // get the concept
@@ -2460,9 +2476,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       errorFlag = true;
     }
 
-    Logger.getLogger("beginRelease").info("  Adding Release QA Report");
-    Logger.getLogger("beginRelease")
-        .info("    Log into the application to see the report results");
+    beginLog.info("  Adding Release QA Report");
+    beginLog.info("    Log into the application to see the report results");
 
     // Commit the new report either way
     reportService.commit();
@@ -2477,7 +2492,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       }
     }
 
-    Logger.getLogger("beginRelease").info("Done.");
+    beginLog.info("Done.");
 
     mappingService.close();
     reportService.close();
@@ -2536,14 +2551,14 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   @Override
   public void finishRelease() throws Exception {
 
-    String logger = "";
+    Logger logger = null;
     if (testModeFlag) {
-      logger = "previewFinishRelease";
+      logger = previewFinishLog;
     } else {
-      logger = "finishRelease";
+      logger = finishLog;
     }
     
-    Logger.getLogger(logger)
+   logger
         .info(testModeFlag ? "Preview Finish Release" : "Finish Release");
 
     // compare file to current records
@@ -2552,13 +2567,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     int pubCt = 0;
 
     // get all scope concept terminology ids for this project
-    Logger.getLogger(logger).info("  Get scope concepts for map project");
+   logger.info("  Get scope concepts for map project");
     Set<String> scopeConceptTerminologyIds = new HashSet<>();
     for (final SearchResult sr : mappingService
         .findConceptsInScope(mapProject.getId(), null).getSearchResults()) {
       scopeConceptTerminologyIds.add(sr.getTerminologyId());
     }
-    Logger.getLogger(logger).info("  scope concepts: " + scopeConceptTerminologyIds.size());
+   logger.info("  scope concepts: " + scopeConceptTerminologyIds.size());
     
 
     if (mapRecords == null || mapRecords.isEmpty()) {
@@ -2574,7 +2589,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       
       // Log recently edited records that won't be PUBLISHED
       for (Long recordId : recentlyEditedRecords) {
-    	  Logger.getLogger(logger)
+    	 logger
           .info("    Recently edited record will not be PUBLISHED " + recordId);
       }
       
@@ -2586,7 +2601,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
           // remove record if flag set
           if (!testModeFlag) {
-            Logger.getLogger(logger)
+           logger
                 .info("    REMOVE out of scope record " + record.getId());
             mappingService.removeMapRecord(record.getId());
           } else {
@@ -2601,7 +2616,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         else if (record
                 .getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION &&
                 		recentlyEditedRecords.contains(record.getId()) ) {
-              Logger.getLogger(logger).info("  Record not updated to PUBLISHED for "
+             logger.info("  Record not updated to PUBLISHED for "
                   + record.getConceptId() + " " + record.getConceptName());
               
         }
@@ -2609,12 +2624,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         else if (record
             .getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION &&
             !recentlyEditedRecords.contains(record.getId())) {
-          Logger.getLogger(logger).info("  Update record to PUBLISHED for "
+         logger.info("  Update record to PUBLISHED for "
               + record.getConceptId() + " " + record.getConceptName());
           pubCt++;
           // regularly log at intervals
           if (pubCt % 200 == 0) {
-            Logger.getLogger(logger).info("    published count = " + pubCt);
+           logger.info("    published count = " + pubCt);
           }
           if (!testModeFlag) {
             record.setWorkflowStatus(WorkflowStatus.PUBLISHED);
@@ -2641,20 +2656,20 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // skip if in test mode
     if (!testModeFlag) {
       // clear old map refset
-      Logger.getLogger(logger).info("  Clear map refset");
+     logger.info("  Clear map refset");
       clearMapRefSet();
       // Load map refset
-      Logger.getLogger(logger).info("  Load map refset");
+     logger.info("  Load map refset");
       loadMapRefSet();
     }
 
-    Logger.getLogger(logger).info("  Committing finish release report");
+   logger.info("  Committing finish release report");
 
     ReportService reportService = new ReportServiceJpa();
     reportService.addReport(report);
     reportService.close();
 
-    Logger.getLogger(logger).info("Finished "
+   logger.info("Finished "
         + (testModeFlag ? "test mode " : "") + "release successfully");
   }
 
@@ -2672,7 +2687,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     for (final ComplexMapRefSetMember member : contentService
         .getComplexMapRefSetMembersForRefSetId(mapProject.getRefSetId())
         .getIterable()) {
-      Logger.getLogger(getClass()).debug("    Remove member - " + member);
+      logger.debug("    Remove member - " + member);
       if (!testModeFlag) {
         if (mapProject.getMapRefsetPattern() != MapRefsetPattern.SimpleMap) {
           contentService.removeComplexMapRefSetMember(member.getId());
@@ -2700,7 +2715,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     final ContentService contentService = new ContentServiceJpa();
     contentService.setTransactionPerOperation(false);
     contentService.beginTransaction();
-    Logger.getLogger(getClass()).info("    Open " + inputFile);
+    logger.info("    Open " + inputFile);
     File f = new File(inputFile);
     if (!f.exists()) {
       throw new Exception("Input file does not exist: " + f.toString());
@@ -2769,11 +2784,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
         // regularly log at intervals
         if (++objectCt % 5000 == 0) {
-          Logger.getLogger(getClass()).info("    count = " + objectCt);
+          logger.info("    count = " + objectCt);
         }
 
         if (concept != null) {
-          Logger.getLogger(getClass()).debug("    Add member - " + member);
+          logger.debug("    Add member - " + member);
           if (!testModeFlag) {
             member.setConcept(concept);
             if (mapProject
@@ -2813,7 +2828,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // begin transaction
     final ContentService contentService = new ContentServiceJpa();
 
-    Logger.getLogger(getClass()).info("    Open " + inputFile);
+    logger.info("    Open " + inputFile);
     File f = new File(inputFile);
     if (!f.exists()) {
       throw new Exception("Input file does not exist: " + f.toString());
@@ -2905,7 +2920,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       }
     }
 
-    Logger.getLogger(getClass())
+    logger
         .info(conceptRefSetMap.size() + " concept ids with mappings");
 
     // close any remaining objects
@@ -2959,7 +2974,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // counter for number of records matching between current and release
     int matchCt = 0;
 
-    Logger.getLogger(getClass()).info("Checking for discrepancies...");
+    logger.info("Checking for discrepancies...");
 
     for (String conceptId : conceptRefSetMap.keySet()) {
       final List<ComplexMapRefSetMember> members =
@@ -2990,7 +3005,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         // to stop release where true errors exist
       }
       if (mapRecord == null) {
-        Logger.getLogger(getClass()).info(
+        logger.info(
             "Discrepancy: no current map record for concept id " + conceptId);
         discrepancyFound = true;
       }
@@ -3005,7 +3020,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       // if entries are mismatched in size, automatic flag
       else if (mapRecord.getMapEntries().size() != members.size()) {
-        Logger.getLogger(getClass())
+        logger
             .info("Discrepancy: entry set size mismatch for " + conceptId);
         discrepancyFound = true;
       }
@@ -3022,7 +3037,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             }
           }
           if (!entryMatched) {
-            Logger.getLogger(getClass()).info(
+            logger.info(
                 "Discrepancy: current mapping has no corresponding release mapping "
                     + conceptId);
             discrepancyFound = true;
@@ -3045,7 +3060,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             if (getHash(recordEntry).equals(memberHash)) {
               entryMatched = true;
               if (entryMatched && !releaseEntry.isEquivalent(recordEntry)) {
-                Logger.getLogger(getClass()).info(
+                logger.info(
                     "Discrepancy: release mapping has non-equivalent corresponding current mapping "
                         + conceptId);
                 discrepancyFound = true;
@@ -3055,8 +3070,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           }
 
           if (!entryMatched) {
-            Logger.getLogger(getClass())
-                .info("Discrepancy: no current map record for concept id "
+            logger.info("Discrepancy: no current map record for concept id "
                     + conceptId);
             discrepancyFound = true;
           }
@@ -3067,12 +3081,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       // if discrepancy found, add or update the map record
       if (discrepancyFound) {
-        Logger.getLogger(getClass()).info("Discrepancy found for " + conceptId
+        logger.info("Discrepancy found for " + conceptId
             + "|" + concept.getDefaultPreferredName() + "|");
         if (mapRecord != null) {
 
           if (new Date(mapRecord.getLastModified()).after(mapProject.getEditingCycleBeginDate())) {
-        	Logger.getLogger(getClass()).info("Recently edited discrepancy found for " + conceptId
+        	logger.info("Recently edited discrepancy found for " + conceptId
         	            + "|" + concept.getDefaultPreferredName() + "|");  
         	recentlyEditedRecords.add(mapRecord.getId());
         	this.addReportError(report, mapProject, conceptId,
@@ -3171,6 +3185,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // instantiate the algorithm handler
     algorithmHandler =
         mappingService.getProjectSpecificAlgorithmHandler(mapProject);
+    initializeLogs();
+
   }
 
   /* see superclass */
@@ -3179,6 +3195,43 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     this.mapRecords = mapRecords;
   }
 
+  private void initializeLogs() {
+    try {
+      String rootPath = ConfigUtility.getConfigProperties()
+          .getProperty("map.principle.source.document.dir");
+      if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
+        rootPath += "/";
+      }
+      rootPath += mapProject.getId() + "/logs";
+      File logDirectory = new File(rootPath);
+      if (!logDirectory.exists()) {
+        logDirectory.mkdir();
+      }
+      File beginLogFile = new File(logDirectory, "begin.log");
+      LoggerUtility.setConfiguration("beginRelease",
+          beginLogFile.getAbsolutePath());
+      beginLog = LoggerUtility.getLogger("beginRelease");
+      
+      File processLogFile = new File(logDirectory, "process.log");
+      LoggerUtility.setConfiguration("processRelease",
+          processLogFile.getAbsolutePath());
+      processLog = LoggerUtility.getLogger("processRelease");
+      
+      File previewFinishLogFile = new File(logDirectory, "previewFinish.log");
+      LoggerUtility.setConfiguration("previewFinishRelease",
+          previewFinishLogFile.getAbsolutePath());
+      previewFinishLog = LoggerUtility.getLogger("previewFinishRelease");
+      
+      File finishLogFile = new File(logDirectory, "finish.log");
+      LoggerUtility.setConfiguration("finishRelease",
+          finishLogFile.getAbsolutePath());
+      finishLog = LoggerUtility.getLogger("finishRelease");
+      
+    } catch (Exception e) {
+      logger.info(e.getStackTrace());
+    }
+  }
+  
   /* see superclass */
   @Override
   public void setInputFile(String inputFile) {

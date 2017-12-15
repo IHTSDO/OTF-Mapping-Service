@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.jpa.algo;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -12,6 +13,7 @@ import javax.persistence.Query;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.algo.Algorithm;
+import org.ihtsdo.otf.mapping.jpa.helpers.LoggerUtility;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
@@ -33,17 +35,36 @@ public class RemoverAlgorithm extends RootServiceJpa
 
 	/** Terminology version */
 	private String version;
-
+	
+	private static Logger log;
+	
+	@SuppressWarnings("static-access")
 	public RemoverAlgorithm(String terminology, String version)
 			throws Exception {
 		super();
 		this.terminology = terminology;
 		this.version = version;
+		
+		//initialize logger
+		// delete log file before
+		String rootPath = ConfigUtility.getConfigProperties()
+	          .getProperty("map.principle.source.document.dir");
+	    if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
+	      rootPath += "/";
+	    }
+	    rootPath += "logs";
+	    File logDirectory = new File(rootPath);
+	    if (!logDirectory.exists()) {
+	        logDirectory.mkdir();
+	    }
+	    File removeLog = new File(logDirectory, "remove_" + terminology + ".log");
+		LoggerUtility.setConfiguration("name", removeLog.getAbsolutePath());
+		this.log = LoggerUtility.getLogger("name");
 	}
 
 	@Override
 	public void compute() throws Exception {
-
+		
 		try {
 			Properties config = ConfigUtility.getConfigProperties();
 
@@ -69,8 +90,7 @@ public class RemoverAlgorithm extends RootServiceJpa
 				query.setParameter("terminology", terminology);
 				query.setParameter("version", version);
 				int deleteRecords = query.executeUpdate();
-				Logger.getLogger(getClass()).info(
-						"    simple_ref_set records deleted: " + deleteRecords);
+				log.info("simple_ref_set records deleted: " + deleteRecords);
 
 				// delete Map RefSets
 				query = manager.createQuery(
@@ -78,9 +98,7 @@ public class RemoverAlgorithm extends RootServiceJpa
 				query.setParameter("terminology", terminology);
 				query.setParameter("version", version);
 				deleteRecords = query.executeUpdate();
-				Logger.getLogger(getClass())
-						.info("    simple_map_ref_set records deleted: "
-								+ deleteRecords);
+				log.info("simple_map_ref_set records deleted: " + deleteRecords);
 
 				// delete Complex Map RefSets
 				query = manager.createQuery(
@@ -88,9 +106,7 @@ public class RemoverAlgorithm extends RootServiceJpa
 				query.setParameter("terminology", terminology);
 				query.setParameter("version", version);
 				deleteRecords = query.executeUpdate();
-				Logger.getLogger(getClass())
-						.info("    complex_map_ref_set records deleted: "
-								+ deleteRecords);
+				log.info("complex_map_ref_set records deleted: " + deleteRecords);
 
 				// delete Attribute Value RefSets
 				query = manager.createQuery(
@@ -98,9 +114,7 @@ public class RemoverAlgorithm extends RootServiceJpa
 				query.setParameter("terminology", terminology);
 				query.setParameter("version", version);
 				deleteRecords = query.executeUpdate();
-				Logger.getLogger(getClass())
-						.info("    attribute_value_ref_set records deleted: "
-								+ deleteRecords);
+				log.info("attribute_value_ref_set records deleted: " + deleteRecords);
 
 				// delete Language RefSets
 				query = manager.createQuery(
@@ -108,9 +122,7 @@ public class RemoverAlgorithm extends RootServiceJpa
 				query.setParameter("terminology", terminology);
 				query.setParameter("version", version);
 				deleteRecords = query.executeUpdate();
-				Logger.getLogger(getClass())
-						.info("    language_ref_set records deleted: "
-								+ deleteRecords);
+				log.info("language_ref_set records deleted: " + deleteRecords);
 
 				// delete Terminology Elements (Descriptions)
 				query = manager.createQuery(
@@ -118,8 +130,7 @@ public class RemoverAlgorithm extends RootServiceJpa
 				query.setParameter("terminology", terminology);
 				query.setParameter("version", version);
 				deleteRecords = query.executeUpdate();
-				Logger.getLogger(getClass()).info(
-						"    description records deleted: " + deleteRecords);
+				log.info("description records deleted: " + deleteRecords);
 
 				// delete Terminology Elements (Relationships)
 				query = manager.createQuery(
@@ -127,8 +138,7 @@ public class RemoverAlgorithm extends RootServiceJpa
 				query.setParameter("terminology", terminology);
 				query.setParameter("version", version);
 				deleteRecords = query.executeUpdate();
-				Logger.getLogger(getClass()).info(
-						"    relationship records deleted: " + deleteRecords);
+				log.info("relationship records deleted: " + deleteRecords);
 
 				// delete Terminology Elements (Concepts)
 				query = manager.createQuery(
@@ -136,19 +146,16 @@ public class RemoverAlgorithm extends RootServiceJpa
 				query.setParameter("terminology", terminology);
 				query.setParameter("version", version);
 				deleteRecords = query.executeUpdate();
-				Logger.getLogger(getClass())
-						.info("    concept records deleted: " + deleteRecords);
+				log.info("concept records deleted: " + deleteRecords);
 
 				// commit all deletes
 				tx.commit();
 
 				ContentService contentService = new ContentServiceJpa();
-				Logger.getLogger(getClass()).info(
-						"Start removing tree positions from " + terminology);
+				log.info("Start removing tree positions from " + terminology);
 				contentService.clearTreePositions(terminology, version);
 				contentService.close();
-
-				Logger.getLogger(getClass()).info("Done ...");
+				log.info("Done ...");
 
 			} catch (Exception e) {
 				tx.rollback();
