@@ -2939,72 +2939,366 @@ angular
             $rootScope.glassPane--;          
             $rootScope.handleHttpError(data, status, headers, config);
           });
-          
-          //load  load Map Record Rf2 Complex Map
-          $scope.loadMapRecordRf2ComplexMap = function() {
-        	  $rootScope.glassPane++;
-        	  
-        	  var errors = '';
-        	  
-        	  if(error.lenght > 0) {
-        		  alert(errors);
-        		  $rootScope.glassPane--;
-        		  return;
-        	  }
-        	  
-        	  
+        };
+        
+        
+        // load load Map Record Rf2 Complex Map
+        $scope.loadMapRecordRf2ComplexMap = function(loadTerminology) {
+          $rootScope.glassPane++;
+
+          var errors = '';
+
+          if (error.length > 0) {
+            alert(errors);
+            $rootScope.glassPane--;
+            return;
           }
           
+          var queryString = '';
+          if (loadTerminology.memberFlag) 
+            queryString += "memberFlag=" + loadTerminology.memberFlag;
           
+          if (queryString !== '') 
+            queryString = "&" + queryString;
           
+          if (loadTerminology.recordFlag) 
+            queryString += "recordFlag=" + loadTerminology.recordFlag;
           
+          if (queryString !== '') 
+            queryString = "&" + queryString;
           
+          if (loadTerminology.workflowStatus) 
+            queryString += "workflowStatus" + loadTerminology.workflowStatus;
           
+          if (queryString !== '') 
+            queryString = "&" + queryString;
           
+          // rest call   
+          $http({
+            url: root_content + "/map/record/rf2/complex" + queryString,
+            data: loadTerminology.inputFileOrDirectory,
+            method: "PUT",
+            headers: { 'Content-Type' : 'text/plain' }
+            }).success(function(data) {
+              //nothing
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+        };
+        
+        
+        // load Map Record Rf2 Simple Map
+        $scope.loadMapRecordRf2SimpleMap = function(loadTerminology) {
+          $rootScope.glassPane++;
+
+          var errors = '';
+
+          if (error.length > 0) {
+            alert(errors);
+            $rootScope.glassPane--;
+            return;
+          }
           
+          var queryString = '';
+          if (loadTerminology.memberFlag) 
+            queryString += "memberFlag=" + loadTerminology.memberFlag;
           
+          if (queryString !== '') 
+            queryString = "&" + queryString;          
           
+          if (loadTerminology.recordFlag) 
+            queryString += "recordFlag=" + loadTerminology.recordFlag;
           
+          if (queryString !== '') 
+            queryString = "&" + queryString;
           
+          if (loadTerminology.workflowStatus) 
+            queryString += "workflowStatus" + loadTerminology.workflowStatus;
           
+          if (queryString !== '') 
+            queryString = "&" + queryString;
           
+          // rest call   
+          $http({
+            url: root_content + "/map/record/rf2/simple" + queryString,
+            data: loadTerminology.inputFileOrDirectory,
+            method: "PUT",
+            headers: { 'Content-Type' : 'text/plain' }
+            }).success(function(data) {
+              //nothing
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+        };
+        
+        // load terminology Claml
+        $scope.loadTerminologyClaml = function(loadTerminology) {
+          $rootScope.glassPane++;
+
+          var errors = '';
+
+          if (error.length > 0) {
+            alert(errors);
+            $rootScope.glassPane--;
+            return;
+          }
           
+          // rest call   
+          $http({
+            url: root_content + "/terminology/load/claml/" 
+              + loadTerminology.terminology + "/" + loadTerminology.version,
+            data: loadTerminology.inputFileOrDirectory,
+            method: "PUT",
+            headers: { 'Content-Type' : 'text/plain' }
+            }).success(function(data) {
+              //nothing
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+        }; 
+        
+        
+        // remove Map Record
+        $scope.removeMapRecord = function(loadTerminology) {
+          $rootScope.glassPane++;
+
+          var errors = '';
+
+          if (error.length > 0) {
+            alert(errors);
+            $rootScope.glassPane--;
+            return;
+          }
           
+          // rest call   
+          $http({
+            url: root_content + "/map/record/" + loadTerminology.refsetId,
+            method: "DELETE",
+            headers: { 'Content-Type' : 'text/plain' }
+            }).success(function(data) {
+              //nothing
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+        }; 
+        
+        
+        // remove terminology
+        $scope.removeTerminology = function(removeTerminology) {
+          $rootScope.glassPane++;
+
+          var errors = '';
+
+          if (error.length > 0) {
+            alert(errors);
+            $rootScope.glassPane--;
+            return;
+          }
           
+          // rest call   
+          $http({
+            url: root_content + "/terminology/" 
+              + removeTerminology.terminology + "/" + removeTerminology.version,
+            method: "DELETE",
+            headers: { 'Content-Type' : 'text/plain' }
+            }).success(function(data) {
+              //nothing
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+        }; 
+        
+        // load terminology Rf2 delta
+        $scope.loadTerminologyRf2Delta = function(loadTerminology) {
+          $rootScope.glassPane++;
+
+          var errors = '';
+
+          if (error.length > 0) {
+            alert(errors);
+            $rootScope.glassPane--;
+            return;
+          }
           
+          // rest call   
+          $http({
+            url: root_content + "/terminology/load/rf2/delta/" 
+              + loadTerminology.terminology + "/" + loadTerminology.lastPublicationDate,
+            data: loadTerminology.inputFileOrDirectory,
+            method: "PUT",
+            headers: { 'Content-Type' : 'text/plain' }
+            }).success(function(data) {
+              //nothing
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+        }; 
+        
+        // load terminology Rf2 snapshot
+        $scope.loadTerminologyRf2Snapshot = function(loadTerminology) {
+          $rootScope.glassPane++;
+
+          var errors = '';
+
+          if (error.length > 0) {
+            alert(errors);
+            $rootScope.glassPane--;
+            return;
+          }
           
+          var queryString = '';
+          if (loadTerminology.memberFlag) 
+            queryString += "treePositions=" + loadTerminology.treePositions;
           
+          if (queryString !== '') 
+            queryString = "&" + queryString;
           
+          if (loadTerminology.recordFlag) 
+            queryString += "sendNotification=" + loadTerminology.sendNotification;
           
+          if (queryString !== '') 
+            queryString = "&" + queryString;
+
           
+          // rest call   
+          $http({
+            url: root_content + "/terminology/load/rf2/snapshot/" 
+              + loadTerminology.terminology + "/" + loadTerminology.version + queryString,
+            data: loadTerminology.inputFileOrDirectory,
+            method: "PUT",
+            headers: { 'Content-Type' : 'text/plain' }
+            }).success(function(data) {
+              //nothing
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+        }; 
+        
+        
+        // load terminology simple
+        $scope.loadTerminologySimple = function(loadTerminology) {
+          $rootScope.glassPane++;
+
+          var errors = '';
+
+          if (error.length > 0) {
+            alert(errors);
+            $rootScope.glassPane--;
+            return;
+          }
           
+          // rest call   
+          $http({
+            url: root_content + "/terminology/load/simple/" + terminology + "/" + version,
+            data: loadTerminology.inputFileOrDirectory,
+            method: "PUT",
+            headers: { 'Content-Type' : 'text/plain' }
+            }).success(function(data) {
+              //nothing
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+        };
+        
+        
+        // reload terminology Rf2 snapshot
+        $scope.loadTerminologyRf2Snapshot = function(loadTerminology) {
+          $rootScope.glassPane++;
+
+          var errors = '';
+
+          if (error.length > 0) {
+            alert(errors);
+            $rootScope.glassPane--;
+            return;
+          }
           
+          var queryString = '';
+          if (loadTerminology.memberFlag) 
+            queryString += "treePositions=" + loadTerminology.treePositions;
           
+          if (queryString !== '') 
+            queryString = "&" + queryString;
           
+          if (loadTerminology.recordFlag) 
+            queryString += "sendNotification=" + loadTerminology.sendNotification;
           
+          if (queryString !== '') 
+            queryString = "&" + queryString;
+
           
+          // rest call   
+          $http({
+            url: root_content + "/terminology/reload/rf2/snapshot/" 
+              + loadTerminology.terminology + "/" + loadTerminology.version + queryString,
+            data: loadTerminology.inputFileOrDirectory,
+            method: "PUT",
+            headers: { 'Content-Type' : 'text/plain' }
+            }).success(function(data) {
+              //nothing
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+        };
+        
+        // reload map record
+        $scope.reloadMapRecord = function(loadTerminology) {
+          $rootScope.glassPane++;
+
+          var errors = '';
+
+          if (error.length > 0) {
+            alert(errors);
+            $rootScope.glassPane--;
+            return;
+          }
           
+          var queryString = '';
+          if (loadTerminology.memberFlag) 
+            queryString += "treePositions=" + loadTerminology.treePositions;
           
+          if (queryString !== '') 
+            queryString = "&" + queryString;
           
+          if (loadTerminology.recordFlag) 
+            queryString += "sendNotification=" + loadTerminology.sendNotification;
           
+          if (queryString !== '') 
+            queryString = "&" + queryString;
+
           
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-        };        
-      } ]);
+          // rest call   
+          $http({
+            url: root_content + "/map/record/reload/" + refsetId + queryString,
+            data: loadTerminology.inputFileOrDirectory,
+            method: "PUT",
+            headers: { 'Content-Type' : 'text/plain' }
+            }).success(function(data) {
+              //nothing
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+        }; 
+        
+
+} ]);
