@@ -923,7 +923,8 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       }
       
       // validate that the selected files can be compared to each other
-      $scope.validateFiles = function() {  	  
+      $scope.validateFiles = function() {  
+    	  
     	  if ($scope.fileArray[0].value2.indexOf('Extended') > 0 && $scope.fileArray[1].value2.indexOf('Extended') < 0) {
               window.alert("The selected files must both be Extended Maps or must both be Simple Maps.");
               return false;
@@ -971,12 +972,12 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       
       // call rest service to compare files in fileArray and return an Excel report of the differences
       $scope.compareFiles = function() {
-          
-    	  if (!$scope.validateFiles()) {
+    	  if ($scope.fileArray[0] && $scope.fileArray[1]) {
+    	    if (!$scope.validateFiles()) {
     		  return;
+    	    }
+    	    $scope.fileNameArray = [$scope.fileArray[0].value2, $scope.fileArray[1].value2];
     	  }
-    	  
-    	  $scope.fileNameArray = [$scope.fileArray[0].value2, $scope.fileArray[1].value2];
     	  
           $rootScope.glassPane++;
           $http({
