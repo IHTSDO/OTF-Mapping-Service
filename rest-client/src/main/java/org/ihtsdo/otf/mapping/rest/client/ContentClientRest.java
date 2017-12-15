@@ -426,4 +426,87 @@ public class ContentClientRest extends RootClientRest
 		}
 	}
 	
+	/* see superclass */
+	@Override
+	public void reloadTerminologyRf2Snapshot(String terminology, String version,
+			String inputDir, Boolean treePositions, Boolean sendNotification,
+			String authToken) throws Exception {
+
+		Logger.getLogger(getClass())
+				.debug("Content Client - reload terminology rf2 snapshot "
+						+ terminology + ", " + version);
+
+		validateNotEmpty(terminology, "terminology");
+		validateNotEmpty(version, "version");
+
+		StringBuilder qs = new StringBuilder();
+		qs.append("?");
+		if (treePositions != null) {
+			qs.append("treePositions=").append(treePositions);
+		}
+		if (sendNotification != null) {
+			qs.append("sendNotification=").append(sendNotification);
+		}
+		
+		final Client client = ClientBuilder.newClient();
+		final WebTarget target = client.target(config.getProperty("base.url")
+				+ URL_SERVICE_ROOT + "/terminology/reload/rf2/snapshot/"
+				+ terminology + "/" + version + qs.toString());
+
+		final Response response = target.request(MediaType.APPLICATION_JSON)
+				.header("Authorization", authToken).put(Entity.text(inputDir));
+
+		if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+			// do nothing
+		} else {
+			throw new Exception("Unexpected status " + response.getStatus());
+		}
+	}
+	
+	/* see superlass */
+	@Override
+	public boolean reloadMapRecord(String refsetId, String inputFile, Boolean memberFlag,
+			Boolean recordFlag, String workflowStatus, String authToken)
+			throws Exception {
+
+		Logger.getLogger(getClass())
+				.debug("Content Client - remove and load map record " + refsetId 
+						+ " inputFile:" + inputFile
+						+ " memberFlag:" + memberFlag
+						+ " recordFlag:" + recordFlag
+						+ " workflowStatus:" + workflowStatus);
+
+		validateNotEmpty(refsetId, "refsetId");
+		validateNotEmpty(inputFile, "inputFile");
+
+		StringBuilder qs = new StringBuilder();
+		qs.append("?");
+		if (recordFlag != null) {
+			qs.append("memberFlag=").append(memberFlag);
+		}
+		if (recordFlag != null) {
+			qs.append("recordFlag=").append(recordFlag);
+		}
+		if (workflowStatus != null) {
+			qs.append("workflowStatus=").append(workflowStatus);
+		}
+
+		final Client client = ClientBuilder.newClient();
+		final WebTarget target = client.target(config.getProperty("base.url")
+				+ URL_SERVICE_ROOT + "/map/record/reload/" + refsetId + qs.toString());
+
+		final Response response = target.request(MediaType.APPLICATION_JSON)
+				.header("Authorization", authToken).put(Entity.text(inputFile));
+
+		if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+			// do nothing
+		} else {
+			if (response.getStatus() != 204)
+				throw new Exception(
+						"Unexpected status " + response.getStatus());
+		}
+		return true;
+	}
+	
+	
 }
