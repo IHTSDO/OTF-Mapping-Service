@@ -4794,22 +4794,34 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         mappingService.getMapProject(new Long(projectId).longValue());
 
       // look for logs first in the project log dir, second in the remover/loader log dir
-      final File projectLogDir =
-        new File(this.getReleaseDirectoryPath(mapProject, "logs"));
+      String rootPath = ConfigUtility.getConfigProperties()
+          .getProperty("map.principle.source.document.dir");
+      if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
+        rootPath += "/";
+      }
+      File logFile = null;
+      File logDir = null;
+      if (logTypes.get(0).toString().contains("Terminology")) {
+        logDir = new File(rootPath + "logs");
+      } else {
+        logDir = new File(rootPath + mapProject.getId() + "/logs");
+      }
       for (String logType : logTypes) {
-        File logFile = new File(projectLogDir, logType + ".log");
-        if (!logFile.exists()) {
-          final Properties config = ConfigUtility.getConfigProperties();
-          final String removerLoaderLogDir =
-              config.getProperty("map.principle.source.document.dir") + "/logs";
-          logFile = new File(removerLoaderLogDir, logType.replace("Terminology", mapProject.getSourceTerminology()) + ".log");
-          if (!logFile.exists()) {
-            log.append("\nA log for " + logType + " is not yet available on this server.").append("\n");
-            log.append("A log will be created when the process is run.").append("\n");
-            continue;
-          }
+        if (logType.contains("Terminology")) {
+          logFile = new File(logDir,
+              logType.replace("Terminology", "_" + mapProject.getSourceTerminology())
+                  + ".log");
+        } else {
+          logFile = new File(logDir, logType + ".log");
         }
-
+        if (!logFile.exists()) {
+            log.append("\nA log for " + logType
+                + " is not yet available on this server.").append("\n");
+            log.append("A log will be created when the process is run.")
+                .append("\n");
+            continue;
+        }
+        
         String logFilePath = logFile.getAbsolutePath();
         BufferedReader logReader = new BufferedReader(
             new InputStreamReader(new FileInputStream(logFilePath), "UTF-8"));
