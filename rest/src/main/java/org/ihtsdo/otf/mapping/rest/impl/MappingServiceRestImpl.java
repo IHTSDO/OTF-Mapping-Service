@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
@@ -127,16 +129,13 @@ import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.Bucket;
-import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.ListObjectsV2Request;
+import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
@@ -5427,7 +5426,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     return null;
   }
 
-  private void callTestMethod() throws Exception {
+  private void callTestMethod2() throws Exception {
     Logger.getLogger(MappingServiceRestImpl.class).info("AAA");
     String bucketName = "release-ihtsdo-prod-published";
     String testFileName =
@@ -5568,5 +5567,81 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 //
 //    return outputBuilder.toString();
 //  }
+
+  private void callTestMethod() throws Exception {
+    Logger.getLogger(MappingServiceRestImpl.class).info("AAA");
+    String bucketName = "release-ihtsdo-prod-published";
+    String testFileName =
+        "international/xSnomedCT_RF2Release_INT_20170131/Delta/Terminology/xsct2_Concept_Delta_INT_20170131.txt";
+
+    // Connect to server
+    AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
+        .withRegion(Regions.US_EAST_1)
+        .withCredentials(new InstanceProfileCredentialsProvider(false)).build();
+
+    // List Buckets
+    Logger.getLogger(MappingServiceRestImpl.class).info("BBB start");
+    List<Bucket> buckets = s3Client.listBuckets();
+    for (Bucket b : buckets) {
+      Logger.getLogger(MappingServiceRestImpl.class)
+          .info("BBB with bucket name" + b.getName());
+    }
+    Logger.getLogger(MappingServiceRestImpl.class).info("BBB end");
+
+    // Verify Buckets Exists
+    if (!s3Client.doesBucketExist(bucketName)) {
+      throw new Exception("Cannot find Bucket Name");
+    } else {
+      Logger.getLogger(MappingServiceRestImpl.class)
+          .info("CCC Bucket " + bucketName + " accessed.");
+    }
+
+    // List All Files on Bucket "release-ihtsdo-prod-published"
+/*
+    ObjectListing listing = s3Client.listObjects(bucketName);
+    List<S3ObjectSummary> summaries = listing.getObjectSummaries();
+    
+    System.out.println("CCC start with " + summaries.size());
+    int i = 1;
+    for (S3ObjectSummary sum : summaries) {
+      Logger.getLogger(MappingServiceRestImpl.class)
+          .info("Summary #" + i++ + " with: " + sum.getKey());
+    }
+*/
+    Logger.getLogger(MappingServiceRestImpl.class).info("CCC Start");
+
+    
+    PrintWriter summaryWriter =
+        new PrintWriter(new OutputStreamWriter(
+            new FileOutputStream(
+                new File("~/aws/listOfFiles.txt")),
+            "UTF-8"));
+
+    
+    final ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bucketName).withMaxKeys(2);
+    ListObjectsV2Result result;
+    int objectCounter = 0;
+    int loopCounter = 0;
+    do {               
+       result = s3Client.listObjectsV2(req);
+       
+       for (S3ObjectSummary objectSummary : 
+           result.getObjectSummaries()) {
+           if (++objectCounter % 250 == 0) {
+             Logger.getLogger(MappingServiceRestImpl.class).info("CCC1 with Object Counter: " + objectCounter);
+           }
+           
+           summaryWriter.println(objectSummary.getKey());
+
+       }
+       System.out.println("Next Continuation Token : " + result.getNextContinuationToken());
+       req.setContinuationToken(result.getNextContinuationToken());
+       Logger.getLogger(MappingServiceRestImpl.class).info("CCC2 with Loop Counter: " + ++loopCounter);
+
+    } while(result.isTruncated() == true ); 
+
+    Logger.getLogger(MappingServiceRestImpl.class).info("CCC end");
+
+  }
 
 }
