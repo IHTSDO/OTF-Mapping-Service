@@ -713,9 +713,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Zip up the created files, and datestamp it.
     // TODO don't do if 'current' flag is set
     Date date = new Date();
-    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss") ;
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HHmmss") ;
     File outputFile = new File(outputDir + "/" + mapProject.getSourceTerminology()
-    + "_to_" + mapProject.getDestinationTerminology() + "_" + effectiveTime + "_" + dateFormat.format(date) + ".zip") ;
+    + "_to_" + mapProject.getDestinationTerminology() + "_" + dateFormat.format(date) + ".zip") ;
 
     zipFiles(createdFilenames, outputFile);
     FileOutputStream fos = null;

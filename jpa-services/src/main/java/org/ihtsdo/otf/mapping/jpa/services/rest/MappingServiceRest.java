@@ -857,4 +857,15 @@ public interface MappingServiceRest {
     String getLog(String projectId, List<String> logTypes, String query,
       String authToken) throws Exception;
 
+    /**
+     * Returns the release file names.
+     *
+     * @param mapProjectId the map project id
+     * @param authToken the auth token
+     * @return the release file names
+     * @throws Exception the exception
+     */
+    String getReleaseFileNames(Long mapProjectId, String authToken)
+      throws Exception;
+
 }
