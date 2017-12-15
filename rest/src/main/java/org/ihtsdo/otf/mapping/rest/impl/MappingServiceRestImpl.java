@@ -5611,16 +5611,52 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
           .info("Summary #" + i++ + " with: " + sum.getKey());
     }
 */
-    Logger.getLogger(MappingServiceRestImpl.class).info("CCC Start");
+    Logger.getLogger(MappingServiceRestImpl.class).info("DDD Start");
 
     
+    List<S3ObjectSummary> keyList = new ArrayList<S3ObjectSummary>();
+    ObjectListing objects = s3Client.listObjects(bucketName);
+    keyList = objects.getObjectSummaries();
+    objects = s3Client.listNextBatchOfObjects(objects);
+    int loopCounter = 0;
+
+    while (objects.isTruncated()){
+        keyList.addAll(objects.getObjectSummaries());
+        objects = s3Client.listNextBatchOfObjects(objects);
+        
+          Logger.getLogger(MappingServiceRestImpl.class).info("DDD1 at loop #" + ++loopCounter + " with keList.size(): " + keyList.size());
+    }
+    keyList.addAll(objects.getObjectSummaries());
+    Logger.getLogger(MappingServiceRestImpl.class).info("DDD2 with total keyList size = " + keyList.size());    
+
     PrintWriter summaryWriter =
+        new PrintWriter(new OutputStreamWriter(
+            new FileOutputStream(
+                new File("/home/jefron/aws/listOfFiles.txt")),
+            "UTF-8"));
+    
+    
+    File file = new File("/home/jefron/aws/listOfFiles2.txt");
+
+    for (S3ObjectSummary obj : keyList) {
+      summaryWriter.append(obj.getKey()).append("\n");
+      FileUtils.writeStringToFile(file, obj.getKey() + "\n");
+    }
+    summaryWriter.close();
+    Logger.getLogger(MappingServiceRestImpl.class).info("DDD end");
+
+    
+    
+    /*
+     * 
+     *     PrintWriter summaryWriter =
         new PrintWriter(new OutputStreamWriter(
             new FileOutputStream(
                 new File("~/aws/listOfFiles.txt")),
             "UTF-8"));
 
     
+
     final ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bucketName).withMaxKeys(2);
     ListObjectsV2Result result;
     int objectCounter = 0;
@@ -5640,11 +5676,15 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
        System.out.println("Next Continuation Token : " + result.getNextContinuationToken());
        summaryWriter.flush();
        req.setContinuationToken(result.getNextContinuationToken());
-       Logger.getLogger(MappingServiceRestImpl.class).info("CCC2 with Loop Counter: " + ++loopCounter);
+       Logger.getLogger(MappingServiceRestImpl.class).info(""
+           + ""
+           + ""
+           + " with Loop Counter: " + ++loopCounter);
 
     } while(result.isTruncated() == true ); 
     summaryWriter.close();
     Logger.getLogger(MappingServiceRestImpl.class).info("CCC end");
+   */
 
   }
 
