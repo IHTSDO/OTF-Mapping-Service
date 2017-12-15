@@ -5275,7 +5275,9 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
     Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping):  /amazons3/files/" + mapProjectId);
-
+    
+    callTestMethod();
+/*
    
     final MappingService mappingService = new MappingServiceJpa();
     String user = "";
@@ -5423,6 +5425,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       mappingService.close();
       securityService.close();
     }
+    */
     return null;
   }
 
@@ -5635,11 +5638,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
        }
        System.out.println("Next Continuation Token : " + result.getNextContinuationToken());
+       summaryWriter.flush();
        req.setContinuationToken(result.getNextContinuationToken());
        Logger.getLogger(MappingServiceRestImpl.class).info("CCC2 with Loop Counter: " + ++loopCounter);
 
     } while(result.isTruncated() == true ); 
-
+    summaryWriter.close();
     Logger.getLogger(MappingServiceRestImpl.class).info("CCC end");
 
   }
