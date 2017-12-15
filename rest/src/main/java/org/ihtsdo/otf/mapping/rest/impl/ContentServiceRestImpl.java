@@ -1007,5 +1007,141 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 					"trying to load simple terminology from directory");
 		}
 	}
+	
+	/* see superclass */
+	@Override
+	@PUT
+	@Path("/terminology/reload/rf2/snapshot/{terminology}/{version}")
+	@Consumes({ MediaType.TEXT_PLAIN })
+	@ApiOperation(value = "Removes and Loads terminology RF2 snapshot from directory", notes = "Removes and loads terminology RF2 snapshot from directory for specified terminology and version")
+	public void reloadTerminologyRf2Snapshot(
+			@ApiParam(value = "Terminology, e.g. SNOMEDCT_US", required = true) @PathParam("terminology") String terminology,
+			@ApiParam(value = "Version, e.g. 2014_09_01", required = true) @PathParam("version") String version,
+			@ApiParam(value = "RF2 input directory", required = true) String inputDir,
+			@ApiParam(value = "Calcualte tree positions", required = false) @QueryParam("treePositions") Boolean treePositions,
+			@ApiParam(value = "Send notification", required = false) @QueryParam("sendNotification") Boolean sendNotification,
+			@ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+			throws Exception {
+
+		Logger.getLogger(getClass())
+				.info("RESTful call (Content): /terminology/reload/rf2/snapshot/"
+						+ terminology + "/" + version + " from input directory "
+						+ inputDir);
+
+		// Track system level information
+		long startTimeOrig = System.nanoTime();
+		
+		Boolean localTreePostions = false;
+		Boolean localSendNotification = false;
+		
+		if (treePositions != null) {
+			localTreePostions = treePositions;
+		}
+		
+		if (sendNotification != null) {
+			localSendNotification = sendNotification;
+		}
+
+		String userName = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+				"reload RF2 snapshot terminology", securityService);
+		
+		try (final RemoverAlgorithm removeAlgo = new RemoverAlgorithm(terminology,
+				version);) {
+
+			// Remove terminology
+			Logger.getLogger(getClass()).info(
+					"  Remove terminology for  " + terminology + "/" + version);
+
+			removeAlgo.setLastModifiedBy(userName);
+			removeAlgo.compute();
+
+			Logger.getLogger(getClass()).info(
+					"Remove Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+
+			securityService.addLogEntry(userName, terminology, version, null,
+					"REMOVER", "Remove terminology");
+
+			// if no errors try to load
+			try (final Rf2SnapshotLoaderAlgorithm loadAlgo = new Rf2SnapshotLoaderAlgorithm(
+					terminology, version, inputDir, localTreePostions, localSendNotification);) {
+
+				loadAlgo.compute();
+
+				Logger.getLogger(getClass()).info(
+						"Load Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+				
+				securityService.addLogEntry(userName, terminology, version, null,
+						"LOAD", "Load " + terminology + " " + version);
+
+			} catch (Exception e) {
+				handleException(e,
+						"trying to reload terminology snapshot from RF2 directory");
+			}
+
+		} catch (Exception e) {
+			handleException(e, "trying to remove terminology");
+		} finally {
+			securityService.close();
+		}
+
+	}
+	
+	/* see superclass */
+	@Override
+	@PUT
+	@Path("/map/record/reload/{refsetId}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	@ApiOperation(value = "Load simple RF2 map record data", notes = "Load simple map data.")
+	public boolean reloadMapRecord(
+			@ApiParam(value = "RefSet Id, e.g. 2014_09_01", required = true) @PathParam("refsetId") String refsetId,
+			@ApiParam(value = "RF2 input file", required = true) String inputFile,
+			@ApiParam(value = "Member flag", required = true) @QueryParam("memberFlag") Boolean memeberFlag,
+			@ApiParam(value = "Record flag", required = true) @QueryParam("recordFlag") Boolean recordFlag,
+			@ApiParam(value = "Workflow status", required = true) @QueryParam("workflowStatus") String workflowStatus,
+			@ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+			throws Exception {
+
+		Logger.getLogger(getClass())
+				.info("RESTful call (Content): /map/record/");
+
+		// Track system level information
+		long startTimeOrig = System.nanoTime();
+
+		authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+				"load map record RF2 simple", securityService);
+		
+		try (final MapsRemoverAlgorithm removeAlgo = new MapsRemoverAlgorithm(
+				refsetId);) {
+
+			removeAlgo.compute();
+
+			Logger.getLogger(getClass()).info(
+					"Remove Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+
+			//if remove was successful do add
+			try (final MapRecordRf2SimpleMapLoaderAlgorithm loadAlgo = new MapRecordRf2SimpleMapLoaderAlgorithm(
+					inputFile, memeberFlag, recordFlag, workflowStatus);) {
+
+				loadAlgo.compute();
+				
+				Logger.getLogger(getClass()).info(
+						"Load Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+
+			} catch (Exception e) {
+				handleException(e, "trying to load simple map record");
+				return false;
+			}
+			
+		} catch (Exception e) {
+			handleException(e, "trying to remove map record");
+			return false;
+			
+		} finally {
+			securityService.close();
+		}
+		
+		return true;
+	}
+	
 
 }

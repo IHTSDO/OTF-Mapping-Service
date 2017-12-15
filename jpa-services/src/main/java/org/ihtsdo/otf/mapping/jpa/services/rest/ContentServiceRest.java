@@ -242,8 +242,8 @@ public interface ContentServiceRest {
 	 * @param terminology The terminology.
 	 * @param version The terminology version.
 	 * @param inputDir The directory where the input files are located.
-	 * @param treePositions the tree positions
-	 * @param sendNotification the send notification
+	 * @param treePositions Indicate if tree positions should be calculated.
+	 * @param sendNotification Indicate if a notification should be sent.
 	 * @param authToken The auth token
 	 * @throws Exception The execution exception
 	 */
@@ -266,5 +266,36 @@ public interface ContentServiceRest {
 	 */
 	void loadTerminologySimple(String terminology, String version,
 			String inputDir, String authToken) throws Exception;
+
+	/**
+	 * Removes and loads an RF2 Snapshot of SNOMED CT data into a database.
+	 * 
+	 * @param terminology The terminology.
+	 * @param version The terminology version.
+	 * @param inputDir The directory where the input files are located.
+	 * @param treePositions Indicate if tree positions should be calculated.
+	 * @param sendNotification Indicate if a notification should be sent.
+	 * @param authToken The auth token
+	 * @throws Exception The execution exception
+	 */
+	void reloadTerminologyRf2Snapshot(String terminology, String version,
+			String inputDir, Boolean treePositions, Boolean sendNotification,
+			String authToken) throws Exception;
+	
+	/**
+	 * Removes and loads simple maps. - the members flag loads refset members if "true" - the
+	 * records flag loads map records if "true"
+	 *
+	 * @param refsetId Refset Id to be deleted.
+	 * @param inputFile The input file.
+	 * @param memberFlag
+	 * @param recordFlag
+	 * @param workflowStatus
+	 * @param authToken The auth token
+	 * @throws Exception The execution exception
+	 */
+	boolean reloadMapRecord(String refsetId, String inputFile, Boolean memberFlag,
+			Boolean recordFlag, String workflowStatus, String authToken)
+			throws Exception;
 
 }
