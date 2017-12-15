@@ -1444,14 +1444,30 @@
     <br>
   
     <h4>Releases</h4>
-    <select style="width:95%;"
+    <!-- 
+    Effective Time:
+    <br>
+    <select style="width:20%;"
+        ng-model="selectedEffectiveTime"
+          ng-options="item for item in projectReleaseEffectiveTimes">
+          </select>
+    <br>
+     -->
+    Release file:
+    <br>
+    <select style="width:75%;"
         ng-model="selectedProjectReleaseFile"
           ng-options="item for item in projectReleaseFiles">
           </select>
-    <i
-    style="margin-left: 5px; margin-right: 10px;"
-    ng-click="downloadReleaseFile()" class="noul glyphicon glyphicon-download"
-    title="Download selected release file."></i>
+    <a
+    href="doc/release/{{focusProject.sourceTerminology}}_to_{{focusProject.destinationTerminology}}_{{focusProject.refSetId}}/{{selectedProjectReleaseFile}}"
+    target="_blank">
+      <i
+      style="margin-left: 5px; margin-right: 10px;"
+      class="noul glyphicon glyphicon-download"
+      title="Download selected release file."></i>
+    </a>
+
     
   </div>
 </div>

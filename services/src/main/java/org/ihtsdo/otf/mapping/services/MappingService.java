@@ -837,4 +837,13 @@ public interface MappingService extends RootService {
   public MapRecord getLatestMapRecordForConcept(Long mapProjectId,
     String terminologyId) throws Exception;
 
+  /**
+   * Returns the release file names.
+   *
+   * @param mapProject the map project
+   * @return the release file names
+   * @throws Exception the exception
+   */
+  public String getReleaseFileNames(MapProject mapProject) throws Exception;
+
 }

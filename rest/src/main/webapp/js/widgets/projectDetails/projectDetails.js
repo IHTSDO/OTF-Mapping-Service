@@ -101,7 +101,7 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       $scope.scopeExcludedAddLog = '';
       $scope.scopeExcludedRemoveLog = '';
 
-      //$scope.projectReleaseFiles = findReleaseFiles($scope.focusProject);
+      $scope.projectReleaseFiles = new Array();
       
       $scope.allowableMapTypes = [ {
         displayName : 'Extended Map',
@@ -275,6 +275,26 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
         }).error(function(data, status, headers, config) {
           $rootScope.handleHttpError(data, status, headers, config);
         });
+        
+        $http({
+          url : root_mapping + 'project/id/' + $scope.focusProject.id + '/releaseFileNames',
+          dataType : 'json',
+          method : 'GET',
+          headers : {
+            'Content-Type' : 'text/plain'
+          }
+        }).success(function(data) {
+          console.debug('  releaseFileNames = ', data);
+          var fileNames = data.split("\|");
+          for (var i=0, l=fileNames.length; i < l; i++) {
+            $scope.projectReleaseFiles.push(fileNames[i]);
+            // Have the files sorted in reverse order, so the most recent is on top.
+            $scope.projectReleaseFiles.sort();
+            $scope.projectReleaseFiles.reverse();
+          }
+        }).error(function(data, status, headers, config) {
+          $rootScope.handleHttpError(data, status, headers, config);
+        });        
 
         // find selected elements from the allowable
         // lists
