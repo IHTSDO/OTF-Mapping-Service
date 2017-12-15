@@ -1,5 +1,6 @@
 package org.ihtsdo.otf.mapping.jpa.algo;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -46,7 +47,18 @@ public class RemoverAlgorithm extends RootServiceJpa
 		
 		//initialize logger
 		// delete log file before
-		LoggerUtility.setConfiguration("name", "C:/Dev/logs/mapping/test_" + terminology  + "_"  + version  + "_remove.log");
+		String rootPath = ConfigUtility.getConfigProperties()
+	          .getProperty("map.principle.source.document.dir");
+	    if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
+	      rootPath += "/";
+	    }
+	    rootPath += "logs";
+	    File logDirectory = new File(rootPath);
+	    if (!logDirectory.exists()) {
+	        logDirectory.mkdir();
+	    }
+	    File removeLog = new File(logDirectory, "remove_" + terminology + ".log");
+		LoggerUtility.setConfiguration("name", removeLog.getAbsolutePath());
 		this.log = LoggerUtility.getLogger("name");
 	}
 
