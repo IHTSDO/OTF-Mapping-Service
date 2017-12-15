@@ -101,6 +101,8 @@ angular.module('mapProjectApp.widgets.projectDetails', [ 'adf.provider' ]).confi
       $scope.scopeExcludedAddLog = '';
       $scope.scopeExcludedRemoveLog = '';
 
+      //$scope.projectReleaseFiles = findReleaseFiles($scope.focusProject);
+      
       $scope.allowableMapTypes = [ {
         displayName : 'Extended Map',
         name : 'ExtendedMap'
