@@ -134,6 +134,7 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.Bucket;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsV2Request;
 import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.ObjectListing;
@@ -5276,8 +5277,6 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping):  /amazons3/files/" + mapProjectId);
     
-    callTestMethod();
-/*
    
     final MappingService mappingService = new MappingServiceJpa();
     String user = "";
@@ -5425,11 +5424,11 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       mappingService.close();
       securityService.close();
     }
-    */
+
     return null;
   }
 
-  private void callTestMethod2() throws Exception {
+  private void callTestMethod() throws Exception {
     Logger.getLogger(MappingServiceRestImpl.class).info("AAA");
     String bucketName = "release-ihtsdo-prod-published";
     String testFileName =
@@ -5571,7 +5570,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 //    return outputBuilder.toString();
 //  }
 
-  private void callTestMethod() throws Exception {
+  private void callTestMethod2() throws Exception {
     Logger.getLogger(MappingServiceRestImpl.class).info("AAA");
     String bucketName = "release-ihtsdo-prod-published";
     String testFileName =
