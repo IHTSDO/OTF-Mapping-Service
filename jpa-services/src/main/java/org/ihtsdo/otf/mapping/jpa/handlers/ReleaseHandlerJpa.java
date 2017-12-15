@@ -3,11 +3,16 @@
  */
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.ComplexMapRefSetMemberList;
@@ -215,6 +222,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   @Override
   public void processRelease() throws Exception {
 
+    // Keep track of all of the created files
+    final List<String> createdFilenames = new ArrayList<>();
+    
     // get all map records for this project
     if (mapRecords == null || mapRecords.isEmpty()) {
       final MapRecordList mapRecordList = mappingService
@@ -320,8 +330,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Write module dependency file
     Set<String> moduleDependencies = algorithmHandler.getDependentModules();
     if (moduleDependencies.size() > 0) {
-      writeModuleDependencyFile(moduleDependencies,
-          algorithmHandler.getModuleDependencyRefSetId());
+      createdFilenames.add(writeModuleDependencyFile(moduleDependencies,
+          algorithmHandler.getModuleDependencyRefSetId()));
     }
 
     //
@@ -683,23 +693,35 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         .info("  active members = " + activeMembersMap.size());
 
     // Write human readable file
-    writeHumanReadableFile(activeMembersMap);
+    createdFilenames.add(writeHumanReadableFile(activeMembersMap));
 
     // Write snapshot file
     if (writeSnapshot) {
-      writeActiveSnapshotFile(activeMembersMap);
-      writeSnapshotFile(prevInactiveMembersMap, prevActiveMembersMap,
-          activeMembersMap);
+      createdFilenames.add(writeActiveSnapshotFile(activeMembersMap));
+      createdFilenames.add(writeSnapshotFile(prevInactiveMembersMap, prevActiveMembersMap,
+          activeMembersMap));
     }
 
     // Write delta file
     if (writeDelta) {
-      writeDeltaFile(activeMembersMap, prevActiveMembersMap);
+      createdFilenames.add(writeDeltaFile(activeMembersMap, prevActiveMembersMap));
     }
 
     // Write statistics
-    writeStatsFile(activeMembersMap, prevActiveMembersMap);
+    createdFilenames.add(writeStatsFile(activeMembersMap, prevActiveMembersMap));
 
+    // Zip up the created files, and datestamp it.
+    // TODO don't do if 'current' flag is set
+    Date date = new Date();
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss") ;
+    File outputFile = new File(outputDir + "/" + mapProject.getSourceTerminology()
+    + "_to_" + mapProject.getDestinationTerminology() + "_" + effectiveTime + "_" + dateFormat.format(date) + ".zip") ;
+
+    zipFiles(createdFilenames, outputFile);
+    FileOutputStream fos = null;
+    ZipOutputStream zipOut = null;
+    FileInputStream fis = null;
+    
     // write the concept errors
     Logger.getLogger("processRelease")
         .info("Concept errors (" + conceptErrors.keySet().size() + ")");
@@ -715,6 +737,49 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // close the services
     contentService.close();
     mappingService.close();
+  }
+
+  /**
+   * Zip files.
+   *
+   * @param createdFilenames the created filenames
+   * @param outputFile the output file
+   */
+  private void zipFiles(List<String> createdFilenames, File outputFile) {
+    FileOutputStream fos = null;
+    ZipOutputStream zipOut = null;
+    FileInputStream fis = null;
+    try {
+        fos = new FileOutputStream(outputFile);
+        zipOut = new ZipOutputStream(new BufferedOutputStream(fos));
+        for(String filePath:createdFilenames){
+            File input = new File(filePath);
+            fis = new FileInputStream(input);
+            ZipEntry ze = new ZipEntry(input.getName());
+            System.out.println("Zipping the file: "+input.getName());
+            zipOut.putNextEntry(ze);
+            byte[] tmp = new byte[4*1024];
+            int size = 0;
+            while((size = fis.read(tmp)) != -1){
+                zipOut.write(tmp, 0, size);
+            }
+            zipOut.flush();
+            fis.close();
+        }
+        zipOut.close();
+        System.out.println("Done... Zipped the files...");
+    } catch (FileNotFoundException e) {
+        e.printStackTrace();
+    } catch (IOException e) {
+        e.printStackTrace();
+    } finally{
+        try{
+            if(fos != null) fos.close();
+        } catch(Exception ex){
+             
+        }
+    }
+    
   }
 
   /**
@@ -906,7 +971,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @param refSetId the ref set id
    * @throws Exception the exception
    */
-  private void writeModuleDependencyFile(Set<String> moduleDependencies,
+  private String writeModuleDependencyFile(Set<String> moduleDependencies,
     String refSetId) throws Exception {
     Logger.getLogger("processRelease").info("  Write module dependency file");
     Logger.getLogger("processRelease")
@@ -936,6 +1001,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Close
     writer.flush();
     writer.close();
+    
+    return filename;
   }
 
   /**
@@ -945,7 +1012,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @param prevActiveMembers the previous active members
    * @throws Exception the exception
    */
-  private void writeDeltaFile(Map<String, ComplexMapRefSetMember> activeMembers,
+  private String writeDeltaFile(Map<String, ComplexMapRefSetMember> activeMembers,
     Map<String, ComplexMapRefSetMember> prevActiveMembers) throws Exception {
 
     // Open file and writer
@@ -1025,6 +1092,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     writer.flush();
     writer.close();
 
+    return filename;
+    
   }
 
   /**
@@ -1034,7 +1103,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @param prevActiveMembers the prev active members
    * @throws Exception the exception
    */
-  private void writeStatsFile(Map<String, ComplexMapRefSetMember> activeMembers,
+  private String writeStatsFile(Map<String, ComplexMapRefSetMember> activeMembers,
     Map<String, ComplexMapRefSetMember> prevActiveMembers) throws Exception {
 
     // Gather stats
@@ -1119,8 +1188,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     String camelCaseName =
         mapProject.getDestinationTerminology().substring(0, 1)
             + mapProject.getDestinationTerminology().substring(1).toLowerCase();
+    final String filename = outputDir + "/" + camelCaseName + "stats.txt";
     BufferedWriter statsWriter = new BufferedWriter(
-        new FileWriter(outputDir + "/" + camelCaseName + "stats.txt"));
+        new FileWriter(filename));
     List<String> statistics = new ArrayList<>(reportStatistics.keySet());
     Collections.sort(statistics);
     for (final String statistic : statistics) {
@@ -1128,6 +1198,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           .write(statistic + "\t" + reportStatistics.get(statistic) + "\r\n");
     }
     statsWriter.close();
+    
+    return filename;
   }
 
   /**
@@ -1137,7 +1209,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @throws Exception the exception
    */
   @SuppressWarnings("resource")
-  private void writeActiveSnapshotFile(
+  private String writeActiveSnapshotFile(
     Map<String, ComplexMapRefSetMember> members) throws Exception {
 
     Logger.getLogger("processRelease").info("Writing active snapshot...");
@@ -1181,6 +1253,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Close
     writer.flush();
     writer.close();
+    
+    return filename;
 
   }
 
@@ -1192,7 +1266,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @param currentActiveMembers the current active members
    * @throws Exception the exception
    */
-  private void writeSnapshotFile(
+  private String writeSnapshotFile(
     Map<String, ComplexMapRefSetMember> prevInactiveMembers,
     Map<String, ComplexMapRefSetMember> prevActiveMembers,
     Map<String, ComplexMapRefSetMember> currentActiveMembers) throws Exception {
@@ -1267,6 +1341,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Close
     writer.flush();
     writer.close();
+    
+    return filename;
 
   }
 
@@ -1276,7 +1352,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @param members the members
    * @throws Exception the exception
    */
-  private void writeHumanReadableFile(
+  private String writeHumanReadableFile(
     Map<String, ComplexMapRefSetMember> members) throws Exception {
 
     // Open file and writer
@@ -1395,6 +1471,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     humanReadableWriter.flush();
     humanReadableWriter.close();
 
+    return humanReadableFileName;
+    
   }
 
   /**
