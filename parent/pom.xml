@@ -47,7 +47,8 @@
     <cglib.version>2.2.2</cglib.version>
     <javax.mail.version>1.5.2</javax.mail.version>
     <xom.version>1.2.5</xom.version>
-    <apache.poi>3.10-FINAL</apache.poi>
+	<apache.poi>3.10-FINAL</apache.poi>
+	<amazonaws.version>1.11.106</amazonaws.version>
   </properties>
 
   <dependencyManagement>
@@ -91,6 +92,13 @@
         <version>${releaseVersion}</version>
       </dependency>
 
+	  <!-- Amazon AWS
+	  <dependency>
+		<groupId>com.amazonaws</groupId>
+		<artifactId>aws-java-sdk</artifactId>
+		<version>${amazonaws.version}</version>
+	  </dependency>
+ -->
       <!-- JPA dependencies -->
       <dependency>
         <groupId>org.hibernate.javax.persistence</groupId>

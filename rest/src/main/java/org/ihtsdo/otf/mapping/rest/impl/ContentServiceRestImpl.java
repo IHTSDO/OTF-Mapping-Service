@@ -930,9 +930,10 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 	@Consumes({ MediaType.TEXT_PLAIN })
   @ApiOperation(value = "Loads terminology RF2 snapshot from directory", notes = "Loads terminology RF2 snapshot from directory for specified terminology and version")
   public void loadTerminologyRf2Snapshot(
-    @ApiParam(value = "Terminology, e.g. SNOMEDCT_US", required = true) @PathParam("terminology") String terminology,
-    @ApiParam(value = "Version, e.g. 2014_09_01", required = true) @PathParam("version") String version,
-    @ApiParam(value = "RF2 input directory", required = true) String inputDir,
+    @ApiParam(value = "Terminology, e.g. SNOMED CT", required = true) @PathParam("terminology") String terminology,
+    @ApiParam(value = "Version, e.g. 20170131", required = true) @PathParam("version") String version,
+    @ApiParam(value = "Scope for SNOMED CT, e.g. ALHPA", required = false) @QueryParam("scope") String scope,
+    @ApiParam(value = "Input Directory containing RF2 files", required = false) String inputDir,
     @ApiParam(value = "Calcualte tree positions", required = false) @QueryParam("treePositions") Boolean treePositions,
     @ApiParam(value = "Send notification", required = false) @QueryParam("sendNotification") Boolean sendNotification,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
@@ -940,33 +941,24 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
     Logger.getLogger(getClass())
         .info("RESTful call (Content): /terminology/load/rf2/snapshot/"
-            + terminology + "/" + version + " from input directory "
-            + inputDir);
+            + terminology + "/" + version + "/" + scope + " inputDir "
+            + inputDir + " treePositions " + treePositions
+            + " sendNotification " + sendNotification);
 
     // Track system level information
     long startTimeOrig = System.nanoTime();
 
-    Boolean localTreePostions = false;
-    Boolean localSendNotification = false;
-
-    if (treePositions != null) {
-      localTreePostions = treePositions;
-    }
-
-    if (sendNotification != null) {
-      localSendNotification = sendNotification;
-    }
-
     authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
         "load RF2 snapshot terminology", securityService);
 
-		try (final Rf2SnapshotLoaderAlgorithm algo = new Rf2SnapshotLoaderAlgorithm(
-				terminology, version, inputDir, localTreePostions, localSendNotification);) {
+    // Get Input Director from AWS
+    try (final Rf2SnapshotLoaderAlgorithm algo = new Rf2SnapshotLoaderAlgorithm(
+        terminology, version, inputDir, treePositions, sendNotification);) {
 
       algo.compute();
 
-			Logger.getLogger(getClass()).info(
-					"Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+      Logger.getLogger(getClass())
+          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
 
     } catch (Exception e) {
       handleException(e,

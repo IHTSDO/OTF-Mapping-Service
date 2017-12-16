@@ -364,7 +364,7 @@ public class ContentClientRest extends RootClientRest
 	
 	/* see superclass */
 	@Override
-	public void loadTerminologyRf2Snapshot(String terminology, String version,
+	public void loadTerminologyRf2Snapshot(String terminology, String version, String scope,
 			String inputDir, Boolean treePositions, Boolean sendNotification,
 			String authToken) throws Exception {
 
