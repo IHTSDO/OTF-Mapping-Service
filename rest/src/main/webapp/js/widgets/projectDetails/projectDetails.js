@@ -282,25 +282,7 @@ angular
             $rootScope.handleHttpError(data, status, headers, config);
           });
 
-          $http({
-            url : root_mapping + 'project/id/' + $scope.focusProject.id + '/releaseFileNames',
-            dataType : 'json',
-            method : 'GET',
-            headers : {
-              'Content-Type' : 'text/plain'
-            }
-          }).success(function(data) {
-            console.debug('  releaseFileNames = ', data);
-            var fileNames = data.split("\|");
-            for (var i = 0, l = fileNames.length; i < l; i++) {
-              $scope.projectReleaseFiles.push(fileNames[i]);
-              // Have the files sorted in reverse order, so the most recent is on top.
-              $scope.projectReleaseFiles.sort();
-              $scope.projectReleaseFiles.reverse();
-            }
-          }).error(function(data, status, headers, config) {
-            $rootScope.handleHttpError(data, status, headers, config);
-          });
+          $scope.loadProjectReleaseFiles();
 
           // find selected elements from the allowable
           // lists
@@ -2089,6 +2071,7 @@ angular
 
             // Success
             function(response) {
+              $scope.loadProjectReleaseFiles();
               $rootScope.glassPane--;
 
             },
@@ -2269,4 +2252,27 @@ angular
           $scope.getLog();
         }
 
+        $scope.loadProjectReleaseFiles = function() {
+          $scope.projectReleaseFiles = new Array();
+          $http({
+            url : root_mapping + 'project/id/' + $scope.focusProject.id + '/releaseFileNames',
+            dataType : 'json',
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'text/plain'
+            }
+          }).success(function(data) {
+            console.debug('  releaseFileNames = ', data);
+            var fileNames = data.split("\|");
+            for (var i = 0, l = fileNames.length; i < l; i++) {
+              $scope.projectReleaseFiles.push(fileNames[i]);
+              // Have the files sorted in reverse order, so the most recent is on top.
+              $scope.projectReleaseFiles.sort();
+              $scope.projectReleaseFiles.reverse();
+            }
+          }).error(function(data, status, headers, config) {
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        }
+        
       } ]);
