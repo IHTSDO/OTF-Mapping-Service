@@ -830,16 +830,6 @@ public interface MappingServiceRest {
 	   */
 	void startEditingCycleForMapProject(Long mapProjectId, String authToken) throws Exception;
 
-	/**
-	   * Creates the jira issue.
-	   *
-	   * @param conceptId the concept id
-	   * @param authToken the auth token
-	   * @throws Exception the exception
-	   */
-	void createJiraIssue(String conceptId, String conceptAuthor, String messageText, MapRecordJpa mapRecord,
-			String authToken) throws Exception;
-
     /**
      * Gets the log.
      *
@@ -862,7 +852,19 @@ public interface MappingServiceRest {
      * @throws Exception the exception
      */
     String getReleaseFileNames(Long mapProjectId, String authToken)
-      throws Exception;	
+      throws Exception; 	
+	
+	/**
+	   * Creates the jira issue.
+	   *
+	   * @param conceptId the concept id
+	   * @param authToken the auth token
+	   * @throws Exception the exception
+	   */
+	void createJiraIssue(String conceptId, String conceptAuthor, String messageText, MapRecordJpa mapRecord,
+			String authToken) throws Exception;
+
+
 	
 	SearchResultList getConceptAuthors(String conceptId, String authToken) throws Exception;
 

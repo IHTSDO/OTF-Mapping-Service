@@ -562,13 +562,6 @@ public class MappingClientRest extends RootClientRest
   }
 
   @Override
-  public String getReleaseFileNames(Long mapProjectId, String authToken)
-    throws Exception {
-    // N/A
-    return null;
-  }
-
-  @Override
   public void processReleaseForMapProject(String moduleId, String effectiveTime,
     Long mapProjectId, String authToken) throws Exception {
     // N/A
@@ -596,6 +589,13 @@ public class MappingClientRest extends RootClientRest
     throws Exception {
     // N/A
 
+  }
+
+  @Override
+  public String getReleaseFileNames(Long mapProjectId, String authToken)
+    throws Exception {
+    // N/A
+    return null;
   }
 
   @Override
