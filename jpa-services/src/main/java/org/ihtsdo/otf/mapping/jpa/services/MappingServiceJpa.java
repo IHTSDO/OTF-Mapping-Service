@@ -3181,6 +3181,10 @@ public class MappingServiceJpa extends RootServiceJpa
 
     // Get all effectiveTime subfolders within that location
     File file = new File(path);
+    if(!file.exists()){
+      throw new Exception("Path not found: " + path);
+    }
+    
     String[] effectiveTimes = file.list(new FilenameFilter() {
       @Override
       public boolean accept(File current, String name) {
@@ -3188,6 +3192,10 @@ public class MappingServiceJpa extends RootServiceJpa
       }
     });
 
+    if(effectiveTimes.length == 0){
+      throw new Exception("No subfolders found at location: " + path);
+    }    
+    
     String releaseFileNames = "";
 
     // Get all zipFiles within each effectiveTime subfolder
