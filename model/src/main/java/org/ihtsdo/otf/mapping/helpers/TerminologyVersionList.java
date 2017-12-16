@@ -77,7 +77,7 @@ public class TerminologyVersionList {
       if (!observedVersions.contains(tv.getVersion())) {
         observedVersions.add(tv.getVersion());
         tmpList.add(new TerminologyVersion(tv.getTerminology(), tv.getVersion(),
-            tv.getScope(), tv.getAwsZipFilname()));
+            tv.getScope(), tv.getAwsZipFileName()));
       }
     }
 
@@ -97,7 +97,7 @@ public class TerminologyVersionList {
       if (!observedScopes.contains(tv.getScope())) {
         observedScopes.add(tv.getScope());
         tmpList.add(new TerminologyVersion(tv.getTerminology(), tv.getVersion(),
-            tv.getScope(), tv.getAwsZipFilname()));
+            tv.getScope(), tv.getAwsZipFileName()));
       }
     }
 

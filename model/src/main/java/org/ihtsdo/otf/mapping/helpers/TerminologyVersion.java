@@ -17,7 +17,7 @@ public class TerminologyVersion {
   private String scope;
 
   /** The version. */
-  private String awsZipFilname;
+  private String awsZipFileName;
 
   /**
    * Instantiates an empty {@link KeyValuePair}.
@@ -32,14 +32,14 @@ public class TerminologyVersion {
    * @param terminology the terminology
    * @param version the version
    * @param scope the scope
-   * @param awsZipFilname the aws zip filname
+   * @param awsZipFileName the aws zip file name
    */
   public TerminologyVersion(String terminology, String version, String scope,
-      String awsZipFilname) {
+      String awsZipFileName) {
     this.terminology = terminology;
     this.version = version;
     this.scope = scope;
-    this.awsZipFilname = awsZipFilname;
+    this.awsZipFileName = awsZipFileName;
   }
 
   /**
@@ -51,7 +51,7 @@ public class TerminologyVersion {
   public TerminologyVersion(String awsKey, String terminology) {
     System.out.println(awsKey);
     this.terminology = terminology;
-    awsZipFilname = awsKey;
+    awsZipFileName = awsKey;
 
     // Get Year
     int idx = awsKey.indexOf("_20");
@@ -117,8 +117,8 @@ public class TerminologyVersion {
    *
    * @return the aws zip filname
    */
-  public String getAwsZipFilname() {
-    return awsZipFilname;
+  public String getAwsZipFileName() {
+    return awsZipFileName;
   }
 
   /**
@@ -126,8 +126,8 @@ public class TerminologyVersion {
    *
    * @param awsZipFilname the aws zip filname
    */
-  public void setAwsZipFilname(String awsZipFilname) {
-    this.awsZipFilname = awsZipFilname;
+  public void setAwsZipFileName(String awsZipFilname) {
+    this.awsZipFileName = awsZipFilname;
   }
 
   /**
@@ -135,9 +135,9 @@ public class TerminologyVersion {
    */
   public void identifyScope() {
     // Get Scope
-    if (awsZipFilname.toLowerCase().contains("alpha")) {
+    if (awsZipFileName.toLowerCase().contains("alpha")) {
       scope = "Alpha";
-    } else if (awsZipFilname.toLowerCase().contains("beta")) {
+    } else if (awsZipFileName.toLowerCase().contains("beta")) {
       scope = "Beta";
     } else {
       scope = "Production";

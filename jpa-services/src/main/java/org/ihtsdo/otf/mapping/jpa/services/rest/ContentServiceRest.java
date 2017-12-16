@@ -242,14 +242,14 @@ public interface ContentServiceRest {
 	 *
 	 * @param terminology The terminology.
 	 * @param version The terminology version.
-	 * @param inputDir The directory where the input files are located.
+	 * @param scope The scope of the terminology (Beta, Alpha, Prod) for SNOMED
 	 * @param treePositions Indicate if tree positions should be calculated.
 	 * @param sendNotification Indicate if a notification should be sent.
 	 * @param authToken The auth token
 	 * @throws Exception The execution exception
 	 */
 	void loadTerminologyRf2Snapshot(String terminology, String version,
-			String inputDir, Boolean treePositions, Boolean sendNotification,
+			String scope, String inputDir, Boolean treePositions, Boolean sendNotification,
 			String authToken) throws Exception;
 
 	/**
