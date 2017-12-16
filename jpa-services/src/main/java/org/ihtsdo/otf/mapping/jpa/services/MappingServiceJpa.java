@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -3182,7 +3183,7 @@ public class MappingServiceJpa extends RootServiceJpa
     // Get all effectiveTime subfolders within that location
     File file = new File(path);
     if(!file.exists()){
-      throw new Exception("Path not found: " + path);
+      throw new FileNotFoundException("Path not found: " + path);
     }
     
     String[] effectiveTimes = file.list(new FilenameFilter() {
@@ -3193,7 +3194,7 @@ public class MappingServiceJpa extends RootServiceJpa
     });
 
     if(effectiveTimes.length == 0){
-      throw new Exception("No subfolders found at location: " + path);
+      throw new FileNotFoundException("No subfolders found at location: " + path);
     }    
     
     String releaseFileNames = "";
