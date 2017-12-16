@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
@@ -30,6 +32,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.naming.AuthenticationException;
 import javax.ws.rs.Consumes;
@@ -51,6 +55,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
@@ -132,8 +137,11 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.ListObjectsV2Request;
+import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
@@ -5279,7 +5287,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     throws Exception {
 
     Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /compare/files" + mapProjectId + " " + files.get(0) + " " + files.get(1));
+        "RESTful call (Mapping): /compare/files" + mapProjectId + " " + (files != null ? files.get(0) + " " + files.get(1) : ""));
 
     String user = "";
     final MetadataService metadataService = new MetadataServiceJpa();
@@ -5287,19 +5295,11 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     try {
       // authorize
       user = authorizeApp(authToken, MapUserRole.VIEWER, "compare map files", securityService);
-            
-      /*String olderInputFile1 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170131Final\\der2_iisssccRefset_ExtendedMapSnapshot_INT_20170131.txt";
-      String newerInputFile2 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Final\\der2_iisssccRefset_ExtendedMapSnapshot_INT_20170731.txt";
-      */
-      //String olderInputFile1 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Alpha\\xder2_sRefset_SimpleMapSnapshot_INT_20170731.txt";
-      /*String newerInputFile2 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20180131Alpha\\xder2_sRefset_SimpleMapSnapshot_INT_20180131.txt";
-      */
-      /*String olderInputFile1 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Alpha\\xder2_sRefset_SimpleMapDelta_INT_20170731.txt";
-      String newerInputFile2 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Beta\\xder2_sRefset_SimpleMapDelta_INT_20170731.txt";
-      */
-      /*String olderInputFile1 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Alpha\\xder2_iisssccRefset_ExtendedMapDelta_INT_20170731.txt";
-      String newerInputFile2 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Beta\\xder2_iisssccRefset_ExtendedMapDelta_INT_20170731.txt";
-       */
+      
+      // This can be used to run hardcoded files local to the machine for testing     
+      return callTestCompare(mappingService.getMapProject(mapProjectId).getId());
+     
+      /*
       String olderInputFile1 = files.get(0);
       String newerInputFile2 = files.get(1);
       
@@ -5399,7 +5399,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       objectData2.close();
       
       return reportInputStream;
-      
+     */ 
     } catch (Exception e) {
       handleException(e,
           "trying to compare map files", user, "", "");
@@ -5740,89 +5740,74 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    /* AAAA 
-    InstanceProfileCredentialsProvider creds = new InstanceProfileCredentialsProvider(false);
-    
-    AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard()
-        .withCredentials(creds);
-    
 
-    AmazonS3 s3 = builder.build();
-    
-    */
-
-    callTestMethod();
-
-/*
     Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping):  /amazons3/files/" + mapProjectId);
-
+    
+   
     final MappingService mappingService = new MappingServiceJpa();
-    String user = null;
+    String user = "";
+
     try {
       // authorize call
       user = authorizeApp(authToken, MapUserRole.VIEWER,
-          "get concept authoring changes", securityService);
+          "get current release file", securityService);
 
       final MapProject mapProject =
           mappingService.getMapProject(new Long(mapProjectId).longValue());
+      String sourceTerminology = mapProject.getSourceTerminology();
       String destinationTerminology = mapProject.getDestinationTerminology();
 
+      String bucketName = "release-ihtsdo-prod-published";
       SearchResultList searchResults = new SearchResultListJpa();
 
-      AmazonS3 s3Client = null;
-      ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
-          .withBucketName("release-ihtsdo-prod-published");
-      ObjectListing objectListing;
-      final Properties config = ConfigUtility.getConfigProperties();
-      
-      try {
-        AWSCredentialsProviderChain providers = new AWSCredentialsProviderChain(
-            new InstanceProfileCredentialsProvider(true),
-            new ProfileCredentialsProvider());
-        s3Client = AmazonS3ClientBuilder.standard()
-            .withRegion(Regions.US_EAST_1).withCredentials(providers).build();
-        do {
-          objectListing = s3Client.listObjects(listObjectsRequest);
-          for (S3ObjectSummary objectSummary : objectListing
-              .getObjectSummaries()) {
-            Logger.getLogger(MappingServiceRestImpl.class)
-            .info(objectSummary.getKey());
-          }
-        } while (objectListing.isTruncated());
-      } catch (Exception e) {
+      // Connect to server
+      AmazonS3 s3Client =
+          AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
+              .withCredentials(new InstanceProfileCredentialsProvider(false))
+              .build();
+
+      // List Buckets
+      List<Bucket> buckets = s3Client.listBuckets();
+      for (Bucket b : buckets) {
         Logger.getLogger(MappingServiceRestImpl.class)
-        .info("amazon exception:" + e.getMessage() + e.toString());
-        final String accessKey = config.getProperty("aws.access.key");
-        final String secretAccessKey =
-            config.getProperty("aws.secret.access.key");
-        BasicAWSCredentials awsCreds =
-            new BasicAWSCredentials(accessKey, secretAccessKey);
-        s3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
-            .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-            .build();
+            .info("Bucket name " + b.getName());
+      }
+
+      // Verify Buckets Exists
+      if (!s3Client.doesBucketExist(bucketName)) {
+        throw new Exception("Cannot find Bucket Name");
+      } else {
+        Logger.getLogger(MappingServiceRestImpl.class)
+            .info("Bucket " + bucketName + " accessed.");
       }
       
-      
+      // Determine international or U.S.  
+      String nationalPrefix = sourceTerminology.equals("SNOMEDCT_US") ? "us" : "international";
 
-      do {
-        objectListing = s3Client.listObjects(listObjectsRequest);
-      
-        for (S3ObjectSummary objectSummary : objectListing
-            .getObjectSummaries()) {
-          // write to file with e.g. a bufferedWriter
-          SearchResult result = new SearchResultJpa();
-          String fileName = objectSummary.getKey();
-          // prefix to differentiate international from U.S. files
-          final String awsFilePrefix = config.getProperty("aws.file.prefix");
-          if (fileName.startsWith(awsFilePrefix)
-              && (fileName.contains("ExtendedMap")
-                  || fileName.contains("SimpleMap"))
-              && !fileName.contains("Full") && !fileName.contains("backup")
-              && (fileName.toLowerCase()
-                  .contains(destinationTerminology.toLowerCase())
-                  || (destinationTerminology.contains("ICD10")
-                      && fileName.contains("SnomedCT_RF2")))) {
+      if (mapProject.getDestinationTerminology().equals("ICPC")
+          || mapProject.getDestinationTerminology().equals("GMDN")) {
+        // List Files on Bucket "release-ihtsdo-prod-published"
+        ObjectListing listing = null;
+        if (mapProject.getDestinationTerminology().equals("ICPC")) {
+          listing = s3Client.listObjects(bucketName, nationalPrefix + 
+              "/SnomedCT_GPFPICPC2");
+        } else {
+          listing =
+              s3Client.listObjects(bucketName, nationalPrefix + "/SnomedCT_GMDN");
+        }
+        List<S3ObjectSummary> summaries = listing.getObjectSummaries();
+
+        int i = 1;
+        for (S3ObjectSummary sum : summaries) {
+          String fileName = sum.getKey();
+          if ((fileName.contains("ExtendedMap")
+              || fileName.contains("SimpleMap")) && !fileName.contains("Full")
+              && !fileName.contains("backup")) {
+            Logger.getLogger(MappingServiceRestImpl.class)
+                .info(mapProject.getDestinationTerminology() + " Summary #" + i++ + " with: " + sum.getKey());
+            SearchResult result = new SearchResultJpa();
+            String shortName = fileName.substring(fileName.lastIndexOf('/'));
             if (fileName.toLowerCase().contains("alpha")) {
               result.setTerminology("ALPHA");
             } else if (fileName.toLowerCase().contains("beta")) {
@@ -5834,18 +5819,58 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
             while (m.find()) {
               result.setTerminologyVersion(m.group());
             }
-
-            result.setValue(fileName.substring(fileName.lastIndexOf('/')));
+            result.setValue(shortName);
             result.setValue2(fileName);
             searchResults.addSearchResult(result);
-            System.out.println(
-                result.getTerminology() + "\t" + result.getTerminologyVersion()
-                    + "\t" + result.getValue() + "\t\t\t" + result.getValue2());
           }
         }
-        listObjectsRequest.setMarker(objectListing.getNextMarker());
-      } while (objectListing.isTruncated());
+      } else {
 
+        // List All Files on Bucket "release-ihtsdo-prod-published"
+        ObjectListing listing =
+            s3Client.listObjects(bucketName, nationalPrefix + "/");
+        List<S3ObjectSummary> summaries = listing.getObjectSummaries();
+        int j = 0;
+        int i = 1;
+        Logger.getLogger(MappingServiceRestImpl.class)
+            .info("Destination terminology *" + destinationTerminology + "*");
+        while (listing.isTruncated()) {
+          listing = s3Client.listNextBatchOfObjects(listing);
+          summaries = listing.getObjectSummaries();
+
+          Logger.getLogger(MappingServiceRestImpl.class)
+          .info("CCC start with " + j++ + ": " + summaries.size());
+          for (S3ObjectSummary sum : summaries) {
+            String fileName = sum.getKey();
+            if ((fileName.contains("ExtendedMap")
+                || fileName.contains("SimpleMap")) && !fileName.contains("Full")
+                && !fileName.contains("backup")) {
+              Logger.getLogger(MappingServiceRestImpl.class)
+                  .info("Summary #" + i++ + " with: " + sum.getKey());
+              SearchResult result = new SearchResultJpa();
+              String shortName = fileName.substring(fileName.lastIndexOf('/'));
+              if (fileName.toLowerCase().contains("alpha")) {
+                result.setTerminology("ALPHA");
+              } else if (fileName.toLowerCase().contains("beta")) {
+                result.setTerminology("BETA");
+              } else if (shortName.startsWith("x")) {
+                result.setTerminology("A/B");
+              } else {
+                result.setTerminology("FINAL");
+              }
+              Matcher m = Pattern.compile("[0-9]{8}").matcher(fileName);
+              while (m.find()) {
+                result.setTerminologyVersion(m.group());
+              }
+
+              result.setValue(shortName);
+              result.setValue2(fileName);
+              searchResults.addSearchResult(result);
+            }
+          }
+        }
+      }
+      
       // sort files by release date
       searchResults.sortBy(new Comparator<SearchResult>() {
         @Override
@@ -5855,8 +5880,9 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
           return releaseDate2.compareTo(releaseDate1);
         }
       });
-      
+
       return searchResults;
+
     } catch (Exception e) {
       handleException(e, "trying to get files from amazon s3", user,
           mapProjectId.toString(), "");
@@ -5865,58 +5891,128 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       mappingService.close();
       securityService.close();
     }
-    */
+
     return null;
   }
 
   private void callTestMethod() throws Exception {
-    String bucketName = "release-ihtsdo-dev-published";
-   String key = "international/SRS_SNOMEDCT_Release_INT_20170731/SRS_SNOMEDCT_Release_INT_20170731/Readme_en_20170731.txt";
+    Logger.getLogger(MappingServiceRestImpl.class).info("AAA");
+    String bucketName = "release-ihtsdo-prod-published";
+    String testFileName =
+        //"international/xSnomedCT_RF2Release_INT_20170131/Delta/Terminology/xsct2_Concept_Delta_INT_20170131.txt";
+        "international/SnomedCT_GMDNMapRelease_Production_20170908T120000Z/SnomedCT_GMDNMapRelease_Production_20170908T120000Z/Snapshot/Refset/Map/der2_sRefset_GMDNMapSimpleMapSnapshot_INT_20170731.txt";
+        
+    // Connect to server
+    AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
+        .withRegion(Regions.US_EAST_1)
+        .withCredentials(new InstanceProfileCredentialsProvider(false)).build();
 
-   System.out.println("AAA");
-   
-   AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
-       .withCredentials(new InstanceProfileCredentialsProvider(false)).build();
-   
-   System.out.println("BBB");
-   
-   Bucket foundBucket = null;
-   if (s3Client.doesBucketExist(bucketName)) {
-       System.out.format("Bucket %s already exists.\n", bucketName);
-       List<Bucket> buckets = s3Client.listBuckets();
-       for (Bucket b : buckets) {
-           if (b.getName().equals(bucketName)) {
-             foundBucket = b;
-           }
-       }
-   } else {
-       throw new Exception("Bucket not found");
-   }
+    // List Buckets
+   /* Logger.getLogger(MappingServiceRestImpl.class).info("BBB start");
+    List<Bucket> buckets = s3Client.listBuckets();
+    for (Bucket b : buckets) {
+      Logger.getLogger(MappingServiceRestImpl.class)
+          .info("BBB with bucket name" + b.getName());
+    }
+    Logger.getLogger(MappingServiceRestImpl.class).info("BBB end");
 
-   System.out.println("CCC with foundBucket: " + foundBucket);
-   
-   
-   ObjectListing listing = s3Client.listObjects( bucketName );
-   List<S3ObjectSummary> summaries = listing.getObjectSummaries();
-/*
-   while (listing.isTruncated()) {
-      listing = s3Client.listNextBatchOfObjects (listing);
-      summaries.addAll (listing.getObjectSummaries());
-   }
-*/   System.out.println("DDD with " + summaries.size());
+    // Verify Buckets Exists
+    if (!s3Client.doesBucketExist(bucketName)) {
+      throw new Exception("Cannot find Bucket Name");
+    } else {
+      Logger.getLogger(MappingServiceRestImpl.class)
+          .info("CCC Bucket " + bucketName + " accessed.");
+    }
 
-/*   try {
-     System.out.println("Downloading an object");
-     S3Object s3object =
-         s3Client.getObject(new GetObjectRequest(bucketName, key));
-   } catch (AmazonServiceException ase) {
-     System.err.println("Exception was thrown by the service"
-         + ase.getMessage() + ase.toString());
-   } catch (AmazonClientException ace) {
-     System.err.println("Exception was thrown by the client" + ace.getMessage()
-         + ace.toString());
-   }
-*/  }
+    // List All Files on Bucket "release-ihtsdo-prod-published"
+    ObjectListing listing = s3Client.listObjects(bucketName);
+    List<S3ObjectSummary> summaries = listing.getObjectSummaries();
+    
+    System.out.println("CCC start with " + summaries.size());
+    int i = 1;
+    for (S3ObjectSummary sum : summaries) {
+      Logger.getLogger(MappingServiceRestImpl.class)
+          .info("Summary #" + i++ + " with: " + sum.getKey());
+    }
+    Logger.getLogger(MappingServiceRestImpl.class).info("CCC end");*/
+
+    
+    // Pull File Down and Copy to Local Directory (Directory must have rw/rw/rw (666) permissions )
+    Logger.getLogger(MappingServiceRestImpl.class).info("DDD start");
+    S3Object s3object = s3Client.getObject(bucketName, testFileName);
+    S3ObjectInputStream inputStream = s3object.getObjectContent();
+    FileUtils.copyInputStreamToFile(inputStream, new File("~/aws/", testFileName.substring(testFileName.lastIndexOf('/') + 1)));
+    inputStream.close();
+    Logger.getLogger(MappingServiceRestImpl.class).info("DDD end");
+  }
+  
+  private InputStream callTestCompare(Long mapProjectId) throws Exception {
+    
+    // hardcoded files for testing
+    String olderInputFile1 = "C:\\Temp\\s3\\ssa_ssb\\alphaxder2_sRefset_SimpleMapSnapshot_INT_20180131.txt";
+    String newerInputFile2 = "C:\\Temp\\s3\\ssa_ssb\\betaxder2_sRefset_SimpleMapSnapshot_INT_20180131.txt";
+    
+    InputStream objectData1 = new FileInputStream(olderInputFile1);
+    InputStream objectData2 = new FileInputStream(newerInputFile2);
+    
+    InputStream reportInputStream = null;
+    StringBuffer reportName = new StringBuffer();
+    if (olderInputFile1.contains("Full") || newerInputFile2.contains("Full")) {
+      throw new LocalException("Full files cannot be compared with this tool.");
+    }
+    
+    // compare extended map files and compose report name
+    if (olderInputFile1.contains("ExtendedMap") && newerInputFile2.contains("ExtendedMap")) {
+      reportInputStream = compareExtendedMapFiles(objectData1, objectData2);
+      reportName.append(olderInputFile1.substring(olderInputFile1.lastIndexOf("Extended"), olderInputFile1.lastIndexOf('.')));
+      if (olderInputFile1.toLowerCase().contains("alpha")) {reportName.append("_ALPHA");}
+      if (olderInputFile1.toLowerCase().contains("beta")) {reportName.append("_BETA");}
+      reportName.append("_");
+      reportName.append(newerInputFile2.substring(newerInputFile2.lastIndexOf("Extended"), newerInputFile2.lastIndexOf('.')));
+      if (newerInputFile2.toLowerCase().contains("alpha")) {reportName.append("_ALPHA");}
+      if (newerInputFile2.toLowerCase().contains("beta")) {reportName.append("_BETA");}
+      reportName.append(".xls");
+      
+    // compare simple map files and compose report name
+    } else if (olderInputFile1.contains("SimpleMap") && newerInputFile2.contains("SimpleMap")) {
+      reportInputStream = compareSimpleMapFiles(objectData1, objectData2);
+      reportName.append(olderInputFile1.substring(olderInputFile1.lastIndexOf("Simple"), olderInputFile1.lastIndexOf('.')));
+      if (olderInputFile1.toLowerCase().contains("alpha")) {reportName.append("_ALPHA");}
+      if (olderInputFile1.toLowerCase().contains("beta")) {reportName.append("_BETA");}
+      reportName.append("_");
+      reportName.append(newerInputFile2.substring(newerInputFile2.lastIndexOf("Simple"), newerInputFile2.lastIndexOf('.')));
+      if (newerInputFile2.toLowerCase().contains("alpha")) {reportName.append("_ALPHA");}
+      if (newerInputFile2.toLowerCase().contains("beta")) {reportName.append("_BETA");}
+      reportName.append(".xls");
+    } 
+
+    // create destination directory for saved report
+    final Properties config = ConfigUtility.getConfigProperties();      
+    final String docDir =
+        config.getProperty("map.principle.source.document.dir");
+    
+    final File projectDir = new File(docDir, mapProjectId.toString());
+    if (!projectDir.exists()) {
+      projectDir.mkdir();
+    }
+    
+    final File reportsDir = new File(projectDir, "reports");
+    if (!reportsDir.exists()) {
+      reportsDir.mkdir();
+    }
+
+    final File file =
+        new File(reportsDir, reportName.toString());
+
+    // save the file to the server
+    saveFile(reportInputStream, file.getAbsolutePath());
+    
+
+    objectData1.close();
+    objectData2.close();
+    
+    return reportInputStream;
+  }
 
 //  /**
 //   * Reads an InputStream and returns its contents as a String. Also effects
@@ -5940,5 +6036,122 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
 //
 //    return outputBuilder.toString();
 //  }
+
+  private void callTestMethod2() throws Exception {
+    Logger.getLogger(MappingServiceRestImpl.class).info("AAA");
+    String bucketName = "release-ihtsdo-prod-published";
+    String testFileName =
+        "international/xSnomedCT_RF2Release_INT_20170131/Delta/Terminology/xsct2_Concept_Delta_INT_20170131.txt";
+
+    // Connect to server
+    AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
+        .withRegion(Regions.US_EAST_1)
+        .withCredentials(new InstanceProfileCredentialsProvider(false)).build();
+
+    // List Buckets
+    Logger.getLogger(MappingServiceRestImpl.class).info("BBB start");
+    List<Bucket> buckets = s3Client.listBuckets();
+    for (Bucket b : buckets) {
+      Logger.getLogger(MappingServiceRestImpl.class)
+          .info("BBB with bucket name" + b.getName());
+    }
+    Logger.getLogger(MappingServiceRestImpl.class).info("BBB end");
+
+    // Verify Buckets Exists
+    if (!s3Client.doesBucketExist(bucketName)) {
+      throw new Exception("Cannot find Bucket Name");
+    } else {
+      Logger.getLogger(MappingServiceRestImpl.class)
+          .info("CCC Bucket " + bucketName + " accessed.");
+    }
+
+    // List All Files on Bucket "release-ihtsdo-prod-published"
+/*
+    ObjectListing listing = s3Client.listObjects(bucketName);
+    List<S3ObjectSummary> summaries = listing.getObjectSummaries();
+    
+    System.out.println("CCC start with " + summaries.size());
+    int i = 1;
+    for (S3ObjectSummary sum : summaries) {
+      Logger.getLogger(MappingServiceRestImpl.class)
+          .info("Summary #" + i++ + " with: " + sum.getKey());
+    }
+*/
+    Logger.getLogger(MappingServiceRestImpl.class).info("DDD Start");
+
+    
+    List<S3ObjectSummary> keyList = new ArrayList<S3ObjectSummary>();
+    ObjectListing objects = s3Client.listObjects(bucketName);
+    keyList = objects.getObjectSummaries();
+    objects = s3Client.listNextBatchOfObjects(objects);
+    int loopCounter = 0;
+
+    while (objects.isTruncated()){
+        keyList.addAll(objects.getObjectSummaries());
+        objects = s3Client.listNextBatchOfObjects(objects);
+        
+          Logger.getLogger(MappingServiceRestImpl.class).info("DDD1 at loop #" + ++loopCounter + " with keList.size(): " + keyList.size());
+    }
+    keyList.addAll(objects.getObjectSummaries());
+    Logger.getLogger(MappingServiceRestImpl.class).info("DDD2 with total keyList size = " + keyList.size());    
+
+    PrintWriter summaryWriter =
+        new PrintWriter(new OutputStreamWriter(
+            new FileOutputStream(
+                new File("/home/jefron/aws/listOfFiles.txt")),
+            "UTF-8"));
+    
+    
+    File file = new File("/home/jefron/aws/listOfFiles2.txt");
+
+    for (S3ObjectSummary obj : keyList) {
+      summaryWriter.append(obj.getKey()).append("\n");
+      FileUtils.writeStringToFile(file, obj.getKey() + "\n");
+    }
+    summaryWriter.close();
+    Logger.getLogger(MappingServiceRestImpl.class).info("DDD end");
+
+    
+    
+    /*
+     * 
+     *     PrintWriter summaryWriter =
+        new PrintWriter(new OutputStreamWriter(
+            new FileOutputStream(
+                new File("~/aws/listOfFiles.txt")),
+            "UTF-8"));
+
+    
+
+    final ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bucketName).withMaxKeys(2);
+    ListObjectsV2Result result;
+    int objectCounter = 0;
+    int loopCounter = 0;
+    do {               
+       result = s3Client.listObjectsV2(req);
+       
+       for (S3ObjectSummary objectSummary : 
+           result.getObjectSummaries()) {
+           if (++objectCounter % 250 == 0) {
+             Logger.getLogger(MappingServiceRestImpl.class).info("CCC1 with Object Counter: " + objectCounter);
+           }
+           
+           summaryWriter.println(objectSummary.getKey());
+
+       }
+       System.out.println("Next Continuation Token : " + result.getNextContinuationToken());
+       summaryWriter.flush();
+       req.setContinuationToken(result.getNextContinuationToken());
+       Logger.getLogger(MappingServiceRestImpl.class).info(""
+           + ""
+           + ""
+           + " with Loop Counter: " + ++loopCounter);
+
+    } while(result.isTruncated() == true ); 
+    summaryWriter.close();
+    Logger.getLogger(MappingServiceRestImpl.class).info("CCC end");
+   */
+
+  }
 
 }
