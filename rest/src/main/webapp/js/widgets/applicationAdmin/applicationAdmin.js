@@ -2830,7 +2830,12 @@ angular
           });
         };
 
-                
+        //hold select list for terminologies and versions.
+        $scope.termLoad = {};
+        $scope.termLoad.terminology = '';
+        $scope.termLoad.version = '';
+        $scope.termLoad.scope = '';
+        
         $scope.getTerminologyVersions = function(terminology) {
           if (terminology == 'GMDN')
             return;
@@ -2846,13 +2851,12 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-            console.log("aaa");
             $scope.termLoadVersions = new Array();
-            console.log("bbb");
             $scope.termLoadVersionFileNameMap = new Map();
             
             for (var i = 0; i < data.TerminologyVersion.length; i++) {
               $scope.termLoadVersions.push(data.TerminologyVersion[i].version);
+              $scope.termLoad.version = ''; //reset
               if (terminology != 'SNOMED CT')
                 $scope.termLoadVersionFileNameMap.set(data.TerminologyVersion[i].version, data.TerminologyVersion[i].awsFileName)
             }
@@ -2863,7 +2867,6 @@ angular
             $rootScope.handleHttpError(data, status, headers, config);
           });
         };
-
         
         function getTerminologyScopes(terminology, version) {
           $rootScope.glassPane++;
@@ -3026,7 +3029,7 @@ angular
           
           // rest call   
           $http({
-            url: root_content + "/map/record/rf2/complex" + queryString,
+            url: root_content + "map/record/rf2/complex" + queryString,
             data: loadTerminology.inputFileOrDirectory,
             method: "PUT",
             headers: { 'Content-Type' : 'text/plain' }
@@ -3073,7 +3076,7 @@ angular
           
           // rest call   
           $http({
-            url: root_content + "/map/record/rf2/simple" + queryString,
+            url: root_content + "map/record/rf2/simple" + queryString,
             data: loadTerminology.inputFileOrDirectory,
             method: "PUT",
             headers: { 'Content-Type' : 'text/plain' }
@@ -3129,7 +3132,7 @@ angular
           
           // rest call   
           $http({
-            url: root_content + "/map/record/" + loadTerminology.refsetId,
+            url: root_content + "map/record/" + loadTerminology.refsetId,
             method: "DELETE",
             headers: { 'Content-Type' : 'text/plain' }
             }).success(function(data) {
@@ -3324,7 +3327,7 @@ angular
           
           // rest call   
           $http({
-            url: root_content + "/map/record/reload/" + refsetId + queryString,
+            url: root_content + "map/record/reload/" + refsetId + queryString,
             data: loadTerminology.inputFileOrDirectory,
             method: "PUT",
             headers: { 'Content-Type' : 'text/plain' }
