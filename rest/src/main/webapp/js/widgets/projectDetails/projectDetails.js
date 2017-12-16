@@ -1057,7 +1057,7 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-            if (data != '') {
+            if (data != '') { //This change is made out of desperation to try to get things to deploy to dev-mapping
               $scope.amazons3Files = data.searchResult;
               for (var i = 0; i < data.searchResult.length; i++) {
                 $scope.amazons3FilesPlusCurrent.push(data.searchResult[i]);
