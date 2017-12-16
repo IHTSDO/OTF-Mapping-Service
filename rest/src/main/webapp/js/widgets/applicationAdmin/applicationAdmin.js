@@ -56,6 +56,9 @@ angular
         $scope.terminologyVersionPairCount = 0;
         $scope.mapProjectMetadataPairs = new Array();
 
+        $scope.termLoadVersions = new Array();
+        $scope.termLoadScopes = new Array();
+
         $scope.downloadedGmdnVersions = new Array();
         
         var editingPerformed = new Array();
@@ -106,7 +109,7 @@ angular
         $scope.userApplicationRoles = [ 'VIEWER', 'ADMINISTRATOR' ];
 
         //get list of type in $scope.terminologyFiles?
-        $scope.terminologyInputTypes = [ 'SNOMED', 'RF2', 'CLaML', 'GMDN xml' ];
+        $scope.terminologyInputTypes = [ 'GMDN', 'ICNP Diagnoses', 'ICNP Interventions', 'ICPC', 'SNOMED CT' ];
         
         //json object of files (get from metadata service)
         $scope.terminologyFiles = 
@@ -2901,8 +2904,74 @@ angular
             $rootScope.handleHttpError(data, status, headers, config);
           });
         };
+
+                
+        $scope.getTerminologyVersions = function(terminology) {
+          if (terminology == 'GMDN')
+            return;
+
+          $rootScope.glassPane++;
+
+          // download the latest version of gmdn from SFTP
+          $http({
+            url : root_content + 'terminology/versions/' + terminology,
+            dataType : 'json',
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            var versionScopeMap = new Map();
+            $scope.termLoadVersions = new Array();
+            for (var i = 0; i < data.TerminologyVersion.length; i++) {
+              $scope.termLoadVersions.push(data.TerminologyVersion[i].version);
+            }
+            $rootScope.glassPane--;
+
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        };
+
+        $scope.getTerminologyScopes = function(terminology, version) {
+          if (terminology != 'SNOMED CT')
+            return;
+
+          console.log("AAA");
+
+          $rootScope.glassPane++;
+
+          // download the latest version of gmdn from SFTP
+          $http(
+            {
+              url : root_content + 'terminology/scope/' + terminology + "/"
+                + version,
+              dataType : 'json',
+              method : 'GET',
+              headers : {
+                'Content-Type' : 'application/json'
+              }
+            }).success(function(data) {
+            var versionScopeMap = new Map();
+            console.log("BBB");
+            $scope.termLoadScopes = new Array();
+            console.log("CCC", data.TerminologyVersion);
+            for (var i = 0; i < data.TerminologyVersion.length; i++) {
+              console.log("DDD", data.TerminologyVersion[i]);
+              console.log("DDD1", data.TerminologyVersion[i].scope);
+              $scope.termLoadScopes.push(data.TerminologyVersion[i].scope);
+            }
+            console.log("EEE", $scope.termLoadScopes);
+            $rootScope.glassPane--;
+
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        };
         
-        //terminology/load/gmdn
+        // terminology/load/gmdn
         $scope.loadTerminologyGmdn = function(gmdnVersion) {
           $rootScope.glassPane++;
 

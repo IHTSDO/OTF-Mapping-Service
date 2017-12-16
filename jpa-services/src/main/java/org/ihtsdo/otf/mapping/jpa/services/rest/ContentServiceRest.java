@@ -2,6 +2,7 @@ package org.ihtsdo.otf.mapping.jpa.services.rest;
 
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.helpers.TerminologyVersionList;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 
 // TODO: Auto-generated Javadoc
@@ -298,4 +299,27 @@ public interface ContentServiceRest {
 			Boolean recordFlag, String workflowStatus, String authToken)
 			throws Exception;
 
+
+  /**
+   * Returns the terminology versions.
+   *
+   * @param terminology the terminology
+   * @param authToken the auth token
+   * @return the terminology versions
+   * @throws Exception the exception
+   */
+  TerminologyVersionList getTerminologyVersions(String terminology,
+    String authToken) throws Exception;
+
+  /**
+   * Returns the terminology version scopes.
+   *
+   * @param terminology the terminology
+   * @param version the version
+   * @param authToken the auth token
+   * @return the terminology version scopes
+   * @throws Exception the exception
+   */
+  TerminologyVersionList getTerminologyVersionScopes(String terminology,
+    String version, String authToken) throws Exception;
 }
