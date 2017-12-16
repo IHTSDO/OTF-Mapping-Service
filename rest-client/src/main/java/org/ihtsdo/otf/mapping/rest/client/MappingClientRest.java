@@ -599,6 +599,13 @@ public class MappingClientRest extends RootClientRest
   }
 
   @Override
+  public String getLog(String projectId, List<String> logTypes, String query,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+  
+  @Override
   public SearchResultList getConceptAuthors(String conceptId, String authToken)
     throws Exception {
     // N/A
@@ -612,11 +619,5 @@ public class MappingClientRest extends RootClientRest
     return null;
   }
 
-  @Override
-  public String getLog(String projectId, List<String> logTypes, String query,
-    String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
 
 }
