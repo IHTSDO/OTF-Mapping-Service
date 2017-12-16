@@ -16,6 +16,7 @@ import javax.ws.rs.core.Response.Status.Family;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.helpers.TerminologyVersionList;
 import org.ihtsdo.otf.mapping.jpa.services.rest.ContentServiceRest;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 
@@ -507,6 +508,18 @@ public class ContentClientRest extends RootClientRest
 		}
 		return true;
 	}
-	
-	
+
+  @Override
+  public TerminologyVersionList getTerminologyVersions(String terminology,
+    String authToken) throws Exception {
+    // not yet implemented in rest client
+    return null;
+  }
+
+  @Override
+  public TerminologyVersionList getTerminologyVersionScopes(String terminology,
+    String version, String authToken) throws Exception {
+    // not yet implemented in rest client
+    return null;
+  }
 }

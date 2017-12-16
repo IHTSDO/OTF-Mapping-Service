@@ -1822,74 +1822,62 @@
   </tbody>
 </table>
 
-<div>
-  <div style="margin-top: 15px;">
-    <b>Load New Terminology</b>
-  </div>
-  <table class="table pure-table">
-    <thead>
-      <tr>
-        <th style="width: 25%;"></th>
-        <th style="width: 75%;"></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Input Type</td>
-        <td>
-          <select ng-model="inputType"
-            ng-options="item.type for item in terminologyFiles.aws">
-          </select>
-        </td>
-      </tr>
-      debug: {{inputType.type}} {{inputType.loaderType}}
-      <!-- For Loading GMDN -->
-      <tr ng-show="inputType.type == 'GMDN'">      
-        <td>GMDN version to load
-        <br><br>
-		<button class="btn btn-xs btn-primary"
-            ng-show="inputType.type == 'GMDN'"
-            ng-click="downloadTerminologyGmdn()">Check for new GMDN versions</button>
-        </td>
-        <td>
-          <select ng-model="gmdnVersion"
-            ng-options="item.name for item in inputType.files">
-          </select>         
-        </td>
-        <td>
-          <button class="btn btn-xs btn-primary"
-    		ng-show="inputType.type == 'GMDN' && gmdnVersion != null"
-    		ng-click="loadTerminologyGmdn(gmdnVersion)">Load</button>
-    	</td>
-      </tr>
-      
-      <tr ng-show="(inputType.type)">
-        <td>{{inputType.type}} version to load
-        <br><br>
-        	<select ng-model="terminology" ng-options="item.name for item in inputType.files"> </select>
-        </td>
-        <td>
-        </td>
-      </tr>
-      <tr ng-show="(inputType.type) && ['RF2'].indexOf(inputType.loaderType)!=-1">
-        <td colspan="2">
-          
-          <!-- various field inputs -->
-          <label for="terminology">Terminology</label>
-          <input id="terminology" tooltip-placement="top" uib-tooltip="Terminology to Load" ng-model="laod.terminology" style="margin-bottom: 5px; width: 100%;"></input>
-          
-          <label for="version">Version</label>
-          <input id="version" tooltip-placement="top" uib-tooltip="Version of terminology" ng-model="load.version" style="margin-bottom: 5px; width: 100%;"></input>
-          
-          <label for="inputFileOrDirectory">Input File Or Directory</label>
-          <input id="inputFileOrDirectory" tooltip-placement="top" uib-tooltip="Input file or directory" ng-model="load.inputFileOrDirectory" style="margin-bottom: 5px; width: 100%;"></input>
-          
-        </td>
-      </tr>
-    </tbody>
-  </table>
-  
-  
+  <div>
+	<div style="margin-top: 15px;">
+		<b>Load New Terminology</b>
+	</div>
+	<table class="table pure-table">
+		<thead>
+			<tr>
+				<th style="width: 25%;"></th>
+				<th style="width: 75%;"></th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>Terminology to Load</td>
+				<td><select ng-model="termLoad.terminology"
+					ng-options="item for item in terminologyInputTypes"
+					ng-change="getTerminologyVersions(termLoad.terminology)">
+				</select></td>
+			</tr>
+			debug: {{termLoad.terminology}} {{termLoad.version}}
+			{{termLoad.scope}}
 
-</div>
+			<!-- For Loading GMDN -->
+			<tr ng-show="termLoad.terminology == 'GMDN'">
+				<td>GMDN version to load <br>
+				<br>
+					<button class="btn btn-xs btn-primary"
+						ng-show="termLoad.terminology == 'GMDN'"
+						ng-click="downloadTerminologyGmdn()">Check for new GMDN
+						versions</button>
+				</td>
+				<td><select ng-model="gmdnVersion"
+					ng-options="item for item in downloadedGmdnVersions">
+				</select></td>
+			</tr>
+
+			<!-- For All other Terminologies -->
+			<tr
+				ng-show="termLoad.terminology != 'GMDN' && (termLoad.terminology)">
+				<td>Select version of {{termLoad.terminology}} to load <select
+					ng-model="termLoad.version"
+					ng-options="item for item in termLoadVersions | orderBy:-'item'"
+					ng-change="getTerminologyScopes(termLoad.terminology, termLoad.version)">
+				</select>
+				</td>
+			</tr>
+
+			<tr
+				ng-show="termLoad.terminology == 'SNOMED CT' && (termLoad.version)">
+				<td>Select scope of {{termLoad.version}} to load <select
+					ng-model="termLoad.scope"
+					ng-options="item for item in termLoadScopes">
+				</select>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+  </div>
 </uib-accordion-group> </uib-accordion>
