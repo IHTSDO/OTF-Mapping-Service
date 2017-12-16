@@ -13,16 +13,23 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.naming.AuthenticationException;
 import javax.ws.rs.Consumes;
@@ -84,6 +91,7 @@ import org.ihtsdo.otf.mapping.jpa.MapRelationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa;
 import org.ihtsdo.otf.mapping.jpa.handlers.BeginEditingCycleHandlerJpa;
+import org.ihtsdo.otf.mapping.jpa.handlers.ExportReportHandler;
 import org.ihtsdo.otf.mapping.jpa.handlers.ReleaseHandlerJpa;
 import org.ihtsdo.otf.mapping.jpa.helpers.TerminologyUtility;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
@@ -116,6 +124,17 @@ import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.InstanceProfileCredentialsProvider;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.Bucket;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -4555,15 +4574,16 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
   @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/module/id/{moduleId}/process")
   @ApiOperation(value = "Process release for map project", notes = "Processes release and creates release files for map project")
   public void processReleaseForMapProject(
-    @ApiParam(value = "Module Id, e.g. 20170131", required = true) @PathParam("moduleId") String moduleId,
+    @ApiParam(value = "Module Id, e.g. 20170131", required = false) @PathParam("moduleId") String moduleId,
     @ApiParam(value = "Effective Time, e.g. 20170131", required = true) @PathParam("effectiveTime") String effectiveTime,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+    @ApiParam(value = "Current", required = false) @QueryParam("current") boolean current,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Mapping): /project/id/" + mapProjectId.toString()
             + "/release/" + effectiveTime + "/module/id/" + moduleId
-            + "/process");
+            + "/process " + current);
 
     String user = null;
     String project = "";
@@ -4575,19 +4595,33 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
           "process release", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      
+      if (moduleId.equals("null") || moduleId.equals("")) {
+        moduleId = mapProject.getModuleId();
+        if (moduleId == null || moduleId.equals("")) {
+          throw new Exception("The module id must be set on the project details page.");
+        }
+      }
 
       // create release handler in test mode
       ReleaseHandler handler = new ReleaseHandlerJpa(true);
-      handler.setEffectiveTime(effectiveTime);
+      handler.setEffectiveTime(current ? "99999999" : effectiveTime);
       handler.setMapProject(mapProject);
       handler.setModuleId(moduleId);
       handler.setWriteSnapshot(true);
-      handler.setWriteDelta(true);
+      handler.setWriteActiveSnapshot(current ? false : true);
+      handler.setWriteDelta(current ? false : true);
 
       // compute output directory
       // NOTE: Use same directory as map principles for access via webapp
-      String outputDir =
-          this.getReleaseDirectoryPath(mapProject, effectiveTime);
+      String outputDir = "";
+      // if processing current/interim release for sake of file comparison,
+      // put in a directory called current
+      if (current) {
+        outputDir = this.getReleaseDirectoryPath(mapProject, "current");
+      } else {
+        outputDir = this.getReleaseDirectoryPath(mapProject, effectiveTime);
+      }
       handler.setOutputDir(outputDir);
 
       File file = new File(outputDir);
@@ -5229,5 +5263,682 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     }
 
   }
+  
+
+  @POST
+  @Path("/compare/files/{id:[0-9][0-9]*}")
+  @ApiOperation(value = "Compares two map files", notes = "Compares two files and saves the comparison report to the file system.", response = InputStream.class)
+  @Consumes({
+    MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @Produces("application/vnd.ms-excel")
+  public InputStream compareMapFiles(
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+    @ApiParam(value = "File paths, in JSON or XML POST data", required = true) List<String> files,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(MappingServiceRest.class).info(
+        "RESTful call (Mapping): /compare/files" + mapProjectId + " " + files.get(0) + " " + files.get(1));
+
+    String user = "";
+    final MetadataService metadataService = new MetadataServiceJpa();
+    final MappingService mappingService = new MappingServiceJpa();
+    try {
+      // authorize
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "compare map files", securityService);
+            
+      /*String olderInputFile1 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170131Final\\der2_iisssccRefset_ExtendedMapSnapshot_INT_20170131.txt";
+      String newerInputFile2 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Final\\der2_iisssccRefset_ExtendedMapSnapshot_INT_20170731.txt";
+      */
+      //String olderInputFile1 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Alpha\\xder2_sRefset_SimpleMapSnapshot_INT_20170731.txt";
+      /*String newerInputFile2 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20180131Alpha\\xder2_sRefset_SimpleMapSnapshot_INT_20180131.txt";
+      */
+      /*String olderInputFile1 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Alpha\\xder2_sRefset_SimpleMapDelta_INT_20170731.txt";
+      String newerInputFile2 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Beta\\xder2_sRefset_SimpleMapDelta_INT_20170731.txt";
+      */
+      /*String olderInputFile1 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Alpha\\xder2_iisssccRefset_ExtendedMapDelta_INT_20170731.txt";
+      String newerInputFile2 = "C:\\Users\\dshap\\Downloads\\MappingTestFiles\\20170731Beta\\xder2_iisssccRefset_ExtendedMapDelta_INT_20170731.txt";
+       */
+      String olderInputFile1 = files.get(0);
+      String newerInputFile2 = files.get(1);
+      
+      AmazonS3 s3Client = null;
+      try {
+        s3Client = AmazonS3ClientBuilder.standard()
+            .withCredentials(new InstanceProfileCredentialsProvider(false))
+            .build();
+      } catch (Exception e) {
+        final Properties config = ConfigUtility.getConfigProperties();
+        final String accessKey = config.getProperty("aws.access.key");
+        final String secretAccessKey =
+            config.getProperty("aws.secret.access.key");
+        BasicAWSCredentials awsCreds =
+            new BasicAWSCredentials(accessKey, secretAccessKey);
+        s3Client = AmazonS3ClientBuilder.standard().withRegion("us-east-1")
+            .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+            .build();
+      }
+     
+      // stream first file from aws
+      S3Object file1 = s3Client.getObject(
+          new GetObjectRequest("release-ihtsdo-prod-published", olderInputFile1));
+      InputStream objectData1 = file1.getObjectContent();
+      
+      // open second file either from aws or current release on file system
+      S3Object file2 = null;
+      InputStream objectData2 = null;
+      // stream second/later file from aws
+      if (!newerInputFile2.contains("99999999")) {
+        file2 = s3Client.getObject(
+          new GetObjectRequest("release-ihtsdo-prod-published", newerInputFile2));
+          objectData2 = file2.getObjectContent();
+      // comparing to current release file saved on file system
+      } else {
+        MapProject mapProject = mappingService.getMapProject(mapProjectId);
+        final File projectDir = new File(this.getReleaseDirectoryPath(mapProject, "current"));
+        String currentReleaseFile = new File(projectDir, newerInputFile2).getAbsolutePath();
+        objectData2 = new FileInputStream(currentReleaseFile);
+      }
+
+      
+      InputStream reportInputStream = null;
+      StringBuffer reportName = new StringBuffer();
+      if (olderInputFile1.contains("Full") || newerInputFile2.contains("Full")) {
+        throw new LocalException("Full files cannot be compared with this tool.");
+      }
+      
+      // compare extended map files and compose report name
+      if (olderInputFile1.contains("ExtendedMap") && newerInputFile2.contains("ExtendedMap")) {
+        reportInputStream = compareExtendedMapFiles(objectData1, objectData2);
+        reportName.append(olderInputFile1.substring(olderInputFile1.lastIndexOf("Extended"), olderInputFile1.lastIndexOf('.')));
+        if (olderInputFile1.toLowerCase().contains("alpha")) {reportName.append("_ALPHA");}
+        if (olderInputFile1.toLowerCase().contains("beta")) {reportName.append("_BETA");}
+        reportName.append("_");
+        reportName.append(newerInputFile2.substring(newerInputFile2.lastIndexOf("Extended"), newerInputFile2.lastIndexOf('.')));
+        if (newerInputFile2.toLowerCase().contains("alpha")) {reportName.append("_ALPHA");}
+        if (newerInputFile2.toLowerCase().contains("beta")) {reportName.append("_BETA");}
+        reportName.append(".xls");
+        
+      // compare simple map files and compose report name
+      } else if (olderInputFile1.contains("SimpleMap") && newerInputFile2.contains("SimpleMap")) {
+        reportInputStream = compareSimpleMapFiles(objectData1, objectData2);
+        reportName.append(olderInputFile1.substring(olderInputFile1.lastIndexOf("Simple"), olderInputFile1.lastIndexOf('.')));
+        if (olderInputFile1.toLowerCase().contains("alpha")) {reportName.append("_ALPHA");}
+        if (olderInputFile1.toLowerCase().contains("beta")) {reportName.append("_BETA");}
+        reportName.append("_");
+        reportName.append(newerInputFile2.substring(newerInputFile2.lastIndexOf("Simple"), newerInputFile2.lastIndexOf('.')));
+        if (newerInputFile2.toLowerCase().contains("alpha")) {reportName.append("_ALPHA");}
+        if (newerInputFile2.toLowerCase().contains("beta")) {reportName.append("_BETA");}
+        reportName.append(".xls");
+      } 
+
+      // create destination directory for saved report
+      final Properties config = ConfigUtility.getConfigProperties();      
+      final String docDir =
+          config.getProperty("map.principle.source.document.dir");
+      
+      final File projectDir = new File(docDir, mapProjectId.toString());
+      if (!projectDir.exists()) {
+        projectDir.mkdir();
+      }
+      
+      final File reportsDir = new File(projectDir, "reports");
+      if (!reportsDir.exists()) {
+        reportsDir.mkdir();
+      }
+
+      final File file =
+          new File(reportsDir, reportName.toString());
+
+      // save the file to the server
+      saveFile(reportInputStream, file.getAbsolutePath());
+      
+
+      objectData1.close();
+      objectData2.close();
+      
+      return reportInputStream;
+      
+    } catch (Exception e) {
+      handleException(e,
+          "trying to compare map files", user, "", "");
+      return null;
+    } finally {
+      metadataService.close();
+      mappingService.close();
+      securityService.close();
+    }
+  }
+  
+  private InputStream compareExtendedMapFiles(InputStream data1, InputStream data2) throws Exception {
+    // map to list of records that have been updated (sorted by key)
+    TreeMap<String, String> updatedList = new TreeMap<>();
+    // map to list of records that are new in the second file
+    Map<String, String> newList = new LinkedHashMap<>();
+    // map to list of records that have been inactivated in the second file
+    Map<String, String> inactivatedList = new LinkedHashMap<>();
+    // map to list of records that have been removed in the second file
+    Map<String, String> removedList = new LinkedHashMap<>();
+    String line1, line2;
+    
+    BufferedReader in1 =
+        new BufferedReader(new InputStreamReader(data1, "UTF-8"));
+    in1.mark(100000000);
+    BufferedReader in2 =
+        new BufferedReader(new InputStreamReader(data2, "UTF-8"));
+    
+    
+      int noChangeCount = 0;
+      Map<String, String> key1Map = new HashMap<>();
+      Map<String, String> key2Map = new HashMap<>();
+      
+      // populate key1Map with key1 and line1 (no UUID)
+      while((line1 = in1.readLine()) != null) {
+        String tokens1[] = line1.split("\t");
+        String key1 = tokens1[5] + ":" + tokens1[4] + ":" + tokens1[6] + ":" + tokens1[7];
+        key1Map.put(key1, line1.substring(line1.indexOf("\t")));
+      }
+      
+      while ((line2 = in2.readLine()) != null) {
+        // populate key2Map with key2 and line2 (no UUID)
+        String tokens2[] = line2.split("\t");
+        String key2 = tokens2[5] + ":" + tokens2[4] + ":" + tokens2[6] + ":" + tokens2[7];
+        key2Map.put(key2, line2.substring(line2.indexOf("\t")));
+        
+        // if key1Map has key2, this record is not new - either it hasn't changed or it has been updated
+        if (key1Map.containsKey(key2)) {
+          String line1Sub = key1Map.get(key2);
+          String line2Sub = line2.substring(line2.indexOf("\t"));
+          if (line1Sub.equals(line2Sub)) {
+            // nothing has changed
+            noChangeCount++;
+          } else {         
+            String[] line1SubTokens = line1Sub.split("\t");
+            String[] line2SubTokens = line2Sub.split("\t");
+            // check if everything other than the active flag and the effective time matches
+            if (line1SubTokens[2].equals("1") && line2SubTokens[2].equals("0")) {
+              boolean inactive = true;
+              for (int i = 3; i < line1SubTokens.length; i++) {               
+                  if (!line1SubTokens[i].equals(line2SubTokens[i])) {            
+                    inactive = false;
+                  } 
+              }
+              if (inactive) {
+                inactivatedList.put(key2, line2);
+              }
+            }
+
+            // something updated
+            // only add to list if records are active
+            if (line1SubTokens[2].equals("1") && line2SubTokens[2].equals("1")) {
+              updatedList.put(key2, line1Sub + "\t" + line2Sub);
+            }
+          }
+        // found key2 that is not in first file, it is new
+        } else {
+          newList.put(key2, line2);
+        }
+      }
+      
+      in1.reset();
+      
+      // determine records that were removed
+      while ((line1 = in1.readLine()) != null) {
+        String tokens1[] = line1.split("\t");
+        String key1 = tokens1[5] + ":" + tokens1[4] + ":" + tokens1[6] + ":" + tokens1[7];
+        
+        // if key2Map doesn't have key1, this record has been removed
+        if (!key2Map.containsKey(key1)) {
+          removedList.put(key1, line1);
+        }
+      }
+      
+      // log statements
+      Logger.getLogger(MappingServiceRest.class).info(
+          "new List count:" + newList.size());
+      Logger.getLogger(MappingServiceRest.class).info(
+          "inactivated List count:" + inactivatedList.size());
+      Logger.getLogger(MappingServiceRest.class).info(
+          "updated List count:" + updatedList.size());
+      Logger.getLogger(MappingServiceRest.class).info(
+          "removed List count:" + removedList.size());
+      Logger.getLogger(MappingServiceRest.class).info(
+          "no change count:" + noChangeCount);
+      
+      in1.close();
+      in2.close();
+      // produce Excel report file
+      final ExportReportHandler handler = new ExportReportHandler();
+      return handler.exportExtendedFileComparisonReport(updatedList, newList, inactivatedList, removedList);
+  }
+  
+  private InputStream compareSimpleMapFiles(InputStream data1, InputStream data2) throws Exception {
+    
+    // map to list of records that have been updated (sorted by key)
+    TreeMap<String, String> updatedList = new TreeMap<>();
+    // map to list of records that are new in the second file
+    Map<String, String> newList = new LinkedHashMap<>();
+    // map to list of records that have been inactivated in the second file
+    Map<String, String> inactivatedList = new LinkedHashMap<>();
+    // map to list of records that have been removed in the second file
+    Map<String, String> removedList = new LinkedHashMap<>();
+    String line1, line2;
+  
+    BufferedReader in1 =
+        new BufferedReader(new InputStreamReader(data1, "UTF-8"));
+    in1.mark(100000000);
+    BufferedReader in2 =
+        new BufferedReader(new InputStreamReader(data2, "UTF-8"));
+    
+      int noChangeCount = 0;
+      Map<String, String> key1Map = new HashMap<>();
+      Map<String, String> key2Map = new HashMap<>();
+      
+      // populate key1Map with key1 and line1 (no UUID)
+      while((line1 = in1.readLine()) != null) {
+        String tokens1[] = line1.split("\t");
+        String key1 = tokens1[5] + ":" + tokens1[4];
+        key1Map.put(key1, line1.substring(line1.indexOf("\t")));
+      }
+      
+      while ((line2 = in2.readLine()) != null) {
+        // populate key2Map with key2 and line2 (no UUID)
+        String tokens2[] = line2.split("\t");
+        String key2 = tokens2[5] + ":" + tokens2[4];
+        key2Map.put(key2, line2.substring(line2.indexOf("\t")));
+        
+        // if key1Map has key2, this record is not new - either it hasn't changed or it has been updated
+        if (key1Map.containsKey(key2)) {
+          String line1Sub = key1Map.get(key2);
+          String line2Sub = line2.substring(line2.indexOf("\t"));
+          if (line1Sub.equals(line2Sub)) {
+            // nothing has changed
+            noChangeCount++;
+          } else {         
+            String[] line1SubTokens = line1Sub.split("\t");
+            String[] line2SubTokens = line2Sub.split("\t");
+            // check if everything other than the active flag and the effective time matches
+            if (line1SubTokens[2].equals("1") && line2SubTokens[2].equals("0")) {
+              boolean inactive = true;
+              for (int i = 3; i < line1SubTokens.length; i++) {               
+                  if (!line1SubTokens[i].equals(line2SubTokens[i])) {            
+                    inactive = false;
+                  } 
+              }
+              if (inactive) {
+                inactivatedList.put(key2, line2);
+              }
+            }
+
+            // something updated
+            // only add to list if records are active
+            if (line1SubTokens[2].equals("1") && line2SubTokens[2].equals("1")) {
+              updatedList.put(key2, line1Sub + "\t" + line2Sub);
+            }
+          }
+        // found key2 that is not in first file, it is new
+        } else {
+          newList.put(key2, line2);
+        }
+      }
+      
+      in1.reset();     
+      
+      // determine records that were removed
+      while ((line1 = in1.readLine()) != null) {
+        String tokens1[] = line1.split("\t");
+        String key1 = tokens1[5] + ":" + tokens1[4];
+        
+        // if key2Map doesn't have key1, this record has been removed
+        if (!key2Map.containsKey(key1)) {
+          removedList.put(key1, line1);
+        }
+      }
+      
+      in1.close();
+      in2.close();
+      
+      // log statements
+      Logger.getLogger(MappingServiceRest.class).info(
+          "new List count:" + newList.size());
+      Logger.getLogger(MappingServiceRest.class).info(
+              "inactivated List count:" + inactivatedList.size());
+      Logger.getLogger(MappingServiceRest.class).info(
+          "updated List count:" + updatedList.size());
+      Logger.getLogger(MappingServiceRest.class).info(
+          "removed List count:" + removedList.size());
+      Logger.getLogger(MappingServiceRest.class).info(
+          "no change count:" + noChangeCount);
+      
+      // produce Excel report file
+      final ExportReportHandler handler = new ExportReportHandler();
+      return handler.exportSimpleFileComparisonReport(updatedList, newList, inactivatedList, removedList);
+  }
+        
+  @Override
+  @GET
+  @Path("/release/reports/{id:[0-9][0-9]*}")
+  @ApiOperation(value = "Get release reports available for a given project", notes = "Gets release reports for a given project.", response = SearchResultList.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public SearchResultList getReleaseReportList(
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(MappingServiceRestImpl.class)
+        .info("RESTful call (Mapping): /release/reports/ " + mapProjectId);
+    String user = null;
+    final MappingService mappingService = new MappingServiceJpa();
+    try {
+      // authorize call
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "get release reports",
+          securityService);
+
+      // get directory for release reports
+      final Properties config = ConfigUtility.getConfigProperties();
+      final String docDir =
+          config.getProperty("map.principle.source.document.dir");
+
+      final File projectDir = new File(docDir, mapProjectId.toString() + "/reports");
+      File[] reports = projectDir.listFiles();
+      
+      if (reports == null) {
+        return null;
+      }
+      
+      final SearchResultList searchResultList = new SearchResultListJpa();
+      for (File report : reports) {
+        SearchResult searchResult = new SearchResultJpa();
+        searchResult.setValue(report.getName());
+        BasicFileAttributes attributes = Files.readAttributes(report.toPath(), BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+        FileTime lastModifiedTime = attributes.lastModifiedTime();
+        SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
+        String lastModified = df.format(lastModifiedTime.toMillis());
+        searchResult.setValue2(lastModified);
+        searchResultList.addSearchResult(searchResult);
+      }
+      return searchResultList;
+
+    } catch (Exception e) {
+      handleException(e, "trying to get release reports", user, "", "");
+      return null;
+    } finally {
+      mappingService.close();
+      securityService.close();
+    }
+  }
+  
+  @Override
+  @GET
+  @Path("/current/release/{id:[0-9][0-9]*}")
+  @ApiOperation(value = "Get release file indicating current state for a given project", notes = "Get release file indicating current state for a given project.", response = SearchResultList.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public SearchResult getCurrentReleaseFile(
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(MappingServiceRestImpl.class)
+        .info("RESTful call (Mapping): /current/release/ " + mapProjectId);
+    String user = null;
+    final MappingService mappingService = new MappingServiceJpa();
+    try {
+      // authorize call
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "get current release file",
+          securityService);
+
+      MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      final File projectDir = new File(this.getReleaseDirectoryPath(mapProject, "current"));
+      File[] releaseFiles = projectDir.listFiles();
+
+      SearchResult searchResult = new SearchResultJpa();
+      if (!projectDir.exists() && releaseFiles == null) {
+        return null;
+      }
+      for (File file : releaseFiles) {
+        // filter out human readable and any other release by-products
+        if (!file.getName().contains("SimpleMap") && !file.getName().contains("ExtendedMap")){
+          continue;
+        }
+        BasicFileAttributes attributes = Files.readAttributes(file.toPath(), BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+        FileTime creationTime = attributes.creationTime();
+        SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+        String dateCreated = df.format(creationTime.toMillis());
+        // if this is the most recent, return this file
+        if (searchResult.getValue2() == null || 
+            dateCreated.compareTo(searchResult.getValue2()) > 0) {
+          searchResult.setValue(file.getName());
+          searchResult.setValue2(file.getName());
+          searchResult.setTerminologyVersion(dateCreated);
+          searchResult.setTerminology("current");
+        }
+      }
+      return searchResult;
+
+    } catch (Exception e) {
+      handleException(e, "trying to get current release file", user, "", "");
+      return null;
+    } finally {
+      mappingService.close();
+      securityService.close();
+    }
+  }
+ 
+  @Override
+  @GET
+  @Path("/amazons3/files/{id:[0-9][0-9]*}")
+  @ApiOperation(value = "Get list of files from AWS S3 bucket for a given project", notes = "Gets list of files from AWS S3 for a given project.", response = SearchResultList.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public SearchResultList getFileListFromAmazonS3(
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    /* AAAA 
+    InstanceProfileCredentialsProvider creds = new InstanceProfileCredentialsProvider(false);
+    
+    AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard()
+        .withCredentials(creds);
+    
+
+    AmazonS3 s3 = builder.build();
+    
+    */
+
+    callTestMethod();
+
+/*
+    Logger.getLogger(MappingServiceRestImpl.class)
+        .info("RESTful call (Mapping):  /amazons3/files/" + mapProjectId);
+
+    final MappingService mappingService = new MappingServiceJpa();
+    String user = null;
+    try {
+      // authorize call
+      user = authorizeApp(authToken, MapUserRole.VIEWER,
+          "get concept authoring changes", securityService);
+
+      final MapProject mapProject =
+          mappingService.getMapProject(new Long(mapProjectId).longValue());
+      String destinationTerminology = mapProject.getDestinationTerminology();
+
+      SearchResultList searchResults = new SearchResultListJpa();
+
+      AmazonS3 s3Client = null;
+      ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
+          .withBucketName("release-ihtsdo-prod-published");
+      ObjectListing objectListing;
+      final Properties config = ConfigUtility.getConfigProperties();
+      
+      try {
+        AWSCredentialsProviderChain providers = new AWSCredentialsProviderChain(
+            new InstanceProfileCredentialsProvider(true),
+            new ProfileCredentialsProvider());
+        s3Client = AmazonS3ClientBuilder.standard()
+            .withRegion(Regions.US_EAST_1).withCredentials(providers).build();
+        do {
+          objectListing = s3Client.listObjects(listObjectsRequest);
+          for (S3ObjectSummary objectSummary : objectListing
+              .getObjectSummaries()) {
+            Logger.getLogger(MappingServiceRestImpl.class)
+            .info(objectSummary.getKey());
+          }
+        } while (objectListing.isTruncated());
+      } catch (Exception e) {
+        Logger.getLogger(MappingServiceRestImpl.class)
+        .info("amazon exception:" + e.getMessage() + e.toString());
+        final String accessKey = config.getProperty("aws.access.key");
+        final String secretAccessKey =
+            config.getProperty("aws.secret.access.key");
+        BasicAWSCredentials awsCreds =
+            new BasicAWSCredentials(accessKey, secretAccessKey);
+        s3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
+            .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+            .build();
+      }
+      
+      
+
+      do {
+        objectListing = s3Client.listObjects(listObjectsRequest);
+      
+        for (S3ObjectSummary objectSummary : objectListing
+            .getObjectSummaries()) {
+          // write to file with e.g. a bufferedWriter
+          SearchResult result = new SearchResultJpa();
+          String fileName = objectSummary.getKey();
+          // prefix to differentiate international from U.S. files
+          final String awsFilePrefix = config.getProperty("aws.file.prefix");
+          if (fileName.startsWith(awsFilePrefix)
+              && (fileName.contains("ExtendedMap")
+                  || fileName.contains("SimpleMap"))
+              && !fileName.contains("Full") && !fileName.contains("backup")
+              && (fileName.toLowerCase()
+                  .contains(destinationTerminology.toLowerCase())
+                  || (destinationTerminology.contains("ICD10")
+                      && fileName.contains("SnomedCT_RF2")))) {
+            if (fileName.toLowerCase().contains("alpha")) {
+              result.setTerminology("ALPHA");
+            } else if (fileName.toLowerCase().contains("beta")) {
+              result.setTerminology("BETA");
+            } else {
+              result.setTerminology("FINAL");
+            }
+            Matcher m = Pattern.compile("[0-9]{8}").matcher(fileName);
+            while (m.find()) {
+              result.setTerminologyVersion(m.group());
+            }
+
+            result.setValue(fileName.substring(fileName.lastIndexOf('/')));
+            result.setValue2(fileName);
+            searchResults.addSearchResult(result);
+            System.out.println(
+                result.getTerminology() + "\t" + result.getTerminologyVersion()
+                    + "\t" + result.getValue() + "\t\t\t" + result.getValue2());
+          }
+        }
+        listObjectsRequest.setMarker(objectListing.getNextMarker());
+      } while (objectListing.isTruncated());
+
+      // sort files by release date
+      searchResults.sortBy(new Comparator<SearchResult>() {
+        @Override
+        public int compare(SearchResult o1, SearchResult o2) {
+          String releaseDate1 = o1.getTerminologyVersion();
+          String releaseDate2 = o2.getTerminologyVersion();
+          return releaseDate2.compareTo(releaseDate1);
+        }
+      });
+      
+      return searchResults;
+    } catch (Exception e) {
+      handleException(e, "trying to get files from amazon s3", user,
+          mapProjectId.toString(), "");
+    } finally {
+
+      mappingService.close();
+      securityService.close();
+    }
+    */
+    return null;
+  }
+
+  private void callTestMethod() throws Exception {
+    String bucketName = "release-ihtsdo-dev-published";
+   String key = "international/SRS_SNOMEDCT_Release_INT_20170731/SRS_SNOMEDCT_Release_INT_20170731/Readme_en_20170731.txt";
+
+   System.out.println("AAA");
+   
+   AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
+       .withCredentials(new InstanceProfileCredentialsProvider(false)).build();
+   
+   System.out.println("BBB");
+   
+   Bucket foundBucket = null;
+   if (s3Client.doesBucketExist(bucketName)) {
+       System.out.format("Bucket %s already exists.\n", bucketName);
+       List<Bucket> buckets = s3Client.listBuckets();
+       for (Bucket b : buckets) {
+           if (b.getName().equals(bucketName)) {
+             foundBucket = b;
+           }
+       }
+   } else {
+       throw new Exception("Bucket not found");
+   }
+
+   System.out.println("CCC with foundBucket: " + foundBucket);
+   
+   
+   ObjectListing listing = s3Client.listObjects( bucketName );
+   List<S3ObjectSummary> summaries = listing.getObjectSummaries();
+/*
+   while (listing.isTruncated()) {
+      listing = s3Client.listNextBatchOfObjects (listing);
+      summaries.addAll (listing.getObjectSummaries());
+   }
+*/   System.out.println("DDD with " + summaries.size());
+
+/*   try {
+     System.out.println("Downloading an object");
+     S3Object s3object =
+         s3Client.getObject(new GetObjectRequest(bucketName, key));
+   } catch (AmazonServiceException ase) {
+     System.err.println("Exception was thrown by the service"
+         + ase.getMessage() + ase.toString());
+   } catch (AmazonClientException ace) {
+     System.err.println("Exception was thrown by the client" + ace.getMessage()
+         + ace.toString());
+   }
+*/  }
+
+//  /**
+//   * Reads an InputStream and returns its contents as a String. Also effects
+//   * rate control.
+//   * @param inputStream The InputStream to read from.
+//   * @return The contents of the InputStream as a String.
+//   * @throws Exception on error.
+//   */
+//  private static String inputStreamToString(final InputStream inputStream)
+//    throws Exception {
+//    final StringBuilder outputBuilder = new StringBuilder();
+//
+//    String string;
+//    if (inputStream != null) {
+//      BufferedReader reader =
+//          new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+//      while (null != (string = reader.readLine())) {
+//        outputBuilder.append(string).append('\n');
+//      }
+//    }
+//
+//    return outputBuilder.toString();
+//  }
 
 }

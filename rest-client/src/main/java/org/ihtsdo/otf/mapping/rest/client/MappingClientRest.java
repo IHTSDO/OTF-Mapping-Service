@@ -20,6 +20,7 @@ import org.ihtsdo.otf.mapping.helpers.MapRelationListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
+import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
@@ -561,12 +562,6 @@ public class MappingClientRest extends RootClientRest
 
   }
 
-  @Override
-  public void processReleaseForMapProject(String moduleId, String effectiveTime,
-    Long mapProjectId, String authToken) throws Exception {
-    // N/A
-
-  }
 
   @Override
   public void finishReleaseForMapProject(boolean testModeFlag,
@@ -619,5 +614,33 @@ public class MappingClientRest extends RootClientRest
     return null;
   }
 
+  @Override
+  public void processReleaseForMapProject(String moduleId,
+          String effectiveTime, Long mapProjectId, boolean writeDelta,
+          String authToken) throws Exception {
+      // TODO Auto-generated method stub
+      
+  }
 
+  @Override
+  public SearchResultList getReleaseReportList(Long mapProjectId,
+          String authToken) throws Exception {
+      // TODO Auto-generated method stub
+      return null;
+  }
+
+  @Override
+  public SearchResultList getFileListFromAmazonS3(Long mapProjectId,
+          String authToken) throws Exception {
+      // TODO Auto-generated method stub
+      return null;
+  }
+
+  @Override
+  public SearchResult getCurrentReleaseFile(Long mapProjectId,
+          String authToken) throws Exception {
+      // TODO Auto-generated method stub
+      return null;
+  }
+  
 }

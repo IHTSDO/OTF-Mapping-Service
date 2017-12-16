@@ -106,4 +106,11 @@ public interface ReleaseHandler {
    * @return the pattern for type
    */
   public String getPatternForType(MapProject mapProject);
+
+  /**
+   * Sets the write active snapshot.
+   *
+   * @param writeActiveSnapshot the new write active snapshot
+   */
+  void setWriteActiveSnapshot(boolean writeActiveSnapshot);
 }
