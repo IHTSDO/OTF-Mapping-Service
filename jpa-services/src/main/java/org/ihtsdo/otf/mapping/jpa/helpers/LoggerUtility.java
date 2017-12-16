@@ -1,72 +1,98 @@
 package org.ihtsdo.otf.mapping.jpa.helpers;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
-import org.apache.log4j.RollingFileAppender;
 
 public class LoggerUtility {
-	
-	private static Logger log =  Logger.getLogger(LoggerUtility.class);
-    private static Map<String, Boolean> initializationFlags = new HashMap<String, Boolean>();
-    private static String fileName;
-    private static String loggerName;
 
-    private static void intializeLogger(String name){
-    	
-    	//may want to set these in the configuration file    	
-    	
-        log.setLevel(Level.INFO);
+	private static Map<String, Boolean> initializationFlags = new HashMap<String, Boolean>();
+	private static String fileName;
+	private static String loggerName;
 
-//        final DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-//        final Date date = new Date();
+	private static void intializeLogger(String loggerName) {
 
-        final PatternLayout layOut = new PatternLayout();
-        layOut.setConversionPattern("%d{yyyy-MM-dd_HH:mm:ss.SSS} %p - %m%n");
-        
-        final RollingFileAppender appender = new RollingFileAppender();
-        appender.setName(name);
-        appender.setAppend(true);
-        appender.setMaxFileSize("1MB");
-        appender.setMaxBackupIndex(1);
-        appender.setFile(fileName);
-        appender.setLayout(layOut);
-        appender.activateOptions();
+		// remove the previous file of the same name
+		removeFile();
 
-        log.addAppender(appender);
-    }
+		final PatternLayout layOut = new PatternLayout();
+		layOut.setConversionPattern("%d{yyyy-MM-dd_HH:mm:ss.SSS} %p - %m%n");
 
-    public static Logger getLogger(String loggerName){
-    	
-    	LoggerUtility.loggerName = loggerName;
-    	
-    	if(initializationFlags != null) 
-    	{
-    		if (initializationFlags.get(loggerName) == null || initializationFlags.get(loggerName) == false)
-    		{
-    			intializeLogger(loggerName);
-    			initializationFlags.put(loggerName, true);
-    			return LoggerUtility.log;
-    		}
-    		else {
-    			return LoggerUtility.log;
-    		}
-        }
-    	else
-		{
-			return LoggerUtility.log;
+		final FileAppender appender = new FileAppender();
+		appender.setName(loggerName);
+		appender.setAppend(true);
+		// appender.setMaxFileSize("1MB");
+		// appender.setMaxBackupIndex(1);
+		appender.setFile(fileName);
+		appender.setLayout(layOut);
+		appender.activateOptions();
+
+		Logger.getLogger(loggerName).addAppender(appender);
+		Logger.getLogger(loggerName).setLevel(Level.INFO);
+
+	}
+
+	/**
+	 * Return the logger for the given name.
+	 * 
+	 * @param loggerName
+	 * @return Loggger {@see org.apache.log4j.Logger}
+	 */
+	public static Logger getLogger(String loggerName) {
+
+		LoggerUtility.loggerName = loggerName;
+
+		if (initializationFlags != null) {
+			if (initializationFlags.get(loggerName) == null
+					|| initializationFlags.get(loggerName) == false) {
+				intializeLogger(loggerName);
+				initializationFlags.put(loggerName, true);
+				return Logger.getLogger(loggerName);
+			} else {
+				return Logger.getLogger(loggerName);
+			}
+		} else {
+			return Logger.getLogger(loggerName);
 		}
-    }
-    
-    public static void setConfiguration(String loggerName, String fileName) {
-    	LoggerUtility.fileName = fileName;
-    	LoggerUtility.loggerName = loggerName;
-    }
+	}
+
+	/**
+	 * Sets the configuration for the logger
+	 * 
+	 * @param loggerName Name of logger to be used for logging
+	 * @param fileName Full path including file name
+	 */
+	public static void setConfiguration(String loggerName, String fileName) {
+		LoggerUtility.fileName = fileName;
+		LoggerUtility.loggerName = loggerName;
+	}
+
+	/**
+	 * Remove a logger when no longer needed.
+	 * 
+	 * @param loggerName Name of the logger to be removed.
+	 */
+	public static void removeLogger(String loggerName) {
+		if (initializationFlags.containsKey(loggerName)) {
+			initializationFlags.remove(loggerName);
+		}
+		Logger.getLogger(loggerName).removeAppender(loggerName);
+
+	}
+
+	private static void removeFile() {
+
+		try {
+			File file = new File(LoggerUtility.fileName);
+			file.delete();
+		} catch (Exception e) {
+			// noop
+		}
+	}
 
 }

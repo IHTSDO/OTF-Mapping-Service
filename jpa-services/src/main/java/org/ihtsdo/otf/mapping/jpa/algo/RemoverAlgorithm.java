@@ -46,7 +46,6 @@ public class RemoverAlgorithm extends RootServiceJpa
 		this.version = version;
 		
 		//initialize logger
-		// delete log file before
 		String rootPath = ConfigUtility.getConfigProperties()
 	          .getProperty("map.principle.source.document.dir");
 	    if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
@@ -57,13 +56,18 @@ public class RemoverAlgorithm extends RootServiceJpa
 	    if (!logDirectory.exists()) {
 	        logDirectory.mkdir();
 	    }
+	    
 	    File removeLog = new File(logDirectory, "remove_" + terminology + ".log");
-		LoggerUtility.setConfiguration("name", removeLog.getAbsolutePath());
-		this.log = LoggerUtility.getLogger("name");
+		LoggerUtility.setConfiguration("remove", removeLog.getAbsolutePath());
+		this.log = LoggerUtility.getLogger("remove");
 	}
 
 	@Override
 	public void compute() throws Exception {
+	    
+		log.info("Remove terminology");
+		log.info("  terminology  = " + terminology);
+		log.info("  version      = " + version);
 		
 		try {
 			Properties config = ConfigUtility.getConfigProperties();
@@ -80,7 +84,7 @@ public class RemoverAlgorithm extends RootServiceJpa
 			EntityTransaction tx = manager.getTransaction();
 			
 			try {
-
+				
 				// truncate all the tables that we are going to use first
 				tx.begin();
 
@@ -172,6 +176,8 @@ public class RemoverAlgorithm extends RootServiceJpa
 		} catch (Exception e) {
 			// e.printStackTrace();
 			throw new Exception("Unexpected exception:", e);
+		} finally {
+			LoggerUtility.removeLogger("remove");
 		}
 
 	}
