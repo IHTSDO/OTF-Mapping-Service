@@ -997,7 +997,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       FileUtils.copyInputStreamToFile(inputStream, zippedFile);
       inputStream.close();
 
-      Collection<File> files = FileUtils.listFiles(placementDir, null, false);
+      Collection<File> files = FileUtils.listFiles(placementDir, null, true);
       for (File f : files) {
         Logger.getLogger(getClass()).info("CCC with " + f.getName());
       }
@@ -1005,23 +1005,23 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
       // UNZIP to Placement
       unzipToDirectory(zippedFile, placementDir);
-      files = FileUtils.listFiles(placementDir, null, false);
+      File testDir = new File(placementDir.getAbsolutePath() + File.separator + "Snapshot");
+      files = FileUtils.listFiles(testDir, null, true);
       for (File f : files) {
         Logger.getLogger(getClass()).info("CCC2 with " + f.getName());
       }
 
 
-      File testDir = new File(placementDir.getAbsolutePath() + File.separator + "Snapshot");
-      testDir.mkdir();
+//      testDir.mkdir();
       Logger.getLogger(getClass()).info("CCC3 with " + testDir.getAbsolutePath() );
       
-      files = FileUtils.listFiles(testDir, null, false);
+      files = FileUtils.listFiles(testDir, null, true);
       Logger.getLogger(getClass()).info("CCC4" );
       for (File f : files) {
         Logger.getLogger(getClass()).info("DDD with " + f.getName());
       }
 
-      files = FileUtils.listFiles(placementDir, null, false);
+      files = FileUtils.listFiles(placementDir, null, true);
       for (File f : files) {
         Logger.getLogger(getClass()).info("EEE with " + f.getName());
       }
