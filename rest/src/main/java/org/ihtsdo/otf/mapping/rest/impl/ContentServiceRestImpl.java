@@ -1311,33 +1311,42 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       .info("Final Size: " + fullKeyList.size());
 
       
-      PrintWriter summaryWriter = new PrintWriter(new OutputStreamWriter(
-          new FileOutputStream(new File("/home/jefron/aws/listOfVersionsZips.txt")),
-          "UTF-8"));
       PrintWriter summary2Writer = new PrintWriter(new OutputStreamWriter(
           new FileOutputStream(new File("/home/jefron/aws/filteredFiles.txt")),
           "UTF-8"));
-      summaryWriter.append(terminology).append("\n");
 
-      TerminologyVersionList returnList = new TerminologyVersionList();
       for (S3ObjectSummary obj : fullKeyList) {
         summary2Writer.append(obj.getKey()).append("\n");
-        
+      }
+      summary2Writer.close();
+
+      
+      
+      
+      PrintWriter summaryWriter = new PrintWriter(new OutputStreamWriter(
+          new FileOutputStream(new File("/home/jefron/aws/" + terminology + ".txt")),
+          "UTF-8"));
+      
+      
+      
+      
+      TerminologyVersionList returnList = new TerminologyVersionList();
+      for (S3ObjectSummary obj : fullKeyList) {
         if (obj.getKey().endsWith("zip")
             && obj.getKey().contains(terminology)
             && !obj.getKey().contains("published_build_backup")
             && (obj.getKey().contains(lastYear)
                 || obj.getKey().contains(currentYear)
-                || obj.getKey().contains(nextYear))) {
+                || obj.getKey().contains(nextYear))
+            && obj.getKey().matches(".*\\d.zip")){
+          summaryWriter.append(obj.getKey()).append("\n");
+
           returnList.addTerminologyVersion(
               new TerminologyVersion(terminology, obj.getKey()));
-          
-          summaryWriter.append(obj.getKey()).append("\n");
         }
       }
       
       summaryWriter.close();
-      summary2Writer.close();
 
       returnList.removeDupVersions();
 
