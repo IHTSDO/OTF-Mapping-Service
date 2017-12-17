@@ -1272,11 +1272,8 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     
     Logger.getLogger(ContentServiceRestImpl.class)
     .info("with year: " + currentYear + "next/last Year" + nextYear + "/" + lastYear);
-    Logger.getLogger(ContentServiceRestImpl.class)
-    .info("111");
     final String bucketName = "release-ihtsdo-prod-published";
-    Logger.getLogger(ContentServiceRestImpl.class)
-    .info("222");
+
     try {
       // authorize call
       
@@ -1333,24 +1330,58 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         if (obj.getKey().equals("international/SnomedCT_GPFPICPC2_PRODUCTION_20171018T120000Z.zip")) {
           if (!obj.getKey().endsWith("zip")) {
             Logger.getLogger(ContentServiceRestImpl.class)
-            .info("111");
+            .info("1111");
 
           } else if (!obj.getKey().contains(terminology)) {
             Logger.getLogger(ContentServiceRestImpl.class)
-            .info("222");
+            .info("2222");
 
           } else if (!(obj.getKey().contains(lastYear)
               || obj.getKey().contains(currentYear)
               || obj.getKey().contains(nextYear))){
             Logger.getLogger(ContentServiceRestImpl.class)
-            .info("333");
+            .info("3333");
 
           } else if (!(obj.getKey().matches(".*\\d.zip") || obj.getKey().matches(".*\\dZ.zip"))) {
             Logger.getLogger(ContentServiceRestImpl.class)
-            .info("444");
+            .info("4444");
 
           }
         }
+        
+        if (obj.getKey().equals("international/SnomedCT_GPFPICPC2_PRODUCTION_20171018T120000Z.zip")) {
+          String s = obj.getKey();
+          Logger.getLogger(ContentServiceRestImpl.class).info("---" + s + "----");
+
+          if (s.endsWith("zip")) {
+            Logger.getLogger(ContentServiceRestImpl.class)
+            .info("ZZZZ");
+          }
+          
+          if (s.contains(terminology)) {
+            Logger.getLogger(ContentServiceRestImpl.class)
+            .info("YYY");
+          }
+
+          if (!s.contains("published_build_backup")) {
+            Logger.getLogger(ContentServiceRestImpl.class)
+            .info("XXX");
+          }
+
+          if (s.contains(lastYear)
+              || s.contains(currentYear)
+              || s.contains(nextYear)) {
+            Logger.getLogger(ContentServiceRestImpl.class)
+            .info("UUU");
+          }
+
+          if (s.matches(".*\\d.zip") || s.matches(".*\\dZ.zip")) {
+            Logger.getLogger(ContentServiceRestImpl.class)
+            .info("WWW");
+          }
+
+        }
+        
         if (obj.getKey().endsWith("zip")
             && obj.getKey().contains(terminology)
             && !obj.getKey().contains("published_build_backup")
