@@ -1005,10 +1005,18 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
       // UNZIP to Placement
       unzipToDirectory(zippedFile, placementDir);
-      Logger.getLogger(getClass()).info("CCC2" );
+      files = FileUtils.listFiles(placementDir, null, false);
+      for (File f : files) {
+        Logger.getLogger(getClass()).info("CCC2 with " + f.getName());
+      }
+
 
       File testDir = new File(placementDir.getAbsolutePath() + File.separator + "Snapshot");
+      testDir.mkdir();
+      Logger.getLogger(getClass()).info("CCC3 with " + testDir.getAbsolutePath() );
+      
       files = FileUtils.listFiles(testDir, null, false);
+      Logger.getLogger(getClass()).info("CCC4" );
       for (File f : files) {
         Logger.getLogger(getClass()).info("DDD with " + f.getName());
       }
@@ -1420,20 +1428,16 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   private void unzipToDirectory(File zippedFile, File placementDir)
     throws IOException {
     if (zippedFile == null) {
-      Logger.getLogger(getClass()).info("ZZZ1" );
     }
     
     if (placementDir == null) {
-      Logger.getLogger(getClass()).info("ZZZ2" );
     }
 
     if (!placementDir.exists()) {
-      Logger.getLogger(getClass()).info("ZZZ3" );
       placementDir.mkdir();
     }
     ZipInputStream zipIn = new ZipInputStream(new FileInputStream(zippedFile));
     ZipEntry entry = zipIn.getNextEntry();
-    Logger.getLogger(getClass()).info("ZZZ4" );
 
     // iterates over entries in the zip file
     while (entry != null) {
@@ -1451,7 +1455,6 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       entry = zipIn.getNextEntry();
     }
     zipIn.close();
-    Logger.getLogger(getClass()).info("ZZZ out" );
   }
 
   /**
