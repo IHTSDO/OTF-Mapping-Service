@@ -1381,6 +1381,40 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
           }
 
         }
+
+        
+        if (obj.getKey().endsWith("zip")) {
+          Logger.getLogger(ContentServiceRestImpl.class)
+          .info("Adding match1 : " + obj.getKey());
+
+        }
+
+        if (obj.getKey().endsWith("zip")
+            && obj.getKey().contains(terminology)) {
+        Logger.getLogger(ContentServiceRestImpl.class)
+        .info("Adding match2 : " + obj.getKey());
+
+      }
+
+        
+        if (obj.getKey().endsWith("zip")
+            && obj.getKey().contains(terminology)
+            && !obj.getKey().contains("published_build_backup")) {
+          Logger.getLogger(ContentServiceRestImpl.class)
+          .info("Adding match3 : " + obj.getKey());
+
+        }
+        
+        if (obj.getKey().endsWith("zip")
+            && obj.getKey().contains(terminology)
+            && !obj.getKey().contains("published_build_backup")
+            && (obj.getKey().contains(lastYear)
+                || obj.getKey().contains(currentYear)
+                || obj.getKey().contains(nextYear))) {
+          Logger.getLogger(ContentServiceRestImpl.class)
+          .info("Adding match4 : " + obj.getKey());
+        }
+        
         
         if (obj.getKey().endsWith("zip")
             && obj.getKey().contains(terminology)
@@ -1389,6 +1423,9 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
                 || obj.getKey().contains(currentYear)
                 || obj.getKey().contains(nextYear))
             && (obj.getKey().matches(".*\\d.zip") || obj.getKey().matches(".*\\dZ.zip"))) {
+          Logger.getLogger(ContentServiceRestImpl.class)
+          .info("Adding match5 : " + obj.getKey());
+
           summaryWriter.append(obj.getKey()).append("\n");
 
           returnList.addTerminologyVersion(
