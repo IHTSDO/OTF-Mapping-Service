@@ -22,6 +22,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -5893,7 +5894,16 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       // Determine international or U.S.
       String nationalPrefix =
           sourceTerminology.equals("SNOMEDCT_US") ? "us" : "international";
+      
+      // Determine year
+      int year = Calendar.getInstance().get(Calendar.YEAR);
+      String currentYear = Integer.toString(year);
+      String nextYear = Integer.toString(year + 1);
+      String lastYear = Integer.toString(year - 1);
+      // Only keep alpha and beta from most recent version
+      String mostRecentAlphaBeta = "";
 
+      // TODO: Note: Logic here should be moved into a ProjectSpecificHandler
       if (mapProject.getDestinationTerminology().equals("ICPC")
           || mapProject.getDestinationTerminology().equals("GMDN")) {
         // List Files on Bucket "release-ihtsdo-prod-published"
@@ -5910,8 +5920,17 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
         int i = 1;
         for (S3ObjectSummary sum : summaries) {
           String fileName = sum.getKey();
-          if ((fileName.contains("ExtendedMap")
-              || fileName.contains("SimpleMap")) && !fileName.contains("Full")
+          Matcher m = Pattern.compile("[0-9]{8}").matcher(fileName);
+          String fileYear = ""; String fileDate = "";
+          while (m.find()) {
+            fileDate = m.group();
+            fileYear = fileDate.substring(0, 4);
+          }
+          if (fileYear.compareTo(lastYear) < 0) {
+            continue;
+          }
+          if ((fileName.contains("ICPC2ExtendedMap")
+              || fileName.contains("GMDNMapSimpleMap")) && !fileName.contains("Full")
               && !fileName.contains("backup")) {
             Logger.getLogger(MappingServiceRestImpl.class)
                 .info(mapProject.getDestinationTerminology() + " Summary #"
@@ -5925,10 +5944,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
             } else {
               result.setTerminology("FINAL");
             }
-            Matcher m = Pattern.compile("[0-9]{8}").matcher(fileName);
-            while (m.find()) {
-              result.setTerminologyVersion(m.group());
-            }
+            
+            result.setTerminologyVersion(fileDate);
             result.setValue(shortName);
             result.setValue2(fileName);
             searchResults.addSearchResult(result);
@@ -5952,27 +5969,44 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
               .info("CCC start with " + j++ + ": " + summaries.size());
           for (S3ObjectSummary sum : summaries) {
             String fileName = sum.getKey();
-            if ((fileName.contains("ExtendedMap")
-                || fileName.contains("SimpleMap")) && !fileName.contains("Full")
-                && !fileName.contains("backup")) {
+            Matcher m = Pattern.compile("[0-9]{8}").matcher(fileName);
+            String fileYear = ""; String fileDate = "";
+            while (m.find()) {
+              fileDate = m.group();
+              fileYear = fileDate.substring(0, 4);
+            }
+            // last year okay, but not before that
+            if (fileYear.compareTo(lastYear) < 0) {
+              continue;
+            }
+            if (((mapProject.getName().contains("ICD10") && fileName.contains("ExtendedMap"))
+                || (mapProject.getName().contains("ICDO") && fileName.contains("SimpleMap")))
+                && !fileName.contains("Full")
+                && !fileName.contains("backup") && !fileName.contains("LOINC") 
+                && !fileName.contains("MRCM") && !fileName.contains("Starter")
+                && !fileName.contains("Nursing") && !fileName.contains("Odontogram")
+                && !fileName.contains("WithoutRT") && !fileName.contains("ButOld")
+                && !fileName.contains("UPDATED") 
+                && !fileName.contains("ICNP") && !fileName.contains("SnomedCT_RF2Release")) {
               Logger.getLogger(MappingServiceRestImpl.class)
                   .info("Summary #" + i++ + " with: " + sum.getKey());
               SearchResult result = new SearchResultJpa();
               String shortName = fileName.substring(fileName.lastIndexOf('/'));
               if (fileName.toLowerCase().contains("alpha")) {
                 result.setTerminology("ALPHA");
+                if (fileDate.compareTo(mostRecentAlphaBeta) > 0) {
+                  mostRecentAlphaBeta = fileDate;
+                }
               } else if (fileName.toLowerCase().contains("beta")) {
                 result.setTerminology("BETA");
-              } else if (shortName.startsWith("x")) {
-                result.setTerminology("A/B");
+                if (fileDate.compareTo(mostRecentAlphaBeta) > 0) {
+                  mostRecentAlphaBeta = fileDate;
+                }
               } else {
                 result.setTerminology("FINAL");
               }
-              Matcher m = Pattern.compile("[0-9]{8}").matcher(fileName);
-              while (m.find()) {
-                result.setTerminologyVersion(m.group());
-              }
-
+             
+              result.setTerminologyVersion(fileDate);
               result.setValue(shortName);
               result.setValue2(fileName);
               searchResults.addSearchResult(result);
@@ -5990,8 +6024,17 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
           return releaseDate2.compareTo(releaseDate1);
         }
       });
+      
+      // only keep finals and most recent alpha/betas
+      SearchResultList resultsToKeep = new SearchResultListJpa();
+      for (SearchResult result : searchResults.getSearchResults()) {
+        if (result.getTerminology().equals("FINAL") || 
+            result.getTerminologyVersion().equals(mostRecentAlphaBeta)) {
+          resultsToKeep.addSearchResult(result);
+        }
+      }
 
-      return searchResults;
+      return resultsToKeep;
 
     } catch (Exception e) {
       handleException(e, "trying to get files from amazon s3", user,
