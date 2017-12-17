@@ -1279,8 +1279,6 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     .info("222");
     try {
       // authorize call
-      authorizeApp(authToken, MapUserRole.VIEWER,
-          "find version for terminology", securityService);
       
       Logger.getLogger(ContentServiceRestImpl.class)
       .info("AAA");
