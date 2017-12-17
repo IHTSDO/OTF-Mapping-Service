@@ -5,10 +5,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -24,6 +26,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.ConceptList;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
@@ -57,6 +60,13 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
+
+import com.amazonaws.auth.InstanceProfileCredentialsProvider;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -1210,7 +1220,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
       // if remove was successful do add
 			try (final MapRecordRf2SimpleMapLoaderAlgorithm loadAlgo = new MapRecordRf2SimpleMapLoaderAlgorithm(
-					inputFile, memeberFlag, recordFlag, workflowStatus);) {
+					inputFile, memeberFlag, recordFlag, refsetId, workflowStatus);) {
 
         loadAlgo.compute();
 
@@ -1268,149 +1278,54 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       authorizeApp(authToken, MapUserRole.VIEWER,
           "find version for terminology", securityService);
 
-      /*
-       * // Connect to server AmazonS3 s3Client =
-       * AmazonS3ClientBuilder.standard() .withRegion(Regions.US_EAST_1)
-       * .withCredentials(new
-       * InstanceProfileCredentialsProvider(false)).build();
-       * 
-       * 
-       * List<S3ObjectSummary> fullKeyList = new ArrayList<S3ObjectSummary>();
-       * ObjectListing objects = s3Client.listObjects(bucketName, "zip");
-       * fullKeyList = objects.getObjectSummaries(); objects =
-       * s3Client.listNextBatchOfObjects(objects); int loopCounter = 0;
-       * 
-       * while (objects.isTruncated()){
-       * fullKeyList.addAll(objects.getObjectSummaries()); objects =
-       * s3Client.listNextBatchOfObjects(objects);
-       * 
-       * Logger.getLogger(MappingServiceRestImpl.class).info("DDD1 at loop #" +
-       * ++loopCounter + " with keList.size(): " + fullKeyList.size()); }
-       * fullKeyList.addAll(objects.getObjectSummaries());
-       * 
-       * TerminologyVersionList returnList = new TerminologyVersionList(); for
-       * (S3ObjectSummary obj : fullKeyList) { if (obj.getKey().startsWith("international") && obj.getKey().endsWith("zip")
-       * && obj.getKey().contains(terminology) &&
-       * (obj.getKey().contains(lastYear) || obj.getKey().contains(currentYear)
-       * || obj.getKey().contains(nextYear)) {
-       * returnList.addTerminologyVersion(new TerminologyVersion(terminology,
-       * obj.getKey())); } }
-       */
+      // Connect to server
+      AmazonS3 s3Client =
+          AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
+              .withCredentials(new InstanceProfileCredentialsProvider(false))
+              .build();
 
-      Set<String> testSet = new HashSet<>();
-      testSet.add("SnomedCT_BetaRF1Release_INT_20150731.zip");
-      testSet.add("SnomedCT_BetaRF2Release_INT_20150731.zip");
-      testSet.add("SnomedCT_GMDNMapRelease_INT_20150731.zip");
-      testSet.add("SnomedCT_GMDNMapRelease_INT_20160131.zip");
-      testSet.add("SnomedCT_GMDNMapRelease_INT_20160731.zip");
-      testSet.add("SnomedCT_GMDNMapRelease_Production_20170228T120000.zip");
-      testSet.add("SnomedCT_GMDNMapRelease_Production_20170908T120000Z.zip");
-      testSet.add("SnomedCT_GMDNMapRelease_Production_INT_20170228T120000.zip");
-      testSet.add("SnomedCT_GPFPICPC2_Baseline_INT_20150930.zip");
-      testSet.add("SnomedCT_GPFPICPC2_Baseline_INT_20150930_orig.zip");
-      testSet.add("SnomedCT_GPFPICPC2_PRODUCTION_20171018T120000Z.zip");
-      testSet.add("SnomedCT_GPFPICPC2_Production_20170331T120000.zip");
-      testSet.add("SnomedCT_GPFPICPC2_Production_INT_20160131.zip");
-      testSet.add("SnomedCT_GPFPICPC2_Production_INT_20160731.zip");
-      testSet.add("SnomedCT_GeneralDentistry_PRODUCTION_20171018T120000Z.zip");
-      testSet.add("SnomedCT_GeneralDentistry_Production_20170324T120000.zip");
-      testSet.add("SnomedCT_ICD-9-CM_20160501.zip");
-      testSet
-          .add("SnomedCT_ICNPDiagnosesRelease_PRODUCTION_20171130T120000Z.zip");
-      testSet
-          .add("SnomedCT_ICNPDiagnosesRelease_Production_20170324T120000.zip");
-      testSet.add("SnomedCT_ICNPDiagnosesRelease_Production_INT_20160131.zip");
-      testSet.add("SnomedCT_ICNPDiagnosesRelease_Production_INT_20160731.zip");
-      testSet.add(
-          "SnomedCT_ICNPDiagnosesRelease_Production_INT_20170324T120000.zip");
-      testSet.add(
-          "SnomedCT_ICNPInterventionsRelease_PRODUCTION_20171130T120000Z.zip");
-      testSet.add(
-          "SnomedCT_ICNPInterventionsRelease_Production_20170317T120000.zip");
-      testSet
-          .add("SnomedCT_ICNPInterventionsRelease_Production_INT_20160131.zip");
-      testSet
-          .add("SnomedCT_ICNPInterventionsRelease_Production_INT_20160731.zip");
-      testSet.add("SnomedCT_ICNPRelease_Baseline_INT_20150901.zip");
-      testSet.add("SnomedCT_IdentifierRefset_DEPRECATED_20170731T120000Z.zip");
-      testSet.add(
-          "SnomedCT_InternationalRF2_PRODUCTION_20170731T120000Z (RECALLED).zip");
-      testSet.add(
-          "SnomedCT_InternationalRF2_PRODUCTION_20170731T120000Z_publishing_manually (RECALLED).zip");
-      testSet.add("SnomedCT_InternationalRF2_PRODUCTION_20170731T150000Z.zip");
-      testSet.add(
-          "SnomedCT_InternationalRF2_PRODUCTION_20170731T150000Z_UPDATEDNAMES.zip");
-      testSet.add("SnomedCT_InternationalRF2_Production_20170131T120000.zip");
-      testSet.add(
-          "SnomedCT_InternationalRF2_Production_20170131T120000WithoutRT.zip");
-      testSet.add("SnomedCT_LOINCRF2_PRODUCTION_20170831T120000Z.zip");
-      testSet.add("SnomedCT_LOINC_AlphaPhase3_HumanReadable_INT_20160401.zip");
-      testSet.add("SnomedCT_LOINC_AlphaPhase3_INT_20160401.zip");
-      testSet.add("SnomedCT_LOINC_AlphaPhase3_OWL_INT_20160401.zip");
-      testSet.add(
-          "SnomedCT_LOINC_TechnologyPreview_HumanReadable_INT_20150801.zip");
-      testSet.add("SnomedCT_LOINC_TechnologyPreview_INT_20150801.zip");
-      testSet.add("SnomedCT_LOINC_TechnologyPreview_OWL_INT_20150801.zip");
-      testSet.add("SnomedCT_MedicalDevicesTechnologyPreview_INT_20130131.zip");
-      testSet.add("SnomedCT_NursingActivities_PRODUCTION_20171011T120000Z.zip");
-      testSet
-          .add("SnomedCT_NursingHealthIssues_PRODUCTION_20171011T120000Z.zip");
-      testSet.add("SnomedCT_Odontogram_PRODUCTION_20171011T120000Z.zip");
-      testSet.add("SnomedCT_RF1CompatibilityPackage_INT_20160131.zip");
-      testSet.add("SnomedCT_RF1Release_INT_20150131.zip");
-      testSet.add("SnomedCT_RF1Release_INT_20150731.zip");
-      testSet.add("SnomedCT_RF1Release_INT_20160131 v1.0.zip");
-      testSet.add("SnomedCT_RF1Release_INT_20160131.zip");
-      testSet.add("SnomedCT_RF1Release_INT_20160731(RECALLED).zip");
-      testSet.add("SnomedCT_RF1Release_INT_20160731.zip");
-      testSet.add("SnomedCT_RF2Release_INT_20150131(RECALLED).zip");
-      testSet.add("SnomedCT_RF2Release_INT_20150131.zip");
-      testSet.add("SnomedCT_RF2Release_INT_20150731.zip");
-      testSet.add("SnomedCT_RF2Release_INT_20160131.zip");
-      testSet.add("SnomedCT_RF2Release_INT_20160731(RECALLED).zip");
-      testSet.add("SnomedCT_RF2Release_INT_20160731.zip");
-      testSet.add("SnomedCT_Release-es_INT_20140430.zip");
-      testSet.add("SnomedCT_Release_INT_20140131.zip");
-      testSet.add("SnomedCT_Release_INT_20140731.zip");
-      testSet.add("SnomedCT_SpanishRelease-es_INT_20141031.zip");
-      testSet.add("SnomedCT_SpanishRelease-es_INT_20150430.zip");
-      testSet.add("SnomedCT_SpanishRelease-es_INT_20151031.zip");
-      testSet.add("SnomedCT_SpanishRelease-es_INT_20160430.zip");
-      testSet.add("SnomedCT_SpanishRelease-es_INT_20161031.zip");
-      testSet.add("SnomedCT_SpanishRelease-es_Production_20170430T120000.zip");
-      testSet.add("SnomedCT_SpanishRelease-es_Production_20171031T120000Z.zip");
-      testSet.add("xSnomedCT_InternationalRF2_ALPHA_20170731T120000Z.zip");
-      testSet.add("xSnomedCT_InternationalRF2_ALPHA_20180131T120000Z.zip");
-      testSet.add("xSnomedCT_InternationalRF2_BETA_20170731T120000Z.zip");
-      testSet.add("xSnomedCT_InternationalRF2_BETA_20180131T120000Z.zip");
-      testSet.add("xSnomedCT_InternationalRF2_Beta_20170131T120000.zip");
-      testSet.add("xSnomedCT_LOINC_Beta_20170331T120000.zip");
-      testSet.add("xSnomedCT_MRCMReferenceSets_Beta_20170210T120000.zip");
-      testSet.add("xSnomedCT_RF1Release_INT_20160131.zip");
-      testSet.add("xSnomedCT_RF1Release_INT_20160731.zip");
-      testSet.add("xSnomedCT_RF2Release_INT_20160131.zip");
-      testSet.add("xSnomedCT_RF2Release_INT_20160731.zip");
-      testSet.add("xSnomedCT_RF2Release_INT_20160731_alpha.zip");
-      testSet.add("xSnomedCT_RF2Release_INT_20170131.zip");
-      testSet.add("xSnomedCT_SpanishRelease-es_Beta__20170430T120000.zip");
-      testSet.add("xSnomedCT_SpanishRelease-es_INT_20160430.zip");
-      testSet.add("xSnomedCT_SpanishRelease-es_INT_20161031.zip");
-      testSet.add("xSnomedCT_SpanishRelease-es_Production_20170430T120000.zip");
-      testSet
-          .add("xSnomedCT_SpanishRelease-es_Production_20171031T120000Z.zip");
-      testSet.add(
-          "xSnomedCT_StarterSetTranslationPackage_Alpha_20170421T120000.zip");
+      List<S3ObjectSummary> fullKeyList = new ArrayList<S3ObjectSummary>();
+      ObjectListing objects = s3Client.listObjects(bucketName, "zip");
+      fullKeyList = objects.getObjectSummaries();
+      objects = s3Client.listNextBatchOfObjects(objects);
+      int loopCounter = 0;
+
+      while (objects.isTruncated()) {
+        fullKeyList.addAll(objects.getObjectSummaries());
+        objects = s3Client.listNextBatchOfObjects(objects);
+
+        Logger.getLogger(MappingServiceRestImpl.class).info("DDD1 at loop #"
+            + ++loopCounter + " with keList.size(): " + fullKeyList.size());
+      }
+      fullKeyList.addAll(objects.getObjectSummaries());
+
+      
+      
+      PrintWriter summaryWriter = new PrintWriter(new OutputStreamWriter(
+          new FileOutputStream(new File("/home/jefron/aws/listOfVersionsZips.txt")),
+          "UTF-8"));
+      File file = new File("/home/jefron/aws/listOfVersionsZips2.txt");
+      summaryWriter.append(terminology).append("\n");
+      FileUtils.writeStringToFile(file, terminology + "\n");
 
       TerminologyVersionList returnList = new TerminologyVersionList();
-
-      for (String obj : testSet) {
-        if (obj.endsWith("zip") && obj.contains(terminology)
-            && (obj.contains(lastYear) || obj.contains(currentYear)
-                || obj.contains(nextYear))) {
-          returnList
-              .addTerminologyVersion(new TerminologyVersion(obj, terminology));
+      for (S3ObjectSummary obj : fullKeyList) {
+        if (/*obj.getKey().startsWith("international")
+            &&*/ obj.getKey().endsWith("zip")
+            && obj.getKey().contains(terminology)
+            && (obj.getKey().contains(lastYear)
+                || obj.getKey().contains(currentYear)
+                || obj.getKey().contains(nextYear))) {
+          returnList.addTerminologyVersion(
+              new TerminologyVersion(terminology, obj.getKey()));
+          
+          
+          summaryWriter.append(obj.getKey()).append("\n");
+          FileUtils.writeStringToFile(file, obj.getKey() + "\n");
         }
       }
+      
+      summaryWriter.close();
 
       returnList.removeDupVersions();
 
@@ -1456,149 +1371,50 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       authorizeApp(authToken, MapUserRole.VIEWER,
           "find version for terminology", securityService);
 
-      /*
-       * // Connect to server AmazonS3 s3Client =
-       * AmazonS3ClientBuilder.standard() .withRegion(Regions.US_EAST_1)
-       * .withCredentials(new
-       * InstanceProfileCredentialsProvider(false)).build();
-       * 
-       * 
-       * List<S3ObjectSummary> fullKeyList = new ArrayList<S3ObjectSummary>();
-       * ObjectListing objects = s3Client.listObjects(bucketName, "zip");
-       * fullKeyList = objects.getObjectSummaries(); objects =
-       * s3Client.listNextBatchOfObjects(objects); int loopCounter = 0;
-       * 
-       * while (objects.isTruncated()){
-       * fullKeyList.addAll(objects.getObjectSummaries()); objects =
-       * s3Client.listNextBatchOfObjects(objects);
-       * 
-       * Logger.getLogger(MappingServiceRestImpl.class).info("DDD1 at loop #" +
-       * ++loopCounter + " with keList.size(): " + fullKeyList.size()); }
-       * fullKeyList.addAll(objects.getObjectSummaries());
-       * 
-       * TerminologyVersionList returnList = new TerminologyVersionList(); for
-       * (S3ObjectSummary obj : fullKeyList) { if (obj.getKey().endsWith("zip")
-       * && obj.getKey().contains(terminology) &&
-       * (obj.getKey().contains(lastYear) ||
-       * obj.getKey().contains(currentYear))) {
-       * returnList.addTerminologyVersion(new TerminologyVersion(terminology,
-       * obj.getKey())); } }
-       */
+       // Connect to server 
+      AmazonS3 s3Client =
+          AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
+              .withCredentials(new InstanceProfileCredentialsProvider(false))
+              .build();
 
-      Set<String> testSet = new HashSet<>();
-      testSet.add("SnomedCT_BetaRF1Release_INT_20150731.zip");
-      testSet.add("SnomedCT_BetaRF2Release_INT_20150731.zip");
-      testSet.add("SnomedCT_GMDNMapRelease_INT_20150731.zip");
-      testSet.add("SnomedCT_GMDNMapRelease_INT_20160131.zip");
-      testSet.add("SnomedCT_GMDNMapRelease_INT_20160731.zip");
-      testSet.add("SnomedCT_GMDNMapRelease_Production_20170228T120000.zip");
-      testSet.add("SnomedCT_GMDNMapRelease_Production_20170908T120000Z.zip");
-      testSet.add("SnomedCT_GMDNMapRelease_Production_INT_20170228T120000.zip");
-      testSet.add("SnomedCT_GPFPICPC2_Baseline_INT_20150930.zip");
-      testSet.add("SnomedCT_GPFPICPC2_Baseline_INT_20150930_orig.zip");
-      testSet.add("SnomedCT_GPFPICPC2_PRODUCTION_20171018T120000Z.zip");
-      testSet.add("SnomedCT_GPFPICPC2_Production_20170331T120000.zip");
-      testSet.add("SnomedCT_GPFPICPC2_Production_INT_20160131.zip");
-      testSet.add("SnomedCT_GPFPICPC2_Production_INT_20160731.zip");
-      testSet.add("SnomedCT_GeneralDentistry_PRODUCTION_20171018T120000Z.zip");
-      testSet.add("SnomedCT_GeneralDentistry_Production_20170324T120000.zip");
-      testSet.add("SnomedCT_ICD-9-CM_20160501.zip");
-      testSet
-          .add("SnomedCT_ICNPDiagnosesRelease_PRODUCTION_20171130T120000Z.zip");
-      testSet
-          .add("SnomedCT_ICNPDiagnosesRelease_Production_20170324T120000.zip");
-      testSet.add("SnomedCT_ICNPDiagnosesRelease_Production_INT_20160131.zip");
-      testSet.add("SnomedCT_ICNPDiagnosesRelease_Production_INT_20160731.zip");
-      testSet.add(
-          "SnomedCT_ICNPDiagnosesRelease_Production_INT_20170324T120000.zip");
-      testSet.add(
-          "SnomedCT_ICNPInterventionsRelease_PRODUCTION_20171130T120000Z.zip");
-      testSet.add(
-          "SnomedCT_ICNPInterventionsRelease_Production_20170317T120000.zip");
-      testSet
-          .add("SnomedCT_ICNPInterventionsRelease_Production_INT_20160131.zip");
-      testSet
-          .add("SnomedCT_ICNPInterventionsRelease_Production_INT_20160731.zip");
-      testSet.add("SnomedCT_ICNPRelease_Baseline_INT_20150901.zip");
-      testSet.add("SnomedCT_IdentifierRefset_DEPRECATED_20170731T120000Z.zip");
-      testSet.add(
-          "SnomedCT_InternationalRF2_PRODUCTION_20170731T120000Z (RECALLED).zip");
-      testSet.add(
-          "SnomedCT_InternationalRF2_PRODUCTION_20170731T120000Z_publishing_manually (RECALLED).zip");
-      testSet.add("SnomedCT_InternationalRF2_PRODUCTION_20170731T150000Z.zip");
-      testSet.add(
-          "SnomedCT_InternationalRF2_PRODUCTION_20170731T150000Z_UPDATEDNAMES.zip");
-      testSet.add("SnomedCT_InternationalRF2_Production_20170131T120000.zip");
-      testSet.add(
-          "SnomedCT_InternationalRF2_Production_20170131T120000WithoutRT.zip");
-      testSet.add("SnomedCT_LOINCRF2_PRODUCTION_20170831T120000Z.zip");
-      testSet.add("SnomedCT_LOINC_AlphaPhase3_HumanReadable_INT_20160401.zip");
-      testSet.add("SnomedCT_LOINC_AlphaPhase3_INT_20160401.zip");
-      testSet.add("SnomedCT_LOINC_AlphaPhase3_OWL_INT_20160401.zip");
-      testSet.add(
-          "SnomedCT_LOINC_TechnologyPreview_HumanReadable_INT_20150801.zip");
-      testSet.add("SnomedCT_LOINC_TechnologyPreview_INT_20150801.zip");
-      testSet.add("SnomedCT_LOINC_TechnologyPreview_OWL_INT_20150801.zip");
-      testSet.add("SnomedCT_MedicalDevicesTechnologyPreview_INT_20130131.zip");
-      testSet.add("SnomedCT_NursingActivities_PRODUCTION_20171011T120000Z.zip");
-      testSet
-          .add("SnomedCT_NursingHealthIssues_PRODUCTION_20171011T120000Z.zip");
-      testSet.add("SnomedCT_Odontogram_PRODUCTION_20171011T120000Z.zip");
-      testSet.add("SnomedCT_RF1CompatibilityPackage_INT_20160131.zip");
-      testSet.add("SnomedCT_RF1Release_INT_20150131.zip");
-      testSet.add("SnomedCT_RF1Release_INT_20150731.zip");
-      testSet.add("SnomedCT_RF1Release_INT_20160131 v1.0.zip");
-      testSet.add("SnomedCT_RF1Release_INT_20160131.zip");
-      testSet.add("SnomedCT_RF1Release_INT_20160731(RECALLED).zip");
-      testSet.add("SnomedCT_RF1Release_INT_20160731.zip");
-      testSet.add("SnomedCT_RF2Release_INT_20150131(RECALLED).zip");
-      testSet.add("SnomedCT_RF2Release_INT_20150131.zip");
-      testSet.add("SnomedCT_RF2Release_INT_20150731.zip");
-      testSet.add("SnomedCT_RF2Release_INT_20160131.zip");
-      testSet.add("SnomedCT_RF2Release_INT_20160731(RECALLED).zip");
-      testSet.add("SnomedCT_RF2Release_INT_20160731.zip");
-      testSet.add("SnomedCT_Release-es_INT_20140430.zip");
-      testSet.add("SnomedCT_Release_INT_20140131.zip");
-      testSet.add("SnomedCT_Release_INT_20140731.zip");
-      testSet.add("SnomedCT_SpanishRelease-es_INT_20141031.zip");
-      testSet.add("SnomedCT_SpanishRelease-es_INT_20150430.zip");
-      testSet.add("SnomedCT_SpanishRelease-es_INT_20151031.zip");
-      testSet.add("SnomedCT_SpanishRelease-es_INT_20160430.zip");
-      testSet.add("SnomedCT_SpanishRelease-es_INT_20161031.zip");
-      testSet.add("SnomedCT_SpanishRelease-es_Production_20170430T120000.zip");
-      testSet.add("SnomedCT_SpanishRelease-es_Production_20171031T120000Z.zip");
-      testSet.add("xSnomedCT_InternationalRF2_ALPHA_20170731T120000Z.zip");
-      testSet.add("xSnomedCT_InternationalRF2_ALPHA_20180131T120000Z.zip");
-      testSet.add("xSnomedCT_InternationalRF2_BETA_20170731T120000Z.zip");
-      testSet.add("xSnomedCT_InternationalRF2_BETA_20180131T120000Z.zip");
-      testSet.add("xSnomedCT_InternationalRF2_Beta_20170131T120000.zip");
-      testSet.add("xSnomedCT_LOINC_Beta_20170331T120000.zip");
-      testSet.add("xSnomedCT_MRCMReferenceSets_Beta_20170210T120000.zip");
-      testSet.add("xSnomedCT_RF1Release_INT_20160131.zip");
-      testSet.add("xSnomedCT_RF1Release_INT_20160731.zip");
-      testSet.add("xSnomedCT_RF2Release_INT_20160131.zip");
-      testSet.add("xSnomedCT_RF2Release_INT_20160731.zip");
-      testSet.add("xSnomedCT_RF2Release_INT_20160731_alpha.zip");
-      testSet.add("xSnomedCT_RF2Release_INT_20170131.zip");
-      testSet.add("xSnomedCT_SpanishRelease-es_Beta__20170430T120000.zip");
-      testSet.add("xSnomedCT_SpanishRelease-es_INT_20160430.zip");
-      testSet.add("xSnomedCT_SpanishRelease-es_INT_20161031.zip");
-      testSet.add("xSnomedCT_SpanishRelease-es_Production_20170430T120000.zip");
-      testSet
-          .add("xSnomedCT_SpanishRelease-es_Production_20171031T120000Z.zip");
-      testSet.add(
-          "xSnomedCT_StarterSetTranslationPackage_Alpha_20170421T120000.zip");
+      List<S3ObjectSummary> fullKeyList = new ArrayList<S3ObjectSummary>();
+      ObjectListing objects = s3Client.listObjects(bucketName, "zip");
+      fullKeyList = objects.getObjectSummaries();
+      objects = s3Client.listNextBatchOfObjects(objects);
+      int loopCounter = 0;
 
-      TerminologyVersionList returnList = new TerminologyVersionList();
+      while (objects.isTruncated()) {
+        fullKeyList.addAll(objects.getObjectSummaries());
+        objects = s3Client.listNextBatchOfObjects(objects);
 
-      for (String obj : testSet) {
-        if (obj.endsWith("zip") && obj.contains(terminology)
-            && obj.contains(version)) {
-          TerminologyVersion tv = new TerminologyVersion(obj, terminology);
+        Logger.getLogger(MappingServiceRestImpl.class).info("DDD1 at loop #"
+            + ++loopCounter + " with keList.size(): " + fullKeyList.size());
+      }
+      fullKeyList.addAll(objects.getObjectSummaries());
+
+      TerminologyVersionList returnList = new TerminologyVersionList(); 
+      
+      PrintWriter summaryWriter = new PrintWriter(new OutputStreamWriter(
+          new FileOutputStream(new File("/home/jefron/aws/listOfScopesZips.txt")),
+          "UTF-8"));
+      File file = new File("/home/jefron/aws/listOfScopesZips2.txt");
+      summaryWriter.append(terminology + "---" + version).append("\n");
+      FileUtils.writeStringToFile(file, terminology + "---" + version + "\n");
+
+
+      for (S3ObjectSummary obj : fullKeyList) {
+        if (obj.getKey().endsWith("zip") && obj.getKey().contains(terminology)
+            && obj.getKey().contains(version)) {
+          TerminologyVersion tv =
+              new TerminologyVersion(obj.getKey(), terminology);
           tv.identifyScope();
           returnList.addTerminologyVersion(tv);
+          summaryWriter.append(obj.getKey()).append("\n");
+          FileUtils.writeStringToFile(file, obj.getKey() + "\n");
         }
       }
+      
+      summaryWriter.close();
 
       returnList.removeDupScopes();
 
