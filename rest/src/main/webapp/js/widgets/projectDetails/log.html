@@ -1,0 +1,44 @@
+<div class="modal-header">
+  <h4 style="display: inline">Log {{logTypes}}</h4>
+  <span style="float: right">
+    <i class="noul glyphicon glyphicon-remove" ng-click="close()"> </i>
+  </span>
+</div>
+
+<div class="modal-body">
+  <div class="row">
+
+    <div ng-show="errors.length > 0" class="alert alert-danger alert-error">
+      {{errors[0]}}
+      <div style="display: inline; float: right;">
+        <i ng-show="errors[1]"
+          title="{{error.expand ? 'Show' : 'Hide'}} long error"
+          class="noul material-icons md-18"
+          ng-click="error.expand = !error.expand;">attach_file</i>
+      </div>
+      <p ng-show="errors[1] && error.expand">
+        <br />{{errors[1]}}
+      </p>
+    </div>
+
+    <div class="col-md-12 col-xs-12">
+
+      <div ng-show="log.length > 0"
+        style="max-height: 500px; overflow-y: scroll;">
+        <pre>{{log}}</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-footer">
+  <span style="float: left">
+    <input placeholder="Search" type="text" ng-model="filter"
+      ng-model-options="{ debounce: 500 }" ng-change="getLog()">
+
+    <button class="btn btn-xs btn-warning" ng-show="filter"
+      ng-click="filter = ''; getLog()" title="Click to clear filter text">Clear</button>
+  </span>
+  <button class="btn btn-xs btn-warning" ng-click="close()">Close</button>
+</div>

@@ -16,6 +16,7 @@
  */
 package org.ihtsdo.otf.mapping.mojo;
 
+import org.apache.log4j.Logger;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.rest.client.ContentClientRest;
 import org.ihtsdo.otf.mapping.rest.impl.ContentServiceRestImpl;
@@ -71,6 +72,7 @@ public class TerminologyMapsRemoverMojo extends AbstractTerminologyLoaderMojo {
 
 			// throws exception if server is required but not running.
 			// or if server is not required but running.
+            Logger.getLogger(getClass()).info("server is:" + this.server);
 			validateServerStatus(server);
 
 			if (serverRunning != null && !serverRunning) {

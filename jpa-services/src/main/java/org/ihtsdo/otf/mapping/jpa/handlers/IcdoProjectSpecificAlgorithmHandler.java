@@ -37,6 +37,19 @@ public class IcdoProjectSpecificAlgorithmHandler
       contentService.close();
     }
   }
+  
+  /* see superclass */
+  @Override
+  public boolean isMapRecordLineValid(String line) throws Exception {
+    
+    // Keep only morphology codes (with '/')
+    if (!line.contains("/")) {
+      return false;
+    }
+    else{
+      return true;
+    }
+  }  
 
   /* see superclass */
   @Override

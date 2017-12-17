@@ -61,7 +61,7 @@ public class LuceneReindexMojo extends AbstractTerminologyLoaderMojo {
 				getLog().info("Running directly");
 
 				AdminServiceRestImpl service = new AdminServiceRestImpl();
-				service.luceneReindex(indexedObjects, ""); // getAuthToken());
+				service.luceneReindex(indexedObjects, getAuthToken());
 
 			} else {
 				getLog().info("Running against server");

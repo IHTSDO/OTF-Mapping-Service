@@ -29,6 +29,13 @@ public class MapRecordRf2ComplexMapLoaderMojo
 	 */
 	private String inputFile;
 
+    /**
+     * The refset id.
+     * 
+     * @parameter
+     */
+    private String refsetId;
+    
 	/**
 	 * The members flag.
 	 * 
@@ -85,6 +92,7 @@ public class MapRecordRf2ComplexMapLoaderMojo
 		getLog().info("  userName       = " + userName);
 		getLog().info("  membersFlag    = " + memberFlag);
 		getLog().info("  recordFlag     = " + recordFlag);
+        getLog().info("  refsetId       = " + refsetId);
 
 		try {
 
@@ -100,7 +108,7 @@ public class MapRecordRf2ComplexMapLoaderMojo
 
 				ContentServiceRestImpl service = new ContentServiceRestImpl();
 				service.loadMapRecordRf2ComplexMap(inputFile, memberFlag,
-						recordFlag, workflowStatus, getAuthToken());
+						recordFlag, refsetId, workflowStatus, getAuthToken());
 
 			} else {
 				getLog().info("Running against server");
@@ -108,7 +116,7 @@ public class MapRecordRf2ComplexMapLoaderMojo
 				// invoke the client
 				ContentClientRest client = new ContentClientRest(properties);
 				client.loadMapRecordRf2ComplexMap(inputFile, memberFlag,
-						recordFlag, workflowStatus, getAuthToken());
+						recordFlag, refsetId, workflowStatus, getAuthToken());
 			}
 
 		} catch (Exception e) {

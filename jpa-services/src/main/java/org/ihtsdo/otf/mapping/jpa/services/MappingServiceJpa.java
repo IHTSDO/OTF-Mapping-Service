@@ -3,13 +3,16 @@
  */
 package org.ihtsdo.otf.mapping.jpa.services;
 
-import java.util.Date;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -22,7 +25,6 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
@@ -84,6 +86,7 @@ import org.ihtsdo.otf.mapping.rf2.jpa.ComplexMapRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.json.JSONObject;
 
 /**
@@ -244,7 +247,7 @@ public class MappingServiceJpa extends RootServiceJpa
     return list;
 
   }
-  
+
   /**
    * Add a map project.
    * 
@@ -622,7 +625,6 @@ public class MappingServiceJpa extends RootServiceJpa
     Logger.getLogger(getClass())
         .debug(Integer.toString(records.size()) + " map records retrieved");
 
-
     for (final MapRecord mapRecord : records) {
       list.addSearchResult(new SearchResultJpa(mapRecord.getId(),
           mapRecord.getConceptId().toString(), mapRecord.getConceptName(), ""));
@@ -843,7 +845,7 @@ public class MappingServiceJpa extends RootServiceJpa
 
     AuditReader reader = AuditReaderFactory.get(manager);
     PfsParameter localPfsParameter = pfsParameter;
-    
+
     // if no pfsParameter supplied, construct a default one
     if (localPfsParameter == null)
       localPfsParameter = new PfsParameterJpa();
@@ -862,76 +864,74 @@ public class MappingServiceJpa extends RootServiceJpa
         .add(AuditEntity.property("workflowStatus").ne(WorkflowStatus.NEW))
         .add(AuditEntity.property("workflowStatus")
             .ne(WorkflowStatus.PUBLISHED));
-    
+
     // if sort field specified
     if (localPfsParameter.getSortField() != null) {
-    	if (localPfsParameter.isAscending()) {
-    		query.addOrder(AuditEntity.property(localPfsParameter.getSortField()).asc());
-    	}
-    	else {
-    		query.addOrder(AuditEntity.property(localPfsParameter.getSortField()).desc());
-    	}
+      if (localPfsParameter.isAscending()) {
+        query.addOrder(
+            AuditEntity.property(localPfsParameter.getSortField()).asc());
+      } else {
+        query.addOrder(
+            AuditEntity.property(localPfsParameter.getSortField()).desc());
+      }
 
       // otherwise, sort by last modified (descending)
     } else {
-    	if (localPfsParameter.isAscending()) {
-    		query.addOrder(AuditEntity.property("lastModified").asc());
-    	}
-    	else {
-      query.addOrder(AuditEntity.property("lastModified").desc());
-    }
+      if (localPfsParameter.isAscending()) {
+        query.addOrder(AuditEntity.property("lastModified").asc());
+      } else {
+        query.addOrder(AuditEntity.property("lastModified").desc());
+      }
     }
 
     // if query terms specified, add
-    if (pfsParameter != null && pfsParameter.getQueryRestriction() != null 
-    		&& StringUtils.isNotBlank(pfsParameter.getQueryRestriction())) {
+    if (pfsParameter != null && pfsParameter.getQueryRestriction() != null
+        && StringUtils.isNotBlank(pfsParameter.getQueryRestriction())) {
 
-    	JSONObject jsonObject = new JSONObject(pfsParameter.getQueryRestriction());
-        final String terms = (jsonObject.has("input") 
-        		&& !jsonObject.isNull("input"))
-        		? jsonObject.getString("input") 
-        		: null;
-        final Long dateRangeStart = (jsonObject.has("dateRangeStart") 
-        		&& !jsonObject.isNull("dateRangeStart"))
-        		? convertDateString(jsonObject.getString("dateRangeStart")) 
-        		: null;
-        final Long dateRangeEnd = (jsonObject.has("dateRangeEnd") 
-        		&& !jsonObject.isNull("dateRangeEnd"))
-        		? convertDateString(jsonObject.getString("dateRangeEnd")) 
-        		: null;
-      
-      //split the query restrictions
+      JSONObject jsonObject =
+          new JSONObject(pfsParameter.getQueryRestriction());
+      final String terms =
+          (jsonObject.has("input") && !jsonObject.isNull("input"))
+              ? jsonObject.getString("input") : null;
+      final Long dateRangeStart = (jsonObject.has("dateRangeStart")
+          && !jsonObject.isNull("dateRangeStart"))
+              ? convertDateString(jsonObject.getString("dateRangeStart"))
+              : null;
+      final Long dateRangeEnd =
+          (jsonObject.has("dateRangeEnd") && !jsonObject.isNull("dateRangeEnd"))
+              ? convertDateString(jsonObject.getString("dateRangeEnd")) : null;
+
+      // split the query restrictions
       if (terms != null) {
-    	  String[] queryTerms = terms.split(" ");
-    	  query.add(AuditEntity.or(AuditEntity.property("conceptId").in(queryTerms),
-    			  AuditEntity.property("conceptName").like(terms, MatchMode.ANYWHERE)));
+        String[] queryTerms = terms.split(" ");
+        query.add(AuditEntity
+            .or(AuditEntity.property("conceptId").in(queryTerms), AuditEntity
+                .property("conceptName").like(terms, MatchMode.ANYWHERE)));
       }
 
       if (dateRangeStart != null) {
-    	  query.add(AuditEntity.property("lastModified").gt(dateRangeStart));
+        query.add(AuditEntity.property("lastModified").gt(dateRangeStart));
       }
       if (dateRangeEnd != null) {
-    	  query.add(AuditEntity.property("lastModified").lt(dateRangeEnd));
+        query.add(AuditEntity.property("lastModified").lt(dateRangeEnd));
       }
-      
+
     }
 
     // execute the query
     final List<MapRecord> editedRecords = query.getResultList();
     final List<MapRecord> editedRecordsToKeep = new ArrayList<>();
-    
+
     // if paging request, return subset
     if (editedRecords != null && editedRecords.size() > 0
-    		&& localPfsParameter.getStartIndex() != -1 
-    		&& localPfsParameter.getMaxResults() != -1) {
-    	
-    	editedRecordsToKeep.addAll(editedRecords.subList(
-    			(localPfsParameter.getStartIndex() < 0)
-    					? 0 : localPfsParameter.getStartIndex(), 
-    			(localPfsParameter.getMaxResults() < editedRecords.size()) 
-    					? localPfsParameter.getMaxResults() 
-    					: editedRecords.size()
-    			));
+        && localPfsParameter.getStartIndex() != -1
+        && localPfsParameter.getMaxResults() != -1) {
+
+      editedRecordsToKeep.addAll(editedRecords.subList(
+          (localPfsParameter.getStartIndex() < 0) ? 0
+              : localPfsParameter.getStartIndex(),
+          (localPfsParameter.getMaxResults() < editedRecords.size())
+              ? localPfsParameter.getMaxResults() : editedRecords.size()));
     }
 
     // create the mapRecordList and set total size
@@ -2977,6 +2977,7 @@ public class MappingServiceJpa extends RootServiceJpa
 
     return searchResultList;
   }
+
   @SuppressWarnings("unchecked")
   public SearchResultList findMapRecords(Long mapProjectId, String ancestorId,
     boolean excludeDescendants, String relationshipName, String terminology,
@@ -3147,20 +3148,80 @@ public class MappingServiceJpa extends RootServiceJpa
     return mapRecord;
   }
 
-   /* Convert ISO 8601 date time string to milliseconds */
-   private long convertDateString(String dateString) {
- 	  
- 		long milliseconds = 0l;
- 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
- 		Date d;
- 		try {
- 			d = (Date) format.parse(dateString);
- 			milliseconds = d.getTime();
- 		} catch (ParseException e) {
- 			// TODO Auto-generated catch block
- 			e.printStackTrace();
- 		}
+  /* Convert ISO 8601 date time string to milliseconds */
+  private long convertDateString(String dateString) {
 
- 		return milliseconds;
-   }
+    long milliseconds = 0l;
+    SimpleDateFormat format =
+        new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+    Date d;
+    try {
+      d = (Date) format.parse(dateString);
+      milliseconds = d.getTime();
+    } catch (ParseException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+
+    return milliseconds;
+  }
+
+  /* see superclass */
+  public String getReleaseFileNames(MapProject mapProject) throws Exception {
+    String rootPath = ConfigUtility.getConfigProperties()
+        .getProperty("map.principle.source.document.dir");
+    if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
+      rootPath += "/";
+    }
+
+    // Find the project's release path
+    String path = rootPath + "release/" + mapProject.getSourceTerminology()
+        + "_to_" + mapProject.getDestinationTerminology() + "_"
+        + mapProject.getRefSetId();
+    path.replaceAll("\\s", "");
+
+    // Get all effectiveTime subfolders within that location
+    File file = new File(path);
+    if(!file.exists()){
+      throw new FileNotFoundException("Path not found: " + path);
+    }
+    
+    String[] effectiveTimes = file.list(new FilenameFilter() {
+      @Override
+      public boolean accept(File current, String name) {
+        return new File(current, name).isDirectory();
+      }
+    });
+
+    if(effectiveTimes.length == 0){
+      throw new FileNotFoundException("No subfolders found at location: " + path);
+    }    
+    
+    String releaseFileNames = "";
+
+    // Get all zipFiles within each effectiveTime subfolder
+    // And add to return releaseFileNames (full path)
+    for (final String effectiveTime : effectiveTimes) {
+      String subfolderPath = path + "/" + effectiveTime + "/";
+
+      File file2 = new File(subfolderPath);
+      String[] zipFiles = file2.list(new FilenameFilter() {
+        @Override
+        public boolean accept(File current, String name) {
+          return name.toLowerCase().endsWith(".zip");
+        }
+      });
+
+      for (String zipFileName : zipFiles) {
+        releaseFileNames += effectiveTime + "/" + zipFileName + "|";
+      }
+    }
+
+    // get rid of last pipe
+    if (releaseFileNames.length() > 1) {
+      releaseFileNames =
+          releaseFileNames.substring(0, releaseFileNames.length() - 1);
+    }
+    return releaseFileNames;
+  }
 }

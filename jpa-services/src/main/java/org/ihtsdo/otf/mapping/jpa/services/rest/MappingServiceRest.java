@@ -833,6 +833,30 @@ public interface MappingServiceRest {
 	   */
 	void startEditingCycleForMapProject(Long mapProjectId, String authToken) throws Exception;
 
+    /**
+     * Gets the log.
+     *
+     * @param projectId the project id
+     * @param logTypes the log types
+     * @param query the query
+     * @param authToken the auth token
+     * @return the log
+     * @throws Exception the exception
+     */
+    String getLog(String projectId, List<String> logTypes, String query,
+      String authToken) throws Exception;
+
+    /**
+     * Returns the release file names.
+     *
+     * @param mapProjectId the map project id
+     * @param authToken the auth token
+     * @return the release file names
+     * @throws Exception the exception
+     */
+    String getReleaseFileNames(Long mapProjectId, String authToken)
+      throws Exception; 	
+	
 	/**
 	   * Creates the jira issue.
 	   *
