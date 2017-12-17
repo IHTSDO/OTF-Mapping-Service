@@ -671,15 +671,15 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
 		// Association reference file
 		for (File f : coreContentInputDir.listFiles()) {
-			if (f.getName().contains("AssociationReference")) {
+			if (f.getName().contains("Association")) {
 				if (coreAssociationReferenceInputFile != null)
 					throw new Exception(
-							"Multiple Association Reference Files!");
+							"Multiple Association Files!");
 				coreAssociationReferenceInputFile = f;
 			}
 		}
 		Logger.getLogger(getClass())
-				.info("      Association reference file = "
+				.info("      Association file = "
 						+ coreAssociationReferenceInputFile.toString() + " "
 						+ coreAssociationReferenceInputFile.exists());
 

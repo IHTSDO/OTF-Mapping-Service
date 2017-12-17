@@ -989,6 +989,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
           + "TerminologyLoad_" + startTimeOrig);
       placementDir.mkdir();
 
+      Logger.getLogger(getClass()).info("AAA - downloading " + terminology + " " + version + " to " + placementDir);
       S3ObjectInputStream inputStream = s3object.getObjectContent();
       File zippedFile = new File(placementDir,
           awsZipFileName.substring(awsZipFileName.lastIndexOf('/') + 1));
@@ -996,6 +997,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       inputStream.close();
 
       // UNZIP to Placement
+      Logger.getLogger(getClass()).info("AAA - decompressing " + zippedFile);      
       unzipToDirectory(zippedFile, placementDir);
       Collection<File> files = FileUtils.listFiles(placementDir, null, true);
       for (File f : files) {
