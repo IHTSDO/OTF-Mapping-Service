@@ -2551,7 +2551,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   @Override
   public void finishRelease() throws Exception {
 
-    Logger logger = null;
+    logger = null;
     if (testModeFlag) {
       logger = previewFinishLog;
     } else {
