@@ -1255,6 +1255,9 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
+    Logger.getLogger(ContentServiceRestImpl.class)
+        .info("RESTful call (Content): /terminology/" + terminology + "/");
+
     if (terminology.equals("SNOMED CT")) {
       terminology = "InternationalRF2";
     } else if (terminology.startsWith("ICNP")) {
@@ -1266,13 +1269,12 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     String currentYear = Integer.toString(year);
     String nextYear = Integer.toString(year + 1);
     String lastYear = Integer.toString(year - 1);
-
+    
     Logger.getLogger(ContentServiceRestImpl.class)
-        .info("RESTful call (Content): /terminology/" + terminology + "/");
+    .info("with year: " + currentYear + "next/last Year" + nextYear + "/" + lastYear);
 
     final String bucketName = "release-ihtsdo-prod-published";
 
-    final ContentService contentService = new ContentServiceJpa();
     try {
       // authorize call
       authorizeApp(authToken, MapUserRole.VIEWER,
@@ -1289,6 +1291,8 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       fullKeyList = objects.getObjectSummaries();
       objects = s3Client.listNextBatchOfObjects(objects);
       int loopCounter = 0;
+      Logger.getLogger(ContentServiceRestImpl.class)
+        .info("First Pass Size: " + fullKeyList.size());
 
       while (objects.isTruncated()) {
         fullKeyList.addAll(objects.getObjectSummaries());
@@ -1298,6 +1302,8 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
             + ++loopCounter + " with keList.size(): " + fullKeyList.size());
       }
       fullKeyList.addAll(objects.getObjectSummaries());
+      Logger.getLogger(ContentServiceRestImpl.class)
+      .info("Final Size: " + fullKeyList.size());
 
       
       PrintWriter summaryWriter = new PrintWriter(new OutputStreamWriter(
@@ -1335,7 +1341,6 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       handleException(e, "trying to find descendant concepts");
       return null;
     } finally {
-      contentService.close();
       securityService.close();
     }
   }
