@@ -1279,17 +1279,31 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       // authorize call
       authorizeApp(authToken, MapUserRole.VIEWER,
           "find version for terminology", securityService);
+      
+      Logger.getLogger(ContentServiceRestImpl.class)
+      .info("AAA");
 
       // Connect to server
       AmazonS3 s3Client =
           AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
               .withCredentials(new InstanceProfileCredentialsProvider(false))
               .build();
+      Logger.getLogger(ContentServiceRestImpl.class)
+      .info("BBB");
 
       List<S3ObjectSummary> fullKeyList = new ArrayList<S3ObjectSummary>();
       ObjectListing objects = s3Client.listObjects(bucketName, "zip");
+      Logger.getLogger(ContentServiceRestImpl.class)
+      .info("CCC");
+
       fullKeyList = objects.getObjectSummaries();
+      Logger.getLogger(ContentServiceRestImpl.class)
+      .info("DDD");
+
       objects = s3Client.listNextBatchOfObjects(objects);
+      Logger.getLogger(ContentServiceRestImpl.class)
+      .info("EEE");
+
       int loopCounter = 0;
       Logger.getLogger(ContentServiceRestImpl.class)
         .info("First Pass Size: " + fullKeyList.size());
