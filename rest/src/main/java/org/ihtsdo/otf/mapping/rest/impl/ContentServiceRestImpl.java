@@ -1007,12 +1007,12 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       Logger.getLogger(getClass()).info("CCC with " + testDir.getAbsolutePath() );
       files = FileUtils.listFiles(testDir, null, true);
       for (File f : files) {
-        Logger.getLogger(getClass()).info("DDD with " + f.getName());
+        Logger.getLogger(getClass()).info("DDD with " + f.getAbsolutePath());
       }
 
       // Load content with input pulled from S3
       algo = new Rf2SnapshotLoaderAlgorithm(terminology, version,
-          placementDir.getAbsolutePath() + File.separator + "Snapshot", treePositions, sendNotification);
+          testDir.getAbsolutePath(), treePositions, sendNotification);
       
       Logger.getLogger(getClass()).info("EEE");
 
