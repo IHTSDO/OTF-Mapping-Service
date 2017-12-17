@@ -337,7 +337,7 @@ public interface ContentServiceRest {
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  void loadTerminologyRf2SnapshotAws(String terminology, String version,
+  void loadTerminologyAwsRf2Snapshot(String terminology, String version,
     String awsFileName, Boolean treePositions, Boolean sendNotification,
     String authToken) throws Exception;
 }
