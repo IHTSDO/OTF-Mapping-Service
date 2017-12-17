@@ -147,7 +147,7 @@ angular
           // reload the application's Terminologies
           reloadTerminologies();
           
-//          getDownloadedGmdnVersions();
+          getDownloadedGmdnVersions();
 
           // initialize map project metadata variables
           initializeMapProjectMetadata();
