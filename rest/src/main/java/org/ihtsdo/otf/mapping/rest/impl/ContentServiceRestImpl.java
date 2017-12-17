@@ -1300,16 +1300,17 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       fullKeyList.addAll(objects.getObjectSummaries());
 
       
-      
       PrintWriter summaryWriter = new PrintWriter(new OutputStreamWriter(
           new FileOutputStream(new File("/home/jefron/aws/listOfVersionsZips.txt")),
           "UTF-8"));
-      File file = new File("/home/jefron/aws/listOfVersionsZips2.txt");
+      PrintWriter summary2Writer = new PrintWriter(new OutputStreamWriter(
+          new FileOutputStream(new File("/home/jefron/aws/filteredFiles.txt")),
+          "UTF-8"));
       summaryWriter.append(terminology).append("\n");
-      FileUtils.writeStringToFile(file, terminology + "\n");
 
       TerminologyVersionList returnList = new TerminologyVersionList();
       for (S3ObjectSummary obj : fullKeyList) {
+        summary2Writer.append(obj.getKey()).append("\n");
         if (/*obj.getKey().startsWith("international")
             &&*/ obj.getKey().endsWith("zip")
             && obj.getKey().contains(terminology)
@@ -1319,13 +1320,12 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
           returnList.addTerminologyVersion(
               new TerminologyVersion(terminology, obj.getKey()));
           
-          
           summaryWriter.append(obj.getKey()).append("\n");
-          FileUtils.writeStringToFile(file, obj.getKey() + "\n");
         }
       }
       
       summaryWriter.close();
+      summary2Writer.close();
 
       returnList.removeDupVersions();
 
@@ -1397,9 +1397,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       PrintWriter summaryWriter = new PrintWriter(new OutputStreamWriter(
           new FileOutputStream(new File("/home/jefron/aws/listOfScopesZips.txt")),
           "UTF-8"));
-      File file = new File("/home/jefron/aws/listOfScopesZips2.txt");
       summaryWriter.append(terminology + "---" + version).append("\n");
-      FileUtils.writeStringToFile(file, terminology + "---" + version + "\n");
 
 
       for (S3ObjectSummary obj : fullKeyList) {
@@ -1410,7 +1408,6 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
           tv.identifyScope();
           returnList.addTerminologyVersion(tv);
           summaryWriter.append(obj.getKey()).append("\n");
-          FileUtils.writeStringToFile(file, obj.getKey() + "\n");
         }
       }
       
