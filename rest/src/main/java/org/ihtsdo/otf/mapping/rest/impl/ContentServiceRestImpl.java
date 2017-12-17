@@ -1335,11 +1335,11 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
                 || obj.getKey().contains(nextYear))
             && (obj.getKey().matches(".*\\d.zip") || obj.getKey().matches(".*\\dZ.zip"))) {
           Logger.getLogger(ContentServiceRestImpl.class)
-          .info("Adding AAA : " + obj.getKey());
+          .info("Adding AAAAAA : " + obj.getKey());
 
           summaryWriter.append(obj.getKey()).append("\n");
           Logger.getLogger(ContentServiceRestImpl.class)
-          .info("Adding BBB : " + obj.getKey());
+          .info("Adding BBBBBB : " + obj.getKey());
 
           returnList.addTerminologyVersion(
               new TerminologyVersion(obj.getKey(), terminology));
