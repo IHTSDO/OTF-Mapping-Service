@@ -60,6 +60,9 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
+import com.amazonaws.SdkClientException;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
@@ -975,10 +978,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
     try {
       // Access zipped awsFile
-      AmazonS3 s3Client =
-          AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
-              .withCredentials(new InstanceProfileCredentialsProvider(false))
-              .build();
+      AmazonS3 s3Client = connectToAmazonS3();
 
       final String bucketName = "release-ihtsdo-prod-published";
       S3Object s3object = s3Client.getObject(bucketName, awsZipFileName);
@@ -1293,10 +1293,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
       // Connect to server
       final String bucketName = "release-ihtsdo-prod-published";
-      AmazonS3 s3Client =
-          AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
-              .withCredentials(new InstanceProfileCredentialsProvider(false))
-              .build();
+      AmazonS3 s3Client = connectToAmazonS3();
 
       List<S3ObjectSummary> fullKeyList = new ArrayList<S3ObjectSummary>();
       ObjectListing objects = s3Client.listObjects(bucketName);
@@ -1368,10 +1365,8 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
           "load map record RF2 simple", securityService);
 
        // Connect to server 
-      AmazonS3 s3Client =
-          AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
-              .withCredentials(new InstanceProfileCredentialsProvider(false))
-              .build();
+      AmazonS3 s3Client = connectToAmazonS3();
+
 
       List<S3ObjectSummary> fullKeyList = new ArrayList<S3ObjectSummary>();
       ObjectListing objects = s3Client.listObjects(bucketName);
@@ -1461,4 +1456,5 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     }
     bos.close();
   }
+  
 }
