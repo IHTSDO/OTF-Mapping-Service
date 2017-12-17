@@ -5773,24 +5773,9 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       String bucketName = "release-ihtsdo-prod-published";
       SearchResultList searchResults = new SearchResultListJpa();
 
-      // Connect to server using instance profile credentials
-      AmazonS3 s3Client =
-          AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
-              .withCredentials(new InstanceProfileCredentialsProvider(false))
-              .build();
-
-      // Check if connection was successful.  If not, try to connect with static keys instead
-      try{
-        List<Bucket> buckets = s3Client.listBuckets();
-      } catch(SdkClientException e){
-        // Connet to server with static keys
-        BasicAWSCredentials awsCreds = new BasicAWSCredentials(ConfigUtility.getConfigProperties().getProperty("aws.access.key.id"), ConfigUtility.getConfigProperties().getProperty("aws.secret.access.key"));
-        s3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
-                                .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-                                .build();
-      }
+      // Connect to server
+      AmazonS3 s3Client = connectToAmazonS3();
       
-            
       // List Buckets
       List<Bucket> buckets = s3Client.listBuckets();
       for (Bucket b : buckets) {
@@ -5921,6 +5906,33 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
+  private AmazonS3 connectToAmazonS3() throws Exception {
+    // Connect to server using instance profile credentials
+    AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
+        .withRegion(Regions.US_EAST_1)
+        .withCredentials(new InstanceProfileCredentialsProvider(false)).build();
+
+    // Check if connection was successful. If not, try to connect with static
+    // keys instead
+    try {
+      s3Client.listBuckets();
+    } catch (SdkClientException e) {
+      // Connet to server with static keys
+      BasicAWSCredentials awsCreds = new BasicAWSCredentials(
+          ConfigUtility.getConfigProperties().getProperty("aws.access.key.id"),
+          ConfigUtility.getConfigProperties()
+              .getProperty("aws.secret.access.key"));
+      s3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
+          .withCredentials(new AWSStaticCredentialsProvider(awsCreds)).build();
+
+      // Check connection again. If this fails as well, it will throw the
+      // exception to the calling method
+      s3Client.listBuckets();
+    }
+
+    return s3Client;
+  }
+
   private void callTestMethod() throws Exception {
     Logger.getLogger(MappingServiceRestImpl.class).info("AAA");
     String bucketName = "release-ihtsdo-prod-published";
@@ -5929,9 +5941,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
         "international/SnomedCT_GMDNMapRelease_Production_20170908T120000Z/SnomedCT_GMDNMapRelease_Production_20170908T120000Z/Snapshot/Refset/Map/der2_sRefset_GMDNMapSimpleMapSnapshot_INT_20170731.txt";
 
     // Connect to server
-    AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-        .withRegion(Regions.US_EAST_1)
-        .withCredentials(new InstanceProfileCredentialsProvider(false)).build();
+    AmazonS3 s3Client = connectToAmazonS3();
 
     // List Buckets
     /*
@@ -6092,9 +6102,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
         "international/xSnomedCT_RF2Release_INT_20170131/Delta/Terminology/xsct2_Concept_Delta_INT_20170131.txt";
 
     // Connect to server
-    AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-        .withRegion(Regions.US_EAST_1)
-        .withCredentials(new InstanceProfileCredentialsProvider(false)).build();
+    AmazonS3 s3Client = connectToAmazonS3();
 
     // List Buckets
     Logger.getLogger(MappingServiceRestImpl.class).info("BBB start");
