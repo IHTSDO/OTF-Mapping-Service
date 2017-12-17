@@ -1292,7 +1292,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       .info("BBB");
 
       List<S3ObjectSummary> fullKeyList = new ArrayList<S3ObjectSummary>();
-      ObjectListing objects = s3Client.listObjects(bucketName, "zip");
+      ObjectListing objects = s3Client.listObjects(bucketName);
       Logger.getLogger(ContentServiceRestImpl.class)
       .info("CCC");
 
