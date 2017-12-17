@@ -100,6 +100,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
   /** THe flags for writing snapshot and delta. */
   private boolean writeSnapshot = false;
+  
+  private boolean writeActiveSnapshot = false;
 
   /** The write delta. */
   private boolean writeDelta = false;
@@ -685,9 +687,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Write human readable file
     writeHumanReadableFile(activeMembersMap);
 
+    // Write active snapshot file
+    if (writeActiveSnapshot) {
+      writeActiveSnapshotFile(activeMembersMap);
+    }
+    
     // Write snapshot file
     if (writeSnapshot) {
-      writeActiveSnapshotFile(activeMembersMap);
       writeSnapshotFile(prevInactiveMembersMap, prevActiveMembersMap,
           activeMembersMap);
     }
@@ -3071,6 +3077,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     this.writeSnapshot = writeSnapshot;
   }
 
+  /* see superclass */
+  @Override
+  public void setWriteActiveSnapshot(boolean writeActiveSnapshot) {
+    this.writeActiveSnapshot = writeActiveSnapshot;
+  }
+  
   /* see superclass */
   @Override
   public void setWriteDelta(boolean writeDelta) {
