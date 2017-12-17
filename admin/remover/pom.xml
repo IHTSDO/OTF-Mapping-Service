@@ -150,7 +150,8 @@
                 </goals>
                 <configuration>
                   <refsetId>${refset.id}</refsetId>
-                  <inputFile>${input.file}</inputFile>
+                  <inputFile>${input.file}</inputFile>                  
+                  <server>${server}</server>
                 </configuration>
               </execution>
             </executions>
@@ -176,6 +177,7 @@
                 </goals>
                 <configuration>
                   <refsetId>${refset.id}</refsetId>
+                  <server>${server}</server>
                 </configuration>
               </execution>
             </executions>

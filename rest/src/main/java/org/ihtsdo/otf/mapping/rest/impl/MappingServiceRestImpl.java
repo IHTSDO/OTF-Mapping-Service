@@ -6,6 +6,7 @@ package org.ihtsdo.otf.mapping.rest.impl;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -134,9 +135,6 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.Bucket;
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.ListObjectsV2Request;
-import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
@@ -149,7 +147,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
-
 /**
  * REST implementation for mapping service.
  */
@@ -158,10 +155,11 @@ import io.swagger.annotations.ApiParam;
 @Produces({
     MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 })
-public class MappingServiceRestImpl extends RootServiceRestImpl implements MappingServiceRest {
+public class MappingServiceRestImpl extends RootServiceRestImpl
+    implements MappingServiceRest {
 
   private static final int MAX_RESULTS = 10000;
-  
+
   /** The security service. */
   private SecurityService securityService;
 
@@ -178,8 +176,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
   // SCRUD functions: Map Projects
   // ///////////////////////////////////////////////////
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapProjects(java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapProjects(java.
+   * lang.String)
    */
   @Override
   @GET
@@ -250,8 +252,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapProject(java.lang.Long, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapProject(java.lang
+   * .Long, java.lang.String)
    */
   @Override
   @GET
@@ -297,8 +303,11 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addMapProject(org.ihtsdo.otf.mapping.jpa.MapProjectJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addMapProject(org.
+   * ihtsdo.otf.mapping.jpa.MapProjectJpa, java.lang.String)
    */
   @Override
   @PUT
@@ -348,8 +357,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#updateMapProject(org.ihtsdo.otf.mapping.jpa.MapProjectJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#updateMapProject(org.
+   * ihtsdo.otf.mapping.jpa.MapProjectJpa, java.lang.String)
    */
   @Override
   @POST
@@ -409,8 +422,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeMapProject(org.ihtsdo.otf.mapping.jpa.MapProjectJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeMapProject(org.
+   * ihtsdo.otf.mapping.jpa.MapProjectJpa, java.lang.String)
    */
   @Override
   @DELETE
@@ -444,8 +461,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#cloneMapProject(org.ihtsdo.otf.mapping.jpa.MapProjectJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#cloneMapProject(org.
+   * ihtsdo.otf.mapping.jpa.MapProjectJpa, java.lang.String)
    */
   @Override
   @PUT
@@ -460,74 +481,63 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
     final MappingService mappingService = new MappingServiceJpa();
     try {
-    	// authorize call
-        authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-            "clone a map project", securityService);
+      // authorize call
+      authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "clone a map project",
+          securityService);
 
       mappingService.setTransactionPerOperation(false);
       mappingService.beginTransaction();
 
       // Add the map project (null the id)
       final Long mapProjectId = mapProject.getId();
-      final MapProject originMapProject = mappingService.getMapProject(mapProjectId);
+      final MapProject originMapProject =
+          mappingService.getMapProject(mapProjectId);
 
       // Determine if refset with this id already exists in this project.
-      /*if (originRefset.getTerminologyId().equals(refset.getTerminologyId())
-          && originRefset.getProject().getId()
-              .equals(refset.getProject().getId())) {
-        throw new LocalException(
-            "Duplicate refset terminology id within the project, "
-                + "please change terminology id");
-      }*/
+      /*
+       * if (originRefset.getTerminologyId().equals(refset.getTerminologyId())
+       * && originRefset.getProject().getId()
+       * .equals(refset.getProject().getId())) { throw new LocalException(
+       * "Duplicate refset terminology id within the project, " +
+       * "please change terminology id"); }
+       */
       final Set<MapUser> mapLeads = originMapProject.getMapLeads();
       // lazy init
       mapLeads.size();
 
-      
       // copy map specialists and leads
       for (MapUser mapLead : originMapProject.getMapLeads()) {
-    	  mapLead.setId(null);
+        mapLead.setId(null);
       }
       for (MapUser mapSpecialist : originMapProject.getMapSpecialists()) {
-    	  mapSpecialist.setId(null);
+        mapSpecialist.setId(null);
       }
       // clear error messages
       mapProject.setErrorMessages(new HashSet<String>());
       MapProject newMapProject = mappingService.addMapProject(mapProject);
 
-/*      // Copy all the members if EXTENSIONAL
-      if (refset.getType() == Refset.Type.EXTENSIONAL) {
+      /*
+       * // Copy all the members if EXTENSIONAL if (refset.getType() ==
+       * Refset.Type.EXTENSIONAL) {
+       * 
+       * // Get the original reference set for (final ConceptRefsetMember
+       * originMember : originMembers) { final ConceptRefsetMember member = new
+       * ConceptRefsetMemberJpa(originMember); member.setPublished(false);
+       * member.setPublishable(true); member.setRefset(newRefset);
+       * member.setEffectiveTime(null); // Insert new members
+       * member.setId(null); member.setLastModifiedBy(userName);
+       * refsetService.addMember(member); } // Resolve definition if INTENSIONAL
+       * } else if (refset.getType() == Refset.Type.INTENSIONAL) { // Copy
+       * inclusions and exclusions from origin refset for (final
+       * ConceptRefsetMember member : originMembers) { if
+       * (member.getMemberType() == Refset.MemberType.INCLUSION ||
+       * member.getMemberType() == Refset.MemberType.EXCLUSION) { final
+       * ConceptRefsetMember member2 = new ConceptRefsetMemberJpa(member);
+       * member2.setRefset(newRefset); member2.setId(null);
+       * refsetService.addMember(member2); newRefset.addMember(member2); } }
+       * refsetService.resolveRefsetDefinition(newRefset); }
+       */
 
-        // Get the original reference set
-        for (final ConceptRefsetMember originMember : originMembers) {
-          final ConceptRefsetMember member =
-              new ConceptRefsetMemberJpa(originMember);
-          member.setPublished(false);
-          member.setPublishable(true);
-          member.setRefset(newRefset);
-          member.setEffectiveTime(null);
-          // Insert new members
-          member.setId(null);
-          member.setLastModifiedBy(userName);
-          refsetService.addMember(member);
-        }
-        // Resolve definition if INTENSIONAL
-      } else if (refset.getType() == Refset.Type.INTENSIONAL) {
-        // Copy inclusions and exclusions from origin refset
-        for (final ConceptRefsetMember member : originMembers) {
-          if (member.getMemberType() == Refset.MemberType.INCLUSION
-              || member.getMemberType() == Refset.MemberType.EXCLUSION) {
-            final ConceptRefsetMember member2 =
-                new ConceptRefsetMemberJpa(member);
-            member2.setRefset(newRefset);
-            member2.setId(null);
-            refsetService.addMember(member2);
-            newRefset.addMember(member2);
-          }
-        }
-        refsetService.resolveRefsetDefinition(newRefset);
-      }*/
-      
       // done
       mappingService.commit();
       return newMapProject;
@@ -540,9 +550,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#findMapProjectsForQuery(java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#findMapProjectsForQuery
+   * (java.lang.String, java.lang.String)
    */
   @Override
   @GET
@@ -578,8 +591,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapProjectsForUser(java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapProjectsForUser(
+   * java.lang.String, java.lang.String)
    */
   @Override
   @GET
@@ -639,8 +656,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
   // SCRUD functions: Map Users
   // ///////////////////////////////////////////////////
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapUsers(java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapUsers(java.lang.
+   * String)
    */
   @Override
   @GET
@@ -705,8 +726,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getScopeConceptsForMapProject(java.lang.Long, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * getScopeConceptsForMapProject(java.lang.Long,
+   * org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
    */
   @Override
   @POST
@@ -749,9 +774,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addScopeConceptsToMapProject(java.util.List, java.lang.Long, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * addScopeConceptsToMapProject(java.util.List, java.lang.Long,
+   * java.lang.String)
    */
   @Override
   @POST
@@ -809,8 +837,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     return null;
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeScopeConceptFromMapProject(java.lang.String, java.lang.Long, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * removeScopeConceptFromMapProject(java.lang.String, java.lang.Long,
+   * java.lang.String)
    */
   @Override
   @POST
@@ -836,22 +868,24 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
       final ValidationResult result = new ValidationResultJpa();
-      
+
       if (mapProject.getScopeConcepts().contains(terminologyId)) {
-        mapProject.removeScopeConcept(terminologyId); 
+        mapProject.removeScopeConcept(terminologyId);
         mappingService.updateMapProject(mapProject);
-        result.addMessage("Concept " + terminologyId + " has been removed from scope.");
+        result.addMessage(
+            "Concept " + terminologyId + " has been removed from scope.");
       } else if (contentService.getConcept(terminologyId,
-        mapProject.getSourceTerminology(),
-        mapProject.getSourceTerminologyVersion()) == null) {
-        result.addWarning("Concept " + terminologyId + " does not exist, skipping.");
-      } else {
+          mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion()) == null) {
         result.addWarning(
-            "Concept " + terminologyId + " was not in scope for this project, skipping.");
+            "Concept " + terminologyId + " does not exist, skipping.");
+      } else {
+        result.addWarning("Concept " + terminologyId
+            + " was not in scope for this project, skipping.");
       }
-     
+
       return result;
-      
+
     } catch (Exception e) {
       this.handleException(e, "trying to remove scope concept from project",
           user, projectName, "");
@@ -863,8 +897,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     return null;
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeScopeConceptsFromMapProject(java.util.List, java.lang.Long, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * removeScopeConceptsFromMapProject(java.util.List, java.lang.Long,
+   * java.lang.String)
    */
   @Override
   @POST
@@ -886,7 +924,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
     final MappingService mappingService = new MappingServiceJpa();
     final ContentService contentService = new ContentServiceJpa();
-    
+
     try {
       // authorize call
       user = authorizeProject(projectId, authToken, MapUserRole.LEAD,
@@ -894,19 +932,21 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
       ValidationResult result = new ValidationResultJpa();
-      
+
       for (final String terminologyId : terminologyIds) {
         if (mapProject.getScopeConcepts().contains(terminologyId)) {
-          mapProject.removeScopeConcept(terminologyId); 
+          mapProject.removeScopeConcept(terminologyId);
           mappingService.updateMapProject(mapProject);
-          result.addMessage("Concept " + terminologyId + " has been removed from scope.");
+          result.addMessage(
+              "Concept " + terminologyId + " has been removed from scope.");
         } else if (contentService.getConcept(terminologyId,
-          mapProject.getSourceTerminology(),
-          mapProject.getSourceTerminologyVersion()) == null) {
-          result.addWarning("Concept " + terminologyId + " does not exist, skipping.");
-        } else {
+            mapProject.getSourceTerminology(),
+            mapProject.getSourceTerminologyVersion()) == null) {
           result.addWarning(
-              "Concept " + terminologyId + " was not in scope for this project, skipping.");
+              "Concept " + terminologyId + " does not exist, skipping.");
+        } else {
+          result.addWarning("Concept " + terminologyId
+              + " was not in scope for this project, skipping.");
         }
       }
       return result;
@@ -922,8 +962,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     return null;
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getScopeExcludedConceptsForMapProject(java.lang.Long, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * getScopeExcludedConceptsForMapProject(java.lang.Long,
+   * org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
    */
   @Override
   @POST
@@ -964,8 +1008,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addScopeExcludedConceptsToMapProject(java.util.List, java.lang.Long, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * addScopeExcludedConceptsToMapProject(java.util.List, java.lang.Long,
+   * java.lang.String)
    */
   @Override
   @POST
@@ -994,14 +1042,15 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       final ValidationResult result = new ValidationResultJpa();
       for (final String terminologyId : terminologyIds) {
         if (mapProject.getScopeExcludedConcepts().contains(terminologyId)) {
-          result.addWarning(
-              "Concept " + terminologyId + " is already in the scope excluded list, skipping.");
+          result.addWarning("Concept " + terminologyId
+              + " is already in the scope excluded list, skipping.");
         } else if (contentService.getConcept(terminologyId,
             mapProject.getSourceTerminology(),
             mapProject.getSourceTerminologyVersion()) != null) {
           mapProject.addScopeExcludedConcept(terminologyId);
           mappingService.updateMapProject(mapProject);
-          result.addMessage("Concept " + terminologyId + " added to scope excluded list.");
+          result.addMessage(
+              "Concept " + terminologyId + " added to scope excluded list.");
         } else {
           result.addWarning(
               "Concept " + terminologyId + " does not exist, skipping.");
@@ -1019,8 +1068,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     return null;
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeScopeExcludedConceptFromMapProject(java.lang.String, java.lang.Long, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * removeScopeExcludedConceptFromMapProject(java.lang.String, java.lang.Long,
+   * java.lang.String)
    */
   @Override
   @POST
@@ -1047,20 +1100,22 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
       final MapProject mapProject = mappingService.getMapProject(projectId);
       final ValidationResult result = new ValidationResultJpa();
-      
+
       if (mapProject.getScopeExcludedConcepts().contains(terminologyId)) {
-        mapProject.removeScopeExcludedConcept(terminologyId); 
+        mapProject.removeScopeExcludedConcept(terminologyId);
         mappingService.updateMapProject(mapProject);
-        result.addMessage("Concept " + terminologyId + " has been removed from scope excluded list.");
+        result.addMessage("Concept " + terminologyId
+            + " has been removed from scope excluded list.");
       } else if (contentService.getConcept(terminologyId,
-        mapProject.getSourceTerminology(),
-        mapProject.getSourceTerminologyVersion()) == null) {
-        result.addWarning("Concept " + terminologyId + " does not exist, skipping.");
-      } else {
+          mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion()) == null) {
         result.addWarning(
-            "Concept " + terminologyId + " was not in scope exluded list for this project, skipping.");
+            "Concept " + terminologyId + " does not exist, skipping.");
+      } else {
+        result.addWarning("Concept " + terminologyId
+            + " was not in scope exluded list for this project, skipping.");
       }
-     
+
       return result;
     } catch (Exception e) {
       this.handleException(e,
@@ -1074,8 +1129,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     return null;
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeScopeExcludedConceptsFromMapProject(java.util.List, java.lang.Long, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * removeScopeExcludedConceptsFromMapProject(java.util.List, java.lang.Long,
+   * java.lang.String)
    */
   @Override
   @POST
@@ -1104,18 +1163,20 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
       final ValidationResult result = new ValidationResultJpa();
       for (final String terminologyId : terminologyIds) {
-        
+
         if (mapProject.getScopeExcludedConcepts().contains(terminologyId)) {
-          mapProject.removeScopeExcludedConcept(terminologyId); 
+          mapProject.removeScopeExcludedConcept(terminologyId);
           mappingService.updateMapProject(mapProject);
-          result.addMessage("Concept " + terminologyId + " has been removed from scope excluded list.");
+          result.addMessage("Concept " + terminologyId
+              + " has been removed from scope excluded list.");
         } else if (contentService.getConcept(terminologyId,
-          mapProject.getSourceTerminology(),
-          mapProject.getSourceTerminologyVersion()) == null) {
-          result.addWarning("Concept " + terminologyId + " does not exist, skipping.");
-        } else {
+            mapProject.getSourceTerminology(),
+            mapProject.getSourceTerminologyVersion()) == null) {
           result.addWarning(
-              "Concept " + terminologyId + " was not in scope exluded list for this project, skipping.");
+              "Concept " + terminologyId + " does not exist, skipping.");
+        } else {
+          result.addWarning("Concept " + terminologyId
+              + " was not in scope exluded list for this project, skipping.");
         }
       }
       return result;
@@ -1132,8 +1193,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     return null;
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapUser(java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapUser(java.lang.
+   * String, java.lang.String)
    */
   @Override
   @GET
@@ -1168,8 +1233,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addMapUser(org.ihtsdo.otf.mapping.jpa.MapUserJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addMapUser(org.ihtsdo.
+   * otf.mapping.jpa.MapUserJpa, java.lang.String)
    */
   @Override
   @PUT
@@ -1213,8 +1282,11 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#updateMapUser(org.ihtsdo.otf.mapping.jpa.MapUserJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#updateMapUser(org.
+   * ihtsdo.otf.mapping.jpa.MapUserJpa, java.lang.String)
    */
   @Override
   @POST
@@ -1249,8 +1321,11 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeMapUser(org.ihtsdo.otf.mapping.jpa.MapUserJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeMapUser(org.
+   * ihtsdo.otf.mapping.jpa.MapUserJpa, java.lang.String)
    */
   @Override
   @DELETE
@@ -1285,9 +1360,13 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
   // ///////////////////////////////////////////////////
   // SCRUD functions: Map Advice
   // ///////////////////////////////////////////////////
-  
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapAdvices(java.lang.String)
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapAdvices(java.lang
+   * .String)
    */
   @Override
   @GET
@@ -1329,8 +1408,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addMapAdvice(org.ihtsdo.otf.mapping.jpa.MapAdviceJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addMapAdvice(org.ihtsdo
+   * .otf.mapping.jpa.MapAdviceJpa, java.lang.String)
    */
   @Override
   @PUT
@@ -1376,8 +1459,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#updateMapAdvice(org.ihtsdo.otf.mapping.jpa.MapAdviceJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#updateMapAdvice(org.
+   * ihtsdo.otf.mapping.jpa.MapAdviceJpa, java.lang.String)
    */
   @Override
   @POST
@@ -1411,8 +1498,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeMapAdvice(org.ihtsdo.otf.mapping.jpa.MapAdviceJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeMapAdvice(org.
+   * ihtsdo.otf.mapping.jpa.MapAdviceJpa, java.lang.String)
    */
   @Override
   @DELETE
@@ -1449,8 +1540,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
   // ///////////////////////////////////////////////////
   // SCRUD functions: Map AgeRange
   // ///////////////////////////////////////////////////
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapAgeRanges(java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapAgeRanges(java.
+   * lang.String)
    */
   @Override
   @GET
@@ -1492,8 +1587,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addMapAgeRange(org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addMapAgeRange(org.
+   * ihtsdo.otf.mapping.jpa.MapAgeRangeJpa, java.lang.String)
    */
   @Override
   @PUT
@@ -1539,8 +1638,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#updateMapAgeRange(org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#updateMapAgeRange(org.
+   * ihtsdo.otf.mapping.jpa.MapAgeRangeJpa, java.lang.String)
    */
   @Override
   @POST
@@ -1574,8 +1677,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeMapAgeRange(org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeMapAgeRange(org.
+   * ihtsdo.otf.mapping.jpa.MapAgeRangeJpa, java.lang.String)
    */
   @Override
   @DELETE
@@ -1611,8 +1718,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
   // SCRUD functions: Map Relation
   // ///////////////////////////////////////////////////
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapRelations(java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapRelations(java.
+   * lang.String)
    */
   @Override
   @GET
@@ -1653,8 +1764,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addMapRelation(org.ihtsdo.otf.mapping.jpa.MapRelationJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addMapRelation(org.
+   * ihtsdo.otf.mapping.jpa.MapRelationJpa, java.lang.String)
    */
   @Override
   @PUT
@@ -1700,8 +1815,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#updateMapRelation(org.ihtsdo.otf.mapping.jpa.MapRelationJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#updateMapRelation(org.
+   * ihtsdo.otf.mapping.jpa.MapRelationJpa, java.lang.String)
    */
   @Override
   @POST
@@ -1735,8 +1854,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeMapRelation(org.ihtsdo.otf.mapping.jpa.MapRelationJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeMapRelation(org.
+   * ihtsdo.otf.mapping.jpa.MapRelationJpa, java.lang.String)
    */
   @Override
   @DELETE
@@ -1774,8 +1897,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
   // SCRUD functions: Map Principles
   // ///////////////////////////////////////////////////
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapPrinciples(java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapPrinciples(java.
+   * lang.String)
    */
   @Override
   @GET
@@ -1816,8 +1943,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapPrinciple(java.lang.Long, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapPrinciple(java.
+   * lang.Long, java.lang.String)
    */
   @Override
   @GET
@@ -1854,8 +1985,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addMapPrinciple(org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addMapPrinciple(org.
+   * ihtsdo.otf.mapping.jpa.MapPrincipleJpa, java.lang.String)
    */
   @Override
   @PUT
@@ -1905,8 +2040,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#updateMapPrinciple(org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#updateMapPrinciple(org.
+   * ihtsdo.otf.mapping.jpa.MapPrincipleJpa, java.lang.String)
    */
   @Override
   @POST
@@ -1941,8 +2080,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeMapPrinciple(org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeMapPrinciple(org.
+   * ihtsdo.otf.mapping.jpa.MapPrincipleJpa, java.lang.String)
    */
   @Override
   @DELETE
@@ -1981,8 +2124,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
   // SCRUD functions: Map User Preferences
   // ///////////////////////////////////////////////////
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapUserPreferences(java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapUserPreferences(
+   * java.lang.String, java.lang.String)
    */
   @Override
   @GET
@@ -2017,8 +2164,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addMapUserPreferences(org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addMapUserPreferences(
+   * org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa, java.lang.String)
    */
   @Override
   @PUT
@@ -2058,8 +2209,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#updateMapUserPreferences(org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * updateMapUserPreferences(org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa,
+   * java.lang.String)
    */
   @Override
   @POST
@@ -2096,8 +2251,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeMapUserPreferences(org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * removeMapUserPreferences(org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa,
+   * java.lang.String)
    */
   @Override
   @DELETE
@@ -2134,8 +2293,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
   // SCRUD functions: Map Record
   // ///////////////////////////////////////////////////
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapRecord(java.lang.Long, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapRecord(java.lang.
+   * Long, java.lang.String)
    */
   @Override
   @GET
@@ -2187,8 +2350,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addMapRecord(org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addMapRecord(org.ihtsdo
+   * .otf.mapping.jpa.MapRecordJpa, java.lang.String)
    */
   @Override
   @PUT
@@ -2227,8 +2394,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#updateMapRecord(org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#updateMapRecord(org.
+   * ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
    */
   @Override
   @POST
@@ -2264,8 +2435,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeMapRecord(org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeMapRecord(org.
+   * ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
    */
   @Override
   @DELETE
@@ -2304,8 +2479,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeMapRecordsForMapProjectAndTerminologyIds(java.util.List, java.lang.Long, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * removeMapRecordsForMapProjectAndTerminologyIds(java.util.List,
+   * java.lang.Long, java.lang.String)
    */
   @Override
   @DELETE
@@ -2426,8 +2605,11 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapRecordsForConceptId(java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * getMapRecordsForConceptId(java.lang.String, java.lang.String)
    */
   @Override
   @GET
@@ -2510,8 +2692,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapRecordsForConceptIdHistorical(java.lang.String, java.lang.Long, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * getMapRecordsForConceptIdHistorical(java.lang.String, java.lang.Long,
+   * java.lang.String)
    */
   @Override
   @GET
@@ -2597,8 +2783,13 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapRecordsForMapProjectAndQuery(java.lang.Long, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String, java.lang.String, boolean, java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * getMapRecordsForMapProjectAndQuery(java.lang.Long,
+   * org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String,
+   * java.lang.String, boolean, java.lang.String, java.lang.String)
    */
   @Override
   @POST
@@ -2610,7 +2801,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  //@CookieParam(value = "userInfo")
+  // @CookieParam(value = "userInfo")
   public MapRecordListJpa getMapRecordsForMapProjectAndQuery(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
@@ -2624,7 +2815,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     // log call
     Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /record/project/id/" + mapProjectId + " "
-            + ancestorId + ", " + excludeDescendants  + ", " + query);
+            + ancestorId + ", " + excludeDescendants + ", " + query);
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
 
@@ -2639,12 +2830,14 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
       // determine if a query was passed
       boolean queryFlag =
-          (query != null && !query.isEmpty() && !query.equals("null") ) || (pfsParameter.getQueryRestriction() != null && !pfsParameter.getQueryRestriction().isEmpty());
+          (query != null && !query.isEmpty() && !query.equals("null"))
+              || (pfsParameter.getQueryRestriction() != null
+                  && !pfsParameter.getQueryRestriction().isEmpty());
       boolean ancestorFlag = ancestorId != null && !ancestorId.isEmpty()
           && !ancestorId.equals("null");
 
-      boolean relationshipFlag = relationshipName != null && !relationshipName.isEmpty()
-          && !relationshipName.equals("null");
+      boolean relationshipFlag = relationshipName != null
+          && !relationshipName.isEmpty() && !relationshipName.equals("null");
 
       // instantiate the list to be returned
       final MapRecordListJpa mapRecordList = new MapRecordListJpa();
@@ -2692,39 +2885,44 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
           pfsLocal.setStartIndex(0);
           pfsLocal.setMaxResults(MAX_RESULTS);
 
-        // perform lucene search
-        searchResults = (queryFlag
-            ? mappingService.findMapRecordsForQuery(queryLocal, pfsLocal)
-            : new SearchResultListJpa());
+          // perform lucene search
+          searchResults = (queryFlag
+              ? mappingService.findMapRecordsForQuery(queryLocal, pfsLocal)
+              : new SearchResultListJpa());
 
-        if (searchResults.getTotalCount() > MAX_RESULTS) {
+          if (searchResults.getTotalCount() > MAX_RESULTS) {
             throw new LocalException(searchResults.getTotalCount()
-              + " potential string matches for ancestor or relationship search. Narrow your search and try again.");
+                + " potential string matches for ancestor or relationship search. Narrow your search and try again.");
           }
-        if(searchResults.getCount() > 0) {
-          ImmutableMap<String, SearchResult> resultsMap = Maps.uniqueIndex(searchResults.getSearchResults(), new Function<SearchResult, String>() {
+          if (searchResults.getCount() > 0) {
+            ImmutableMap<String, SearchResult> resultsMap =
+                Maps.uniqueIndex(searchResults.getSearchResults(),
+                    new Function<SearchResult, String>() {
 
-            @Override
-            public String apply(SearchResult input) {
-              return input.getTerminologyId();
-            }
+                      @Override
+                      public String apply(SearchResult input) {
+                        return input.getTerminologyId();
+                      }
 
-          });
-          searchResults = mappingService
-              .findMapRecords(mapProjectId, ancestorId, excludeDescendants, relationshipName,
-                  mapProject.getSourceTerminology(),
-                  mapProject.getSourceTerminologyVersion(), descendantPfs, resultsMap.keySet());
+                    });
+            searchResults = mappingService.findMapRecords(mapProjectId,
+                ancestorId, excludeDescendants, relationshipName,
+                mapProject.getSourceTerminology(),
+                mapProject.getSourceTerminologyVersion(), descendantPfs,
+                resultsMap.keySet());
           }
- 
+
         }
 
         else {
-          // Otherwise, just find all map records to include or exclude descendants
-            searchResults = mappingService
-                .findMapRecords(mapProjectId, ancestorId, excludeDescendants, relationshipName, 
-                    mapProject.getSourceTerminology(),
-                    mapProject.getSourceTerminologyVersion(), descendantPfs, Collections.<String> emptySet());
- 
+          // Otherwise, just find all map records to include or exclude
+          // descendants
+          searchResults = mappingService.findMapRecords(mapProjectId,
+              ancestorId, excludeDescendants, relationshipName,
+              mapProject.getSourceTerminology(),
+              mapProject.getSourceTerminologyVersion(), descendantPfs,
+              Collections.<String> emptySet());
+
         }
 
         // workaround for typing problems between List<SearchResultJpa>
@@ -2793,8 +2991,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getPublishedMapRecordsForMapProject(java.lang.Long, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * getPublishedMapRecordsForMapProject(java.lang.Long,
+   * org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
    */
   @Override
   @POST
@@ -2806,7 +3008,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  //@CookieParam(value = "userInfo")
+  // @CookieParam(value = "userInfo")
   public MapRecordListJpa getPublishedMapRecordsForMapProject(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = true) PfsParameterJpa pfsParameter,
@@ -2848,8 +3050,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapRecordRevisions(java.lang.Long, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapRecordRevisions(
+   * java.lang.Long, java.lang.String)
    */
   @Override
   @GET
@@ -2904,8 +3110,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapRecordHistorical(java.lang.Long, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapRecordHistorical(
+   * java.lang.Long, java.lang.String)
    */
   @Override
   @GET
@@ -2968,8 +3178,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
   // Relation and Advice Computation
   // /////////////////////////////////////////
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#computeMapRelation(org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#computeMapRelation(org.
+   * ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
    */
   @Override
   @POST
@@ -3032,8 +3246,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#computeMapAdvice(java.lang.Integer, org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#computeMapAdvice(java.
+   * lang.Integer, org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
    */
   @Override
   @POST
@@ -3101,9 +3319,13 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
   // ///////////////////////////////////////////////
   // Role Management Services
   // ///////////////////////////////////////////////
-  
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapUserRoleForMapProject(java.lang.String, java.lang.Long, java.lang.String)
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * getMapUserRoleForMapProject(java.lang.String, java.lang.Long,
+   * java.lang.String)
    */
   @Override
   @GET
@@ -3141,8 +3363,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
   // Descendant services
   // /////////////////////////
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getUnmappedDescendantsForConcept(java.lang.String, java.lang.Long, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * getUnmappedDescendantsForConcept(java.lang.String, java.lang.Long,
+   * java.lang.String)
    */
   @Override
   @GET
@@ -3187,9 +3413,13 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
   // /////////////////////////////////////////////////////
   // Tree Position Routines for Terminology Browser
   // /////////////////////////////////////////////////////
-  
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getTreePositionWithDescendantsForConceptAndMapProject(java.lang.String, java.lang.Long, java.lang.String)
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * getTreePositionWithDescendantsForConceptAndMapProject(java.lang.String,
+   * java.lang.Long, java.lang.String)
    */
   @Override
   @GET
@@ -3269,8 +3499,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getDestinationRootTreePositionsForMapProject(java.lang.Long, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * getDestinationRootTreePositionsForMapProject(java.lang.Long,
+   * java.lang.String)
    */
   @Override
   @GET
@@ -3341,8 +3575,11 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getSourceRootTreePositionsForMapProject(java.lang.Long, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * getSourceRootTreePositionsForMapProject(java.lang.Long, java.lang.String)
    */
   @Override
   @GET
@@ -3413,8 +3650,13 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getTreePositionGraphsForQueryAndMapProject(java.lang.String, java.lang.Long, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * getTreePositionGraphsForQueryAndMapProject(java.lang.String,
+   * java.lang.Long, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa,
+   * java.lang.String)
    */
   @Override
   @POST
@@ -3536,8 +3778,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
   // Workflow-related routines
   // /////////////////////////////////////////////////
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapRecordsEditedByMapUser(java.lang.Long, java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * getMapRecordsEditedByMapUser(java.lang.Long, java.lang.String,
+   * org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
    */
   @Override
   @POST
@@ -3578,8 +3824,11 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getOriginMapRecordsForConflict(java.lang.Long, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * getOriginMapRecordsForConflict(java.lang.Long, java.lang.String)
    */
   @Override
   @GET
@@ -3649,8 +3898,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
   // Map Record Validation and Compare Services
   // //////////////////////////////////////////////
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#validateMapRecord(org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#validateMapRecord(org.
+   * ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
    */
   @Override
   @POST
@@ -3701,8 +3954,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#compareMapRecords(java.lang.Long, java.lang.Long, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#compareMapRecords(java.
+   * lang.Long, java.lang.Long, java.lang.String)
    */
   @Override
   @GET
@@ -3750,8 +4007,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#isTargetCodeValid(java.lang.Long, java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#isTargetCodeValid(java.
+   * lang.Long, java.lang.String, java.lang.String)
    */
   @Override
   @GET
@@ -3805,8 +4066,13 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#uploadMappingHandbookFile(java.io.InputStream, com.sun.jersey.core.header.FormDataContentDisposition, java.lang.Long, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * uploadMappingHandbookFile(java.io.InputStream,
+   * com.sun.jersey.core.header.FormDataContentDisposition, java.lang.Long,
+   * java.lang.String)
    */
   @Override
   @POST
@@ -3882,8 +4148,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapProjectMetadata(java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapProjectMetadata(
+   * java.lang.String)
    */
   @Override
   @GET
@@ -3939,8 +4209,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getAllTerminologyNotes(java.lang.Long, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getAllTerminologyNotes(
+   * java.lang.Long, java.lang.String)
    */
   @Override
   @GET
@@ -3984,8 +4258,11 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#computeDefaultPreferredNames(java.lang.Long, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * computeDefaultPreferredNames(java.lang.Long, java.lang.String)
    */
   @Override
   @POST
@@ -4178,8 +4455,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#beginReleaseForMapProject(java.lang.String, java.lang.Long, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * beginReleaseForMapProject(java.lang.String, java.lang.Long,
+   * java.lang.String)
    */
   @Override
   @POST
@@ -4237,15 +4518,65 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
 
     String path = rootPath + "release/" + mapProject.getSourceTerminology()
-        + "_to_" + mapProject.getDestinationTerminology() + "/" + effectiveTime
-        + "/";
+        + "_to_" + mapProject.getDestinationTerminology() + "_"
+        + mapProject.getRefSetId() + "/" + effectiveTime + "/";
     path.replaceAll("\\s", "");
     return path;
 
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#processReleaseForMapProject(java.lang.String, java.lang.String, java.lang.Long, java.lang.String)
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/project/id/{projectId}/releaseFileNames")
+  @ApiOperation(value = "Get release file names", notes = "Gets a list of release file names from the server.", response = String.class)
+  @Produces({
+      MediaType.TEXT_PLAIN
+  })
+  public String getReleaseFileNames(
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long mapProjectId,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(MappingServiceRestImpl.class)
+        .info("RESTful call (Mapping):  /project/id/" + mapProjectId
+            + "/releaseFileNames");
+    String projectName = "";
+    String user = "";
+
+    final MappingService mappingService = new MappingServiceJpa();
+    try {
+      // authorize call
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.VIEWER,
+          "get scope concepts", securityService);
+
+      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+
+      final String results = mappingService.getReleaseFileNames(mapProject);
+
+      return results;
+
+    } catch (FileNotFoundException e) {
+      // If release files don't exist yet, don't throw error to the UI, but DO
+      // log it
+      Logger.getLogger(MappingServiceRestImpl.class).info(e);
+      return null;
+    } catch (Exception e) {
+      this.handleException(e, "trying to get release file names", user,
+          projectName, "");
+      return null;
+    } finally {
+      mappingService.close();
+      securityService.close();
+    }
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * processReleaseForMapProject(java.lang.String, java.lang.String,
+   * java.lang.Long, java.lang.String)
    */
   @Override
   @POST
@@ -4273,11 +4604,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
           "process release", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
-      
+
       if (moduleId.equals("null") || moduleId.equals("")) {
         moduleId = mapProject.getModuleId();
         if (moduleId == null || moduleId.equals("")) {
-          throw new Exception("The module id must be set on the project details page.");
+          throw new Exception(
+              "The module id must be set on the project details page.");
         }
       }
 
@@ -4321,8 +4653,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#finishReleaseForMapProject(boolean, java.lang.Long, java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * finishReleaseForMapProject(boolean, java.lang.Long, java.lang.String,
+   * java.lang.String)
    */
   @Override
   @POST
@@ -4384,8 +4720,11 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#startEditingCycleForMapProject(java.lang.Long, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * startEditingCycleForMapProject(java.lang.Long, java.lang.String)
    */
   @Override
   @POST
@@ -4424,11 +4763,16 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       securityService.close();
     }
   }
-  
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#createJiraIssue(java.lang.String, java.lang.String, java.lang.String, org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#createJiraIssue(java.
+   * lang.String, java.lang.String, java.lang.String,
+   * org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
    */
-    @Override
+  @Override
   @POST
   @Path("/jira/{conceptId}/{conceptAuthor}")
   @Consumes({
@@ -4447,7 +4791,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     throws Exception {
     Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Mapping): /jira/" + conceptId.toString() + "/"
-            + conceptAuthor );
+            + conceptAuthor);
     Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Mapping): /jira/" + messageText);
     try {
@@ -4460,10 +4804,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
       if (jiraAuthHeader == null || jiraUrl == null || jiraProject == null) {
         this.handleException(
-            new Exception("create a JIRA issue. JIRA properties must be in configuration file"),
-            "create a JIRA issue . JIRA properties must be in configuration file", "", "", "");
+            new Exception(
+                "create a JIRA issue. JIRA properties must be in configuration file"),
+            "create a JIRA issue . JIRA properties must be in configuration file",
+            "", "", "");
       }
-      
+
       final Client client = ClientBuilder.newClient();
       final WebTarget target = client.target(jiraUrl + "/issue/");
 
@@ -4502,41 +4848,34 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         mapRecordContents.append(entry.getMapRelation().getName())
             .append("\\\\\\\\");
       }
-		    /*if (mapRecord.getMapNotes().size() > 0) {
-		    	mapRecordContents.append("Notes").append("\\\\\\\\");
-		    }
-		    for (MapNote note : mapRecord.getMapNotes()) {
-		    	mapRecordContents.append(note.getUser().getName()).append(" on ").append(note.getTimestamp()).append("\\\\\\\\");
-		    	mapRecordContents.append(note.getNote().replaceAll("<br>", "\\\\\\\\\\\\\\\\").replaceAll("\\<.*?\\>", "").replaceAll("nbsp;", " ")).append("\\\\\\\\");
-		    }*/
-		    
-		    // if test project, override author and user
-            if (jiraProject.equals("MTFP") || jiraProject.equals("MFTP")) {
-              conceptAuthor = "dshapiro";
-              authToken = "dshapiro";
-              jiraProject = "MTFP";
-            }
-      
-            // create the issue object to send to JIRA Rest API
-		    String data = "{"
-            + "\"fields\": {"
-                + "\"project\":"
-                    + "{"
-                    +    "\"key\": \"" + jiraProject + "\""
-                    + "},"
-                + "\"summary\": \"Mapping Feedback on " + conceptId + "\","
-                + "\"assignee\": {"
-                        + "\"name\": \"" + conceptAuthor + "\""
-                    + "},"
-                 + "\"reporter\": {"
-                        + "\"name\": \"" + authToken + "\""
-                    + "},"
-                + "\"description\": \"" + messageText.replaceAll("\n", "\\\\\\\\\\\\\\\\").replaceAll("\\<.*?\\>", "") + "\\\\\\\\" + mapRecordContents.toString() + "\","
-                + "\"issuetype\": {"
-                        + "\"name\": \"Task\""
-                    + "}"
-                + "}"
-            + "}";
+      /*
+       * if (mapRecord.getMapNotes().size() > 0) {
+       * mapRecordContents.append("Notes").append("\\\\\\\\"); } for (MapNote
+       * note : mapRecord.getMapNotes()) {
+       * mapRecordContents.append(note.getUser().getName()).append(" on ").
+       * append(note.getTimestamp()).append("\\\\\\\\");
+       * mapRecordContents.append(note.getNote().replaceAll("<br>",
+       * "\\\\\\\\\\\\\\\\").replaceAll("\\<.*?\\>", "").replaceAll("nbsp;", "
+       * ")).append("\\\\\\\\"); }
+       */
+
+      // if test project, override author and user
+      if (jiraProject.equals("MTFP") || jiraProject.equals("MFTP")) {
+        conceptAuthor = "dshapiro";
+        authToken = "dshapiro";
+        jiraProject = "MTFP";
+      }
+
+      // create the issue object to send to JIRA Rest API
+      String data = "{" + "\"fields\": {" + "\"project\":" + "{" + "\"key\": \""
+          + jiraProject + "\"" + "}," + "\"summary\": \"Mapping Feedback on "
+          + conceptId + "\"," + "\"assignee\": {" + "\"name\": \""
+          + conceptAuthor + "\"" + "}," + "\"reporter\": {" + "\"name\": \""
+          + authToken + "\"" + "}," + "\"description\": \""
+          + messageText.replaceAll("\n", "\\\\\\\\\\\\\\\\").replaceAll(
+              "\\<.*?\\>", "")
+          + "\\\\\\\\" + mapRecordContents.toString() + "\","
+          + "\"issuetype\": {" + "\"name\": \"Task\"" + "}" + "}" + "}";
       Logger.getLogger(MappingServiceRestImpl.class)
           .info("RESTful call (Mapping): /jira/  \n" + data);
 
@@ -4562,9 +4901,10 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         Logger.getLogger(MappingServiceRestImpl.class)
             .info("Http Error : " + statusCode);
       }
-      
+
       System.out.println(response.readEntity(String.class));
-      Logger.getLogger(MappingServiceRestImpl.class).info(response.readEntity(String.class));
+      Logger.getLogger(MappingServiceRestImpl.class)
+          .info(response.readEntity(String.class));
 
     } catch (MalformedURLException e) {
       e.printStackTrace();
@@ -4573,8 +4913,132 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getConceptAuthors(java.lang.String, java.lang.String)
+  /* see superclass */
+  @POST
+  @Path("/log/{projectId}")
+  @Produces("text/plain")
+  @ApiOperation(value = "Get log(s)", notes = "Gets log(s) for specified project and log type(s).", response = String.class)
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @Override
+  public String getLog(
+    @ApiParam(value = "Project id", required = true) @PathParam("projectId") String projectId,
+    @ApiParam(value = "Logs requested", required = true) List<String> logTypes,
+    @ApiParam(value = "Query, e.g. UPDATE", required = false) @QueryParam("query") String query,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .info("RESTful call (Mapping):  /log/" + projectId + "/");
+
+    final MappingService mappingService = new MappingServiceJpa();
+    String line = null;
+    StringBuffer log = new StringBuffer();
+    try {
+      // authorize call
+      authorizeApp(authToken, MapUserRole.VIEWER, "get log", securityService);
+
+      final MapProject mapProject =
+          mappingService.getMapProject(new Long(projectId).longValue());
+
+      // look for logs first in the project log dir, second in the
+      // remover/loader log dir
+      String rootPath = ConfigUtility.getConfigProperties()
+          .getProperty("map.principle.source.document.dir");
+      if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
+        rootPath += "/";
+      }
+      File logFile = null;
+      File logDir = null;
+      if (logTypes.get(0).toString().contains("Terminology")) {
+        logDir = new File(rootPath + "logs");
+      } else {
+        logDir = new File(rootPath + mapProject.getId() + "/logs");
+      }
+      for (String logType : logTypes) {
+        if (logType.contains("Terminology")) {
+          logFile = new File(logDir, logType.replace("Terminology",
+              "_" + mapProject.getSourceTerminology()) + ".log");
+        } else {
+          logFile = new File(logDir, logType + ".log");
+        }
+        if (!logFile.exists()) {
+          final Properties config = ConfigUtility.getConfigProperties();
+          final String removerLoaderLogDir =
+              config.getProperty("map.principle.source.document.dir") + "/logs";
+          logFile = new File(removerLoaderLogDir,
+              logType.replace("Terminology", mapProject.getSourceTerminology())
+                  + ".log");
+          if (!logFile.exists()) {
+            log.append("\nA log for " + logType
+                + " is not yet available on this server.").append("\n");
+            log.append("A log will be created when the process is run.")
+                .append("\n");
+            continue;
+          }
+        }
+
+        String logFilePath = logFile.getAbsolutePath();
+        BufferedReader logReader = new BufferedReader(
+            new InputStreamReader(new FileInputStream(logFilePath), "UTF-8"));
+        while ((line = logReader.readLine()) != null) {
+          // if filter is set
+          if (query != null) {
+            // if line contains filter search term, keep line
+            if (line.contains(query)) {
+              log.append(line).append("\n");
+              // otherwise don't add line to log
+            } else {
+              continue;
+            }
+            // no filter set
+          } else {
+            log.append(line).append("\n");
+          }
+        }
+        logReader.close();
+      }
+
+      return log.toString();
+
+    } catch (Exception e) {
+      handleException(e, "trying to get log");
+    } finally {
+      mappingService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+  // /**
+  // * Reads an InputStream and returns its contents as a String. Also effects
+  // * rate control.
+  // * @param inputStream The InputStream to read from.
+  // * @return The contents of the InputStream as a String.
+  // * @throws Exception on error.
+  // */
+  // private static String inputStreamToString(final InputStream inputStream)
+  // throws Exception {
+  // final StringBuilder outputBuilder = new StringBuilder();
+  //
+  // String string;
+  // if (inputStream != null) {
+  // BufferedReader reader =
+  // new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+  // while (null != (string = reader.readLine())) {
+  // outputBuilder.append(string).append('\n');
+  // }
+  // }
+  //
+  // return outputBuilder.toString();
+  // }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getConceptAuthors(java.
+   * lang.String, java.lang.String)
    */
   @Override
   @GET
@@ -4671,8 +5135,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getConceptAuthoringChanges(java.lang.String, java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * getConceptAuthoringChanges(java.lang.String, java.lang.String,
+   * java.lang.String)
    */
   @Override
   @GET
@@ -4804,13 +5272,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
 
   }
-  
 
   @POST
   @Path("/compare/files/{id:[0-9][0-9]*}")
   @ApiOperation(value = "Compares two map files", notes = "Compares two files and saves the comparison report to the file system.", response = InputStream.class)
   @Consumes({
-    MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   @Produces("application/vnd.ms-excel")
   public InputStream compareMapFiles(
@@ -4819,123 +5286,118 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class).info(
-        "RESTful call (Mapping): /compare/files" + mapProjectId + " " + (files != null ? files.get(0) + " " + files.get(1) : ""));
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /compare/files" + mapProjectId + " "
+            + (files != null ? files.get(0) + " " + files.get(1) : ""));
 
     String user = "";
     final MetadataService metadataService = new MetadataServiceJpa();
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize
-      user = authorizeApp(authToken, MapUserRole.VIEWER, "compare map files", securityService);
-      
-      // This can be used to run hardcoded files local to the machine for testing     
-      return callTestCompare(mappingService.getMapProject(mapProjectId).getId());
-     
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "compare map files",
+          securityService);
+
+      // This can be used to run hardcoded files local to the machine for
+      // testing
+      return callTestCompare(
+          mappingService.getMapProject(mapProjectId).getId());
+
       /*
-      String olderInputFile1 = files.get(0);
-      String newerInputFile2 = files.get(1);
-      
-      AmazonS3 s3Client = null;
-      try {
-        s3Client = AmazonS3ClientBuilder.standard()
-            .withCredentials(new InstanceProfileCredentialsProvider(false))
-            .build();
-      } catch (Exception e) {
-        final Properties config = ConfigUtility.getConfigProperties();
-        final String accessKey = config.getProperty("aws.access.key");
-        final String secretAccessKey =
-            config.getProperty("aws.secret.access.key");
-        BasicAWSCredentials awsCreds =
-            new BasicAWSCredentials(accessKey, secretAccessKey);
-        s3Client = AmazonS3ClientBuilder.standard().withRegion("us-east-1")
-            .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-            .build();
-      }
-     
-      // stream first file from aws
-      S3Object file1 = s3Client.getObject(
-          new GetObjectRequest("release-ihtsdo-prod-published", olderInputFile1));
-      InputStream objectData1 = file1.getObjectContent();
-      
-      // open second file either from aws or current release on file system
-      S3Object file2 = null;
-      InputStream objectData2 = null;
-      // stream second/later file from aws
-      if (!newerInputFile2.contains("99999999")) {
-        file2 = s3Client.getObject(
-          new GetObjectRequest("release-ihtsdo-prod-published", newerInputFile2));
-          objectData2 = file2.getObjectContent();
-      // comparing to current release file saved on file system
-      } else {
-        MapProject mapProject = mappingService.getMapProject(mapProjectId);
-        final File projectDir = new File(this.getReleaseDirectoryPath(mapProject, "current"));
-        String currentReleaseFile = new File(projectDir, newerInputFile2).getAbsolutePath();
-        objectData2 = new FileInputStream(currentReleaseFile);
-      }
-
-      
-      InputStream reportInputStream = null;
-      StringBuffer reportName = new StringBuffer();
-      if (olderInputFile1.contains("Full") || newerInputFile2.contains("Full")) {
-        throw new LocalException("Full files cannot be compared with this tool.");
-      }
-      
-      // compare extended map files and compose report name
-      if (olderInputFile1.contains("ExtendedMap") && newerInputFile2.contains("ExtendedMap")) {
-        reportInputStream = compareExtendedMapFiles(objectData1, objectData2);
-        reportName.append(olderInputFile1.substring(olderInputFile1.lastIndexOf("Extended"), olderInputFile1.lastIndexOf('.')));
-        if (olderInputFile1.toLowerCase().contains("alpha")) {reportName.append("_ALPHA");}
-        if (olderInputFile1.toLowerCase().contains("beta")) {reportName.append("_BETA");}
-        reportName.append("_");
-        reportName.append(newerInputFile2.substring(newerInputFile2.lastIndexOf("Extended"), newerInputFile2.lastIndexOf('.')));
-        if (newerInputFile2.toLowerCase().contains("alpha")) {reportName.append("_ALPHA");}
-        if (newerInputFile2.toLowerCase().contains("beta")) {reportName.append("_BETA");}
-        reportName.append(".xls");
-        
-      // compare simple map files and compose report name
-      } else if (olderInputFile1.contains("SimpleMap") && newerInputFile2.contains("SimpleMap")) {
-        reportInputStream = compareSimpleMapFiles(objectData1, objectData2);
-        reportName.append(olderInputFile1.substring(olderInputFile1.lastIndexOf("Simple"), olderInputFile1.lastIndexOf('.')));
-        if (olderInputFile1.toLowerCase().contains("alpha")) {reportName.append("_ALPHA");}
-        if (olderInputFile1.toLowerCase().contains("beta")) {reportName.append("_BETA");}
-        reportName.append("_");
-        reportName.append(newerInputFile2.substring(newerInputFile2.lastIndexOf("Simple"), newerInputFile2.lastIndexOf('.')));
-        if (newerInputFile2.toLowerCase().contains("alpha")) {reportName.append("_ALPHA");}
-        if (newerInputFile2.toLowerCase().contains("beta")) {reportName.append("_BETA");}
-        reportName.append(".xls");
-      } 
-
-      // create destination directory for saved report
-      final Properties config = ConfigUtility.getConfigProperties();      
-      final String docDir =
-          config.getProperty("map.principle.source.document.dir");
-      
-      final File projectDir = new File(docDir, mapProjectId.toString());
-      if (!projectDir.exists()) {
-        projectDir.mkdir();
-      }
-      
-      final File reportsDir = new File(projectDir, "reports");
-      if (!reportsDir.exists()) {
-        reportsDir.mkdir();
-      }
-
-      final File file =
-          new File(reportsDir, reportName.toString());
-
-      // save the file to the server
-      saveFile(reportInputStream, file.getAbsolutePath());
-      
-
-      objectData1.close();
-      objectData2.close();
-      
-      return reportInputStream;
-     */ 
+       * String olderInputFile1 = files.get(0); String newerInputFile2 =
+       * files.get(1);
+       * 
+       * AmazonS3 s3Client = null; try { s3Client =
+       * AmazonS3ClientBuilder.standard() .withCredentials(new
+       * InstanceProfileCredentialsProvider(false)) .build(); } catch (Exception
+       * e) { final Properties config = ConfigUtility.getConfigProperties();
+       * final String accessKey = config.getProperty("aws.access.key"); final
+       * String secretAccessKey = config.getProperty("aws.secret.access.key");
+       * BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey,
+       * secretAccessKey); s3Client =
+       * AmazonS3ClientBuilder.standard().withRegion("us-east-1")
+       * .withCredentials(new AWSStaticCredentialsProvider(awsCreds)) .build();
+       * }
+       * 
+       * // stream first file from aws S3Object file1 = s3Client.getObject( new
+       * GetObjectRequest("release-ihtsdo-prod-published", olderInputFile1));
+       * InputStream objectData1 = file1.getObjectContent();
+       * 
+       * // open second file either from aws or current release on file system
+       * S3Object file2 = null; InputStream objectData2 = null; // stream
+       * second/later file from aws if (!newerInputFile2.contains("99999999")) {
+       * file2 = s3Client.getObject( new
+       * GetObjectRequest("release-ihtsdo-prod-published", newerInputFile2));
+       * objectData2 = file2.getObjectContent(); // comparing to current release
+       * file saved on file system } else { MapProject mapProject =
+       * mappingService.getMapProject(mapProjectId); final File projectDir = new
+       * File(this.getReleaseDirectoryPath(mapProject, "current")); String
+       * currentReleaseFile = new File(projectDir,
+       * newerInputFile2).getAbsolutePath(); objectData2 = new
+       * FileInputStream(currentReleaseFile); }
+       * 
+       * 
+       * InputStream reportInputStream = null; StringBuffer reportName = new
+       * StringBuffer(); if (olderInputFile1.contains("Full") ||
+       * newerInputFile2.contains("Full")) { throw new
+       * LocalException("Full files cannot be compared with this tool."); }
+       * 
+       * // compare extended map files and compose report name if
+       * (olderInputFile1.contains("ExtendedMap") &&
+       * newerInputFile2.contains("ExtendedMap")) { reportInputStream =
+       * compareExtendedMapFiles(objectData1, objectData2);
+       * reportName.append(olderInputFile1.substring(olderInputFile1.lastIndexOf
+       * ("Extended"), olderInputFile1.lastIndexOf('.'))); if
+       * (olderInputFile1.toLowerCase().contains("alpha"))
+       * {reportName.append("_ALPHA");} if
+       * (olderInputFile1.toLowerCase().contains("beta"))
+       * {reportName.append("_BETA");} reportName.append("_");
+       * reportName.append(newerInputFile2.substring(newerInputFile2.lastIndexOf
+       * ("Extended"), newerInputFile2.lastIndexOf('.'))); if
+       * (newerInputFile2.toLowerCase().contains("alpha"))
+       * {reportName.append("_ALPHA");} if
+       * (newerInputFile2.toLowerCase().contains("beta"))
+       * {reportName.append("_BETA");} reportName.append(".xls");
+       * 
+       * // compare simple map files and compose report name } else if
+       * (olderInputFile1.contains("SimpleMap") &&
+       * newerInputFile2.contains("SimpleMap")) { reportInputStream =
+       * compareSimpleMapFiles(objectData1, objectData2);
+       * reportName.append(olderInputFile1.substring(olderInputFile1.lastIndexOf
+       * ("Simple"), olderInputFile1.lastIndexOf('.'))); if
+       * (olderInputFile1.toLowerCase().contains("alpha"))
+       * {reportName.append("_ALPHA");} if
+       * (olderInputFile1.toLowerCase().contains("beta"))
+       * {reportName.append("_BETA");} reportName.append("_");
+       * reportName.append(newerInputFile2.substring(newerInputFile2.lastIndexOf
+       * ("Simple"), newerInputFile2.lastIndexOf('.'))); if
+       * (newerInputFile2.toLowerCase().contains("alpha"))
+       * {reportName.append("_ALPHA");} if
+       * (newerInputFile2.toLowerCase().contains("beta"))
+       * {reportName.append("_BETA");} reportName.append(".xls"); }
+       * 
+       * // create destination directory for saved report final Properties
+       * config = ConfigUtility.getConfigProperties(); final String docDir =
+       * config.getProperty("map.principle.source.document.dir");
+       * 
+       * final File projectDir = new File(docDir, mapProjectId.toString()); if
+       * (!projectDir.exists()) { projectDir.mkdir(); }
+       * 
+       * final File reportsDir = new File(projectDir, "reports"); if
+       * (!reportsDir.exists()) { reportsDir.mkdir(); }
+       * 
+       * final File file = new File(reportsDir, reportName.toString());
+       * 
+       * // save the file to the server saveFile(reportInputStream,
+       * file.getAbsolutePath());
+       * 
+       * 
+       * objectData1.close(); objectData2.close();
+       * 
+       * return reportInputStream;
+       */
     } catch (Exception e) {
-      handleException(e,
-          "trying to compare map files", user, "", "");
+      handleException(e, "trying to compare map files", user, "", "");
       return null;
     } finally {
       metadataService.close();
@@ -4943,8 +5405,9 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       securityService.close();
     }
   }
-  
-  private InputStream compareExtendedMapFiles(InputStream data1, InputStream data2) throws Exception {
+
+  private InputStream compareExtendedMapFiles(InputStream data1,
+    InputStream data2) throws Exception {
     // map to list of records that have been updated (sorted by key)
     TreeMap<String, String> updatedList = new TreeMap<>();
     // map to list of records that are new in the second file
@@ -4954,100 +5417,106 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     // map to list of records that have been removed in the second file
     Map<String, String> removedList = new LinkedHashMap<>();
     String line1, line2;
-    
+
     BufferedReader in1 =
         new BufferedReader(new InputStreamReader(data1, "UTF-8"));
     in1.mark(100000000);
     BufferedReader in2 =
         new BufferedReader(new InputStreamReader(data2, "UTF-8"));
-    
-    
-      int noChangeCount = 0;
-      Map<String, String> key1Map = new HashMap<>();
-      Map<String, String> key2Map = new HashMap<>();
-      
-      // populate key1Map with key1 and line1 (no UUID)
-      while((line1 = in1.readLine()) != null) {
-        String tokens1[] = line1.split("\t");
-        String key1 = tokens1[5] + ":" + tokens1[4] + ":" + tokens1[6] + ":" + tokens1[7];
-        key1Map.put(key1, line1.substring(line1.indexOf("\t")));
-      }
-      
-      while ((line2 = in2.readLine()) != null) {
-        // populate key2Map with key2 and line2 (no UUID)
-        String tokens2[] = line2.split("\t");
-        String key2 = tokens2[5] + ":" + tokens2[4] + ":" + tokens2[6] + ":" + tokens2[7];
-        key2Map.put(key2, line2.substring(line2.indexOf("\t")));
-        
-        // if key1Map has key2, this record is not new - either it hasn't changed or it has been updated
-        if (key1Map.containsKey(key2)) {
-          String line1Sub = key1Map.get(key2);
-          String line2Sub = line2.substring(line2.indexOf("\t"));
-          if (line1Sub.equals(line2Sub)) {
-            // nothing has changed
-            noChangeCount++;
-          } else {         
-            String[] line1SubTokens = line1Sub.split("\t");
-            String[] line2SubTokens = line2Sub.split("\t");
-            // check if everything other than the active flag and the effective time matches
-            if (line1SubTokens[2].equals("1") && line2SubTokens[2].equals("0")) {
-              boolean inactive = true;
-              for (int i = 3; i < line1SubTokens.length; i++) {               
-                  if (!line1SubTokens[i].equals(line2SubTokens[i])) {            
-                    inactive = false;
-                  } 
-              }
-              if (inactive) {
-                inactivatedList.put(key2, line2);
+
+    int noChangeCount = 0;
+    Map<String, String> key1Map = new HashMap<>();
+    Map<String, String> key2Map = new HashMap<>();
+
+    // populate key1Map with key1 and line1 (no UUID)
+    while ((line1 = in1.readLine()) != null) {
+      String tokens1[] = line1.split("\t");
+      String key1 =
+          tokens1[5] + ":" + tokens1[4] + ":" + tokens1[6] + ":" + tokens1[7];
+      key1Map.put(key1, line1.substring(line1.indexOf("\t")));
+    }
+
+    while ((line2 = in2.readLine()) != null) {
+      // populate key2Map with key2 and line2 (no UUID)
+      String tokens2[] = line2.split("\t");
+      String key2 =
+          tokens2[5] + ":" + tokens2[4] + ":" + tokens2[6] + ":" + tokens2[7];
+      key2Map.put(key2, line2.substring(line2.indexOf("\t")));
+
+      // if key1Map has key2, this record is not new - either it hasn't changed
+      // or it has been updated
+      if (key1Map.containsKey(key2)) {
+        String line1Sub = key1Map.get(key2);
+        String line2Sub = line2.substring(line2.indexOf("\t"));
+        if (line1Sub.equals(line2Sub)) {
+          // nothing has changed
+          noChangeCount++;
+        } else {
+          String[] line1SubTokens = line1Sub.split("\t");
+          String[] line2SubTokens = line2Sub.split("\t");
+          // check if everything other than the active flag and the effective
+          // time matches
+          if (line1SubTokens[2].equals("1") && line2SubTokens[2].equals("0")) {
+            boolean inactive = true;
+            for (int i = 3; i < line1SubTokens.length; i++) {
+              if (!line1SubTokens[i].equals(line2SubTokens[i])) {
+                inactive = false;
               }
             }
-
-            // something updated
-            // only add to list if records are active
-            if (line1SubTokens[2].equals("1") && line2SubTokens[2].equals("1")) {
-              updatedList.put(key2, line1Sub + "\t" + line2Sub);
+            if (inactive) {
+              inactivatedList.put(key2, line2);
             }
           }
+
+          // something updated
+          // only add to list if records are active
+          if (line1SubTokens[2].equals("1") && line2SubTokens[2].equals("1")) {
+            updatedList.put(key2, line1Sub + "\t" + line2Sub);
+          }
+        }
         // found key2 that is not in first file, it is new
-        } else {
-          newList.put(key2, line2);
-        }
+      } else {
+        newList.put(key2, line2);
       }
-      
-      in1.reset();
-      
-      // determine records that were removed
-      while ((line1 = in1.readLine()) != null) {
-        String tokens1[] = line1.split("\t");
-        String key1 = tokens1[5] + ":" + tokens1[4] + ":" + tokens1[6] + ":" + tokens1[7];
-        
-        // if key2Map doesn't have key1, this record has been removed
-        if (!key2Map.containsKey(key1)) {
-          removedList.put(key1, line1);
-        }
+    }
+
+    in1.reset();
+
+    // determine records that were removed
+    while ((line1 = in1.readLine()) != null) {
+      String tokens1[] = line1.split("\t");
+      String key1 =
+          tokens1[5] + ":" + tokens1[4] + ":" + tokens1[6] + ":" + tokens1[7];
+
+      // if key2Map doesn't have key1, this record has been removed
+      if (!key2Map.containsKey(key1)) {
+        removedList.put(key1, line1);
       }
-      
-      // log statements
-      Logger.getLogger(MappingServiceRest.class).info(
-          "new List count:" + newList.size());
-      Logger.getLogger(MappingServiceRest.class).info(
-          "inactivated List count:" + inactivatedList.size());
-      Logger.getLogger(MappingServiceRest.class).info(
-          "updated List count:" + updatedList.size());
-      Logger.getLogger(MappingServiceRest.class).info(
-          "removed List count:" + removedList.size());
-      Logger.getLogger(MappingServiceRest.class).info(
-          "no change count:" + noChangeCount);
-      
-      in1.close();
-      in2.close();
-      // produce Excel report file
-      final ExportReportHandler handler = new ExportReportHandler();
-      return handler.exportExtendedFileComparisonReport(updatedList, newList, inactivatedList, removedList);
+    }
+
+    // log statements
+    Logger.getLogger(MappingServiceRest.class)
+        .info("new List count:" + newList.size());
+    Logger.getLogger(MappingServiceRest.class)
+        .info("inactivated List count:" + inactivatedList.size());
+    Logger.getLogger(MappingServiceRest.class)
+        .info("updated List count:" + updatedList.size());
+    Logger.getLogger(MappingServiceRest.class)
+        .info("removed List count:" + removedList.size());
+    Logger.getLogger(MappingServiceRest.class)
+        .info("no change count:" + noChangeCount);
+
+    in1.close();
+    in2.close();
+    // produce Excel report file
+    final ExportReportHandler handler = new ExportReportHandler();
+    return handler.exportExtendedFileComparisonReport(updatedList, newList,
+        inactivatedList, removedList);
   }
-  
-  private InputStream compareSimpleMapFiles(InputStream data1, InputStream data2) throws Exception {
-    
+
+  private InputStream compareSimpleMapFiles(InputStream data1,
+    InputStream data2) throws Exception {
+
     // map to list of records that have been updated (sorted by key)
     TreeMap<String, String> updatedList = new TreeMap<>();
     // map to list of records that are new in the second file
@@ -5057,98 +5526,101 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     // map to list of records that have been removed in the second file
     Map<String, String> removedList = new LinkedHashMap<>();
     String line1, line2;
-  
+
     BufferedReader in1 =
         new BufferedReader(new InputStreamReader(data1, "UTF-8"));
     in1.mark(100000000);
     BufferedReader in2 =
         new BufferedReader(new InputStreamReader(data2, "UTF-8"));
-    
-      int noChangeCount = 0;
-      Map<String, String> key1Map = new HashMap<>();
-      Map<String, String> key2Map = new HashMap<>();
-      
-      // populate key1Map with key1 and line1 (no UUID)
-      while((line1 = in1.readLine()) != null) {
-        String tokens1[] = line1.split("\t");
-        String key1 = tokens1[5] + ":" + tokens1[4];
-        key1Map.put(key1, line1.substring(line1.indexOf("\t")));
-      }
-      
-      while ((line2 = in2.readLine()) != null) {
-        // populate key2Map with key2 and line2 (no UUID)
-        String tokens2[] = line2.split("\t");
-        String key2 = tokens2[5] + ":" + tokens2[4];
-        key2Map.put(key2, line2.substring(line2.indexOf("\t")));
-        
-        // if key1Map has key2, this record is not new - either it hasn't changed or it has been updated
-        if (key1Map.containsKey(key2)) {
-          String line1Sub = key1Map.get(key2);
-          String line2Sub = line2.substring(line2.indexOf("\t"));
-          if (line1Sub.equals(line2Sub)) {
-            // nothing has changed
-            noChangeCount++;
-          } else {         
-            String[] line1SubTokens = line1Sub.split("\t");
-            String[] line2SubTokens = line2Sub.split("\t");
-            // check if everything other than the active flag and the effective time matches
-            if (line1SubTokens[2].equals("1") && line2SubTokens[2].equals("0")) {
-              boolean inactive = true;
-              for (int i = 3; i < line1SubTokens.length; i++) {               
-                  if (!line1SubTokens[i].equals(line2SubTokens[i])) {            
-                    inactive = false;
-                  } 
-              }
-              if (inactive) {
-                inactivatedList.put(key2, line2);
+
+    int noChangeCount = 0;
+    Map<String, String> key1Map = new HashMap<>();
+    Map<String, String> key2Map = new HashMap<>();
+
+    // populate key1Map with key1 and line1 (no UUID)
+    while ((line1 = in1.readLine()) != null) {
+      String tokens1[] = line1.split("\t");
+      String key1 = tokens1[5] + ":" + tokens1[4];
+      key1Map.put(key1, line1.substring(line1.indexOf("\t")));
+    }
+
+    while ((line2 = in2.readLine()) != null) {
+      // populate key2Map with key2 and line2 (no UUID)
+      String tokens2[] = line2.split("\t");
+      String key2 = tokens2[5] + ":" + tokens2[4];
+      key2Map.put(key2, line2.substring(line2.indexOf("\t")));
+
+      // if key1Map has key2, this record is not new - either it hasn't changed
+      // or it has been updated
+      if (key1Map.containsKey(key2)) {
+        String line1Sub = key1Map.get(key2);
+        String line2Sub = line2.substring(line2.indexOf("\t"));
+        if (line1Sub.equals(line2Sub)) {
+          // nothing has changed
+          noChangeCount++;
+        } else {
+          String[] line1SubTokens = line1Sub.split("\t");
+          String[] line2SubTokens = line2Sub.split("\t");
+          // check if everything other than the active flag and the effective
+          // time matches
+          if (line1SubTokens[2].equals("1") && line2SubTokens[2].equals("0")) {
+            boolean inactive = true;
+            for (int i = 3; i < line1SubTokens.length; i++) {
+              if (!line1SubTokens[i].equals(line2SubTokens[i])) {
+                inactive = false;
               }
             }
-
-            // something updated
-            // only add to list if records are active
-            if (line1SubTokens[2].equals("1") && line2SubTokens[2].equals("1")) {
-              updatedList.put(key2, line1Sub + "\t" + line2Sub);
+            if (inactive) {
+              inactivatedList.put(key2, line2);
             }
           }
+
+          // something updated
+          // only add to list if records are active
+          if (line1SubTokens[2].equals("1") && line2SubTokens[2].equals("1")) {
+            updatedList.put(key2, line1Sub + "\t" + line2Sub);
+          }
+        }
         // found key2 that is not in first file, it is new
-        } else {
-          newList.put(key2, line2);
-        }
+      } else {
+        newList.put(key2, line2);
       }
-      
-      in1.reset();     
-      
-      // determine records that were removed
-      while ((line1 = in1.readLine()) != null) {
-        String tokens1[] = line1.split("\t");
-        String key1 = tokens1[5] + ":" + tokens1[4];
-        
-        // if key2Map doesn't have key1, this record has been removed
-        if (!key2Map.containsKey(key1)) {
-          removedList.put(key1, line1);
-        }
+    }
+
+    in1.reset();
+
+    // determine records that were removed
+    while ((line1 = in1.readLine()) != null) {
+      String tokens1[] = line1.split("\t");
+      String key1 = tokens1[5] + ":" + tokens1[4];
+
+      // if key2Map doesn't have key1, this record has been removed
+      if (!key2Map.containsKey(key1)) {
+        removedList.put(key1, line1);
       }
-      
-      in1.close();
-      in2.close();
-      
-      // log statements
-      Logger.getLogger(MappingServiceRest.class).info(
-          "new List count:" + newList.size());
-      Logger.getLogger(MappingServiceRest.class).info(
-              "inactivated List count:" + inactivatedList.size());
-      Logger.getLogger(MappingServiceRest.class).info(
-          "updated List count:" + updatedList.size());
-      Logger.getLogger(MappingServiceRest.class).info(
-          "removed List count:" + removedList.size());
-      Logger.getLogger(MappingServiceRest.class).info(
-          "no change count:" + noChangeCount);
-      
-      // produce Excel report file
-      final ExportReportHandler handler = new ExportReportHandler();
-      return handler.exportSimpleFileComparisonReport(updatedList, newList, inactivatedList, removedList);
+    }
+
+    in1.close();
+    in2.close();
+
+    // log statements
+    Logger.getLogger(MappingServiceRest.class)
+        .info("new List count:" + newList.size());
+    Logger.getLogger(MappingServiceRest.class)
+        .info("inactivated List count:" + inactivatedList.size());
+    Logger.getLogger(MappingServiceRest.class)
+        .info("updated List count:" + updatedList.size());
+    Logger.getLogger(MappingServiceRest.class)
+        .info("removed List count:" + removedList.size());
+    Logger.getLogger(MappingServiceRest.class)
+        .info("no change count:" + noChangeCount);
+
+    // produce Excel report file
+    final ExportReportHandler handler = new ExportReportHandler();
+    return handler.exportSimpleFileComparisonReport(updatedList, newList,
+        inactivatedList, removedList);
   }
-        
+
   @Override
   @GET
   @Path("/release/reports/{id:[0-9][0-9]*}")
@@ -5175,18 +5647,20 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       final String docDir =
           config.getProperty("map.principle.source.document.dir");
 
-      final File projectDir = new File(docDir, mapProjectId.toString() + "/reports");
+      final File projectDir =
+          new File(docDir, mapProjectId.toString() + "/reports");
       File[] reports = projectDir.listFiles();
-      
+
       if (reports == null) {
         return null;
       }
-      
+
       final SearchResultList searchResultList = new SearchResultListJpa();
       for (File report : reports) {
         SearchResult searchResult = new SearchResultJpa();
         searchResult.setValue(report.getName());
-        BasicFileAttributes attributes = Files.readAttributes(report.toPath(), BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+        BasicFileAttributes attributes = Files.readAttributes(report.toPath(),
+            BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
         FileTime lastModifiedTime = attributes.lastModifiedTime();
         SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
         String lastModified = df.format(lastModifiedTime.toMillis());
@@ -5203,7 +5677,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       securityService.close();
     }
   }
-  
+
   @Override
   @GET
   @Path("/current/release/{id:[0-9][0-9]*}")
@@ -5222,11 +5696,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.VIEWER, "get current release file",
-          securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER,
+          "get current release file", securityService);
 
       MapProject mapProject = mappingService.getMapProject(mapProjectId);
-      final File projectDir = new File(this.getReleaseDirectoryPath(mapProject, "current"));
+      final File projectDir =
+          new File(this.getReleaseDirectoryPath(mapProject, "current"));
       File[] releaseFiles = projectDir.listFiles();
 
       SearchResult searchResult = new SearchResultJpa();
@@ -5235,16 +5710,18 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       }
       for (File file : releaseFiles) {
         // filter out human readable and any other release by-products
-        if (!file.getName().contains("SimpleMap") && !file.getName().contains("ExtendedMap")){
+        if (!file.getName().contains("SimpleMap")
+            && !file.getName().contains("ExtendedMap")) {
           continue;
         }
-        BasicFileAttributes attributes = Files.readAttributes(file.toPath(), BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+        BasicFileAttributes attributes = Files.readAttributes(file.toPath(),
+            BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
         FileTime creationTime = attributes.creationTime();
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
         String dateCreated = df.format(creationTime.toMillis());
         // if this is the most recent, return this file
-        if (searchResult.getValue2() == null || 
-            dateCreated.compareTo(searchResult.getValue2()) > 0) {
+        if (searchResult.getValue2() == null
+            || dateCreated.compareTo(searchResult.getValue2()) > 0) {
           searchResult.setValue(file.getName());
           searchResult.setValue2(file.getName());
           searchResult.setTerminologyVersion(dateCreated);
@@ -5261,7 +5738,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       securityService.close();
     }
   }
- 
+
   @Override
   @GET
   @Path("/amazons3/files/{id:[0-9][0-9]*}")
@@ -5276,8 +5753,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
     Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping):  /amazons3/files/" + mapProjectId);
-    
-   
+
     final MappingService mappingService = new MappingServiceJpa();
     String user = "";
 
@@ -5314,20 +5790,21 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         Logger.getLogger(MappingServiceRestImpl.class)
             .info("Bucket " + bucketName + " accessed.");
       }
-      
-      // Determine international or U.S.  
-      String nationalPrefix = sourceTerminology.equals("SNOMEDCT_US") ? "us" : "international";
+
+      // Determine international or U.S.
+      String nationalPrefix =
+          sourceTerminology.equals("SNOMEDCT_US") ? "us" : "international";
 
       if (mapProject.getDestinationTerminology().equals("ICPC")
           || mapProject.getDestinationTerminology().equals("GMDN")) {
         // List Files on Bucket "release-ihtsdo-prod-published"
         ObjectListing listing = null;
         if (mapProject.getDestinationTerminology().equals("ICPC")) {
-          listing = s3Client.listObjects(bucketName, nationalPrefix + 
-              "/SnomedCT_GPFPICPC2");
+          listing = s3Client.listObjects(bucketName,
+              nationalPrefix + "/SnomedCT_GPFPICPC2");
         } else {
-          listing =
-              s3Client.listObjects(bucketName, nationalPrefix + "/SnomedCT_GMDN");
+          listing = s3Client.listObjects(bucketName,
+              nationalPrefix + "/SnomedCT_GMDN");
         }
         List<S3ObjectSummary> summaries = listing.getObjectSummaries();
 
@@ -5338,7 +5815,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
               || fileName.contains("SimpleMap")) && !fileName.contains("Full")
               && !fileName.contains("backup")) {
             Logger.getLogger(MappingServiceRestImpl.class)
-                .info(mapProject.getDestinationTerminology() + " Summary #" + i++ + " with: " + sum.getKey());
+                .info(mapProject.getDestinationTerminology() + " Summary #"
+                    + i++ + " with: " + sum.getKey());
             SearchResult result = new SearchResultJpa();
             String shortName = fileName.substring(fileName.lastIndexOf('/'));
             if (fileName.toLowerCase().contains("alpha")) {
@@ -5372,7 +5850,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
           summaries = listing.getObjectSummaries();
 
           Logger.getLogger(MappingServiceRestImpl.class)
-          .info("CCC start with " + j++ + ": " + summaries.size());
+              .info("CCC start with " + j++ + ": " + summaries.size());
           for (S3ObjectSummary sum : summaries) {
             String fileName = sum.getKey();
             if ((fileName.contains("ExtendedMap")
@@ -5403,7 +5881,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
           }
         }
       }
-      
+
       // sort files by release date
       searchResults.sortBy(new Comparator<SearchResult>() {
         @Override
@@ -5432,143 +5910,165 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     Logger.getLogger(MappingServiceRestImpl.class).info("AAA");
     String bucketName = "release-ihtsdo-prod-published";
     String testFileName =
-        //"international/xSnomedCT_RF2Release_INT_20170131/Delta/Terminology/xsct2_Concept_Delta_INT_20170131.txt";
+        // "international/xSnomedCT_RF2Release_INT_20170131/Delta/Terminology/xsct2_Concept_Delta_INT_20170131.txt";
         "international/SnomedCT_GMDNMapRelease_Production_20170908T120000Z/SnomedCT_GMDNMapRelease_Production_20170908T120000Z/Snapshot/Refset/Map/der2_sRefset_GMDNMapSimpleMapSnapshot_INT_20170731.txt";
-        
+
     // Connect to server
     AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
         .withRegion(Regions.US_EAST_1)
         .withCredentials(new InstanceProfileCredentialsProvider(false)).build();
 
     // List Buckets
-   /* Logger.getLogger(MappingServiceRestImpl.class).info("BBB start");
-    List<Bucket> buckets = s3Client.listBuckets();
-    for (Bucket b : buckets) {
-      Logger.getLogger(MappingServiceRestImpl.class)
-          .info("BBB with bucket name" + b.getName());
-    }
-    Logger.getLogger(MappingServiceRestImpl.class).info("BBB end");
+    /*
+     * Logger.getLogger(MappingServiceRestImpl.class).info("BBB start");
+     * List<Bucket> buckets = s3Client.listBuckets(); for (Bucket b : buckets) {
+     * Logger.getLogger(MappingServiceRestImpl.class)
+     * .info("BBB with bucket name" + b.getName()); }
+     * Logger.getLogger(MappingServiceRestImpl.class).info("BBB end");
+     * 
+     * // Verify Buckets Exists if (!s3Client.doesBucketExist(bucketName)) {
+     * throw new Exception("Cannot find Bucket Name"); } else {
+     * Logger.getLogger(MappingServiceRestImpl.class) .info("CCC Bucket " +
+     * bucketName + " accessed."); }
+     * 
+     * // List All Files on Bucket "release-ihtsdo-prod-published" ObjectListing
+     * listing = s3Client.listObjects(bucketName); List<S3ObjectSummary>
+     * summaries = listing.getObjectSummaries();
+     * 
+     * System.out.println("CCC start with " + summaries.size()); int i = 1; for
+     * (S3ObjectSummary sum : summaries) {
+     * Logger.getLogger(MappingServiceRestImpl.class) .info("Summary #" + i++ +
+     * " with: " + sum.getKey()); }
+     * Logger.getLogger(MappingServiceRestImpl.class).info("CCC end");
+     */
 
-    // Verify Buckets Exists
-    if (!s3Client.doesBucketExist(bucketName)) {
-      throw new Exception("Cannot find Bucket Name");
-    } else {
-      Logger.getLogger(MappingServiceRestImpl.class)
-          .info("CCC Bucket " + bucketName + " accessed.");
-    }
-
-    // List All Files on Bucket "release-ihtsdo-prod-published"
-    ObjectListing listing = s3Client.listObjects(bucketName);
-    List<S3ObjectSummary> summaries = listing.getObjectSummaries();
-    
-    System.out.println("CCC start with " + summaries.size());
-    int i = 1;
-    for (S3ObjectSummary sum : summaries) {
-      Logger.getLogger(MappingServiceRestImpl.class)
-          .info("Summary #" + i++ + " with: " + sum.getKey());
-    }
-    Logger.getLogger(MappingServiceRestImpl.class).info("CCC end");*/
-
-    
-    // Pull File Down and Copy to Local Directory (Directory must have rw/rw/rw (666) permissions )
+    // Pull File Down and Copy to Local Directory (Directory must have rw/rw/rw
+    // (666) permissions )
     Logger.getLogger(MappingServiceRestImpl.class).info("DDD start");
     S3Object s3object = s3Client.getObject(bucketName, testFileName);
     S3ObjectInputStream inputStream = s3object.getObjectContent();
-    FileUtils.copyInputStreamToFile(inputStream, new File("~/aws/", testFileName.substring(testFileName.lastIndexOf('/') + 1)));
+    FileUtils.copyInputStreamToFile(inputStream, new File("~/aws/",
+        testFileName.substring(testFileName.lastIndexOf('/') + 1)));
     inputStream.close();
     Logger.getLogger(MappingServiceRestImpl.class).info("DDD end");
   }
-  
+
   private InputStream callTestCompare(Long mapProjectId) throws Exception {
-    
+
     // hardcoded files for testing
-    String olderInputFile1 = "C:\\Temp\\s3\\ssa_ssb\\alphaxder2_sRefset_SimpleMapSnapshot_INT_20180131.txt";
-    String newerInputFile2 = "C:\\Temp\\s3\\ssa_ssb\\betaxder2_sRefset_SimpleMapSnapshot_INT_20180131.txt";
-    
+    String olderInputFile1 =
+        "C:\\Temp\\s3\\ssa_ssb\\alphaxder2_sRefset_SimpleMapSnapshot_INT_20180131.txt";
+    String newerInputFile2 =
+        "C:\\Temp\\s3\\ssa_ssb\\betaxder2_sRefset_SimpleMapSnapshot_INT_20180131.txt";
+
     InputStream objectData1 = new FileInputStream(olderInputFile1);
     InputStream objectData2 = new FileInputStream(newerInputFile2);
-    
+
     InputStream reportInputStream = null;
     StringBuffer reportName = new StringBuffer();
     if (olderInputFile1.contains("Full") || newerInputFile2.contains("Full")) {
       throw new LocalException("Full files cannot be compared with this tool.");
     }
-    
+
     // compare extended map files and compose report name
-    if (olderInputFile1.contains("ExtendedMap") && newerInputFile2.contains("ExtendedMap")) {
+    if (olderInputFile1.contains("ExtendedMap")
+        && newerInputFile2.contains("ExtendedMap")) {
       reportInputStream = compareExtendedMapFiles(objectData1, objectData2);
-      reportName.append(olderInputFile1.substring(olderInputFile1.lastIndexOf("Extended"), olderInputFile1.lastIndexOf('.')));
-      if (olderInputFile1.toLowerCase().contains("alpha")) {reportName.append("_ALPHA");}
-      if (olderInputFile1.toLowerCase().contains("beta")) {reportName.append("_BETA");}
+      reportName.append(
+          olderInputFile1.substring(olderInputFile1.lastIndexOf("Extended"),
+              olderInputFile1.lastIndexOf('.')));
+      if (olderInputFile1.toLowerCase().contains("alpha")) {
+        reportName.append("_ALPHA");
+      }
+      if (olderInputFile1.toLowerCase().contains("beta")) {
+        reportName.append("_BETA");
+      }
       reportName.append("_");
-      reportName.append(newerInputFile2.substring(newerInputFile2.lastIndexOf("Extended"), newerInputFile2.lastIndexOf('.')));
-      if (newerInputFile2.toLowerCase().contains("alpha")) {reportName.append("_ALPHA");}
-      if (newerInputFile2.toLowerCase().contains("beta")) {reportName.append("_BETA");}
+      reportName.append(
+          newerInputFile2.substring(newerInputFile2.lastIndexOf("Extended"),
+              newerInputFile2.lastIndexOf('.')));
+      if (newerInputFile2.toLowerCase().contains("alpha")) {
+        reportName.append("_ALPHA");
+      }
+      if (newerInputFile2.toLowerCase().contains("beta")) {
+        reportName.append("_BETA");
+      }
       reportName.append(".xls");
-      
-    // compare simple map files and compose report name
-    } else if (olderInputFile1.contains("SimpleMap") && newerInputFile2.contains("SimpleMap")) {
+
+      // compare simple map files and compose report name
+    } else if (olderInputFile1.contains("SimpleMap")
+        && newerInputFile2.contains("SimpleMap")) {
       reportInputStream = compareSimpleMapFiles(objectData1, objectData2);
-      reportName.append(olderInputFile1.substring(olderInputFile1.lastIndexOf("Simple"), olderInputFile1.lastIndexOf('.')));
-      if (olderInputFile1.toLowerCase().contains("alpha")) {reportName.append("_ALPHA");}
-      if (olderInputFile1.toLowerCase().contains("beta")) {reportName.append("_BETA");}
+      reportName.append(
+          olderInputFile1.substring(olderInputFile1.lastIndexOf("Simple"),
+              olderInputFile1.lastIndexOf('.')));
+      if (olderInputFile1.toLowerCase().contains("alpha")) {
+        reportName.append("_ALPHA");
+      }
+      if (olderInputFile1.toLowerCase().contains("beta")) {
+        reportName.append("_BETA");
+      }
       reportName.append("_");
-      reportName.append(newerInputFile2.substring(newerInputFile2.lastIndexOf("Simple"), newerInputFile2.lastIndexOf('.')));
-      if (newerInputFile2.toLowerCase().contains("alpha")) {reportName.append("_ALPHA");}
-      if (newerInputFile2.toLowerCase().contains("beta")) {reportName.append("_BETA");}
+      reportName.append(
+          newerInputFile2.substring(newerInputFile2.lastIndexOf("Simple"),
+              newerInputFile2.lastIndexOf('.')));
+      if (newerInputFile2.toLowerCase().contains("alpha")) {
+        reportName.append("_ALPHA");
+      }
+      if (newerInputFile2.toLowerCase().contains("beta")) {
+        reportName.append("_BETA");
+      }
       reportName.append(".xls");
-    } 
+    }
 
     // create destination directory for saved report
-    final Properties config = ConfigUtility.getConfigProperties();      
+    final Properties config = ConfigUtility.getConfigProperties();
     final String docDir =
         config.getProperty("map.principle.source.document.dir");
-    
+
     final File projectDir = new File(docDir, mapProjectId.toString());
     if (!projectDir.exists()) {
       projectDir.mkdir();
     }
-    
+
     final File reportsDir = new File(projectDir, "reports");
     if (!reportsDir.exists()) {
       reportsDir.mkdir();
     }
 
-    final File file =
-        new File(reportsDir, reportName.toString());
+    final File file = new File(reportsDir, reportName.toString());
 
     // save the file to the server
     saveFile(reportInputStream, file.getAbsolutePath());
-    
 
     objectData1.close();
     objectData2.close();
-    
+
     return reportInputStream;
   }
 
-//  /**
-//   * Reads an InputStream and returns its contents as a String. Also effects
-//   * rate control.
-//   * @param inputStream The InputStream to read from.
-//   * @return The contents of the InputStream as a String.
-//   * @throws Exception on error.
-//   */
-//  private static String inputStreamToString(final InputStream inputStream)
-//    throws Exception {
-//    final StringBuilder outputBuilder = new StringBuilder();
-//
-//    String string;
-//    if (inputStream != null) {
-//      BufferedReader reader =
-//          new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
-//      while (null != (string = reader.readLine())) {
-//        outputBuilder.append(string).append('\n');
-//      }
-//    }
-//
-//    return outputBuilder.toString();
-//  }
+  // /**
+  // * Reads an InputStream and returns its contents as a String. Also effects
+  // * rate control.
+  // * @param inputStream The InputStream to read from.
+  // * @return The contents of the InputStream as a String.
+  // * @throws Exception on error.
+  // */
+  // private static String inputStreamToString(final InputStream inputStream)
+  // throws Exception {
+  // final StringBuilder outputBuilder = new StringBuilder();
+  //
+  // String string;
+  // if (inputStream != null) {
+  // BufferedReader reader =
+  // new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+  // while (null != (string = reader.readLine())) {
+  // outputBuilder.append(string).append('\n');
+  // }
+  // }
+  //
+  // return outputBuilder.toString();
+  // }
 
   private void callTestMethod2() throws Exception {
     Logger.getLogger(MappingServiceRestImpl.class).info("AAA");
@@ -5599,42 +6099,38 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
 
     // List All Files on Bucket "release-ihtsdo-prod-published"
-/*
-    ObjectListing listing = s3Client.listObjects(bucketName);
-    List<S3ObjectSummary> summaries = listing.getObjectSummaries();
-    
-    System.out.println("CCC start with " + summaries.size());
-    int i = 1;
-    for (S3ObjectSummary sum : summaries) {
-      Logger.getLogger(MappingServiceRestImpl.class)
-          .info("Summary #" + i++ + " with: " + sum.getKey());
-    }
-*/
+    /*
+     * ObjectListing listing = s3Client.listObjects(bucketName);
+     * List<S3ObjectSummary> summaries = listing.getObjectSummaries();
+     * 
+     * System.out.println("CCC start with " + summaries.size()); int i = 1; for
+     * (S3ObjectSummary sum : summaries) {
+     * Logger.getLogger(MappingServiceRestImpl.class) .info("Summary #" + i++ +
+     * " with: " + sum.getKey()); }
+     */
     Logger.getLogger(MappingServiceRestImpl.class).info("DDD Start");
 
-    
     List<S3ObjectSummary> keyList = new ArrayList<S3ObjectSummary>();
     ObjectListing objects = s3Client.listObjects(bucketName);
     keyList = objects.getObjectSummaries();
     objects = s3Client.listNextBatchOfObjects(objects);
     int loopCounter = 0;
 
-    while (objects.isTruncated()){
-        keyList.addAll(objects.getObjectSummaries());
-        objects = s3Client.listNextBatchOfObjects(objects);
-        
-          Logger.getLogger(MappingServiceRestImpl.class).info("DDD1 at loop #" + ++loopCounter + " with keList.size(): " + keyList.size());
+    while (objects.isTruncated()) {
+      keyList.addAll(objects.getObjectSummaries());
+      objects = s3Client.listNextBatchOfObjects(objects);
+
+      Logger.getLogger(MappingServiceRestImpl.class).info("DDD1 at loop #"
+          + ++loopCounter + " with keList.size(): " + keyList.size());
     }
     keyList.addAll(objects.getObjectSummaries());
-    Logger.getLogger(MappingServiceRestImpl.class).info("DDD2 with total keyList size = " + keyList.size());    
+    Logger.getLogger(MappingServiceRestImpl.class)
+        .info("DDD2 with total keyList size = " + keyList.size());
 
-    PrintWriter summaryWriter =
-        new PrintWriter(new OutputStreamWriter(
-            new FileOutputStream(
-                new File("/home/jefron/aws/listOfFiles.txt")),
-            "UTF-8"));
-    
-    
+    PrintWriter summaryWriter = new PrintWriter(new OutputStreamWriter(
+        new FileOutputStream(new File("/home/jefron/aws/listOfFiles.txt")),
+        "UTF-8"));
+
     File file = new File("/home/jefron/aws/listOfFiles2.txt");
 
     for (S3ObjectSummary obj : keyList) {
@@ -5644,46 +6140,34 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     summaryWriter.close();
     Logger.getLogger(MappingServiceRestImpl.class).info("DDD end");
 
-    
-    
     /*
      * 
-     *     PrintWriter summaryWriter =
-        new PrintWriter(new OutputStreamWriter(
-            new FileOutputStream(
-                new File("~/aws/listOfFiles.txt")),
-            "UTF-8"));
-
-    
-
-    final ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bucketName).withMaxKeys(2);
-    ListObjectsV2Result result;
-    int objectCounter = 0;
-    int loopCounter = 0;
-    do {               
-       result = s3Client.listObjectsV2(req);
-       
-       for (S3ObjectSummary objectSummary : 
-           result.getObjectSummaries()) {
-           if (++objectCounter % 250 == 0) {
-             Logger.getLogger(MappingServiceRestImpl.class).info("CCC1 with Object Counter: " + objectCounter);
-           }
-           
-           summaryWriter.println(objectSummary.getKey());
-
-       }
-       System.out.println("Next Continuation Token : " + result.getNextContinuationToken());
-       summaryWriter.flush();
-       req.setContinuationToken(result.getNextContinuationToken());
-       Logger.getLogger(MappingServiceRestImpl.class).info(""
-           + ""
-           + ""
-           + " with Loop Counter: " + ++loopCounter);
-
-    } while(result.isTruncated() == true ); 
-    summaryWriter.close();
-    Logger.getLogger(MappingServiceRestImpl.class).info("CCC end");
-   */
+     * PrintWriter summaryWriter = new PrintWriter(new OutputStreamWriter( new
+     * FileOutputStream( new File("~/aws/listOfFiles.txt")), "UTF-8"));
+     * 
+     * 
+     * 
+     * final ListObjectsV2Request req = new
+     * ListObjectsV2Request().withBucketName(bucketName).withMaxKeys(2);
+     * ListObjectsV2Result result; int objectCounter = 0; int loopCounter = 0;
+     * do { result = s3Client.listObjectsV2(req);
+     * 
+     * for (S3ObjectSummary objectSummary : result.getObjectSummaries()) { if
+     * (++objectCounter % 250 == 0) {
+     * Logger.getLogger(MappingServiceRestImpl.class).
+     * info("CCC1 with Object Counter: " + objectCounter); }
+     * 
+     * summaryWriter.println(objectSummary.getKey());
+     * 
+     * } System.out.println("Next Continuation Token : " +
+     * result.getNextContinuationToken()); summaryWriter.flush();
+     * req.setContinuationToken(result.getNextContinuationToken());
+     * Logger.getLogger(MappingServiceRestImpl.class).info("" + "" + "" +
+     * " with Loop Counter: " + ++loopCounter);
+     * 
+     * } while(result.isTruncated() == true ); summaryWriter.close();
+     * Logger.getLogger(MappingServiceRestImpl.class).info("CCC end");
+     */
 
   }
 
