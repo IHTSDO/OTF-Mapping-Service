@@ -130,6 +130,9 @@ import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
+import com.amazonaws.SdkClientException;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
@@ -5770,12 +5773,24 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       String bucketName = "release-ihtsdo-prod-published";
       SearchResultList searchResults = new SearchResultListJpa();
 
-      // Connect to server
+      // Connect to server using instance profile credentials
       AmazonS3 s3Client =
           AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
               .withCredentials(new InstanceProfileCredentialsProvider(false))
               .build();
 
+      // Check if connection was successful.  If not, try to connect with static keys instead
+      try{
+        List<Bucket> buckets = s3Client.listBuckets();
+      } catch(SdkClientException e){
+        // Connet to server with static keys
+        BasicAWSCredentials awsCreds = new BasicAWSCredentials(ConfigUtility.getConfigProperties().getProperty("aws.access.key.id"), ConfigUtility.getConfigProperties().getProperty("aws.secret.access.key"));
+        s3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
+                                .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+                                .build();
+      }
+      
+            
       // List Buckets
       List<Bucket> buckets = s3Client.listBuckets();
       for (Bucket b : buckets) {
