@@ -1210,7 +1210,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
       // if remove was successful do add
 			try (final MapRecordRf2SimpleMapLoaderAlgorithm loadAlgo = new MapRecordRf2SimpleMapLoaderAlgorithm(
-					inputFile, memeberFlag, recordFlag, workflowStatus);) {
+					inputFile, memeberFlag, recordFlag, refsetId, workflowStatus);) {
 
         loadAlgo.compute();
 
