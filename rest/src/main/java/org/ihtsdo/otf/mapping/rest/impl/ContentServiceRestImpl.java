@@ -1327,95 +1327,6 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       
       TerminologyVersionList returnList = new TerminologyVersionList();
       for (S3ObjectSummary obj : fullKeyList) {
-        if (obj.getKey().equals("international/SnomedCT_GPFPICPC2_PRODUCTION_20171018T120000Z.zip")) {
-          if (!obj.getKey().endsWith("zip")) {
-            Logger.getLogger(ContentServiceRestImpl.class)
-            .info("1111");
-
-          } else if (!obj.getKey().contains(terminology)) {
-            Logger.getLogger(ContentServiceRestImpl.class)
-            .info("2222");
-
-          } else if (!(obj.getKey().contains(lastYear)
-              || obj.getKey().contains(currentYear)
-              || obj.getKey().contains(nextYear))){
-            Logger.getLogger(ContentServiceRestImpl.class)
-            .info("3333");
-
-          } else if (!(obj.getKey().matches(".*\\d.zip") || obj.getKey().matches(".*\\dZ.zip"))) {
-            Logger.getLogger(ContentServiceRestImpl.class)
-            .info("4444");
-
-          }
-        }
-        
-        if (obj.getKey().equals("international/SnomedCT_GPFPICPC2_PRODUCTION_20171018T120000Z.zip")) {
-          String s = obj.getKey();
-          Logger.getLogger(ContentServiceRestImpl.class).info("---" + s + "----");
-
-          if (s.endsWith("zip")) {
-            Logger.getLogger(ContentServiceRestImpl.class)
-            .info("ZZZZ");
-          }
-          
-          if (s.contains(terminology)) {
-            Logger.getLogger(ContentServiceRestImpl.class)
-            .info("YYY");
-          }
-
-          if (!s.contains("published_build_backup")) {
-            Logger.getLogger(ContentServiceRestImpl.class)
-            .info("XXX");
-          }
-
-          if (s.contains(lastYear)
-              || s.contains(currentYear)
-              || s.contains(nextYear)) {
-            Logger.getLogger(ContentServiceRestImpl.class)
-            .info("UUU");
-          }
-
-          if (s.matches(".*\\d.zip") || s.matches(".*\\dZ.zip")) {
-            Logger.getLogger(ContentServiceRestImpl.class)
-            .info("WWW");
-          }
-
-        }
-
-        
-        if (obj.getKey().endsWith("zip")) {
-          Logger.getLogger(ContentServiceRestImpl.class)
-          .info("Adding match1 : " + obj.getKey());
-
-        }
-
-        if (obj.getKey().endsWith("zip")
-            && obj.getKey().contains(terminology)) {
-        Logger.getLogger(ContentServiceRestImpl.class)
-        .info("Adding match2 : " + obj.getKey());
-
-      }
-
-        
-        if (obj.getKey().endsWith("zip")
-            && obj.getKey().contains(terminology)
-            && !obj.getKey().contains("published_build_backup")) {
-          Logger.getLogger(ContentServiceRestImpl.class)
-          .info("Adding match3 : " + obj.getKey());
-
-        }
-        
-        if (obj.getKey().endsWith("zip")
-            && obj.getKey().contains(terminology)
-            && !obj.getKey().contains("published_build_backup")
-            && (obj.getKey().contains(lastYear)
-                || obj.getKey().contains(currentYear)
-                || obj.getKey().contains(nextYear))) {
-          Logger.getLogger(ContentServiceRestImpl.class)
-          .info("Adding match4 : " + obj.getKey());
-        }
-        
-        
         if (obj.getKey().endsWith("zip")
             && obj.getKey().contains(terminology)
             && !obj.getKey().contains("published_build_backup")
@@ -1424,18 +1335,32 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
                 || obj.getKey().contains(nextYear))
             && (obj.getKey().matches(".*\\d.zip") || obj.getKey().matches(".*\\dZ.zip"))) {
           Logger.getLogger(ContentServiceRestImpl.class)
-          .info("Adding match5 : " + obj.getKey());
+          .info("Adding AAA : " + obj.getKey());
 
           summaryWriter.append(obj.getKey()).append("\n");
+          Logger.getLogger(ContentServiceRestImpl.class)
+          .info("Adding BBB : " + obj.getKey());
 
           returnList.addTerminologyVersion(
               new TerminologyVersion(terminology, obj.getKey()));
+          Logger.getLogger(ContentServiceRestImpl.class)
+          .info("Adding CCC : " + obj.getKey());
+
         }
       }
-      
+
+      Logger.getLogger(ContentServiceRestImpl.class)
+      .info("Adding DDD");
+
       summaryWriter.close();
 
+      Logger.getLogger(ContentServiceRestImpl.class)
+      .info("Adding EEE");
+
       returnList.removeDupVersions();
+
+      Logger.getLogger(ContentServiceRestImpl.class)
+      .info("Adding FFF");
 
       // want all descendants, do not use PFS parameter
       return returnList;
