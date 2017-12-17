@@ -49,7 +49,7 @@ public class TerminologyVersion {
    * @param terminology the terminology
    */
   public TerminologyVersion(String awsKey, String terminology) {
-    System.out.println(awsKey);
+    System.out.println(awsKey + " for " + terminology);
     this.terminology = terminology;
     awsZipFileName = awsKey;
 

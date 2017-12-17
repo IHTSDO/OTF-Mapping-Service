@@ -1342,7 +1342,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
           .info("Adding BBB : " + obj.getKey());
 
           returnList.addTerminologyVersion(
-              new TerminologyVersion(terminology, obj.getKey()));
+              new TerminologyVersion(obj.getKey(), terminology));
           Logger.getLogger(ContentServiceRestImpl.class)
           .info("Adding CCC : " + obj.getKey());
 
