@@ -5,10 +5,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -66,6 +65,8 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import io.swagger.annotations.Api;
@@ -945,12 +946,12 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   /* see superclass */
   @Override
   @PUT
-  @Path("/terminology/load/rf2/snapshot/aws/{terminology}/{version}")
+  @Path("/terminology/load/aws/rf2/snapshot/{terminology}/{version}")
   @Consumes({
       MediaType.TEXT_PLAIN
   })
   @ApiOperation(value = "Loads terminology RF2 snapshot from directory", notes = "Loads terminology RF2 snapshot from directory for specified terminology and version")
-  public void loadTerminologyRf2SnapshotAws(
+  public void loadTerminologyAwsRf2Snapshot(
     @ApiParam(value = "Terminology, e.g. SNOMED CT", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Version, e.g. 20170131", required = true) @PathParam("version") String version,
     @ApiParam(value = "Aws Zip File Name, e.g. filename with full path", required = true) @QueryParam("awsZipFileName") String awsZipFileName,
@@ -961,8 +962,8 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
     Logger.getLogger(getClass())
         .info("RESTful call (Content): /terminology/load/rf2/snapshot/aws/"
-            + " awsFileName " + awsZipFileName);
-/*
+            + " awsZipFileName " + awsZipFileName);
+
     // Track system level information
     long startTimeOrig = System.nanoTime();
 
@@ -980,27 +981,46 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
               .build();
 
       final String bucketName = "release-ihtsdo-prod-published";
-      S3Object s3object = s3Client.getObject(bucketName, awsFileName);
+      S3Object s3object = s3Client.getObject(bucketName, awsZipFileName);
+      Logger.getLogger(getClass()).info("AAA");
 
       // Unzip awsFile to temp directory
       File tempDir = FileUtils.getTempDirectory();
       placementDir = new File(tempDir.getAbsolutePath() + File.separator
           + "TerminologyLoad_" + startTimeOrig);
       placementDir.mkdir();
+      Logger.getLogger(getClass()).info("BBB with " + placementDir);
 
       S3ObjectInputStream inputStream = s3object.getObjectContent();
       File zippedFile = new File(placementDir,
-          awsFileName.substring(awsFileName.lastIndexOf('/') + 1));
+          awsZipFileName.substring(awsZipFileName.lastIndexOf('/') + 1));
       FileUtils.copyInputStreamToFile(inputStream, zippedFile);
       inputStream.close();
 
+      Collection<File> files = FileUtils.listFiles(placementDir, null, false);
+      for (File f : files) {
+        Logger.getLogger(getClass()).info("CCC with " + f.getName());
+      }
+      
       // UNZIP to Placement
       unzipToDirectory(zippedFile, placementDir);
-      FileUtils.deleteDirectory(placementDir);
+
+      File testDir = new File(placementDir.getAbsolutePath() + File.separator + "Snapshot");
+      files = FileUtils.listFiles(testDir, null, false);
+      for (File f : files) {
+        Logger.getLogger(getClass()).info("DDD with " + f.getName());
+      }
+
+      files = FileUtils.listFiles(placementDir, null, false);
+      for (File f : files) {
+        Logger.getLogger(getClass()).info("EEE with " + f.getName());
+      }
 
       // Load content with input pulled from S3
       algo = new Rf2SnapshotLoaderAlgorithm(terminology, version,
-          placementDir.getAbsolutePath(), treePositions, sendNotification);
+          placementDir.getAbsolutePath() + File.separator + "Snapshot", treePositions, sendNotification);
+      
+      Logger.getLogger(getClass()).info("FFF");
 
       algo.compute();
 
@@ -1015,7 +1035,6 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       FileUtils.deleteDirectory(placementDir);
       algo.close();
     }
-    */
   }
 
   /* see superclass */
@@ -1362,48 +1381,27 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       ObjectListing objects = s3Client.listObjects(bucketName);
       fullKeyList = objects.getObjectSummaries();
       objects = s3Client.listNextBatchOfObjects(objects);
-      int loopCounter = 0;
 
       while (objects.isTruncated()) {
         fullKeyList.addAll(objects.getObjectSummaries());
         objects = s3Client.listNextBatchOfObjects(objects);
-
-        Logger.getLogger(MappingServiceRestImpl.class).info("DDD1 at loop #"
-            + ++loopCounter + " with keList.size(): " + fullKeyList.size());
       }
       fullKeyList.addAll(objects.getObjectSummaries());
 
       TerminologyVersionList returnList = new TerminologyVersionList(); 
-      
-      PrintWriter summaryWriter = new PrintWriter(new OutputStreamWriter(
-          new FileOutputStream(new File("/home/jefron/aws/listOfScopesZips.txt")),
-          "UTF-8"));
-      
-      Logger.getLogger(ContentServiceRestImpl.class).info("AAA: " + terminology + "---" + version);
-      
       
       for (S3ObjectSummary obj : fullKeyList) {
         if (obj.getKey().endsWith("zip") && obj.getKey().contains(terminology)
             && !obj.getKey().contains("published_build_backup")
             && obj.getKey().contains(version)
             && (obj.getKey().matches(".*\\d.zip") || obj.getKey().matches(".*\\dZ.zip"))) {
-          Logger.getLogger(ContentServiceRestImpl.class).info("BBB");
           TerminologyVersion tv =
               new TerminologyVersion(terminology, version, null, obj.getKey());
-          Logger.getLogger(ContentServiceRestImpl.class).info("CCC");
           tv.identifyScope();
-          Logger.getLogger(ContentServiceRestImpl.class).info("DDD");
           returnList.addTerminologyVersion(tv);
-          Logger.getLogger(ContentServiceRestImpl.class).info("EEE");
-          summaryWriter.append(obj.getKey()).append("\n");
-          Logger.getLogger(ContentServiceRestImpl.class).info("FFF");
         }
       }
       
-      Logger.getLogger(ContentServiceRestImpl.class).info("GGG");
-      summaryWriter.close();
-      Logger.getLogger(ContentServiceRestImpl.class).info("HHH");
-
       returnList.removeDupScopes();
 
       // want all descendants, do not use PFS parameter

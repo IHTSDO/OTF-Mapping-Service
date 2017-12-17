@@ -531,7 +531,7 @@ public class ContentClientRest extends RootClientRest
   }
 
   @Override
-  public void loadTerminologyRf2SnapshotAws(String terminology, String version,
+  public void loadTerminologyAwsRf2Snapshot(String terminology, String version,
     String awsFileName, Boolean treePositions, Boolean sendNotification,
     String authToken) throws Exception {
     // not yet implemented in rest client

@@ -2943,7 +2943,7 @@ angular
           
           // load the version of gmdn into the application   
           if (isRf2Terminology(terminology)) {
-            loadTerminologyRf2SnapshotAws(terminology, version, scope);
+            loadTerminologyAwsRf2Snapshot(terminology, version, scope);
           }
           reloadTerminologies();
           $rootScope.glassPane--;          
@@ -3203,7 +3203,7 @@ angular
         
         // load terminology Rf2 snapshot
         // ASD
-        function loadTerminologyRf2SnapshotAws(terminology, version, scope) {
+        function loadTerminologyAwsRf2Snapshot(terminology, version, scope) {
           $rootScope.glassPane++;
 
           var queryString = '?';
@@ -3214,7 +3214,7 @@ angular
           console.log("CCC: ", terminology, version, queryString);
           // rest call
           $http({
-            url: root_content + "terminology/load/rf2/snapshot/aws/" 
+            url: root_content + "terminology/load/aws/rf2/snapshot/" 
               + terminology + "/" + version + "/" + queryString,
             method: "PUT",
             data: null, 
