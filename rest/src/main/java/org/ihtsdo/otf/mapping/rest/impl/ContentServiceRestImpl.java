@@ -982,14 +982,12 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
       final String bucketName = "release-ihtsdo-prod-published";
       S3Object s3object = s3Client.getObject(bucketName, awsZipFileName);
-      Logger.getLogger(getClass()).info("AAA");
 
       // Unzip awsFile to temp directory
       File tempDir = FileUtils.getTempDirectory();
       placementDir = new File(tempDir.getAbsolutePath() + File.separator
           + "TerminologyLoad_" + startTimeOrig);
       placementDir.mkdir();
-      Logger.getLogger(getClass()).info("BBB with " + placementDir);
 
       S3ObjectInputStream inputStream = s3object.getObjectContent();
       File zippedFile = new File(placementDir,
@@ -997,46 +995,30 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       FileUtils.copyInputStreamToFile(inputStream, zippedFile);
       inputStream.close();
 
-      Collection<File> files = FileUtils.listFiles(placementDir, null, true);
-      for (File f : files) {
-        Logger.getLogger(getClass()).info("CCC with " + f.getName());
-      }
-      Logger.getLogger(getClass()).info("CCC1 with " + zippedFile.getAbsolutePath());
-
       // UNZIP to Placement
       unzipToDirectory(zippedFile, placementDir);
-      files = FileUtils.listFiles(placementDir, null, true);
+      Collection<File> files = FileUtils.listFiles(placementDir, null, true);
       for (File f : files) {
-        Logger.getLogger(getClass()).info("ZZZ with " + f.getAbsolutePath());
+        Logger.getLogger(getClass()).info("AAA with " + f.getAbsolutePath());
       }
-      File testDir = new File(placementDir.getAbsolutePath() + File.separator + "Snapshot");
-      files = FileUtils.listFiles(testDir, null, true);
-      for (File f : files) {
-        Logger.getLogger(getClass()).info("CCC2 with " + f.getName());
-      }
+      Logger.getLogger(getClass()).info("BBB with " + placementDir);
 
-
-//      testDir.mkdir();
-      Logger.getLogger(getClass()).info("CCC3 with " + testDir.getAbsolutePath() );
-      
+      File testDir = new File(placementDir.getAbsolutePath() + File.separator + zippedFile.getName().substring(0, zippedFile.getName().indexOf(".")) + File.separator + "Snapshot");
+      Logger.getLogger(getClass()).info("CCC with " + testDir.getAbsolutePath() );
       files = FileUtils.listFiles(testDir, null, true);
-      Logger.getLogger(getClass()).info("CCC4" );
       for (File f : files) {
         Logger.getLogger(getClass()).info("DDD with " + f.getName());
-      }
-
-      files = FileUtils.listFiles(placementDir, null, true);
-      for (File f : files) {
-        Logger.getLogger(getClass()).info("EEE with " + f.getName());
       }
 
       // Load content with input pulled from S3
       algo = new Rf2SnapshotLoaderAlgorithm(terminology, version,
           placementDir.getAbsolutePath() + File.separator + "Snapshot", treePositions, sendNotification);
       
-      Logger.getLogger(getClass()).info("FFF");
+      Logger.getLogger(getClass()).info("EEE");
 
       algo.compute();
+      
+      Logger.getLogger(getClass()).info("FFF");
 
       Logger.getLogger(getClass())
           .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
