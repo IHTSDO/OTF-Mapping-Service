@@ -1292,8 +1292,6 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       fullKeyList = objects.getObjectSummaries();
 
       objects = s3Client.listNextBatchOfObjects(objects);
-      Logger.getLogger(ContentServiceRestImpl.class)
-      .info("EEE");
 
       int loopCounter = 0;
       Logger.getLogger(ContentServiceRestImpl.class)
@@ -1332,13 +1330,34 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       
       TerminologyVersionList returnList = new TerminologyVersionList();
       for (S3ObjectSummary obj : fullKeyList) {
+        if (obj.getKey().equals("international/SnomedCT_GPFPICPC2_PRODUCTION_20171018T120000Z.zip")) {
+          if (!obj.getKey().endsWith("zip")) {
+            Logger.getLogger(ContentServiceRestImpl.class)
+            .info("111");
+
+          } else if (!obj.getKey().contains(terminology)) {
+            Logger.getLogger(ContentServiceRestImpl.class)
+            .info("222");
+
+          } else if (!(obj.getKey().contains(lastYear)
+              || obj.getKey().contains(currentYear)
+              || obj.getKey().contains(nextYear))){
+            Logger.getLogger(ContentServiceRestImpl.class)
+            .info("333");
+
+          } else if (!(obj.getKey().matches(".*\\d.zip") || obj.getKey().matches(".*\\dZ.zip"))) {
+            Logger.getLogger(ContentServiceRestImpl.class)
+            .info("444");
+
+          }
+        }
         if (obj.getKey().endsWith("zip")
             && obj.getKey().contains(terminology)
             && !obj.getKey().contains("published_build_backup")
             && (obj.getKey().contains(lastYear)
                 || obj.getKey().contains(currentYear)
                 || obj.getKey().contains(nextYear))
-            && obj.getKey().matches(".*\\d.zip")){
+            && (obj.getKey().matches(".*\\d.zip") || obj.getKey().matches(".*\\dZ.zip"))) {
           summaryWriter.append(obj.getKey()).append("\n");
 
           returnList.addTerminologyVersion(
