@@ -1270,14 +1270,14 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     String nextYear = Integer.toString(year + 1);
     String lastYear = Integer.toString(year - 1);
     
-    Logger.getLogger(ContentServiceRestImpl.class)
-    .info("with year: " + currentYear + "next/last Year" + nextYear + "/" + lastYear);
-    final String bucketName = "release-ihtsdo-prod-published";
 
     try {
       // authorize call
-      
+      authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+          "load map record RF2 simple", securityService);
+
       // Connect to server
+      final String bucketName = "release-ihtsdo-prod-published";
       AmazonS3 s3Client =
           AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
               .withCredentials(new InstanceProfileCredentialsProvider(false))
@@ -1290,41 +1290,12 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
       objects = s3Client.listNextBatchOfObjects(objects);
 
-      int loopCounter = 0;
-      Logger.getLogger(ContentServiceRestImpl.class)
-        .info("First Pass Size: " + fullKeyList.size());
-
       while (objects.isTruncated()) {
         fullKeyList.addAll(objects.getObjectSummaries());
         objects = s3Client.listNextBatchOfObjects(objects);
-
-        Logger.getLogger(MappingServiceRestImpl.class).info("DDD1 at loop #"
-            + ++loopCounter + " with keList.size(): " + fullKeyList.size());
       }
+      
       fullKeyList.addAll(objects.getObjectSummaries());
-      Logger.getLogger(ContentServiceRestImpl.class)
-      .info("Final Size: " + fullKeyList.size());
-
-      
-      PrintWriter summary2Writer = new PrintWriter(new OutputStreamWriter(
-          new FileOutputStream(new File("/home/jefron/aws/filteredFiles.txt")),
-          "UTF-8"));
-
-      for (S3ObjectSummary obj : fullKeyList) {
-        summary2Writer.append(obj.getKey()).append("\n");
-      }
-      summary2Writer.close();
-
-      
-      
-      
-      PrintWriter summaryWriter = new PrintWriter(new OutputStreamWriter(
-          new FileOutputStream(new File("/home/jefron/aws/" + terminology + ".txt")),
-          "UTF-8"));
-      
-      
-      
-      
       TerminologyVersionList returnList = new TerminologyVersionList();
       for (S3ObjectSummary obj : fullKeyList) {
         if (obj.getKey().endsWith("zip")
@@ -1334,33 +1305,11 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
                 || obj.getKey().contains(currentYear)
                 || obj.getKey().contains(nextYear))
             && (obj.getKey().matches(".*\\d.zip") || obj.getKey().matches(".*\\dZ.zip"))) {
-          Logger.getLogger(ContentServiceRestImpl.class)
-          .info("Adding AAAAAA : " + obj.getKey());
-
-          summaryWriter.append(obj.getKey()).append("\n");
-          Logger.getLogger(ContentServiceRestImpl.class)
-          .info("Adding BBBBBB : " + obj.getKey());
-
           returnList.addTerminologyVersion(
               new TerminologyVersion(obj.getKey(), terminology));
-          Logger.getLogger(ContentServiceRestImpl.class)
-          .info("Adding CCC : " + obj.getKey());
-
         }
       }
-
-      Logger.getLogger(ContentServiceRestImpl.class)
-      .info("Adding DDD");
-
-      summaryWriter.close();
-
-      Logger.getLogger(ContentServiceRestImpl.class)
-      .info("Adding EEE");
-
       returnList.removeDupVersions();
-
-      Logger.getLogger(ContentServiceRestImpl.class)
-      .info("Adding FFF");
 
       // want all descendants, do not use PFS parameter
       return returnList;
@@ -1400,8 +1349,8 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     final ContentService contentService = new ContentServiceJpa();
     try {
       // authorize call
-      authorizeApp(authToken, MapUserRole.VIEWER,
-          "find version for terminology", securityService);
+      authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+          "load map record RF2 simple", securityService);
 
        // Connect to server 
       AmazonS3 s3Client =
@@ -1429,21 +1378,31 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       PrintWriter summaryWriter = new PrintWriter(new OutputStreamWriter(
           new FileOutputStream(new File("/home/jefron/aws/listOfScopesZips.txt")),
           "UTF-8"));
-      summaryWriter.append(terminology + "---" + version).append("\n");
-
-
+      
+      Logger.getLogger(ContentServiceRestImpl.class).info("AAA: " + terminology + "---" + version);
+      
+      
       for (S3ObjectSummary obj : fullKeyList) {
         if (obj.getKey().endsWith("zip") && obj.getKey().contains(terminology)
-            && obj.getKey().contains(version)) {
+            && !obj.getKey().contains("published_build_backup")
+            && obj.getKey().contains(version)
+            && (obj.getKey().matches(".*\\d.zip") || obj.getKey().matches(".*\\dZ.zip"))) {
+          Logger.getLogger(ContentServiceRestImpl.class).info("BBB");
           TerminologyVersion tv =
-              new TerminologyVersion(obj.getKey(), terminology);
+              new TerminologyVersion(terminology, version, null, obj.getKey());
+          Logger.getLogger(ContentServiceRestImpl.class).info("CCC");
           tv.identifyScope();
+          Logger.getLogger(ContentServiceRestImpl.class).info("DDD");
           returnList.addTerminologyVersion(tv);
+          Logger.getLogger(ContentServiceRestImpl.class).info("EEE");
           summaryWriter.append(obj.getKey()).append("\n");
+          Logger.getLogger(ContentServiceRestImpl.class).info("FFF");
         }
       }
       
+      Logger.getLogger(ContentServiceRestImpl.class).info("GGG");
       summaryWriter.close();
+      Logger.getLogger(ContentServiceRestImpl.class).info("HHH");
 
       returnList.removeDupScopes();
 
