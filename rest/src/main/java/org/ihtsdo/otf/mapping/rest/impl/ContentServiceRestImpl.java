@@ -1272,9 +1272,11 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     
     Logger.getLogger(ContentServiceRestImpl.class)
     .info("with year: " + currentYear + "next/last Year" + nextYear + "/" + lastYear);
-
+    Logger.getLogger(ContentServiceRestImpl.class)
+    .info("111");
     final String bucketName = "release-ihtsdo-prod-published";
-
+    Logger.getLogger(ContentServiceRestImpl.class)
+    .info("222");
     try {
       // authorize call
       authorizeApp(authToken, MapUserRole.VIEWER,
