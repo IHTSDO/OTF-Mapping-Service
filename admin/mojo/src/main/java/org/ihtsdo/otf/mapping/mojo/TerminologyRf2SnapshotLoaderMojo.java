@@ -99,7 +99,7 @@ public class TerminologyRf2SnapshotLoaderMojo
 				getLog().info("Running directly");
 
 				ContentServiceRestImpl service = new ContentServiceRestImpl();
-				service.loadTerminologyRf2Snapshot(terminology, version, null,
+				service.loadTerminologyRf2Snapshot(terminology, version,
 						inputDir, treePositions, sendNotification,
 						getAuthToken());
 
@@ -108,7 +108,7 @@ public class TerminologyRf2SnapshotLoaderMojo
 
 				// invoke the client
 				ContentClientRest client = new ContentClientRest(properties);
-				client.loadTerminologyRf2Snapshot(terminology, version, null,
+				client.loadTerminologyRf2Snapshot(terminology, version,
 						inputDir, treePositions, sendNotification,
 						getAuthToken());
 			}

@@ -59,7 +59,7 @@ angular
 
         $scope.termLoadVersions = new Array();
         $scope.termLoadScopes = new Array();
-        $scope.termLoadAwsFileName = '';
+        $scope.termLoadAwsZipFileName = '';
         $scope.termLoadVersionFileNameMap = new Map();
         $scope.termLoadScopeFileNameMap = new Map();
         
@@ -2858,7 +2858,7 @@ angular
               $scope.termLoadVersions.push(data.TerminologyVersion[i].version);
               $scope.termLoad.version = ''; //reset
               if (terminology != 'SNOMED CT')
-                $scope.termLoadVersionFileNameMap.set(data.TerminologyVersion[i].version, data.TerminologyVersion[i].awsFileName)
+                $scope.termLoadVersionFileNameMap.set(data.TerminologyVersion[i].version, data.TerminologyVersion[i].awsZipFileName)
             }
             $rootScope.glassPane--;
 
@@ -2887,7 +2887,7 @@ angular
 
             for (var i = 0; i < data.TerminologyVersion.length; i++) {
               $scope.termLoadScopes.push(data.TerminologyVersion[i].scope);
-              $scope.termLoadScopeFileNameMap.set(data.TerminologyVersion[i].scope, data.TerminologyVersion[i].awsFileName)
+              $scope.termLoadScopeFileNameMap.set(data.TerminologyVersion[i].scope, data.TerminologyVersion[i].awsZipFileName)
             }
             $rootScope.glassPane--;
 
@@ -2902,8 +2902,9 @@ angular
             if (terminology == 'SNOMED CT') {
               getTerminologyScopes(terminology, version);
             } else {
-              // Not SNOMED.  So access awsFileName
-              $scope.termLoadAwsFileName = $scope.termLoadVersionFileNameMap.get(version);
+              // Not SNOMED.  So access awsZipFileName
+              $scope.termLoadAwsZipFileName = $scope.termLoadVersionFileNameMap.get(version);
+              console.log("AAA with ", $scope.termLoadAwsZipFileName);
             }
           }
         }
@@ -2913,12 +2914,12 @@ angular
             return;
          
           // Only valid for SNOMED usage of SCOPE.  
-          $scope.termLoadAwsFileName = $scope.termLoadScopeFileNameMap.get(scope);
+          $scope.termLoadAwsZipFileName = $scope.termLoadScopeFileNameMap.get(scope);
         }
         
         // ASD
         // terminology/load/aws/{terminology}
-        $scope.loadTerminology = function(terminology, version, scope) {
+        $scope.loadTerminologyAws = function(terminology, version, scope) {
           $rootScope.glassPane++;
 
           var errors = '';
@@ -2942,7 +2943,7 @@ angular
           
           // load the version of gmdn into the application   
           if (isRf2Terminology(terminology)) {
-            loadTerminologyRf2Snapshot(terminology, version, scope);
+            loadTerminologyRf2SnapshotAws(terminology, version, scope);
           }
           reloadTerminologies();
           $rootScope.glassPane--;          
@@ -3202,25 +3203,24 @@ angular
         
         // load terminology Rf2 snapshot
         // ASD
-        function loadTerminologyRf2Snapshot(terminology, version, scope) {
+        function loadTerminologyRf2SnapshotAws(terminology, version, scope) {
           $rootScope.glassPane++;
 
           var queryString = '?';
-          if (scope) {
-            queryString += "scope=" + scope + "&";
-          }
-          queryString += "treePositions=true&sendNotification=true";
+          queryString += "awsZipFileName=" + $scope.termLoadAwsZipFileName;
+
+          queryString += "&treePositions=true&sendNotification=true";
           
-          console.log("AAA: ", terminology, version, scope, queryString);
+          console.log("CCC: ", terminology, version, queryString);
           // rest call
           $http({
-            url: root_content + "terminology/load/rf2/snapshot/" 
+            url: root_content + "terminology/load/rf2/snapshot/aws/" 
               + terminology + "/" + version + "/" + queryString,
             method: "PUT",
             data: null, 
             headers: { 'Content-Type' : 'text/plain' }
             }).success(function(data) {
-              //nothing
+              $rootScope.glassPane--;
             }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;          
             $rootScope.handleHttpError(data, status, headers, config);

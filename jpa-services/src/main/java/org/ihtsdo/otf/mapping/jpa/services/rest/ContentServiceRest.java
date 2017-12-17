@@ -242,14 +242,14 @@ public interface ContentServiceRest {
 	 *
 	 * @param terminology The terminology.
 	 * @param version The terminology version.
-	 * @param scope The scope of the terminology (Beta, Alpha, Prod) for SNOMED
+	 * @param inputDir The directory where the input files are located.
 	 * @param treePositions Indicate if tree positions should be calculated.
 	 * @param sendNotification Indicate if a notification should be sent.
 	 * @param authToken The auth token
 	 * @throws Exception The execution exception
 	 */
-	void loadTerminologyRf2Snapshot(String terminology, String version,
-			String scope, String inputDir, Boolean treePositions, Boolean sendNotification,
+  void loadTerminologyRf2Snapshot(String terminology, String version,
+    String inputDir, Boolean treePositions, Boolean sendNotification,
 			String authToken) throws Exception;
 
 	/**
@@ -289,10 +289,11 @@ public interface ContentServiceRest {
 	 *
 	 * @param refsetId Refset Id to be deleted.
 	 * @param inputFile The input file.
-	 * @param memberFlag
-	 * @param recordFlag
-	 * @param workflowStatus
+	 * @param memberFlag the member flag
+	 * @param recordFlag the record flag
+	 * @param workflowStatus the workflow status
 	 * @param authToken The auth token
+	 * @return true, if successful
 	 * @throws Exception The execution exception
 	 */
 	boolean reloadMapRecord(String refsetId, String inputFile, Boolean memberFlag,
@@ -322,4 +323,19 @@ public interface ContentServiceRest {
    */
   TerminologyVersionList getTerminologyVersionScopes(String terminology,
     String version, String authToken) throws Exception;
+
+  /**
+   * Load terminology rf 2 snapshot aws.
+   *
+   * @param terminology the terminology
+   * @param version the version
+   * @param awsFileName the aws file name
+   * @param treePositions the tree positions
+   * @param sendNotification the send notification
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  void loadTerminologyRf2SnapshotAws(String terminology, String version,
+    String awsFileName, Boolean treePositions, Boolean sendNotification,
+    String authToken) throws Exception;
 }

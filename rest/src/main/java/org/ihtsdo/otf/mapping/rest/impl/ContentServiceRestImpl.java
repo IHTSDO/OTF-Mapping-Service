@@ -1,9 +1,16 @@
 package org.ihtsdo.otf.mapping.rest.impl;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -926,14 +933,89 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   /* see superclass */
   @Override
   @PUT
+  @Path("/terminology/load/rf2/snapshot/aws/{terminology}/{version}")
+  @Consumes({
+      MediaType.TEXT_PLAIN
+  })
+  @ApiOperation(value = "Loads terminology RF2 snapshot from directory", notes = "Loads terminology RF2 snapshot from directory for specified terminology and version")
+  public void loadTerminologyRf2SnapshotAws(
+    @ApiParam(value = "Terminology, e.g. SNOMED CT", required = true) @PathParam("terminology") String terminology,
+    @ApiParam(value = "Version, e.g. 20170131", required = true) @PathParam("version") String version,
+    @ApiParam(value = "Aws Zip File Name, e.g. filename with full path", required = true) @QueryParam("awsZipFileName") String awsZipFileName,
+    @ApiParam(value = "Calculate tree positions", required = false) @QueryParam("treePositions") Boolean treePositions,
+    @ApiParam(value = "Send notification", required = false) @QueryParam("sendNotification") Boolean sendNotification,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("RESTful call (Content): /terminology/load/rf2/snapshot/aws/"
+            + " awsFileName " + awsZipFileName);
+/*
+    // Track system level information
+    long startTimeOrig = System.nanoTime();
+
+    authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+        "load RF2 snapshot terminology", securityService);
+
+    File placementDir = null;
+    Rf2SnapshotLoaderAlgorithm algo = null;
+
+    try {
+      // Access zipped awsFile
+      AmazonS3 s3Client =
+          AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
+              .withCredentials(new InstanceProfileCredentialsProvider(false))
+              .build();
+
+      final String bucketName = "release-ihtsdo-prod-published";
+      S3Object s3object = s3Client.getObject(bucketName, awsFileName);
+
+      // Unzip awsFile to temp directory
+      File tempDir = FileUtils.getTempDirectory();
+      placementDir = new File(tempDir.getAbsolutePath() + File.separator
+          + "TerminologyLoad_" + startTimeOrig);
+      placementDir.mkdir();
+
+      S3ObjectInputStream inputStream = s3object.getObjectContent();
+      File zippedFile = new File(placementDir,
+          awsFileName.substring(awsFileName.lastIndexOf('/') + 1));
+      FileUtils.copyInputStreamToFile(inputStream, zippedFile);
+      inputStream.close();
+
+      // UNZIP to Placement
+      unzipToDirectory(zippedFile, placementDir);
+      FileUtils.deleteDirectory(placementDir);
+
+      // Load content with input pulled from S3
+      algo = new Rf2SnapshotLoaderAlgorithm(terminology, version,
+          placementDir.getAbsolutePath(), treePositions, sendNotification);
+
+      algo.compute();
+
+      Logger.getLogger(getClass())
+          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+
+    } catch (Exception e) {
+      handleException(e,
+          "trying to load terminology snapshot from RF2 directory");
+    } finally {
+      // Remove directory
+      FileUtils.deleteDirectory(placementDir);
+      algo.close();
+    }
+    */
+  }
+
+  /* see superclass */
+  @Override
+  @PUT
   @Path("/terminology/load/rf2/snapshot/{terminology}/{version}")
 	@Consumes({ MediaType.TEXT_PLAIN })
   @ApiOperation(value = "Loads terminology RF2 snapshot from directory", notes = "Loads terminology RF2 snapshot from directory for specified terminology and version")
   public void loadTerminologyRf2Snapshot(
-    @ApiParam(value = "Terminology, e.g. SNOMED CT", required = true) @PathParam("terminology") String terminology,
-    @ApiParam(value = "Version, e.g. 20170131", required = true) @PathParam("version") String version,
-    @ApiParam(value = "Scope for SNOMED CT, e.g. ALHPA", required = false) @QueryParam("scope") String scope,
-    @ApiParam(value = "Input Directory containing RF2 files", required = false) String inputDir,
+    @ApiParam(value = "Terminology, e.g. SNOMEDCT_US", required = true) @PathParam("terminology") String terminology,
+    @ApiParam(value = "Version, e.g. 2014_09_01", required = true) @PathParam("version") String version,
+    @ApiParam(value = "RF2 input directory", required = true) String inputDir,
     @ApiParam(value = "Calcualte tree positions", required = false) @QueryParam("treePositions") Boolean treePositions,
     @ApiParam(value = "Send notification", required = false) @QueryParam("sendNotification") Boolean sendNotification,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
@@ -941,24 +1023,33 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
     Logger.getLogger(getClass())
         .info("RESTful call (Content): /terminology/load/rf2/snapshot/"
-            + terminology + "/" + version + "/" + scope + " inputDir "
-            + inputDir + " treePositions " + treePositions
-            + " sendNotification " + sendNotification);
+            + terminology + "/" + version + " from input directory "
+            + inputDir);
 
     // Track system level information
     long startTimeOrig = System.nanoTime();
 
+    Boolean localTreePostions = false;
+    Boolean localSendNotification = false;
+
+    if (treePositions != null) {
+      localTreePostions = treePositions;
+    }
+
+    if (sendNotification != null) {
+      localSendNotification = sendNotification;
+    }
+
     authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
         "load RF2 snapshot terminology", securityService);
 
-    // Get Input Director from AWS
-    try (final Rf2SnapshotLoaderAlgorithm algo = new Rf2SnapshotLoaderAlgorithm(
-        terminology, version, inputDir, treePositions, sendNotification);) {
+		try (final Rf2SnapshotLoaderAlgorithm algo = new Rf2SnapshotLoaderAlgorithm(
+				terminology, version, inputDir, localTreePostions, localSendNotification);) {
 
       algo.compute();
 
-      Logger.getLogger(getClass())
-          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+			Logger.getLogger(getClass()).info(
+					"Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
 
     } catch (Exception e) {
       handleException(e,
@@ -1196,7 +1287,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
        * fullKeyList.addAll(objects.getObjectSummaries());
        * 
        * TerminologyVersionList returnList = new TerminologyVersionList(); for
-       * (S3ObjectSummary obj : fullKeyList) { if (obj.getKey().endsWith("zip")
+       * (S3ObjectSummary obj : fullKeyList) { if (obj.getKey().startsWith("international") && obj.getKey().endsWith("zip")
        * && obj.getKey().contains(terminology) &&
        * (obj.getKey().contains(lastYear) || obj.getKey().contains(currentYear)
        * || obj.getKey().contains(nextYear)) {
@@ -1345,15 +1436,15 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
+    Logger.getLogger(ContentServiceRestImpl.class)
+        .info("RESTful call (Content): /terminology/scope/" + terminology + "/"
+            + version + "/");
+
     if (!terminology.equals("SNOMED CT")) {
       throw new Exception("Scope not relevant to handle " + terminology);
     } else {
       terminology = "InternationalRF2";
     }
-
-    Logger.getLogger(ContentServiceRestImpl.class)
-        .info("RESTful call (Content): /terminology/scope" + terminology + "/"
-            + "version" + "/");
 
     final String bucketName = "release-ihtsdo-prod-published";
 
@@ -1520,4 +1611,49 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     }
   }
 
+  private void unzipToDirectory(File zippedFile, File placementDir)
+    throws IOException {
+
+    if (!placementDir.exists()) {
+      placementDir.mkdir();
+    }
+    ZipInputStream zipIn = new ZipInputStream(new FileInputStream(zippedFile));
+    ZipEntry entry = zipIn.getNextEntry();
+
+    // iterates over entries in the zip file
+    while (entry != null) {
+      String filePath =
+          placementDir.getAbsolutePath() + File.separator + entry.getName();
+      if (!entry.isDirectory()) {
+        // if the entry is a file, extracts it
+        extractFile(zipIn, filePath);
+      } else {
+        // if the entry is a directory, make the directory
+        File dir = new File(filePath);
+        dir.mkdir();
+      }
+      zipIn.closeEntry();
+      entry = zipIn.getNextEntry();
+    }
+    zipIn.close();
+  }
+
+  /**
+   * Extracts a zip entry (file entry)
+   * @param zipIn
+   * @param filePath
+   * @throws IOException
+   */
+  private void extractFile(ZipInputStream zipIn, String filePath)
+    throws IOException {
+    final int BUFFER_SIZE = 4096;
+    BufferedOutputStream bos =
+        new BufferedOutputStream(new FileOutputStream(filePath));
+    byte[] bytesIn = new byte[BUFFER_SIZE];
+    int read = 0;
+    while ((read = zipIn.read(bytesIn)) != -1) {
+      bos.write(bytesIn, 0, read);
+    }
+    bos.close();
+  }
 }

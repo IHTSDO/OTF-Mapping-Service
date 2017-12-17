@@ -1892,7 +1892,7 @@
 		ng-show="termLoad.terminology != 'GMDN' && 
 	(termLoad.terminology != 'SNOMED CT' || (termLoad.terminology == 'SNOMED CT' && (termLoad.scope))) && 
 	(termLoad.version)"
-		ng-click="loadTerminology(termLoad.terminology, termLoad.version, termLoad.scope)">Load
+		ng-click="loadTerminologyAws(termLoad.terminology, termLoad.version, termLoad.scope)">Load
 		{{termLoad.terminology}}</button>
 
 	<!--  TODO: While going from SNOMED to ICxx (or other way), clears versions, ICxx to ICyy does NOT clear versions  -->
