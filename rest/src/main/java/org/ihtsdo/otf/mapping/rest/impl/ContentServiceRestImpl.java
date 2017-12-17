@@ -1007,7 +1007,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       unzipToDirectory(zippedFile, placementDir);
       files = FileUtils.listFiles(placementDir, null, true);
       for (File f : files) {
-        Logger.getLogger(getClass()).info("ZZZ with " + f.getName());
+        Logger.getLogger(getClass()).info("ZZZ with " + f.getAbsolutePath());
       }
       File testDir = new File(placementDir.getAbsolutePath() + File.separator + "Snapshot");
       files = FileUtils.listFiles(testDir, null, true);
