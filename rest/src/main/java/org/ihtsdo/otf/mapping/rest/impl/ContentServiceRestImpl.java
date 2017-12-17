@@ -1359,7 +1359,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
               .build();
 
       List<S3ObjectSummary> fullKeyList = new ArrayList<S3ObjectSummary>();
-      ObjectListing objects = s3Client.listObjects(bucketName, "zip");
+      ObjectListing objects = s3Client.listObjects(bucketName);
       fullKeyList = objects.getObjectSummaries();
       objects = s3Client.listNextBatchOfObjects(objects);
       int loopCounter = 0;
