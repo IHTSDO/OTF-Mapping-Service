@@ -113,7 +113,7 @@ angular
         $scope.userApplicationRoles = [ 'VIEWER', 'ADMINISTRATOR' ];
 
         //get list of type in $scope.terminologyFiles?
-        $scope.terminologyInputTypes = [ 'GMDN', 'ICNP Diagnoses', 'ICNP Interventions', 'ICPC', 'SNOMED CT' ];
+        $scope.terminologyInputTypes = [ 'GMDN', 'SNOMED CT' ];
         
         // Event for focus project change
         $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
@@ -146,8 +146,6 @@ angular
         $scope.go = function() {
           // reload the application's Terminologies
           reloadTerminologies();
-          
-          getDownloadedGmdnVersions();
 
           // initialize map project metadata variables
           initializeMapProjectMetadata();
@@ -2837,8 +2835,10 @@ angular
         $scope.termLoad.scope = '';
         
         $scope.getTerminologyVersions = function(terminology) {
-          if (terminology == 'GMDN')
+          if (terminology == 'GMDN'){
+            getDownloadedGmdnVersions();
             return;
+          }
 
           $rootScope.glassPane++;
 

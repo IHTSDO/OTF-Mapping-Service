@@ -5906,33 +5906,6 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
-  private AmazonS3 connectToAmazonS3() throws Exception {
-    // Connect to server using instance profile credentials
-    AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-        .withRegion(Regions.US_EAST_1)
-        .withCredentials(new InstanceProfileCredentialsProvider(false)).build();
-
-    // Check if connection was successful. If not, try to connect with static
-    // keys instead
-    try {
-      s3Client.listBuckets();
-    } catch (SdkClientException e) {
-      // Connet to server with static keys
-      BasicAWSCredentials awsCreds = new BasicAWSCredentials(
-          ConfigUtility.getConfigProperties().getProperty("aws.access.key.id"),
-          ConfigUtility.getConfigProperties()
-              .getProperty("aws.secret.access.key"));
-      s3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
-          .withCredentials(new AWSStaticCredentialsProvider(awsCreds)).build();
-
-      // Check connection again. If this fails as well, it will throw the
-      // exception to the calling method
-      s3Client.listBuckets();
-    }
-
-    return s3Client;
-  }
-
   private void callTestMethod() throws Exception {
     Logger.getLogger(MappingServiceRestImpl.class).info("AAA");
     String bucketName = "release-ihtsdo-prod-published";
