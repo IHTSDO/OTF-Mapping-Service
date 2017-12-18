@@ -2925,14 +2925,20 @@ angular
           var errors = '';
           for (var i = 0; i < $scope.terminologyVersionPairs.length; i++) {
             console.log("check", errors);
+            var loadVersion = version.replace(' ', '');
             var terminologyVersionPair = $scope.terminologyVersionPairs[i];
             if (terminology != 'SNOMED CT') {
-              if(terminologyVersionPair == terminology + ' ' + version){
-                errors += terminology + ' ' + version + ' is already loaded in the application.\n';
+              if(terminologyVersionPair == terminology.replace(' ', '') + ' ' + loadVersion){
+                errors += terminology + ' ' + loadVersion + ' is already loaded in the application.\n';
                 break;
               }
             } else {
               // For SNOMED & it's scope
+              loadVersion = loadVersion + (scope == 'Alpha' || scope == 'Beta' ? '_' + scope : '');
+              if(terminologyVersionPair == terminology.replace(' ', '') + ' ' + loadVersion){
+                errors += terminology + ' ' + loadVersion + ' is already loaded in the application.\n';
+                break;
+              }
             }
           }
           
@@ -2946,7 +2952,7 @@ angular
           
           // load the version of gmdn into the application   
           if (isRf2Terminology(terminology)) {
-            loadTerminologyAwsRf2Snapshot(terminology, version, scope);
+            loadTerminologyAwsRf2Snapshot(terminology, loadVersion, scope);
           }
           reloadTerminologies();
           $rootScope.glassPane--;          
