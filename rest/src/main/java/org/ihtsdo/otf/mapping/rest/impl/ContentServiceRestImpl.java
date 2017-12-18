@@ -60,13 +60,7 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
-import com.amazonaws.SdkClientException;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.auth.InstanceProfileCredentialsProvider;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
@@ -109,7 +103,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   @GET
   @Path("/concept/id/{terminology}/{terminolgoyVersion}/{terminologyId}")
   @ApiOperation(value = "Get concept by id, terminology, and version", notes = "Gets the concept for the specified parameters.", response = Concept.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+  @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
   public Concept getConcept(
     @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
     @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
@@ -718,16 +712,26 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
     // Track system level information
     long startTimeOrig = System.nanoTime();
-
-		authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-				"load CLAML terminology", securityService);
-
-		try (final ClamlLoaderAlgorithm algo = new ClamlLoaderAlgorithm(
-				terminology, version, inputFile);) {
+    
+    authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+			"load CLAML terminology", securityService);
+    
+    final String localTerminology = removeSpaces(terminology);
+    final String localVersion = removeSpaces(version);
+    
+    //validate that the terminology & version to not already exist.
+	if (doesTerminologyVersionExist(localTerminology, localVersion)) {
+		handleException(
+				new Exception("Terminology and version already exist."),
+				"Terminology and version already exist.");
+	}
+    
+	try (final ClamlLoaderAlgorithm algo = new ClamlLoaderAlgorithm(
+			localTerminology, localVersion, inputFile);) {
 
       algo.compute();
 
-			Logger.getLogger(getClass()).info(
+	Logger.getLogger(getClass()).info(
 					"Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
 
     } catch (Exception e) {
@@ -966,12 +970,22 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call (Content): /terminology/load/rf2/snapshot/aws/"
             + " awsZipFileName " + awsZipFileName);
-
+    
     // Track system level information
     long startTimeOrig = System.nanoTime();
 
     authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
         "load RF2 snapshot terminology", securityService);
+    
+    final String localTerminology = removeSpaces(terminology);
+    final String localVersion = removeSpaces(version);
+    
+	// validate that the terminology & version to not already exist.
+	if (doesTerminologyVersionExist(localTerminology, localVersion)) {
+		handleException(
+				new Exception("Terminology and version already exist."),
+				"Terminology and version already exist.");
+	}
 
     File placementDir = null;
     Rf2SnapshotLoaderAlgorithm algo = null;
@@ -1013,7 +1027,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       }
 
       // Load content with input pulled from S3
-      algo = new Rf2SnapshotLoaderAlgorithm(terminology, version,
+      algo = new Rf2SnapshotLoaderAlgorithm(localTerminology, localVersion,
           testDir.getAbsolutePath(), treePositions, sendNotification);
       
       Logger.getLogger(getClass()).info("EEE");
@@ -1036,10 +1050,10 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   }
 
   /* see superclass */
-  @Override
+@Override
   @PUT
   @Path("/terminology/load/rf2/snapshot/{terminology}/{version}")
-	@Consumes({ MediaType.TEXT_PLAIN })
+  @Consumes({ MediaType.TEXT_PLAIN })
   @ApiOperation(value = "Loads terminology RF2 snapshot from directory", notes = "Loads terminology RF2 snapshot from directory for specified terminology and version")
   public void loadTerminologyRf2Snapshot(
     @ApiParam(value = "Terminology, e.g. SNOMEDCT_US", required = true) @PathParam("terminology") String terminology,
@@ -1055,6 +1069,19 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
             + terminology + "/" + version + " from input directory "
             + inputDir);
 
+    authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+            "load RF2 snapshot terminology", securityService);
+    
+    final String localTerminology = removeSpaces(terminology);
+    final String localVersion = removeSpaces(version);
+    
+    //validate that the terminology & version to not already exist.
+	if (doesTerminologyVersionExist(localTerminology, localVersion)) {
+		handleException(
+				new Exception("Terminology and version already exist."),
+				"Terminology and version already exist.");
+	}
+    
     // Track system level information
     long startTimeOrig = System.nanoTime();
 
@@ -1069,16 +1096,14 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       localSendNotification = sendNotification;
     }
 
-    authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-        "load RF2 snapshot terminology", securityService);
-
-		try (final Rf2SnapshotLoaderAlgorithm algo = new Rf2SnapshotLoaderAlgorithm(
-				terminology, version, inputDir, localTreePostions, localSendNotification);) {
+	try (final Rf2SnapshotLoaderAlgorithm algo = new Rf2SnapshotLoaderAlgorithm(
+			localTerminology, localVersion,
+			inputDir, localTreePostions, localSendNotification);) {
 
       algo.compute();
 
-			Logger.getLogger(getClass()).info(
-					"Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+      Logger.getLogger(getClass()).info(
+		"Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
 
     } catch (Exception e) {
       handleException(e,
@@ -1108,11 +1133,21 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     // Track system level information
     long startTimeOrig = System.nanoTime();
 
+    final String localTerminology = removeSpaces(terminology);
+    final String localVersion = removeSpaces(version);
+    
+    //validate that the terminology & version to not already exist.
+	if (doesTerminologyVersionExist(localTerminology, localVersion)) {
+		handleException(
+				new Exception("Terminology and version already exist."),
+				"Terminology and version already exist.");
+	}
+	
     authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
         "load simple terminology", securityService);
 
 		try (final SimpleLoaderAlgorithm algo = new SimpleLoaderAlgorithm(
-				terminology, version, inputFile, null);) {
+				localTerminology, localVersion, inputFile, null);) {
 
       algo.compute();
 
@@ -1458,5 +1493,17 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     }
     bos.close();
   }
+  
+  /**
+   * 
+   * @param string
+   * @return
+   */
+	private String removeSpaces(String string) {
+		if (string != null)
+			return string.replace(" ", "").trim();
+		else
+			return null;
+	}
   
 }

@@ -2924,6 +2924,7 @@ angular
 
           var errors = '';
           for (var i = 0; i < $scope.terminologyVersionPairs.length; i++) {
+            console.log("check", errors);
             var terminologyVersionPair = $scope.terminologyVersionPairs[i];
             if (terminology != 'SNOMED CT') {
               if(terminologyVersionPair == terminology + ' ' + version){
@@ -2934,6 +2935,8 @@ angular
               // For SNOMED & it's scope
             }
           }
+          
+          console.log("errors", errors);
           
           if (errors.length > 0) {
             alert(errors);
@@ -3206,6 +3209,27 @@ angular
         function loadTerminologyAwsRf2Snapshot(terminology, version, scope) {
           $rootScope.glassPane++;
 
+          var errors = '';
+          for (var i = 0; i < $scope.terminologyVersionPairs.length; i++) {
+            var terminologyVersionPair = $scope.terminologyVersionPairs[i];
+            if (terminology == 'SNOMED CT') {
+              if(terminologyVersionPair == (terminology.replace(' ', '') + ' ' + version.replace(' ', ''))){
+                errors += terminology + ' ' + version + ' is already loaded in the application.\n';
+                break;
+              }
+            } else {
+              // For SNOMED & it's scope
+            }
+          }
+
+          console.log("errors", errors);
+          
+          if (errors.length > 0) {
+            alert(errors);
+            $rootScope.glassPane--;
+            return;
+          }
+          
           var queryString = '?';
           queryString += "awsZipFileName=" + $scope.termLoadAwsZipFileName;
 

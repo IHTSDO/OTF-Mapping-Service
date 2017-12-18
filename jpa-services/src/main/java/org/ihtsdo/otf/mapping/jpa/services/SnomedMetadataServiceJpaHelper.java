@@ -403,6 +403,13 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
     // no-op - this is just helper class
     return null;
   }
+  
+  /* see superclass */
+  @Override
+  public Boolean checkTerminologyVersionExists(String terminology, String version) {
+    // no-op - this is just helper class
+    return null;
+  }
 
   /**
    * Helper method for getting descendants.

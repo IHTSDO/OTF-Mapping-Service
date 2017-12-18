@@ -133,8 +133,10 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 	public Rf2SnapshotLoaderAlgorithm(String terminology, String version, String inputDir,
 			Boolean treePositions, Boolean sendNotification) throws Exception {
 		super();
-		this.terminology = terminology;
-		this.version = version;
+
+		//spaces and trim spaces
+		this.terminology = removeSpaces(terminology);
+		this.version = removeSpaces(version);
 		this.inputDir = inputDir;
 		this.treePositions = treePositions;
 		this.sendNotification = sendNotification;
@@ -1878,6 +1880,13 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 			listeners.get(i).updateProgress(pe);
 		}
 		Logger.getLogger(getClass()).info("    " + pct + "% " + note);
+	}
+	
+	private String removeSpaces(String string) {
+		if (string != null)
+			return string.replace(" ", "").trim();
+		else
+			return null;
 	}
 
 }
