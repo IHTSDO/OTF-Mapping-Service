@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -20,6 +21,7 @@ import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
+import org.ihtsdo.otf.mapping.jpa.helpers.LoggerUtility;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.RootServiceJpa;
@@ -30,6 +32,7 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.jpa.ComplexMapRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.FileSorter;
 import org.ihtsdo.otf.mapping.services.helpers.ProgressListener;
 
@@ -60,6 +63,12 @@ public class MapRecordRf2ComplexMapLoaderAlgorithm extends RootServiceJpa
   /** The user name. */
   private String userName;
 
+  /** The log. */
+  private static Logger log;
+
+  /** The log file. */
+  private File logFile;
+
   public MapRecordRf2ComplexMapLoaderAlgorithm(String inputFile,
       Boolean memberFlag, Boolean recordFlag, String refsetId,
       String workflowStatus) throws Exception {
@@ -69,18 +78,40 @@ public class MapRecordRf2ComplexMapLoaderAlgorithm extends RootServiceJpa
     this.recordFlag = recordFlag;
     this.refsetId = refsetId;
     this.workflowStatus = workflowStatus;
+    
+    //initialize logger
+    String rootPath = ConfigUtility.getConfigProperties()
+          .getProperty("map.principle.source.document.dir");
+    if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
+      rootPath += "/";
+    }
+    rootPath += "logs";
+    File logDirectory = new File(rootPath);
+    if (!logDirectory.exists()) {
+        logDirectory.mkdir();
+    }
+    
+    logFile = new File(logDirectory, "load_maps_" + refsetId + ".log");
+    LoggerUtility.setConfiguration("load_maps", logFile.getAbsolutePath());
+    this.log = LoggerUtility.getLogger("load_maps");
   }
 
   @Override
   public void compute() throws Exception {
 
-    Logger.getLogger(getClass()).info("Starting loading complex map data");
-    Logger.getLogger(getClass()).info("  inputFile      = " + inputFile);
-    Logger.getLogger(getClass()).info("  workflowStatus = " + workflowStatus);
-    Logger.getLogger(getClass()).info("  userName       = " + userName);
-    Logger.getLogger(getClass()).info("  membersFlag    = " + memberFlag);
-    Logger.getLogger(getClass()).info("  recordFlag     = " + recordFlag);
-    Logger.getLogger(getClass()).info("  refsetId       = " + refsetId);
+    
+    // clear log before starting process
+    PrintWriter writer = new PrintWriter(logFile);
+    writer.print("");
+    writer.close(); 
+    
+    log.info("Starting loading complex map data");
+    log.info("  inputFile      = " + inputFile);
+    log.info("  workflowStatus = " + workflowStatus);
+    log.info("  userName       = " + userName);
+    log.info("  membersFlag    = " + memberFlag);
+    log.info("  recordFlag     = " + recordFlag);
+    log.info("  refsetId       = " + refsetId);
 
     // Set up map of refsetIds that we may encounter
     MappingService mappingService = null;
@@ -101,7 +132,7 @@ public class MapRecordRf2ComplexMapLoaderAlgorithm extends RootServiceJpa
       }
 
       if (userName == null) {
-        Logger.getLogger(getClass())
+        log
             .info("No user specified, defaulting to user 'loader'");
       }
 
@@ -126,17 +157,17 @@ public class MapRecordRf2ComplexMapLoaderAlgorithm extends RootServiceJpa
       for (MapProject project : mappingService.getMapProjects().getIterable()) {
         mapProjectMap.put(project.getRefSetId(), project);
       }
-      Logger.getLogger(getClass()).info("  Map projects");
+      log.info("  Map projects");
       for (final String refsetId : mapProjectMap.keySet()) {
         final MapProject project = mapProjectMap.get(refsetId);
-        Logger.getLogger(getClass()).info("    project = " + project.getId()
+        log.info("    project = " + project.getId()
             + "," + project.getRefSetId() + ", " + project.getName());
 
       }
 
       // if refsetId is specified, remove all rows that don't have that refsetId
       if (refsetId != null) {
-        Logger.getLogger(getClass())
+        log
             .info("  Filtering the file by refsetId into "
                 + System.getProperty("java.io.tmpdir"));
 
@@ -186,7 +217,7 @@ public class MapRecordRf2ComplexMapLoaderAlgorithm extends RootServiceJpa
       }
 
       // sort input file
-      Logger.getLogger(getClass()).info(
+      log.info(
           "  Sorting the file into " + System.getProperty("java.io.tmpdir"));
       File outputFile = File.createTempFile("ttt", ".sort",
           new File(System.getProperty("java.io.tmpdir")));
@@ -271,12 +302,12 @@ public class MapRecordRf2ComplexMapLoaderAlgorithm extends RootServiceJpa
               }
             }
           });
-      Logger.getLogger(getClass()).info("  Done sorting the file ");
+      log.info("  Done sorting the file ");
 
       // load complexMapRefSetMembers from extendedMap file
       final List<ComplexMapRefSetMember> members =
           getComplexMaps(outputFile, mapProjectMap);
-      Logger.getLogger(getClass()).info("  members = " + members.size());
+      log.info("  members = " + members.size());
 
       // If the member flag is set, insert all of these
       contentService.setTransactionPerOperation(false);
@@ -307,7 +338,7 @@ public class MapRecordRf2ComplexMapLoaderAlgorithm extends RootServiceJpa
               ct++;
             }
           }
-          Logger.getLogger(getClass())
+          log
               .info("  Refset " + refSetId + " count = " + ct);
 
           // Then call the mapping service to create the map records
@@ -323,9 +354,13 @@ public class MapRecordRf2ComplexMapLoaderAlgorithm extends RootServiceJpa
       // clean-up
       mappingService.close();
       // outputFile.delete();
-      Logger.getLogger(getClass()).info("Done ...");
+      log.info("Done ...");
     } catch (Exception e) {
       e.printStackTrace();
+      log.info(e.getMessage());
+      for (StackTraceElement element : e.getStackTrace()) {
+        log.info(element.toString());
+      }
       throw new Exception("Loading of RF2 Complex Maps failed.", e);
     } finally {
       try {

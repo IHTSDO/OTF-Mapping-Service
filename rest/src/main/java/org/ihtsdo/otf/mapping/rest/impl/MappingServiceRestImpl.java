@@ -22,6 +22,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -138,6 +139,7 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.Bucket;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
@@ -4638,10 +4640,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       handler.setOutputDir(outputDir);
 
       File file = new File(outputDir);
-      System.out.println("  exists: " + file.exists());
+      Logger.getLogger(MappingServiceRestImpl.class)
+      .info("  exists: " + file.exists());
       // make output directory if does not exist
       if (!file.exists()) {
-        System.out.println("  making directory: " + file.getAbsolutePath());
+        Logger.getLogger(MappingServiceRestImpl.class)
+        .info("  making directory: " + file.getAbsolutePath());
         file.mkdirs();
       }
 
@@ -4953,7 +4957,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       }
       File logFile = null;
       File logDir = null;
-      if (logTypes.get(0).toString().contains("Terminology")) {
+      if (logTypes.get(0).toString().contains("Terminology") ||
+          logTypes.get(0).toString().contains("PreviousMembers")) {
         logDir = new File(rootPath + "logs");
       } else {
         logDir = new File(rootPath + mapProject.getId() + "/logs");
@@ -4962,6 +4967,9 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
         if (logType.contains("Terminology")) {
           logFile = new File(logDir, logType.replace("Terminology",
               "_" + mapProject.getSourceTerminology()) + ".log");
+        } else if (logTypes.get(0).toString().contains("PreviousMembers")){
+          logFile = new File(logDir, logType.replace("PreviousMembers",
+              "_maps_" + mapProject.getRefSetId()) + ".log");
         } else {
           logFile = new File(logDir, logType + ".log");
         }
@@ -5289,118 +5297,110 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRest.class)
-        .info("RESTful call (Mapping): /compare/files" + mapProjectId + " "
-            + (files != null ? files.get(0) + " " + files.get(1) : ""));
+    Logger.getLogger(MappingServiceRest.class).info(
+        "RESTful call (Mapping): /compare/files" + mapProjectId + " " + (files != null ? files.get(0) + " " + files.get(1) : ""));
 
     String user = "";
     final MetadataService metadataService = new MetadataServiceJpa();
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize
-      user = authorizeApp(authToken, MapUserRole.VIEWER, "compare map files",
-          securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "compare map files", securityService);
+      
+      MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      
+      // This can be used to run hardcoded files local to the machine for testing     
+      //return callTestCompare(mapProject);
+     
+      
+      String olderInputFile1 = files.get(0);
+      String newerInputFile2 = files.get(1);
+      
+      AmazonS3 s3Client = null;
+      s3Client = connectToAmazonS3();
+     
+      // stream first file from aws
+      S3Object file1 = s3Client.getObject(
+          new GetObjectRequest("release-ihtsdo-prod-published", olderInputFile1));
+      InputStream objectData1 = file1.getObjectContent();
+      
+      // open second file either from aws or current release on file system
+      S3Object file2 = null;
+      InputStream objectData2 = null;
+      // stream second/later file from aws
+      if (!newerInputFile2.contains("99999999")) {
+        file2 = s3Client.getObject(
+          new GetObjectRequest("release-ihtsdo-prod-published", newerInputFile2));
+          objectData2 = file2.getObjectContent();
+      // comparing to current release file saved on file system
+      } else {
+        final File projectDir = new File(this.getReleaseDirectoryPath(mapProject, "current"));
+        String currentReleaseFile = new File(projectDir, newerInputFile2).getAbsolutePath();
+        objectData2 = new FileInputStream(currentReleaseFile);
+      }
 
-      // This can be used to run hardcoded files local to the machine for
-      // testing
-      return callTestCompare(
-          mappingService.getMapProject(mapProjectId).getId());
+      
+      InputStream reportInputStream = null;
+      StringBuffer reportName = new StringBuffer();
+      if (olderInputFile1.contains("Full") || newerInputFile2.contains("Full")) {
+        throw new LocalException("Full files cannot be compared with this tool.");
+      }
+      
+      // compare extended map files and compose report name
+      if (olderInputFile1.contains("ExtendedMap") && newerInputFile2.contains("ExtendedMap")) {
+        reportInputStream = compareExtendedMapFiles(objectData1, objectData2, mapProject);
+        reportName.append(olderInputFile1.substring(olderInputFile1.lastIndexOf("Extended"), olderInputFile1.lastIndexOf('.')));
+        if (olderInputFile1.toLowerCase().contains("alpha")) {reportName.append("_ALPHA");}
+        if (olderInputFile1.toLowerCase().contains("beta")) {reportName.append("_BETA");}
+        reportName.append("_");
+        reportName.append(newerInputFile2.substring(newerInputFile2.lastIndexOf("Extended"), newerInputFile2.lastIndexOf('.')));
+        if (newerInputFile2.toLowerCase().contains("alpha")) {reportName.append("_ALPHA");}
+        if (newerInputFile2.toLowerCase().contains("beta")) {reportName.append("_BETA");}
+        reportName.append(".xls");
+        
+      // compare simple map files and compose report name
+      } else if (olderInputFile1.contains("SimpleMap") && newerInputFile2.contains("SimpleMap")) {
+        reportInputStream = compareSimpleMapFiles(objectData1, objectData2, mapProject);
+        reportName.append(olderInputFile1.substring(olderInputFile1.lastIndexOf("Simple"), olderInputFile1.lastIndexOf('.')));
+        if (olderInputFile1.toLowerCase().contains("alpha")) {reportName.append("_ALPHA");}
+        if (olderInputFile1.toLowerCase().contains("beta")) {reportName.append("_BETA");}
+        reportName.append("_");
+        reportName.append(newerInputFile2.substring(newerInputFile2.lastIndexOf("Simple"), newerInputFile2.lastIndexOf('.')));
+        if (newerInputFile2.toLowerCase().contains("alpha")) {reportName.append("_ALPHA");}
+        if (newerInputFile2.toLowerCase().contains("beta")) {reportName.append("_BETA");}
+        reportName.append(".xls");
+      } 
 
-      /*
-       * String olderInputFile1 = files.get(0); String newerInputFile2 =
-       * files.get(1);
-       * 
-       * AmazonS3 s3Client = null; try { s3Client =
-       * AmazonS3ClientBuilder.standard() .withCredentials(new
-       * InstanceProfileCredentialsProvider(false)) .build(); } catch (Exception
-       * e) { final Properties config = ConfigUtility.getConfigProperties();
-       * final String accessKey = config.getProperty("aws.access.key"); final
-       * String secretAccessKey = config.getProperty("aws.secret.access.key");
-       * BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey,
-       * secretAccessKey); s3Client =
-       * AmazonS3ClientBuilder.standard().withRegion("us-east-1")
-       * .withCredentials(new AWSStaticCredentialsProvider(awsCreds)) .build();
-       * }
-       * 
-       * // stream first file from aws S3Object file1 = s3Client.getObject( new
-       * GetObjectRequest("release-ihtsdo-prod-published", olderInputFile1));
-       * InputStream objectData1 = file1.getObjectContent();
-       * 
-       * // open second file either from aws or current release on file system
-       * S3Object file2 = null; InputStream objectData2 = null; // stream
-       * second/later file from aws if (!newerInputFile2.contains("99999999")) {
-       * file2 = s3Client.getObject( new
-       * GetObjectRequest("release-ihtsdo-prod-published", newerInputFile2));
-       * objectData2 = file2.getObjectContent(); // comparing to current release
-       * file saved on file system } else { MapProject mapProject =
-       * mappingService.getMapProject(mapProjectId); final File projectDir = new
-       * File(this.getReleaseDirectoryPath(mapProject, "current")); String
-       * currentReleaseFile = new File(projectDir,
-       * newerInputFile2).getAbsolutePath(); objectData2 = new
-       * FileInputStream(currentReleaseFile); }
-       * 
-       * 
-       * InputStream reportInputStream = null; StringBuffer reportName = new
-       * StringBuffer(); if (olderInputFile1.contains("Full") ||
-       * newerInputFile2.contains("Full")) { throw new
-       * LocalException("Full files cannot be compared with this tool."); }
-       * 
-       * // compare extended map files and compose report name if
-       * (olderInputFile1.contains("ExtendedMap") &&
-       * newerInputFile2.contains("ExtendedMap")) { reportInputStream =
-       * compareExtendedMapFiles(objectData1, objectData2);
-       * reportName.append(olderInputFile1.substring(olderInputFile1.lastIndexOf
-       * ("Extended"), olderInputFile1.lastIndexOf('.'))); if
-       * (olderInputFile1.toLowerCase().contains("alpha"))
-       * {reportName.append("_ALPHA");} if
-       * (olderInputFile1.toLowerCase().contains("beta"))
-       * {reportName.append("_BETA");} reportName.append("_");
-       * reportName.append(newerInputFile2.substring(newerInputFile2.lastIndexOf
-       * ("Extended"), newerInputFile2.lastIndexOf('.'))); if
-       * (newerInputFile2.toLowerCase().contains("alpha"))
-       * {reportName.append("_ALPHA");} if
-       * (newerInputFile2.toLowerCase().contains("beta"))
-       * {reportName.append("_BETA");} reportName.append(".xls");
-       * 
-       * // compare simple map files and compose report name } else if
-       * (olderInputFile1.contains("SimpleMap") &&
-       * newerInputFile2.contains("SimpleMap")) { reportInputStream =
-       * compareSimpleMapFiles(objectData1, objectData2);
-       * reportName.append(olderInputFile1.substring(olderInputFile1.lastIndexOf
-       * ("Simple"), olderInputFile1.lastIndexOf('.'))); if
-       * (olderInputFile1.toLowerCase().contains("alpha"))
-       * {reportName.append("_ALPHA");} if
-       * (olderInputFile1.toLowerCase().contains("beta"))
-       * {reportName.append("_BETA");} reportName.append("_");
-       * reportName.append(newerInputFile2.substring(newerInputFile2.lastIndexOf
-       * ("Simple"), newerInputFile2.lastIndexOf('.'))); if
-       * (newerInputFile2.toLowerCase().contains("alpha"))
-       * {reportName.append("_ALPHA");} if
-       * (newerInputFile2.toLowerCase().contains("beta"))
-       * {reportName.append("_BETA");} reportName.append(".xls"); }
-       * 
-       * // create destination directory for saved report final Properties
-       * config = ConfigUtility.getConfigProperties(); final String docDir =
-       * config.getProperty("map.principle.source.document.dir");
-       * 
-       * final File projectDir = new File(docDir, mapProjectId.toString()); if
-       * (!projectDir.exists()) { projectDir.mkdir(); }
-       * 
-       * final File reportsDir = new File(projectDir, "reports"); if
-       * (!reportsDir.exists()) { reportsDir.mkdir(); }
-       * 
-       * final File file = new File(reportsDir, reportName.toString());
-       * 
-       * // save the file to the server saveFile(reportInputStream,
-       * file.getAbsolutePath());
-       * 
-       * 
-       * objectData1.close(); objectData2.close();
-       * 
-       * return reportInputStream;
-       */
+      // create destination directory for saved report
+      final Properties config = ConfigUtility.getConfigProperties();      
+      final String docDir =
+          config.getProperty("map.principle.source.document.dir");
+      
+      final File projectDir = new File(docDir, mapProjectId.toString());
+      if (!projectDir.exists()) {
+        projectDir.mkdir();
+      }
+      
+      final File reportsDir = new File(projectDir, "reports");
+      if (!reportsDir.exists()) {
+        reportsDir.mkdir();
+      }
+
+      final File file =
+          new File(reportsDir, reportName.toString());
+
+      // save the file to the server
+      saveFile(reportInputStream, file.getAbsolutePath());
+      
+
+      objectData1.close();
+      objectData2.close();
+      
+      return reportInputStream;
+      
     } catch (Exception e) {
-      handleException(e, "trying to compare map files", user, "", "");
+      handleException(e,
+          "trying to compare map files", user, "", "");
       return null;
     } finally {
       metadataService.close();
@@ -5408,9 +5408,10 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
   }
-
+  
   private InputStream compareExtendedMapFiles(InputStream data1,
-    InputStream data2) throws Exception {
+    InputStream data2, MapProject mapProject) throws Exception {
+
     // map to list of records that have been updated (sorted by key)
     TreeMap<String, String> updatedList = new TreeMap<>();
     // map to list of records that are new in the second file
@@ -5428,74 +5429,135 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
         new BufferedReader(new InputStreamReader(data2, "UTF-8"));
 
     int noChangeCount = 0;
-    Map<String, String> key1Map = new HashMap<>();
-    Map<String, String> key2Map = new HashMap<>();
+    Map<String, Set<ExtendedLine>> key1Map = new HashMap<>();
+    Map<String, Set<ExtendedLine>> key2Map = new HashMap<>();
 
-    // populate key1Map with key1 and line1 (no UUID)
+    int i = 0;
+    // populate key1Map with key1 and lineData (no UUID)
     while ((line1 = in1.readLine()) != null) {
-      String tokens1[] = line1.split("\t");
-      String key1 =
-          tokens1[5] + ":" + tokens1[4] + ":" + tokens1[6] + ":" + tokens1[7];
-      key1Map.put(key1, line1.substring(line1.indexOf("\t")));
-    }
 
+      String tokens1[] = line1.split("\t");
+      if (!tokens1[4].equals(mapProject.getRefSetId())) {
+        continue;
+      }
+      i++;
+      // if refCompId already in map, just add new effectiveTime/TargetId&Active
+      if (key1Map.containsKey(tokens1[5])) {
+        key1Map.get(tokens1[5]).add(new ExtendedLine(line1));
+      } else {
+        Set<ExtendedLine> setOfLines = new HashSet<>();
+        setOfLines.add(new ExtendedLine(line1));
+        key1Map.put(tokens1[5], setOfLines);
+      }
+    }
+    Logger.getLogger(MappingServiceRestImpl.class)
+    .info("key1Map count: " + key1Map.size() + " " + i);
+
+    i = 0;
+    // go through second file, cache, and figure out what is new and what has changed
     while ((line2 = in2.readLine()) != null) {
-      // populate key2Map with key2 and line2 (no UUID)
       String tokens2[] = line2.split("\t");
-      String key2 =
-          tokens2[5] + ":" + tokens2[4] + ":" + tokens2[6] + ":" + tokens2[7];
-      key2Map.put(key2, line2.substring(line2.indexOf("\t")));
+      if (!tokens2[4].equals(mapProject.getRefSetId())) {
+        continue;
+      }
+      i++;
+      // populate key2Map with key2 and lineData (no UUID)
+      if (key2Map.containsKey(tokens2[5])) {
+        key2Map.get(tokens2[5]).add(new ExtendedLine(line2));
+      } else {
+        Set<ExtendedLine> setOfLines = new HashSet<>();
+        setOfLines.add(new ExtendedLine(line2));
+        key2Map.put(tokens2[5], setOfLines);
+      }
 
       // if key1Map has key2, this record is not new - either it hasn't changed
       // or it has been updated
-      if (key1Map.containsKey(key2)) {
-        String line1Sub = key1Map.get(key2);
-        String line2Sub = line2.substring(line2.indexOf("\t"));
-        if (line1Sub.equals(line2Sub)) {
-          // nothing has changed
-          noChangeCount++;
-        } else {
-          String[] line1SubTokens = line1Sub.split("\t");
-          String[] line2SubTokens = line2Sub.split("\t");
-          // check if everything other than the active flag and the effective
-          // time matches
-          if (line1SubTokens[2].equals("1") && line2SubTokens[2].equals("0")) {
-            boolean inactive = true;
-            for (int i = 3; i < line1SubTokens.length; i++) {
-              if (!line1SubTokens[i].equals(line2SubTokens[i])) {
-                inactive = false;
-              }
-            }
-            if (inactive) {
-              inactivatedList.put(key2, line2);
-            }
-          }
-
-          // something updated
-          // only add to list if records are active
-          if (line1SubTokens[2].equals("1") && line2SubTokens[2].equals("1")) {
-            updatedList.put(key2, line1Sub + "\t" + line2Sub);
+      if (key1Map.containsKey(tokens2[5])) {
+        Set<ExtendedLine> entries = key1Map.get(tokens2[5]);
+        // effectiveTime, target, and active all static?
+        boolean noChange = false;
+        boolean inactivated = false;
+        for (ExtendedLine lineData : entries) {
+          if (lineData.getTargetId().equals(tokens2[10])
+              && tokens2[2].equals(lineData.isActive() ? "1" : "0")
+              && tokens2[3].equals(lineData.getModuleId()) 
+              && tokens2[4].equals(lineData.getRefsetId())
+              && tokens2[6].equals(lineData.getMapGroup())
+              && tokens2[7].equals(lineData.getMapPriority())
+              && tokens2[8].equals(lineData.getMapRule())
+              && tokens2[9].equals(lineData.getMapAdvice())
+              && tokens2[11].equals(lineData.getCorrelationId())
+              && lineData.getEffectiveTime().equals(tokens2[1])) {
+            noChange = true;
+            noChangeCount++;
+            break;
           }
         }
-        // found key2 that is not in first file, it is new
+        
+        if (!noChange) {
+
+          // inactivated?, check if active is the only thing that isn't equal
+          for (ExtendedLine lineData : entries) {
+              if (lineData.getTargetId().equals(tokens2[10])
+                  && lineData.isActive() != new Boolean(tokens2[2])
+                  && tokens2[3].equals(lineData.getModuleId()) 
+                  && tokens2[4].equals(lineData.getRefsetId())
+                  && tokens2[6].equals(lineData.getMapGroup())
+                  && tokens2[7].equals(lineData.getMapPriority())
+                  && tokens2[8].equals(lineData.getMapRule())
+                  && tokens2[9].equals(lineData.getMapAdvice())
+                  && tokens2[11].equals(lineData.getCorrelationId())
+                  && lineData.getEffectiveTime().equals(tokens2[1])) {
+              inactivatedList.put(tokens2[5], line2);
+              inactivated = true;
+              break;
+            }
+          }
+
+          // not inactivated, updated in some other way
+          if (!inactivated) {
+            for (ExtendedLine lineData : entries) {
+              if (lineData.isActive() && tokens2[2].equals("1")) {
+                // something updated
+                // only add to list if records are active
+                String line1Sub = "\t" + lineData.getEffectiveTime() + "\t"
+                    + (lineData.isActive() ? "1" : "0") + "\t"
+                    + lineData.getModuleId() + "\t" + lineData.getRefsetId()
+                    + "\t" + lineData.getRefCompId()  + "\t" + lineData.getMapGroup() 
+                    + "\t" + lineData.getMapPriority()
+                    + "\t" + lineData.getMapRule() + "\t" + lineData.getMapAdvice()           
+                    + "\t" + lineData.getTargetId() + "\t" + lineData.getCorrelationId()
+                    + "\t" + lineData.getMapCategoryId();
+                String line2Sub = line2.substring(line2.indexOf("\t"));
+                updatedList.put(tokens2[5],
+                    line1Sub + "\t" + line2Sub);
+                continue;
+              }
+            }
+          }
+        }
+        // key2 was not in first file, this is new
       } else {
-        newList.put(key2, line2);
+        newList.put(tokens2[5], line2);
       }
     }
-
+    Logger.getLogger(MappingServiceRestImpl.class)
+    .info("key2Map count: " + key2Map.size() + " " + i);
     in1.reset();
 
     // determine records that were removed
-    while ((line1 = in1.readLine()) != null) {
-      String tokens1[] = line1.split("\t");
-      String key1 =
-          tokens1[5] + ":" + tokens1[4] + ":" + tokens1[6] + ":" + tokens1[7];
-
-      // if key2Map doesn't have key1, this record has been removed
-      if (!key2Map.containsKey(key1)) {
-        removedList.put(key1, line1);
+    while ((line1 = in1.readLine()) != null) { 
+      String tokens1[] = line1.split("\t"); 
+      if (!tokens1[4].equals(mapProject.getRefSetId())) {
+        continue;
+      }
+      if (!key2Map.containsKey(tokens1[5])) {
+        removedList.put(tokens1[5], line1);
       }
     }
+     
+    in1.close();
+    in2.close();
 
     // log statements
     Logger.getLogger(MappingServiceRest.class)
@@ -5509,16 +5571,15 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(MappingServiceRest.class)
         .info("no change count:" + noChangeCount);
 
-    in1.close();
-    in2.close();
     // produce Excel report file
     final ExportReportHandler handler = new ExportReportHandler();
     return handler.exportExtendedFileComparisonReport(updatedList, newList,
         inactivatedList, removedList);
   }
-
+  
+  
   private InputStream compareSimpleMapFiles(InputStream data1,
-    InputStream data2) throws Exception {
+    InputStream data2, MapProject mapProject) throws Exception {
 
     // map to list of records that have been updated (sorted by key)
     TreeMap<String, String> updatedList = new TreeMap<>();
@@ -5537,72 +5598,115 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
         new BufferedReader(new InputStreamReader(data2, "UTF-8"));
 
     int noChangeCount = 0;
-    Map<String, String> key1Map = new HashMap<>();
-    Map<String, String> key2Map = new HashMap<>();
+    Map<String, Set<SimpleLine>> key1Map = new HashMap<>();
+    Map<String, Set<SimpleLine>> key2Map = new HashMap<>();
 
-    // populate key1Map with key1 and line1 (no UUID)
+    int i = 0;
+    // populate key1Map with key1 and lineData (no UUID)
     while ((line1 = in1.readLine()) != null) {
-      String tokens1[] = line1.split("\t");
-      String key1 = tokens1[5] + ":" + tokens1[4];
-      key1Map.put(key1, line1.substring(line1.indexOf("\t")));
-    }
 
+      String tokens1[] = line1.split("\t");
+      if (!tokens1[4].equals(mapProject.getRefSetId())) {
+        continue;
+      }
+      i++;
+      // if refCompId already in map, just add new effectiveTime/TargetId&Active
+      if (key1Map.containsKey(tokens1[5])) {
+        key1Map.get(tokens1[5]).add(new SimpleLine(line1));
+      } else {
+        Set<SimpleLine> setOfLines = new HashSet<>();
+        setOfLines.add(new SimpleLine(line1));
+        key1Map.put(tokens1[5], setOfLines);
+      }
+    }
+    Logger.getLogger(MappingServiceRestImpl.class)
+    .info("key1Map count: " + key1Map.size() + " " + i);
+
+    i = 0;
+    // go through second file, cache, and figure out what is new and what has changed
     while ((line2 = in2.readLine()) != null) {
-      // populate key2Map with key2 and line2 (no UUID)
       String tokens2[] = line2.split("\t");
-      String key2 = tokens2[5] + ":" + tokens2[4];
-      key2Map.put(key2, line2.substring(line2.indexOf("\t")));
+      if (!tokens2[4].equals(mapProject.getRefSetId())) {
+        continue;
+      }
+      i++;
+      // populate key2Map with key2 and lineData (no UUID)
+      if (key2Map.containsKey(tokens2[5])) {
+        key2Map.get(tokens2[5]).add(new SimpleLine(line2));
+      } else {
+        Set<SimpleLine> setOfLines = new HashSet<>();
+        setOfLines.add(new SimpleLine(line2));
+        key2Map.put(tokens2[5], setOfLines);
+      }
 
       // if key1Map has key2, this record is not new - either it hasn't changed
       // or it has been updated
-      if (key1Map.containsKey(key2)) {
-        String line1Sub = key1Map.get(key2);
-        String line2Sub = line2.substring(line2.indexOf("\t"));
-        if (line1Sub.equals(line2Sub)) {
-          // nothing has changed
-          noChangeCount++;
-        } else {
-          String[] line1SubTokens = line1Sub.split("\t");
-          String[] line2SubTokens = line2Sub.split("\t");
-          // check if everything other than the active flag and the effective
-          // time matches
-          if (line1SubTokens[2].equals("1") && line2SubTokens[2].equals("0")) {
-            boolean inactive = true;
-            for (int i = 3; i < line1SubTokens.length; i++) {
-              if (!line1SubTokens[i].equals(line2SubTokens[i])) {
-                inactive = false;
-              }
-            }
-            if (inactive) {
-              inactivatedList.put(key2, line2);
-            }
-          }
-
-          // something updated
-          // only add to list if records are active
-          if (line1SubTokens[2].equals("1") && line2SubTokens[2].equals("1")) {
-            updatedList.put(key2, line1Sub + "\t" + line2Sub);
+      if (key1Map.containsKey(tokens2[5])) {
+        Set<SimpleLine> entries = key1Map.get(tokens2[5]);
+        // effectiveTime, target, and active all static?
+        boolean noChange = false;
+        boolean inactivated = false;
+        for (SimpleLine lineData : entries) {
+          if (lineData.getTargetId().equals(tokens2[6])
+              && tokens2[2].equals(lineData.isActive() ? "1" : "0")
+              && lineData.getEffectiveTime().equals(tokens2[1])) {
+            noChange = true;
+            noChangeCount++;
+            break;
           }
         }
-        // found key2 that is not in first file, it is new
+        if (!noChange) {
+
+          // inactivated?, check if active is the only thing that isn't equal
+          for (SimpleLine lineData : entries) {
+            if (lineData.getTargetId().equals(tokens2[6])
+                && lineData.isActive() != new Boolean(tokens2[2])
+                && lineData.getEffectiveTime().equals(tokens2[1])) {
+              inactivatedList.put(tokens2[5] + ":" + tokens2[6], line2);
+              inactivated = true;
+              break;
+            }
+          }
+
+          // not inactivated, updated in some other way
+          if (!inactivated) {
+            for (SimpleLine lineData : entries) {
+              if (lineData.isActive() && tokens2[2].equals("1")) {
+                // something updated
+                // only add to list if records are active
+                String line1Sub = "\t" + lineData.getEffectiveTime() + "\t"
+                    + (lineData.isActive() ? "1" : "0") + "\t"
+                    + lineData.getModuleId() + "\t" + lineData.getRefsetId()
+                    + "\t" + lineData.getRefCompId() + "\t"
+                    + lineData.getTargetId();
+                String line2Sub = line2.substring(line2.indexOf("\t"));
+                updatedList.put(tokens2[5] + ":" + tokens2[6],
+                    line1Sub + "\t" + line2Sub);
+                continue;
+              }
+            }
+          }
+        }
+        // key2 was not in first file, this is new
       } else {
-        newList.put(key2, line2);
+        newList.put(tokens2[5] + ":" + tokens2[6], line2);
       }
     }
-
+    Logger.getLogger(MappingServiceRestImpl.class)
+    .info("key2Map count: " + key2Map.size() + " " + i);
     in1.reset();
 
     // determine records that were removed
-    while ((line1 = in1.readLine()) != null) {
-      String tokens1[] = line1.split("\t");
-      String key1 = tokens1[5] + ":" + tokens1[4];
-
-      // if key2Map doesn't have key1, this record has been removed
-      if (!key2Map.containsKey(key1)) {
-        removedList.put(key1, line1);
+    while ((line1 = in1.readLine()) != null) { 
+      String tokens1[] = line1.split("\t"); 
+      if (!tokens1[4].equals(mapProject.getRefSetId())) {
+        continue;
+      }
+      if (!key2Map.containsKey(tokens1[5])) {
+        removedList.put(tokens1[5], line1);
       }
     }
-
+     
     in1.close();
     in2.close();
 
@@ -5794,7 +5898,16 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       // Determine international or U.S.
       String nationalPrefix =
           sourceTerminology.equals("SNOMEDCT_US") ? "us" : "international";
+      
+      // Determine year
+      int year = Calendar.getInstance().get(Calendar.YEAR);
+      String lastYear = Integer.toString(year - 1);
+      // Only keep alpha and beta from most recent version
+      String mostRecentAlphaBeta = "";
+      // Map to ensure only latest version of a file is included in list
+      Map<String, String> shortNameToFullDateMap = new HashMap<>();
 
+      // TODO: Note: Logic here should be moved into a ProjectSpecificHandler
       if (mapProject.getDestinationTerminology().equals("ICPC")
           || mapProject.getDestinationTerminology().equals("GMDN")) {
         // List Files on Bucket "release-ihtsdo-prod-published"
@@ -5811,8 +5924,20 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
         int i = 1;
         for (S3ObjectSummary sum : summaries) {
           String fileName = sum.getKey();
-          if ((fileName.contains("ExtendedMap")
-              || fileName.contains("SimpleMap")) && !fileName.contains("Full")
+          Matcher m = Pattern.compile("[0-9T]{15}").matcher(fileName);
+          String fileYear = ""; 
+          String fileDate = "";
+          String fullFileDate = "";
+          while (m.find()) {
+            fullFileDate = m.group();
+            fileDate = fullFileDate.substring(0,8);
+            fileYear = fileDate.substring(0, 4);
+          }
+          if (fileYear.compareTo(lastYear) < 0) {
+            continue;
+          }
+          if ((fileName.contains("ICPC2ExtendedMap")
+              || fileName.contains("GMDNMapSimpleMap")) && !fileName.contains("Full")
               && !fileName.contains("backup")) {
             Logger.getLogger(MappingServiceRestImpl.class)
                 .info(mapProject.getDestinationTerminology() + " Summary #"
@@ -5826,10 +5951,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
             } else {
               result.setTerminology("FINAL");
             }
-            Matcher m = Pattern.compile("[0-9]{8}").matcher(fileName);
-            while (m.find()) {
-              result.setTerminologyVersion(m.group());
-            }
+            
+            result.setTerminologyVersion(fileDate);
             result.setValue(shortName);
             result.setValue2(fileName);
             searchResults.addSearchResult(result);
@@ -5853,27 +5976,56 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
               .info("CCC start with " + j++ + ": " + summaries.size());
           for (S3ObjectSummary sum : summaries) {
             String fileName = sum.getKey();
-            if ((fileName.contains("ExtendedMap")
-                || fileName.contains("SimpleMap")) && !fileName.contains("Full")
-                && !fileName.contains("backup")) {
+            Matcher m = Pattern.compile("[0-9T]{15}").matcher(fileName);
+            String fileYear = ""; 
+            String fileDate = "";
+            String fullFileDate = "";
+            while (m.find()) {
+              fullFileDate = m.group();
+              fileDate = fullFileDate.substring(0,8);
+              fileYear = fileDate.substring(0, 4);
+            }
+            // last year okay, but not before that
+            if (fileYear.compareTo(lastYear) < 0) {
+              continue;
+            }
+            if (((mapProject.getName().contains("ICD10") && fileName.contains("ExtendedMap"))
+                || (mapProject.getName().contains("ICDO") && fileName.contains("SimpleMap")))
+                && !fileName.contains("Full")
+                && !fileName.contains("backup") && !fileName.contains("LOINC") 
+                && !fileName.contains("MRCM") && !fileName.contains("Starter")
+                && !fileName.contains("Nursing") && !fileName.contains("Odontogram")
+                && !fileName.contains("WithoutRT") && !fileName.contains("ButOld")
+                && !fileName.contains("UPDATED") 
+                && !fileName.contains("ICNP") && !fileName.contains("SnomedCT_RF2Release")) {
               Logger.getLogger(MappingServiceRestImpl.class)
                   .info("Summary #" + i++ + " with: " + sum.getKey());
               SearchResult result = new SearchResultJpa();
               String shortName = fileName.substring(fileName.lastIndexOf('/'));
+              if (shortNameToFullDateMap.containsKey(shortName)) {
+                String savedFullFileDate = shortNameToFullDateMap.get(shortName);
+                // if current one is later, save this one into the map
+                if (savedFullFileDate.compareTo(fullFileDate) < 0) {
+                  shortNameToFullDateMap.put(shortName, fullFileDate);
+                }
+              } else {
+                shortNameToFullDateMap.put(shortName, fullFileDate);
+              }
               if (fileName.toLowerCase().contains("alpha")) {
                 result.setTerminology("ALPHA");
+                if (fileDate.compareTo(mostRecentAlphaBeta) > 0) {
+                  mostRecentAlphaBeta = fileDate;
+                }
               } else if (fileName.toLowerCase().contains("beta")) {
                 result.setTerminology("BETA");
-              } else if (shortName.startsWith("x")) {
-                result.setTerminology("A/B");
+                if (fileDate.compareTo(mostRecentAlphaBeta) > 0) {
+                  mostRecentAlphaBeta = fileDate;
+                }
               } else {
                 result.setTerminology("FINAL");
               }
-              Matcher m = Pattern.compile("[0-9]{8}").matcher(fileName);
-              while (m.find()) {
-                result.setTerminologyVersion(m.group());
-              }
-
+             
+              result.setTerminologyVersion(fileDate);
               result.setValue(shortName);
               result.setValue2(fileName);
               searchResults.addSearchResult(result);
@@ -5891,8 +6043,25 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
           return releaseDate2.compareTo(releaseDate1);
         }
       });
+      
+      // only keep most recent finals and most recent alpha/betas
+      SearchResultList resultsToKeep = new SearchResultListJpa();
+      for (SearchResult result : searchResults.getSearchResults()) {  
+        // must be final or the most current release alpha/beta
+        if (result.getTerminology().equals("FINAL") || 
+            result.getTerminologyVersion().equals(mostRecentAlphaBeta)) {
+          // also must be the most recent version of the release file
+          if (shortNameToFullDateMap.containsKey(result.getValue())) {
+            if (result.getValue2().contains(shortNameToFullDateMap.get(result.getValue()))) {
+              resultsToKeep.addSearchResult(result);
+            }
+          } else {
+            resultsToKeep.addSearchResult(result);
+          }
+        }
+      }
 
-      return searchResults;
+      return resultsToKeep;
 
     } catch (Exception e) {
       handleException(e, "trying to get files from amazon s3", user,
@@ -5906,6 +6075,251 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     return null;
   }
 
+  /**
+   * The Class SimpleLine.
+   */
+  class SimpleLine {
+
+    String targetId = "";
+    String refCompId = "";
+    boolean active = true;
+    String refsetId = "";
+    String effectiveTime = "";
+    String moduleId = "";
+
+    public SimpleLine(String line) throws Exception {
+      String tokens[] = line.split("\t");
+
+      this.targetId = tokens[6];
+      this.refCompId = tokens[5];
+      this.active = tokens[2].equals("1") ? true : false;
+      this.moduleId = tokens[3];
+      this.refsetId = tokens[4];
+      this.effectiveTime = tokens[1];
+    }
+
+    public String getModuleId() {
+      return moduleId;
+    }
+
+    public String getTargetId() {
+      return targetId;
+    }
+
+    public String getRefCompId() {
+      return refCompId;
+    }
+
+    public boolean isActive() {
+      return active;
+    }
+
+    public String getRefsetId() {
+      return refsetId;
+    }
+
+    public String getEffectiveTime() {
+      return effectiveTime;
+    }
+
+    @Override
+    public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + (active ? 1231 : 1237);
+      result = prime * result
+          + ((effectiveTime == null) ? 0 : effectiveTime.hashCode());
+      result =
+          prime * result + ((moduleId == null) ? 0 : moduleId.hashCode());
+      result =
+          prime * result + ((refCompId == null) ? 0 : refCompId.hashCode());
+      result =
+          prime * result + ((refsetId == null) ? 0 : refsetId.hashCode());
+      result =
+          prime * result + ((targetId == null) ? 0 : targetId.hashCode());
+      return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj)
+        return true;
+      if (obj == null)
+        return false;
+      if (getClass() != obj.getClass())
+        return false;
+      SimpleLine other = (SimpleLine) obj;
+      if (active != other.active)
+        return false;
+      if (effectiveTime == null) {
+        if (other.effectiveTime != null)
+          return false;
+      } else if (!effectiveTime.equals(other.effectiveTime))
+        return false;
+      if (moduleId == null) {
+        if (other.moduleId != null)
+          return false;
+      } else if (!moduleId.equals(other.moduleId))
+        return false;
+      if (refCompId == null) {
+        if (other.refCompId != null)
+          return false;
+      } else if (!refCompId.equals(other.refCompId))
+        return false;
+      if (refsetId == null) {
+        if (other.refsetId != null)
+          return false;
+      } else if (!refsetId.equals(other.refsetId))
+        return false;
+      if (targetId == null) {
+        if (other.targetId != null)
+          return false;
+      } else if (!targetId.equals(other.targetId))
+        return false;
+      return true;
+    }
+
+    @Override
+    public String toString() {
+      return "SimpleLine [targetId=" + targetId + ", refCompId=" + refCompId
+          + ", active=" + active + ", refsetId=" + refsetId
+          + ", effectiveTime=" + effectiveTime + ", moduleId=" + moduleId
+          + "]";
+    }
+
+  }
+  
+  /**
+   * The Class ExtendedLine.
+   */
+  class ExtendedLine extends SimpleLine {
+
+    private String mapGroup = "";
+    private String mapPriority = "";
+    private String mapRule = "";
+    private String mapAdvice = "";
+    private String correlationId = "";
+    private String mapCategoryId = "";
+    
+    public ExtendedLine(String line) throws Exception {
+      
+      super(line);
+      
+      String tokens[] = line.split("\t");
+
+      this.effectiveTime = tokens[1];
+      this.active = tokens[2].equals("1") ? true : false;
+      this.moduleId = tokens[3];
+      this.refsetId = tokens[4];
+      this.refCompId = tokens[5];
+      this.mapGroup = tokens[6];
+      this.mapPriority = tokens[7];
+      this.mapRule = tokens[8];
+      this.mapAdvice = tokens[9];
+      this.targetId = tokens[10];
+      this.correlationId = tokens[11];
+      this.mapCategoryId = tokens[12];
+    }
+
+    @Override
+    public String toString() {
+      return "ExtendedLine [mapGroup=" + mapGroup + ", mapPriority="
+          + mapPriority + ", mapRule=" + mapRule + ", mapAdvice=" + mapAdvice
+          + ", correlationId=" + correlationId + ", mapCategoryId="
+          + mapCategoryId + "]";
+    }
+
+    @Override
+    public int hashCode() {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + getOuterType().hashCode();
+      result = prime * result
+          + ((correlationId == null) ? 0 : correlationId.hashCode());
+      result =
+          prime * result + ((mapAdvice == null) ? 0 : mapAdvice.hashCode());
+      result = prime * result
+          + ((mapCategoryId == null) ? 0 : mapCategoryId.hashCode());
+      result = prime * result + ((mapGroup == null) ? 0 : mapGroup.hashCode());
+      result =
+          prime * result + ((mapPriority == null) ? 0 : mapPriority.hashCode());
+      result = prime * result + ((mapRule == null) ? 0 : mapRule.hashCode());
+      return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj)
+        return true;
+      if (!super.equals(obj))
+        return false;
+      if (getClass() != obj.getClass())
+        return false;
+      ExtendedLine other = (ExtendedLine) obj;
+      if (!getOuterType().equals(other.getOuterType()))
+        return false;
+      if (correlationId == null) {
+        if (other.correlationId != null)
+          return false;
+      } else if (!correlationId.equals(other.correlationId))
+        return false;
+      if (mapAdvice == null) {
+        if (other.mapAdvice != null)
+          return false;
+      } else if (!mapAdvice.equals(other.mapAdvice))
+        return false;
+      if (mapCategoryId == null) {
+        if (other.mapCategoryId != null)
+          return false;
+      } else if (!mapCategoryId.equals(other.mapCategoryId))
+        return false;
+      if (mapGroup == null) {
+        if (other.mapGroup != null)
+          return false;
+      } else if (!mapGroup.equals(other.mapGroup))
+        return false;
+      if (mapPriority == null) {
+        if (other.mapPriority != null)
+          return false;
+      } else if (!mapPriority.equals(other.mapPriority))
+        return false;
+      if (mapRule == null) {
+        if (other.mapRule != null)
+          return false;
+      } else if (!mapRule.equals(other.mapRule))
+        return false;
+      return true;
+    }
+
+    public String getMapGroup() {
+      return mapGroup;
+    }
+
+    public String getMapPriority() {
+      return mapPriority;
+    }
+
+    public String getMapRule() {
+      return mapRule;
+    }
+
+    public String getMapAdvice() {
+      return mapAdvice;
+    }
+
+    public String getCorrelationId() {
+      return correlationId;
+    }
+
+    public String getMapCategoryId() {
+      return mapCategoryId;
+    }
+
+    private MappingServiceRestImpl getOuterType() {
+      return MappingServiceRestImpl.this;
+    }
+  }
+  
   private void callTestMethod() throws Exception {
     Logger.getLogger(MappingServiceRestImpl.class).info("AAA");
     String bucketName = "release-ihtsdo-prod-published";
@@ -5951,7 +6365,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(MappingServiceRestImpl.class).info("DDD end");
   }
 
-  private InputStream callTestCompare(Long mapProjectId) throws Exception {
+  private InputStream callTestCompare(MapProject mapProject) throws Exception {
 
     // hardcoded files for testing
     String olderInputFile1 =
@@ -5971,7 +6385,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     // compare extended map files and compose report name
     if (olderInputFile1.contains("ExtendedMap")
         && newerInputFile2.contains("ExtendedMap")) {
-      reportInputStream = compareExtendedMapFiles(objectData1, objectData2);
+      reportInputStream = compareExtendedMapFiles(objectData1, objectData2, mapProject);
       reportName.append(
           olderInputFile1.substring(olderInputFile1.lastIndexOf("Extended"),
               olderInputFile1.lastIndexOf('.')));
@@ -5996,7 +6410,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       // compare simple map files and compose report name
     } else if (olderInputFile1.contains("SimpleMap")
         && newerInputFile2.contains("SimpleMap")) {
-      reportInputStream = compareSimpleMapFiles(objectData1, objectData2);
+      reportInputStream = compareSimpleMapFiles(objectData1, objectData2, mapProject);
       reportName.append(
           olderInputFile1.substring(olderInputFile1.lastIndexOf("Simple"),
               olderInputFile1.lastIndexOf('.')));
@@ -6024,7 +6438,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     final String docDir =
         config.getProperty("map.principle.source.document.dir");
 
-    final File projectDir = new File(docDir, mapProjectId.toString());
+    final File projectDir = new File(docDir, mapProject.getId().toString());
     if (!projectDir.exists()) {
       projectDir.mkdir();
     }
