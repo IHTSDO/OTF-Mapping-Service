@@ -536,4 +536,14 @@ public class ContentClientRest extends RootClientRest
     String authToken) throws Exception {
     // not yet implemented in rest client
   }
+
+  @Override
+  public void reloadTerminologyAwsRf2Snapshot(String terminology,
+    String removeVersion, String loadVersion, String awsZipFileName,
+    Boolean treePositions, Boolean sendNotification, String authToken)
+    throws Exception {
+    // not yet implemented in rest client
+    
+  }
+
 }

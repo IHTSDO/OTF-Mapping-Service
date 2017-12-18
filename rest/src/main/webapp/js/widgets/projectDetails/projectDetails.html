@@ -5,7 +5,6 @@
     Records</button>
 </h3>
 <p></p>
-
 <div ng-show="currentRole == 'Administrator' || currentRole == 'Lead'"
   align="right">
   <span style="font-size: 16px"> <a href=""
@@ -29,6 +28,8 @@
 </uib-accordion-heading>
 
 <p></p>
+
+
 <table class="table table-bordered" style="padding: 5px">
   <tbody>
     <tr>
@@ -1313,15 +1314,28 @@
       </tr>
       <tr>
         <td>
-          <button 
-            class="btn btn-primary btn-xs" ng-click="loadSourceTerminology">Load {{focusProject.sourceTerminology}}</button>
+          <button ng-disabled="!(termLoad.version && termLoad.scope)"
+            class="btn btn-primary btn-xs" ng-click="reloadTerminologyAwsRf2Snapshot(focusProject.sourceTerminology, termLoad.version, termLoad.scope)">Reload {{focusProject.sourceTerminology}}</button>
         </td>
-        <td>Load appropriate {{focusProject.sourceTerminology}} version and set project to it.
-        <br>
-          <select  style="width:100%"
-            ng-model="sourceTerminologyToLoad"
-            ng-options="item for item in sourceTerminologyVersions">
-          </select>
+        <td>Reload selected {{focusProject.sourceTerminology}} version and set projects to it.
+        <br><br>
+			<!-- Define Versions  -->
+				Select version: 
+				<select
+					ng-model="termLoad.version"
+					ng-options="item for item in termLoadVersions | orderBy:-'item'"
+					ng-change="handleVersionSelection(focusProject.sourceTerminology, termLoad.version)">
+				</select>
+				<br>
+            <!-- Define Scope (For SNOMEDCT Only) -->
+                <div ng-show="termLoad.version">
+                Select scope:   
+                <select 
+                  ng-model="termLoad.scope"
+                  ng-options="item for item in termLoadScopes"
+                  ng-change="handleScopeSelection(focusProject.sourceTerminology, termLoad.scope)">
+                </select>
+                </div>
         </td>
           <td>
             <i
