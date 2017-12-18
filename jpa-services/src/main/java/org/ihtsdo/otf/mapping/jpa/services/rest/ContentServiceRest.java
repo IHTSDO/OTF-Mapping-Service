@@ -2,6 +2,7 @@ package org.ihtsdo.otf.mapping.jpa.services.rest;
 
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
+import org.ihtsdo.otf.mapping.helpers.TerminologyVersionList;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 
 // TODO: Auto-generated Javadoc
@@ -145,15 +146,16 @@ public interface ContentServiceRest {
 
 	/**
 	 * Loads unpublished complex maps.
-	 * 
+	 *
 	 * @param inputFile The input file.
 	 * @param memberFlag The members flag.
 	 * @param recordFlag The records flag.
+	 * @param refsetId the refset id
 	 * @param workflowStatus The workflow status to assign to created map records.
 	 * @param authToken The auth token
 	 * @throws Exception The execution exception
 	 */
-	void loadMapRecordRf2ComplexMap(String inputFile, Boolean memberFlag, Boolean recordFlag,
+	void loadMapRecordRf2ComplexMap(String inputFile, Boolean memberFlag, Boolean recordFlag, String refsetId,
 			String workflowStatus, String authToken) throws Exception;
 	
 	/**
@@ -163,11 +165,12 @@ public interface ContentServiceRest {
 	 * @param inputFile The input file.
 	 * @param memberFlag the member flag
 	 * @param recordFlag the record flag
+	 * @param refsetId the refset id
 	 * @param workflowStatus the workflow status
 	 * @param authToken The auth token
 	 * @throws Exception The execution exception
 	 */
-	void loadMapRecordRf2SimpleMap(String inputFile, Boolean memberFlag, Boolean recordFlag,
+	void loadMapRecordRf2SimpleMap(String inputFile, Boolean memberFlag, Boolean recordFlag, String refsetId, 
 			String workflowStatus, String authToken) throws Exception;
 	
 	/**
@@ -242,13 +245,13 @@ public interface ContentServiceRest {
 	 * @param terminology The terminology.
 	 * @param version The terminology version.
 	 * @param inputDir The directory where the input files are located.
-	 * @param treePositions the tree positions
-	 * @param sendNotification the send notification
+	 * @param treePositions Indicate if tree positions should be calculated.
+	 * @param sendNotification Indicate if a notification should be sent.
 	 * @param authToken The auth token
 	 * @throws Exception The execution exception
 	 */
-	void loadTerminologyRf2Snapshot(String terminology, String version,
-			String inputDir, Boolean treePositions, Boolean sendNotification,
+  void loadTerminologyRf2Snapshot(String terminology, String version,
+    String inputDir, Boolean treePositions, Boolean sendNotification,
 			String authToken) throws Exception;
 
 	/**
@@ -266,5 +269,92 @@ public interface ContentServiceRest {
 	 */
 	void loadTerminologySimple(String terminology, String version,
 			String inputDir, String authToken) throws Exception;
+
+	/**
+	 * Removes and loads an RF2 Snapshot of SNOMED CT data into a database.
+	 * 
+	 * @param terminology The terminology.
+	 * @param version The terminology version.
+	 * @param inputDir The directory where the input files are located.
+	 * @param treePositions Indicate if tree positions should be calculated.
+	 * @param sendNotification Indicate if a notification should be sent.
+	 * @param authToken The auth token
+	 * @throws Exception The execution exception
+	 */
+	void reloadTerminologyRf2Snapshot(String terminology, String version,
+			String inputDir, Boolean treePositions, Boolean sendNotification,
+			String authToken) throws Exception;
+	
+	/**
+	 * Removes and loads simple maps. - the members flag loads refset members if "true" - the
+	 * records flag loads map records if "true"
+	 *
+	 * @param refsetId Refset Id to be deleted.
+	 * @param inputFile The input file.
+	 * @param memberFlag the member flag
+	 * @param recordFlag the record flag
+	 * @param workflowStatus the workflow status
+	 * @param authToken The auth token
+	 * @return true, if successful
+	 * @throws Exception The execution exception
+	 */
+	boolean reloadMapRecord(String refsetId, String inputFile, Boolean memberFlag,
+			Boolean recordFlag, String workflowStatus, String authToken)
+			throws Exception;
+
+
+  /**
+   * Returns the terminology versions.
+   *
+   * @param terminology the terminology
+   * @param authToken the auth token
+   * @return the terminology versions
+   * @throws Exception the exception
+   */
+  TerminologyVersionList getTerminologyVersions(String terminology,
+    String authToken) throws Exception;
+
+  /**
+   * Returns the terminology version scopes.
+   *
+   * @param terminology the terminology
+   * @param version the version
+   * @param authToken the auth token
+   * @return the terminology version scopes
+   * @throws Exception the exception
+   */
+  TerminologyVersionList getTerminologyVersionScopes(String terminology,
+    String version, String authToken) throws Exception;
+
+  /**
+   * Load terminology rf 2 snapshot aws.
+   *
+   * @param terminology the terminology
+   * @param version the version
+   * @param awsFileName the aws file name
+   * @param treePositions the tree positions
+   * @param sendNotification the send notification
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  void loadTerminologyAwsRf2Snapshot(String terminology, String version,
+    String awsFileName, Boolean treePositions, Boolean sendNotification,
+    String authToken) throws Exception;
+
+  /**
+   * Reload terminology aws rf 2 snapshot.
+   *
+   * @param terminology the terminology
+   * @param removeVersion the remove version
+   * @param loadVersion the load version
+   * @param awsZipFileName the aws zip file name
+   * @param treePositions the tree positions
+   * @param sendNotification the send notification
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  void reloadTerminologyAwsRf2Snapshot(String terminology, String removeVersion,
+    String loadVersion, String awsZipFileName, Boolean treePositions,
+    Boolean sendNotification, String authToken) throws Exception;
 
 }

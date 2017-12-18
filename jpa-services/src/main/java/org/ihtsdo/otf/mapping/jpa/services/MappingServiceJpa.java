@@ -3,6 +3,9 @@
  */
 package org.ihtsdo.otf.mapping.jpa.services;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -83,6 +86,7 @@ import org.ihtsdo.otf.mapping.rf2.jpa.ComplexMapRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.json.JSONObject;
 
 /**
@@ -3188,5 +3192,64 @@ public class MappingServiceJpa extends RootServiceJpa
     }
 
     return milliseconds;
+  }
+
+  /* see superclass */
+  public String getReleaseFileNames(MapProject mapProject) throws Exception {
+    String rootPath = ConfigUtility.getConfigProperties()
+        .getProperty("map.principle.source.document.dir");
+    if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
+      rootPath += "/";
+    }
+
+    // Find the project's release path
+    String path = rootPath + "release/" + mapProject.getSourceTerminology()
+        + "_to_" + mapProject.getDestinationTerminology() + "_"
+        + mapProject.getRefSetId();
+    path.replaceAll("\\s", "");
+
+    // Get all effectiveTime subfolders within that location
+    File file = new File(path);
+    if(!file.exists()){
+      throw new FileNotFoundException("Path not found: " + path);
+    }
+    
+    String[] effectiveTimes = file.list(new FilenameFilter() {
+      @Override
+      public boolean accept(File current, String name) {
+        return new File(current, name).isDirectory();
+      }
+    });
+
+    if(effectiveTimes.length == 0){
+      throw new FileNotFoundException("No subfolders found at location: " + path);
+    }    
+    
+    String releaseFileNames = "";
+
+    // Get all zipFiles within each effectiveTime subfolder
+    // And add to return releaseFileNames (full path)
+    for (final String effectiveTime : effectiveTimes) {
+      String subfolderPath = path + "/" + effectiveTime + "/";
+
+      File file2 = new File(subfolderPath);
+      String[] zipFiles = file2.list(new FilenameFilter() {
+        @Override
+        public boolean accept(File current, String name) {
+          return name.toLowerCase().endsWith(".zip");
+        }
+      });
+
+      for (String zipFileName : zipFiles) {
+        releaseFileNames += effectiveTime + "/" + zipFileName + "|";
+      }
+    }
+
+    // get rid of last pipe
+    if (releaseFileNames.length() > 1) {
+      releaseFileNames =
+          releaseFileNames.substring(0, releaseFileNames.length() - 1);
+    }
+    return releaseFileNames;
   }
 }

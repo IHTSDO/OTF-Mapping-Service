@@ -1822,48 +1822,79 @@
   </tbody>
 </table>
 
-<div>
-  <div style="margin-top: 15px;">
-    <b>Load New Terminology</b>
-  </div>
-  <table class="table pure-table">
-    <thead>
-      <tr>
-        <th style="width: 25%;"></th>
-        <th style="width: 75%;"></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Input Type</td>
-        <td>
-          <select ng-model="inputType"
-            ng-options="item for item in terminologyInputTypes">
-          </select>
-        </td>
-      </tr>
-      <!-- 
-      For Loading GMDN 
-      -->
-      <tr ng-show="inputType == 'GMDN xml'">
-        <td>GMDN version to load
-        <br><br>
-                 <button class="btn btn-xs btn-primary"
-            ng-show="inputType == 'GMDN xml'"
-            ng-click="downloadTerminologyGmdn()">Check for new GMDN versions</button>
-        </td>
-        <td>
-          <select ng-model="gmdnVersion"
-            ng-options="item for item in downloadedGmdnVersions">
-          </select>         
-        </td>
-      </tr>
-    </tbody>
-  </table>
-  
-  
-  <button class="btn btn-xs btn-primary"
-    ng-show="inputType == 'GMDN xml' && gmdnVersion != null"
-    ng-click="loadTerminologyGmdn(gmdnVersion)">Load</button>
+  <div>
+	<div style="margin-top: 15px;">
+		<b>Load New Terminology</b>
+	</div>
+	<table class="table pure-table">
+		<thead>
+			<tr>
+				<th style="width: 30%;"></th>
+				<th style="width: 70%;"></th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>Terminology to Load</td>
+				<td><select ng-model="termLoad.terminology"
+					ng-options="item for item in terminologyInputTypes"
+					ng-change="getTerminologyVersions(termLoad.terminology)">
+				</select></td>
+			</tr>
+			debug: {{termLoad.terminology}} {{termLoad.version}}
+			{{termLoad.scope}}
+
+			<!-- For Loading GMDN -->
+			<tr ng-show="termLoad.terminology == 'GMDN'">
+				<td>GMDN version to load <br>
+				<br>
+					<button class="btn btn-xs btn-primary"
+						ng-show="termLoad.terminology == 'GMDN'"
+						ng-click="downloadTerminologyGmdn()">Check for new GMDN
+						versions</button>
+				</td>
+				<td><select ng-model="gmdnVersion"
+					ng-options="item for item in downloadedGmdnVersions">
+				</select></td>
+			</tr>
+
+			<!-- Define Versions (For all other terminologies) -->
+			<tr ng-show="termLoad.terminology != 'GMDN' && (termLoad.terminology)">
+				<td>Select version of {{termLoad.terminology}} to load </td>
+				<td><select
+					ng-model="termLoad.version"
+					ng-options="item for item in termLoadVersions | orderBy:-'item'"
+					ng-change="handleVersionSelection(termLoad.terminology, termLoad.version)">
+				</select>
+				</td>
+			</tr>
+
+			<!-- Define Scope (For SNOMED CT Only) -->
+			<tr	ng-show="termLoad.terminology == 'SNOMED CT' && (termLoad.version)">
+				<td>Select scope of {{termLoad.version}} to load </td>
+				<td><select
+					ng-model="termLoad.scope"
+					ng-options="item for item in termLoadScopes"
+					ng-change="handleScopeSelection(termLoad.terminology, termLoad.scope)">
+				</select>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<!--  Load GMDN (Special Script to do so) -->
+	<button class="btn btn-xs btn-primary"
+		ng-show="termLoad.terminology == 'GMDN' && gmdnVersion != null"
+		ng-click="loadTerminologyGmdn(gmdnVersion)">Load
+		{{termLoad.terminology}}</button>
+
+	<!--  Load Other Terminologies (Only display if have Version defined and (!SNOMED || (SNOMED & Scope defined)) -->
+	<button class="btn btn-xs btn-primary"
+		ng-show="termLoad.terminology != 'GMDN' && 
+	(termLoad.terminology != 'SNOMED CT' || (termLoad.terminology == 'SNOMED CT' && (termLoad.scope))) && 
+	(termLoad.version)"
+		ng-click="loadTerminologyAws(termLoad.terminology, termLoad.version, termLoad.scope)">Load
+		{{termLoad.terminology}}</button>
+
+	<!--  TODO: While going from SNOMED to ICxx (or other way), clears versions, ICxx to ICyy does NOT clear versions  -->
 </div>
 </uib-accordion-group> </uib-accordion>

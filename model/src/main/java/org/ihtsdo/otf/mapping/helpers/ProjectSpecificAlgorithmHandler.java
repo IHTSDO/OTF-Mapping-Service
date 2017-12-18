@@ -15,6 +15,8 @@ import org.ihtsdo.otf.mapping.rf2.TreePosition;
 /**
  * Represents a collection of project specific algorithms that can override
  * defaults.
+ *
+ * @author ${author}
  */
 public interface ProjectSpecificAlgorithmHandler extends Configurable {
 
@@ -63,6 +65,16 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    */
   public boolean isTargetCodeValid(String terminologyId) throws Exception;
 
+  /**
+   * Indicates whether or not a map record line is valid to load
+   *
+   * @param line the line
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   * @throws Exception the exception
+   */
+  public boolean isMapRecordLineValid(String line) throws Exception;
+  
+  
   /**
    * Validate semantic checks.
    *
@@ -190,11 +202,11 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
   public boolean isOneToOneConstrained();
   
   /**
-   * Record violates one to one constraint
+   * Record violates one to one constraint.
    *
    * @param record the record
    * @return true, if violates constraint
-   * @throws Exception 
+   * @throws Exception the exception
    */
   public boolean recordViolatesOneToOneConstraint(MapRecord record) throws Exception;
 

@@ -19,6 +19,7 @@ import org.ihtsdo.otf.mapping.helpers.MapRelationListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
+import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
@@ -806,10 +807,12 @@ public interface MappingServiceRest {
 	   * @param moduleId the module id
 	   * @param effectiveTime the effective time
 	   * @param mapProjectId the map project id
+	   * @param writeDelta the write delta
 	   * @param authToken the auth token
 	   * @throws Exception the exception
 	   */
-	void processReleaseForMapProject(String moduleId, String effectiveTime, Long mapProjectId, String authToken)
+	void processReleaseForMapProject(String moduleId, String effectiveTime, Long mapProjectId, 
+	  boolean writeDelta, String authToken)
 			throws Exception;
 
 	/**
@@ -833,6 +836,30 @@ public interface MappingServiceRest {
 	   */
 	void startEditingCycleForMapProject(Long mapProjectId, String authToken) throws Exception;
 
+    /**
+     * Gets the log.
+     *
+     * @param projectId the project id
+     * @param logTypes the log types
+     * @param query the query
+     * @param authToken the auth token
+     * @return the log
+     * @throws Exception the exception
+     */
+    String getLog(String projectId, List<String> logTypes, String query,
+      String authToken) throws Exception;
+
+    /**
+     * Returns the release file names.
+     *
+     * @param mapProjectId the map project id
+     * @param authToken the auth token
+     * @return the release file names
+     * @throws Exception the exception
+     */
+    String getReleaseFileNames(Long mapProjectId, String authToken)
+      throws Exception; 	
+	
 	/**
 	   * Creates the jira issue.
 	   *
@@ -843,8 +870,59 @@ public interface MappingServiceRest {
 	void createJiraIssue(String conceptId, String conceptAuthor, String messageText, MapRecordJpa mapRecord,
 			String authToken) throws Exception;
 
+	/**
+	 * Gets the concept authors.
+	 *
+	 * @param conceptId the concept id
+	 * @param authToken the auth token
+	 * @return the concept authors
+	 * @throws Exception the exception
+	 */
 	SearchResultList getConceptAuthors(String conceptId, String authToken) throws Exception;
 
+	/**
+	 * Gets the concept authoring changes.
+	 *
+	 * @param projectId the project id
+	 * @param conceptId the concept id
+	 * @param authToken the auth token
+	 * @return the concept authoring changes
+	 * @throws Exception the exception
+	 */
 	SearchResultList getConceptAuthoringChanges(String projectId, String conceptId, String authToken) throws Exception;
+
+    /**
+     * Gets the release report list.
+     *
+     * @param mapProjectId the map project id
+     * @param authToken the auth token
+     * @return the release report list
+     * @throws Exception the exception
+     */
+    SearchResultList getReleaseReportList(Long mapProjectId, String authToken)
+    throws Exception;
+
+   
+    /**
+     * Gets the files from amazon s3.
+     *
+     * @param mapProjectId the map project id
+     * @param authToken the auth token
+     * @return the files from amazon s3
+     * @throws Exception the exception
+     */
+    SearchResultList getFileListFromAmazonS3(Long mapProjectId,
+      String authToken) throws Exception;
+
+    /**
+     * Gets the current release file.
+     *
+     * @param mapProjectId the map project id
+     * @param authToken the auth token
+     * @return the current release file
+     * @throws Exception the exception
+     */
+    SearchResult getCurrentReleaseFile(Long mapProjectId, String authToken)
+      throws Exception;
 
 }
