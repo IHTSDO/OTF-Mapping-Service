@@ -1210,6 +1210,8 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       Logger.getLogger(getClass()).info(
           "Remove Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
 
+      securityService.close();
+      securityService = new SecurityServiceJpa();
       securityService.addLogEntry(userName, terminology, version, null,
           "REMOVER", "Remove terminology");
 
@@ -1222,6 +1224,8 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         Logger.getLogger(getClass()).info(
             "Load Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
 
+        securityService.close();
+        securityService = new SecurityServiceJpa();
         securityService.addLogEntry(userName, terminology, version, null,
             "LOAD", "Load " + terminology + " " + version);
 
@@ -1279,6 +1283,8 @@ removeAlgo.compute();
 Logger.getLogger(getClass()).info(
   "Remove Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
 
+securityService.close();
+securityService = new SecurityServiceJpa();
 securityService.addLogEntry(userName, terminology, removeVersion, null,
   "REMOVER", "Remove terminology");
     
