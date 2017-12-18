@@ -193,8 +193,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 
 			// Let the service create its own transaction.
 			for (final String root : roots) {
-				log
-						.info("Start creating tree positions " + root + ", "
+				log.info("Start creating tree positions " + root + ", "
 								+ isaRelType);
 				contentService.computeTreePositions(terminology,
 						terminologyVersion, isaRelType, root);
@@ -205,6 +204,10 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 
 		} catch (Exception e) {
 			e.printStackTrace();
+			log.info(e.getMessage());
+		      for (StackTraceElement element : e.getStackTrace()) {
+		        log.info(element.toString());
+		      }
 			throw new Exception("Conversion of Claml to RF2 objects failed", e);
 		}
 	}

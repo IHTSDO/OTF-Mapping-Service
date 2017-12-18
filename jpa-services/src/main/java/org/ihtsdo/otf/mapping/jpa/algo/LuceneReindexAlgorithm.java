@@ -115,6 +115,7 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
    * @throws Exception the exception
    */
   private void computeLuceneIndexes(String indexedObjects) throws Exception {
+    try {
     // set of objects to be re-indexed
     final Set<String> objectsToReindex = new HashSet<>();
     final Map<String, Class<?>> reindexMap = new HashMap<>();
@@ -184,6 +185,13 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
 
     // Cleanup
     Logger.getLogger(getClass()).info("done ...");
+    } catch(Exception e) {
+      log.info(e.getMessage());
+      for (StackTraceElement element : e.getStackTrace()) {
+        log.info(element.toString());
+      }
+      throw new Exception(e);
+    }
   }
 
   /**
