@@ -4,7 +4,9 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
+import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.rest.RootServiceRest;
+import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.OtfErrorHandler;
@@ -97,6 +99,13 @@ public class RootServiceRestImpl implements RootServiceRest {
 		return result;
 	}
 	
+	/**
+	 * Gets an AmazonS3 object based first on InstanceProfileCredentialsProvider. 
+	 * If not available, will then use AWSStaticCredentialsProvider.
+	 * 
+	 * @return AmazonS3 AWS S3 client
+	 * @throws Exception the exception
+	 */
 	  protected AmazonS3 connectToAmazonS3() throws Exception {
 	    // Connect to server using instance profile credentials
 	    AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
@@ -123,4 +132,30 @@ public class RootServiceRestImpl implements RootServiceRest {
 
 	    return s3Client;
 	  }
+	  
+	/**
+	 * Checks if the terminology and version exist in the system.
+	 * 
+	 * @param terminology the terminology
+	 * @param version the version
+	 * @return Boolean true if the terminology exists and false if it does not exist. 
+	 * @throws Exception the exception
+	 */
+	protected Boolean doesTerminologyVersionExist(String terminology,
+			String version) throws Exception {
+		Boolean exists = false;
+
+		// validate that the terminology & version to not already exist.
+		MetadataService ms;
+
+		ms = new MetadataServiceJpa();
+		if (ms.checkTerminologyVersionExists(terminology, version)) {
+			exists = true;
+		}
+
+		ms.close();
+
+		return exists;
+
+	}
 }
