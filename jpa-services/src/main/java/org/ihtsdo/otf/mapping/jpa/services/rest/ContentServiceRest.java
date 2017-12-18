@@ -340,4 +340,21 @@ public interface ContentServiceRest {
   void loadTerminologyAwsRf2Snapshot(String terminology, String version,
     String awsFileName, Boolean treePositions, Boolean sendNotification,
     String authToken) throws Exception;
+
+  /**
+   * Reload terminology aws rf 2 snapshot.
+   *
+   * @param terminology the terminology
+   * @param removeVersion the remove version
+   * @param loadVersion the load version
+   * @param awsZipFileName the aws zip file name
+   * @param treePositions the tree positions
+   * @param sendNotification the send notification
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  void reloadTerminologyAwsRf2Snapshot(String terminology, String removeVersion,
+    String loadVersion, String awsZipFileName, Boolean treePositions,
+    Boolean sendNotification, String authToken) throws Exception;
+
 }

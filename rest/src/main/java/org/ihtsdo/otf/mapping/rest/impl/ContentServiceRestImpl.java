@@ -1241,6 +1241,123 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   /* see superclass */
   @Override
   @PUT
+  @Path("/terminology/reload/aws/rf2/snapshot/{terminology}/{removeVersion}/{loadVersion}")
+  @Consumes({
+      MediaType.TEXT_PLAIN
+  })
+  @ApiOperation(value = "Removes a terminology, and loads terminology RF2 snapshot from aws", notes = "Removes terminology and loads RF2 snapshot from aws for specified terminology and version")
+  public void reloadTerminologyAwsRf2Snapshot(
+    @ApiParam(value = "Terminology, e.g. SNOMED CT", required = true) @PathParam("terminology") String terminology,
+    @ApiParam(value = "Version to remove, e.g. 20170131", required = true) @PathParam("removeVersion") String removeVersion,
+    @ApiParam(value = "Version to load, e.g. 20170131", required = true) @PathParam("loadVersion") String loadVersion,
+    @ApiParam(value = "Aws Zip File Name, e.g. filename with full path", required = true) @QueryParam("awsZipFileName") String awsZipFileName,
+    @ApiParam(value = "Calculate tree positions", required = false) @QueryParam("treePositions") Boolean treePositions,
+    @ApiParam(value = "Send notification", required = false) @QueryParam("sendNotification") Boolean sendNotification,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("RESTful call (Content): /terminology/reload/aws/rf2/snapshot/" + terminology + "/" + removeVersion + "/" + loadVersion  
+            + " awsZipFileName= " + awsZipFileName);
+    
+    // Track system level information
+    long startTimeOrig = System.nanoTime();
+
+    String userName = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+        "reload RF2 snapshot terminology from aws ", securityService);
+    
+    try (final RemoverAlgorithm removeAlgo = new RemoverAlgorithm(terminology,
+        removeVersion);) {
+
+// Remove terminology
+    Logger.getLogger(getClass()).info(
+            "  Remove terminology for  " + terminology + ", " + removeVersion);
+
+removeAlgo.setLastModifiedBy(userName);
+removeAlgo.compute();
+
+Logger.getLogger(getClass()).info(
+  "Remove Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+
+securityService.addLogEntry(userName, terminology, removeVersion, null,
+  "REMOVER", "Remove terminology");
+    
+
+// if no errors try to load from aws
+
+    final String localTerminology = removeSpaces(terminology);
+    final String localVersion = removeSpaces(loadVersion);
+
+    File placementDir = null;
+    Rf2SnapshotLoaderAlgorithm algo = null;
+
+    try {
+      // Access zipped awsFile
+      AmazonS3 s3Client = connectToAmazonS3();
+
+      final String bucketName = "release-ihtsdo-prod-published";
+      S3Object s3object = s3Client.getObject(bucketName, awsZipFileName);
+
+      // Unzip awsFile to temp directory
+      File tempDir = FileUtils.getTempDirectory();
+      placementDir = new File(tempDir.getAbsolutePath() + File.separator
+          + "TerminologyLoad_" + startTimeOrig);
+      placementDir.mkdir();
+
+      Logger.getLogger(getClass()).info("Downloading " + terminology + " " + loadVersion + " to " + placementDir);
+      S3ObjectInputStream inputStream = s3object.getObjectContent();
+      File zippedFile = new File(placementDir,
+          awsZipFileName.substring(awsZipFileName.lastIndexOf('/') + 1));
+      FileUtils.copyInputStreamToFile(inputStream, zippedFile);
+      inputStream.close();
+
+      // UNZIP to Placement
+      Logger.getLogger(getClass()).info("Decompressing " + zippedFile);      
+      unzipToDirectory(zippedFile, placementDir);
+      Collection<File> files = FileUtils.listFiles(placementDir, null, true);
+      for (File f : files) {
+        Logger.getLogger(getClass()).info("AAA with " + f.getAbsolutePath());
+      }
+      Logger.getLogger(getClass()).info("BBB with " + placementDir);
+
+      File testDir = new File(placementDir.getAbsolutePath() + File.separator + zippedFile.getName().substring(0, zippedFile.getName().indexOf(".")) + File.separator + "Snapshot");
+      Logger.getLogger(getClass()).info("CCC with " + testDir.getAbsolutePath() );
+      files = FileUtils.listFiles(testDir, null, true);
+      for (File f : files) {
+        Logger.getLogger(getClass()).info("DDD with " + f.getAbsolutePath());
+      }
+
+      // Load content with input pulled from S3
+        algo = new Rf2SnapshotLoaderAlgorithm(localTerminology, localVersion,
+          testDir.getAbsolutePath(), treePositions, sendNotification);
+      
+      Logger.getLogger(getClass()).info("EEE");
+
+      algo.compute();
+      
+      Logger.getLogger(getClass()).info("FFF");
+
+      Logger.getLogger(getClass())
+          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+
+    } catch (Exception e) {
+      handleException(e,
+          "trying to load terminology snapshot from RF2 directory");
+    } finally {
+      // Remove directory
+      FileUtils.deleteDirectory(placementDir);
+      algo.close();
+    }
+    } catch (Exception e) {
+      handleException(e, "trying to remove terminology");
+    } finally {
+      securityService.close();
+    }    
+  }  
+  
+  /* see superclass */
+  @Override
+  @PUT
   @Path("/map/record/reload/{refsetId}")
   @Consumes(MediaType.TEXT_PLAIN)
   @ApiOperation(value = "Load simple RF2 map record data", notes = "Load simple map data.")
@@ -1310,7 +1427,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(ContentServiceRestImpl.class)
         .info("RESTful call (Content): /terminology/" + terminology + "/");
 
-    if (terminology.equals("SNOMED CT")) {
+    if (removeSpaces(terminology).equals("SNOMEDCT")) {
       terminology = "InternationalRF2";
     } else if (terminology.startsWith("ICNP")) {
       terminology = terminology.substring(0, terminology.indexOf(" "))
@@ -1387,7 +1504,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call (Content): /terminology/scope/" + terminology + "/"
             + version + "/");
 
-    if (!terminology.equals("SNOMED CT")) {
+    if (!removeSpaces(terminology).equals("SNOMEDCT")) {
       throw new Exception("Scope not relevant to handle " + terminology);
     } else {
       terminology = "InternationalRF2";

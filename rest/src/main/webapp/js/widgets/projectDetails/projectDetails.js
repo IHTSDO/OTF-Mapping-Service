@@ -106,6 +106,12 @@ angular
         $scope.amazons3Files = new Array();
         $scope.amazons3FilesPlusCurrent = new Array();
 
+        $scope.termLoadVersions = new Array();
+        $scope.termLoadScopes = new Array();
+        $scope.termLoadAwsZipFileName = '';
+        $scope.termLoadVersionFileNameMap = new Map();
+        $scope.termLoadScopeFileNameMap = new Map();        
+        
         $scope.projectReleaseFiles = new Array();
 
         $scope.allowableMapTypes = [ {
@@ -282,6 +288,8 @@ angular
             $rootScope.handleHttpError(data, status, headers, config);
           });
 
+          $scope.getTerminologyVersions($scope.focusProject.sourceTerminology);
+          
           $scope.loadProjectReleaseFiles();
 
           // find selected elements from the allowable
@@ -822,7 +830,7 @@ angular
         $scope.toggleEditMode = function() {
           if ($scope.editModeEnabled == true) {
             $scope.editModeEnabled = false;
-            $scope.updateMapProject();
+            $scope.updateMapProject($scope.focusProject);
           } else {
             $scope.editModeEnabled = true;
           }
@@ -845,7 +853,7 @@ angular
             key : 'focusProject',
             focusProject : $scope.focusProject
           });
-          $scope.updateMapProject();
+          $scope.updateMapProject($scope.focusProject);
         };
 
         $scope.getSelectedMapType = function() {
@@ -865,7 +873,7 @@ angular
             key : 'focusProject',
             focusProject : $scope.focusProject
           });
-          $scope.updateMapProject();
+          $scope.updateMapProject($scope.focusProject);
         };
 
         $scope.getSelectedWorkflowType = function() {
@@ -886,7 +894,7 @@ angular
             key : 'focusProject',
             focusProject : $scope.focusProject
           });
-          $scope.updateMapProject();
+          $scope.updateMapProject($scope.focusProject);
         };
 
         $scope.deleteLead = function(lead) {
@@ -1127,7 +1135,7 @@ angular
               $scope.focusProject.mapLead.push(user);
 
             // update the project
-            $scope.updateMapProject();
+            $scope.updateMapProject($scope.focusProject);
 
           }).error(function(data, status, headers, config) {
             $rootScope.handleHttpError(data, status, headers, config);
@@ -1184,7 +1192,7 @@ angular
           });
           $scope.pageAdvice = 1;
           $scope.resetAdviceFilter();
-          $scope.updateMapProject();
+          $scope.updateMapProject($scope.focusProject);
         };
 
         $scope.addAdvice = function(advice) {
@@ -1197,7 +1205,7 @@ angular
             focusProject : $scope.focusProject
           });
           $scope.resetAdviceFilter();
-          $scope.updateMapProject();
+          $scope.updateMapProject($scope.focusProject);
         };
 
         $scope.updateAdvice = function(advice) {
@@ -1250,7 +1258,7 @@ angular
                 focusProject : $scope.focusProject
               });
 
-              $scope.updateMapProject();
+              $scope.updateMapProject($scope.focusProject);
 
             }).error(function(data, status, headers, config) {
               $rootScope.handleHttpError(data, status, headers, config);
@@ -1294,7 +1302,7 @@ angular
             $scope.focusProject.mapAdvice.push(data);
 
             // update the map project
-            $scope.updateMapProject().then(function(response) {
+            $scope.updateMapProject($scope.focusProject).then(function(response) {
               $scope.resetAdviceFilter();
             });
 
@@ -1319,7 +1327,7 @@ angular
             focusProject : $scope.focusProject
           });
           $scope.resetRelationFilter();
-          $scope.updateMapProject();
+          $scope.updateMapProject($scope.focusProject);
         };
 
         $scope.addRelation = function(relation) {
@@ -1332,7 +1340,7 @@ angular
             focusProject : $scope.focusProject
           });
           $scope.resetRelationFilter();
-          $scope.updateMapProject();
+          $scope.updateMapProject($scope.focusProject);
         };
 
         $scope.submitNewMapRelation = function(relation) {
@@ -1360,7 +1368,7 @@ angular
             $scope.focusProject.mapRelation.push(data);
 
             // update the map project
-            $scope.updateMapProject().then(function() {
+            $scope.updateMapProject($scope.focusProject).then(function() {
               $scope.resetRelationFilter();
             });
 
@@ -1384,7 +1392,7 @@ angular
             focusProject : $scope.focusProject
           });
           $scope.resetReportDefinitionFilter();
-          $scope.updateMapProject();
+          $scope.updateMapProject($scope.focusProject);
         };
 
         $scope.deleteQACheckDefinition = function(qaCheckDefinition) {
@@ -1410,7 +1418,7 @@ angular
             focusProject : $scope.focusProject
           });
           $scope.resetQACheckDefinitionFilter();
-          $scope.updateMapProject();
+          $scope.updateMapProject($scope.focusProject);
         };
 
         $scope.addReportDefinition = function(reportDefinition) {
@@ -1424,7 +1432,7 @@ angular
             focusProject : $scope.focusProject
           });
           $scope.resetReportDefinitionFilter();
-          $scope.updateMapProject();
+          $scope.updateMapProject($scope.focusProject);
         };
 
         $scope.addQACheckDefinition = function(qaCheckDefinition) {
@@ -1438,7 +1446,7 @@ angular
             focusProject : $scope.focusProject
           });
           $scope.resetQACheckDefinitionFilter();
-          $scope.updateMapProject();
+          $scope.updateMapProject($scope.focusProject);
         };
 
         $scope.deletePrinciple = function(principle) {
@@ -1455,7 +1463,7 @@ angular
             focusProject : $scope.focusProject
           });
           $scope.resetPrincipleFilter();
-          $scope.updateMapProject();
+          $scope.updateMapProject($scope.focusProject);
         };
 
         $scope.addPrinciple = function(principle) {
@@ -1468,7 +1476,7 @@ angular
             focusProject : $scope.focusProject
           });
           $scope.resetPrincipleFilter();
-          $scope.updateMapProject();
+          $scope.updateMapProject($scope.focusProject);
         };
 
         $scope.updatePrinciple = function(principle) {
@@ -1522,7 +1530,7 @@ angular
                 focusProject : $scope.focusProject
               });
 
-              $scope.updateMapProject();
+              $scope.updateMapProject($scope.focusProject);
             }).error(function(data, status, headers, config) {
               $rootScope.handleHttpError(data, status, headers, config);
             });
@@ -1554,7 +1562,7 @@ angular
             $scope.focusProject.mapPrinciple.push(data);
 
             // update the map project
-            $scope.updateMapProject().then(function() {
+            $scope.updateMapProject($scope.focusProject).then(function() {
               $scope.resetPrincipleFilter();
             });
 
@@ -1577,7 +1585,7 @@ angular
             key : 'focusProject',
             focusProject : $scope.focusProject
           });
-          $scope.updateMapProject();
+          $scope.updateMapProject($scope.focusProject);
         };
 
         $scope.addAgeRange = function(ageRange) {
@@ -1589,7 +1597,7 @@ angular
             key : 'focusProject',
             focusProject : $scope.focusProject
           });
-          $scope.updateMapProject();
+          $scope.updateMapProject($scope.focusProject);
         };
 
         $scope.submitNewMapAgeRange = function(ageRange) {
@@ -1616,7 +1624,7 @@ angular
             $scope.focusProject.mapAgeRange.push(data);
 
             // update the map project
-            $scope.updateMapProject().then(function() {
+            $scope.updateMapProject($scope.focusProject).then(function() {
               $scope.resetAgeRangeFilter();
             });
 
@@ -1630,7 +1638,7 @@ angular
           var localErrorMessages = $scope.focusProject.errorMessages;
           localErrorMessages.push(message);
           $scope.focusProject.errorMessages = localErrorMessages;
-          $scope.updateMapProject();
+          $scope.updateMapProject($scope.focusProject);
         };
 
         $scope.deleteErrorMessage = function(message) {
@@ -1646,7 +1654,7 @@ angular
             key : 'focusProject',
             focusProject : $scope.focusProject
           });
-          $scope.updateMapProject();
+          $scope.updateMapProject($scope.focusProject);
         };
 
         // ////////////////////////////////////////////
@@ -1901,11 +1909,13 @@ angular
          * Function to update a map project via REST call and update the cached
          * projects
          */
-        $scope.updateMapProject = function() {
+        $scope.updateMapProject = function(project) {
           console.debug('Update map project');
-          // first, add the modified project to the cache
-          localStorageService.add('focusProject', $scope.focusProject);
-
+          // if this is the focus project, add the modified project to the cache, 
+          if($scope.focusProject.name == project.name){
+                localStorageService.add('focusProject', project);
+          }
+          
           var deferred = $q.defer();
 
           $rootScope.glassPane++;
@@ -1913,7 +1923,7 @@ angular
           $http({
             url : root_mapping + 'project/update',
             dataType : 'json',
-            data : $scope.focusProject,
+            data : project,
             method : 'POST',
             headers : {
               'Content-Type' : 'application/json'
@@ -2274,5 +2284,137 @@ angular
             $rootScope.handleHttpError(data, status, headers, config);
           });
         }
+        
+        //hold select list for terminologies and versions.
+        $scope.termLoad = {};
+        $scope.termLoad.version = '';
+        $scope.termLoad.scope = '';        
+        
+        $scope.getTerminologyVersions = function(terminology) {
+
+          $rootScope.glassPane++;
+
+          $http({
+            url : root_content + 'terminology/versions/' + terminology,
+            dataType : 'json',
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            $scope.termLoadVersions = new Array();
+            $scope.termLoadVersionFileNameMap = new Map();
+            
+            for (var i = 0; i < data.TerminologyVersion.length; i++) {
+              $scope.termLoadVersions.push(data.TerminologyVersion[i].version);
+              $scope.termLoad.version = ''; //reset
+              if (terminology != 'SNOMEDCT')
+                $scope.termLoadVersionFileNameMap.set(data.TerminologyVersion[i].version, data.TerminologyVersion[i].awsZipFileName)
+            }
+            $rootScope.glassPane--;
+
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        };        
+        
+        $scope.handleVersionSelection = function(terminology, version) {
+          if (version) {
+            if (terminology == 'SNOMEDCT') {
+              getTerminologyScopes(terminology, version);
+            } else {
+              // All projects are SNOMEDCT at this point, so N/A
+            }
+          }
+        }        
+        
+        $scope.handleScopeSelection = function(terminology, scope) {
+          if (terminology != 'SNOMEDCT')
+            return;
+         
+          // Only valid for SNOMED usage of SCOPE.  
+          $scope.termLoadAwsZipFileName = $scope.termLoadScopeFileNameMap.get(scope);
+        }
+        
+        function getTerminologyScopes(terminology, version) {
+          $rootScope.glassPane++;
+
+          $http(
+            {
+              url : root_content + 'terminology/scope/' + terminology + "/"
+                + version,
+              dataType : 'json',
+              method : 'GET',
+              headers : {
+                'Content-Type' : 'application/json'
+              }
+            }).success(function(data) {
+            $scope.termLoadScopes = new Array();
+            $scope.termLoadScopeFileNameMap = new Map();
+
+            for (var i = 0; i < data.TerminologyVersion.length; i++) {
+              $scope.termLoadScopes.push(data.TerminologyVersion[i].scope);
+              $scope.termLoadScopeFileNameMap.set(data.TerminologyVersion[i].scope, data.TerminologyVersion[i].awsZipFileName)
+            }
+            $rootScope.glassPane--;
+
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        };        
+        
+        // reload terminology from AWS Rf2 snapshot
+        $scope.reloadTerminologyAwsRf2Snapshot = function (terminology, version, scope) {
+          $rootScope.glassPane++;
+
+          var errors = '';
+          var removeVersion = $scope.focusProject.sourceTerminologyVersion;
+          var loadVersion = version.replace(' ', '') + (scope == 'Production' ? '' : '_' + scope);
+            if (removeVersion == loadVersion){
+                errors += terminology + ' ' + loadVersion + ' is already loaded in the application.\n';
+            }
+
+          console.log("errors", errors);
+          
+          if (errors.length > 0) {
+            alert(errors);
+            $rootScope.glassPane--;
+            return;
+          }
+          
+          var queryString = '?';
+          queryString += "awsZipFileName=" + $scope.termLoadAwsZipFileName;
+
+          queryString += "&treePositions=true&sendNotification=true";
+          
+          console.log("CCC: ", terminology, version, queryString);
+          // rest call
+          $http({
+            url: root_content + "terminology/reload/aws/rf2/snapshot/" 
+              + terminology + "/" + removeVersion + "/" + loadVersion + "/" + queryString,
+            method: "PUT",
+            data: null, 
+            headers: { 'Content-Type' : 'text/plain' }
+            }).success(function(data) {
+              // If successful, update all projects where the sourceTerminology was the one just reloaded
+              var mapProjects = $scope.mapProjects;
+
+              for (var i = 0; i < mapProjects.length; i++) {
+                if (mapProjects[i].sourceTerminologyVersion == removeVersion) {
+                  mapProjects[i].sourceTerminologyVersion = loadVersion;
+                  $scope.updateMapProject(mapProjects[i]);
+                }
+              }
+              
+              
+              $rootScope.glassPane--;
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+        }; 
         
       } ]);
