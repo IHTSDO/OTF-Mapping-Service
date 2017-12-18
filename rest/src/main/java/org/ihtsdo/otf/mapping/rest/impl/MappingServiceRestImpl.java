@@ -5901,11 +5901,11 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       
       // Determine year
       int year = Calendar.getInstance().get(Calendar.YEAR);
-      String currentYear = Integer.toString(year);
-      String nextYear = Integer.toString(year + 1);
       String lastYear = Integer.toString(year - 1);
       // Only keep alpha and beta from most recent version
       String mostRecentAlphaBeta = "";
+      // Map to ensure only latest version of a file is included in list
+      Map<String, String> shortNameToFullDateMap = new HashMap<>();
 
       // TODO: Note: Logic here should be moved into a ProjectSpecificHandler
       if (mapProject.getDestinationTerminology().equals("ICPC")
@@ -5924,10 +5924,13 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
         int i = 1;
         for (S3ObjectSummary sum : summaries) {
           String fileName = sum.getKey();
-          Matcher m = Pattern.compile("[0-9]{8}").matcher(fileName);
-          String fileYear = ""; String fileDate = "";
+          Matcher m = Pattern.compile("[0-9T]{15}").matcher(fileName);
+          String fileYear = ""; 
+          String fileDate = "";
+          String fullFileDate = "";
           while (m.find()) {
-            fileDate = m.group();
+            fullFileDate = m.group();
+            fileDate = fullFileDate.substring(0,8);
             fileYear = fileDate.substring(0, 4);
           }
           if (fileYear.compareTo(lastYear) < 0) {
@@ -5973,10 +5976,13 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
               .info("CCC start with " + j++ + ": " + summaries.size());
           for (S3ObjectSummary sum : summaries) {
             String fileName = sum.getKey();
-            Matcher m = Pattern.compile("[0-9]{8}").matcher(fileName);
-            String fileYear = ""; String fileDate = "";
+            Matcher m = Pattern.compile("[0-9T]{15}").matcher(fileName);
+            String fileYear = ""; 
+            String fileDate = "";
+            String fullFileDate = "";
             while (m.find()) {
-              fileDate = m.group();
+              fullFileDate = m.group();
+              fileDate = fullFileDate.substring(0,8);
               fileYear = fileDate.substring(0, 4);
             }
             // last year okay, but not before that
@@ -5996,6 +6002,15 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
                   .info("Summary #" + i++ + " with: " + sum.getKey());
               SearchResult result = new SearchResultJpa();
               String shortName = fileName.substring(fileName.lastIndexOf('/'));
+              if (shortNameToFullDateMap.containsKey(shortName)) {
+                String savedFullFileDate = shortNameToFullDateMap.get(shortName);
+                // if current one is later, save this one into the map
+                if (savedFullFileDate.compareTo(fullFileDate) < 0) {
+                  shortNameToFullDateMap.put(shortName, fullFileDate);
+                }
+              } else {
+                shortNameToFullDateMap.put(shortName, fullFileDate);
+              }
               if (fileName.toLowerCase().contains("alpha")) {
                 result.setTerminology("ALPHA");
                 if (fileDate.compareTo(mostRecentAlphaBeta) > 0) {
@@ -6029,12 +6044,20 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
         }
       });
       
-      // only keep finals and most recent alpha/betas
+      // only keep most recent finals and most recent alpha/betas
       SearchResultList resultsToKeep = new SearchResultListJpa();
-      for (SearchResult result : searchResults.getSearchResults()) {
+      for (SearchResult result : searchResults.getSearchResults()) {  
+        // must be final or the most current release alpha/beta
         if (result.getTerminology().equals("FINAL") || 
             result.getTerminologyVersion().equals(mostRecentAlphaBeta)) {
-          resultsToKeep.addSearchResult(result);
+          // also must be the most recent version of the release file
+          if (shortNameToFullDateMap.containsKey(result.getValue())) {
+            if (result.getValue2().contains(shortNameToFullDateMap.get(result.getValue()))) {
+              resultsToKeep.addSearchResult(result);
+            }
+          } else {
+            resultsToKeep.addSearchResult(result);
+          }
         }
       }
 
