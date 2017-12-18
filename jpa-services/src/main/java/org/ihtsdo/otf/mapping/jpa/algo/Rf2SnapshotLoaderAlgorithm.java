@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -19,6 +20,7 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.algo.Algorithm;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
+import org.ihtsdo.otf.mapping.jpa.helpers.LoggerUtility;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.RootServiceJpa;
@@ -123,6 +125,12 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
 	/** the number of objects to create before committing. */
 	int commitCt = 1000;
+		   
+    /** The log. */
+    private static Logger log;
+    
+    /** The log file. */
+    private File logFile;
 
 	/**
 	 * Instantiates an empty {@link Rf2SnapshotLoaderAlgorithm}.
@@ -133,11 +141,29 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 	public Rf2SnapshotLoaderAlgorithm(String terminology, String version, String inputDir,
 			Boolean treePositions, Boolean sendNotification) throws Exception {
 		super();
-		this.terminology = terminology;
-		this.version = version;
+
+		//spaces and trim spaces
+		this.terminology = removeSpaces(terminology);
+		this.version = removeSpaces(version);
 		this.inputDir = inputDir;
 		this.treePositions = treePositions;
 		this.sendNotification = sendNotification;
+		
+        //initialize logger
+        String rootPath = ConfigUtility.getConfigProperties()
+              .getProperty("map.principle.source.document.dir");
+        if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
+          rootPath += "/";
+        }
+        rootPath += "logs";
+        File logDirectory = new File(rootPath);
+        if (!logDirectory.exists()) {
+            logDirectory.mkdir();
+        }
+        
+        logFile = new File(logDirectory, "load_" + terminology + ".log");
+        LoggerUtility.setConfiguration("load", logFile.getAbsolutePath());
+        this.log = LoggerUtility.getLogger("load");
 	}
 
 	/**
@@ -151,13 +177,18 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 	 */
 	public void compute() throws Exception {
 
+	  // clear log before starting process
+      PrintWriter writer = new PrintWriter(logFile);
+      writer.print("");
+      writer.close(); 
+      
 		Properties config = ConfigUtility.getConfigProperties();
 
 		// check that notifications can be sent if requested
 		String notificationRecipients = config
 				.getProperty("send.notification.recipients");
 		if (!sendNotification) {
-			Logger.getLogger(getClass()).info(
+			log.info(
 					"No notifications will be sent as a result of workflow computation.");
 		}
 		if (sendNotification
@@ -165,7 +196,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 			throw new Exception(
 					"Email notification was requested, but no recipients were specified.");
 		} else {
-			Logger.getLogger(getClass())
+			log
 					.info("Request to send notification email for any errors to recipients: "
 							+ notificationRecipients);
 		}
@@ -196,24 +227,24 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 		// Determine version
 		//
 
-		Logger.getLogger(getClass()).info("  terminology = " + terminology);
-		Logger.getLogger(getClass()).info("  version = " + version);
+		log.info("  terminology = " + terminology);
+		log.info("  version = " + version);
 
 		// output relevant properties/settings to console
-		Logger.getLogger(getClass()).info("  Default preferred name settings:");
-		Logger.getLogger(getClass()).info("    typeId = " + dpnTypeId);
-		Logger.getLogger(getClass()).info("    refsetId = " + dpnrefsetId);
-		Logger.getLogger(getClass())
+		log.info("  Default preferred name settings:");
+		log.info("    typeId = " + dpnTypeId);
+		log.info("    refsetId = " + dpnrefsetId);
+		log
 				.info("    acceptabilityId = " + dpnAcceptabilityId);
-		Logger.getLogger(getClass()).info("  Objects committed in blocks of "
+		log.info("  Objects committed in blocks of "
 				+ Integer.toString(commitCt));
 
 		// Log memory usage
 		Runtime runtime = Runtime.getRuntime();
-		Logger.getLogger(getClass()).info("MEMORY USAGE:");
-		Logger.getLogger(getClass()).info(" Total: " + runtime.totalMemory());
-		Logger.getLogger(getClass()).info(" Free:  " + runtime.freeMemory());
-		Logger.getLogger(getClass()).info(" Max:   " + runtime.maxMemory());
+		log.info("MEMORY USAGE:");
+		log.info(" Total: " + runtime.totalMemory());
+		log.info(" Free:  " + runtime.freeMemory());
+		log.info(" Max:   " + runtime.maxMemory());
 
 		SimpleDateFormat ft = new SimpleDateFormat("hh:mm:ss a"); // format for
 
@@ -222,10 +253,10 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 			// Prepare sorted input files
 			File sortedFileDir = new File(coreInputDir, "/RF2-sorted-temp/");
 
-			Logger.getLogger(getClass()).info("  Sorting input files...");
+			log.info("  Sorting input files...");
 			long startTime = System.nanoTime();
 			sortRf2Files(coreInputDir, sortedFileDir);
-			Logger.getLogger(getClass()).info(
+			log.info(
 					"      complete in " + getElapsedTime(startTime) + "s");
 
 			// Open readers
@@ -233,69 +264,69 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
 			// load Concepts
 			if (conceptsByConcept != null) {
-				Logger.getLogger(getClass()).info("  Loading Concepts...");
+				log.info("  Loading Concepts...");
 				startTime = System.nanoTime();
 				loadConcepts(terminology, version);
-				Logger.getLogger(getClass()).info(String.format(elapsedTime,
+				log.info(String.format(elapsedTime,
 						getElapsedTime(startTime), ft.format(new Date())));
 			}
 
 			// load Descriptions and Language Ref Set Members
 			if (descriptionsByDescription != null
 					&& languageRefsetsByDescription != null) {
-				Logger.getLogger(getClass())
+				log
 						.info("  Loading Descriptions and LanguageRefSets...");
 				startTime = System.nanoTime();
 				loadDescriptionsAndLanguageRefSets(terminology, version);
-				Logger.getLogger(getClass()).info(String.format(elapsedTime,
+				log.info(String.format(elapsedTime,
 						getElapsedTime(startTime), ft.format(new Date())));
 
 				// Set default preferred names
-				Logger.getLogger(getClass()).info(
+				log.info(
 						"  Setting default preferred names for all concepts...");
 				startTime = System.nanoTime();
 				setDefaultPreferredNames();
-				Logger.getLogger(getClass()).info(String.format(elapsedTime,
+				log.info(String.format(elapsedTime,
 						getElapsedTime(startTime), ft.format(new Date())));
 
 			}
 
 			// Load Relationships
 			if (relationshipsBySourceConcept != null) {
-				Logger.getLogger(getClass()).info("  Loading Relationships...");
+				log.info("  Loading Relationships...");
 				startTime = System.nanoTime();
 				loadRelationships(terminology, version);
-				Logger.getLogger(getClass()).info(String.format(elapsedTime,
+				log.info(String.format(elapsedTime,
 						getElapsedTime(startTime), ft.format(new Date())));
 			}
 
 			// Load Simple RefSets (Content)
 			if (simpleRefsetsByConcept != null) {
-				Logger.getLogger(getClass())
+				log
 						.info("  Loading Simple RefSets...");
 				startTime = System.nanoTime();
 				loadSimpleRefSets(terminology, version);
-				Logger.getLogger(getClass()).info(String.format(elapsedTime,
+				log.info(String.format(elapsedTime,
 						getElapsedTime(startTime), ft.format(new Date())));
 			}
 
 			// Load SimpleMapRefSets
 			if (simpleMapRefsetsByConcept != null) {
-				Logger.getLogger(getClass())
+				log
 						.info("  Loading SimpleMap RefSets...");
 				startTime = System.nanoTime();
 				loadSimpleMapRefSets(terminology, version);
-				Logger.getLogger(getClass()).info(String.format(elapsedTime,
+				log.info(String.format(elapsedTime,
 						getElapsedTime(startTime), ft.format(new Date())));
 			}
 
 			// Load ComplexMapRefSets
 			// if (complexMapRefsetsByConcept != null) {
-			// Logger.getLogger(getClass()).info(" Loading ComplexMap
+			// log.info(" Loading ComplexMap
 			// RefSets...");
 			// startTime = System.nanoTime();
 			// loadComplexMapRefSets();
-			// Logger.getLogger(getClass()).info(" elapsed time = " +
+			// log.info(" elapsed time = " +
 			// getElapsedTime(startTime) +
 			// "s"
 			// + " (Ended at " + ft.format(new Date()) + ")");
@@ -303,21 +334,21 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
 			// Load ExtendedMapRefSets
 			if (extendedMapRefsetsByConcept != null) {
-				Logger.getLogger(getClass())
+				log
 						.info("  Loading ExtendedMap RefSets...");
 				startTime = System.nanoTime();
 				loadExtendedMapRefSets(terminology, version);
-				Logger.getLogger(getClass()).info(String.format(elapsedTime,
+				log.info(String.format(elapsedTime,
 						getElapsedTime(startTime), ft.format(new Date())));
 			}
 
 			// Load AttributeValue RefSets (Content)
 			if (attributeRefsetsByDescription != null) {
-				Logger.getLogger(getClass())
+				log
 						.info("  Loading AttributeValue RefSets...");
 				startTime = System.nanoTime();
 				loadAttributeValueRefSets(terminology, version);
-				Logger.getLogger(getClass()).info(String.format(elapsedTime,
+				log.info(String.format(elapsedTime,
 						getElapsedTime(startTime), ft.format(new Date())));
 			}
 
@@ -334,8 +365,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 						.getHierarchicalRelationshipTypes(terminology, version);
 				String isaRelType = hierRelTypeMap.keySet().iterator().next()
 						.toString();
-				Logger.getLogger(getClass())
-						.info("  Start creating tree positions.");
+				log.info("  Start creating tree positions.");
 				metadataService.close();
 
 				final ContentService contentService = new ContentServiceJpa();
@@ -345,8 +375,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 				String conceptId = isaRelType;
 				String rootId = null;
 				OUTER: while (true) {
-					Logger.getLogger(getClass())
-							.info("    Walk up tree from " + conceptId);
+					log.info("    Walk up tree from " + conceptId);
 					Concept c = contentService.getConcept(conceptId,
 							terminology, version);
 					for (Relationship r : c.getRelationships()) {
@@ -360,8 +389,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 					rootId = conceptId;
 					break;
 				}
-				Logger.getLogger(getClass())
-						.info("    Compute tree from rootId " + conceptId);
+				log.info("    Compute tree from rootId " + conceptId);
 				ValidationResult result = contentService.computeTreePositions(
 						terminology, version, isaRelType, rootId);
 				if (sendNotification && !result.isValid()) {
@@ -382,6 +410,10 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
 		} catch (Exception e) {
 			e.printStackTrace();
+			log.info(e.getMessage());
+            for (StackTraceElement element : e.getStackTrace()) {
+              log.info(element.toString());
+            }
 			throw e;
 		}
 
@@ -522,11 +554,11 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
 			// log reason for sort
 			if (!outputDir.exists()) {
-				Logger.getLogger(getClass()).info(
+				log.info(
 						"     No sorted files exist -- sorting RF2 files");
 			} else if (getLastModified(outputDir) < getLastModified(
 					coreInputDir)) {
-				Logger.getLogger(getClass()).info(
+				log.info(
 						"     Sorted files older than input files -- sorting RF2 files");
 			}
 
@@ -542,7 +574,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
 			// attempt to make sorted files directory
 			if (outputDir.mkdir()) {
-				Logger.getLogger(getClass())
+				log
 						.info("  Creating new sorted files folder "
 								+ outputDir.toString());
 			} else {
@@ -552,7 +584,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 			}
 
 		} else {
-			Logger.getLogger(getClass()).info(
+			log.info(
 					"    Sorted files exist and are up to date.  No sorting required");
 			return;
 		}
@@ -575,7 +607,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
 		// Termionlogy dir
 		File coreTerminologyInputDir = new File(coreInputDir, "/Terminology/");
-		Logger.getLogger(getClass())
+		log
 				.info("    Terminology dir = "
 						+ coreTerminologyInputDir.toString() + " "
 						+ coreTerminologyInputDir.exists());
@@ -588,7 +620,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 				coreRelInputFile = f;
 			}
 		}
-		Logger.getLogger(getClass())
+		log
 				.info("      Relationships file = "
 						+ coreRelInputFile.toString() + " "
 						+ coreRelInputFile.exists());
@@ -601,7 +633,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 				coreConceptInputFile = f;
 			}
 		}
-		Logger.getLogger(getClass())
+		log
 				.info("      Concepts file = " + coreConceptInputFile.toString()
 						+ " " + coreConceptInputFile.exists());
 
@@ -613,7 +645,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 				coreDescriptionInputFile = f;
 			}
 		}
-		Logger.getLogger(getClass())
+		log
 				.info("      Descriptions file = "
 						+ coreDescriptionInputFile.toString() + " "
 						+ coreDescriptionInputFile.exists());
@@ -627,7 +659,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 			}
 		}
 		if (coreIdentifierInputFile != null) {
-			Logger.getLogger(getClass())
+			log
 					.info("      Identifiers file = "
 							+ coreIdentifierInputFile.toString() + " "
 							+ coreIdentifierInputFile.exists());
@@ -642,7 +674,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 			}
 		}
 		if (coreTextDefinitionInputFile != null) {
-			Logger.getLogger(getClass())
+			log
 					.info("      Text definitions file = "
 							+ coreTextDefinitionInputFile.toString() + " "
 							+ coreTextDefinitionInputFile.exists());
@@ -651,7 +683,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 		// Refset/Content dir
 		File coreRefsetInputDir = new File(coreInputDir, "/Refset/");
 		File coreContentInputDir = new File(coreRefsetInputDir, "/Content/");
-		Logger.getLogger(getClass())
+		log
 				.info("    Refset/Content dir = "
 						+ coreContentInputDir.toString() + " "
 						+ coreContentInputDir.exists());
@@ -664,22 +696,22 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 				coreSimpleRefsetInputFile = f;
 			}
 		}
-		Logger.getLogger(getClass())
+		log
 				.info("      Simple refset file = "
 						+ coreSimpleRefsetInputFile.toString() + " "
 						+ coreSimpleRefsetInputFile.exists());
 
 		// Association reference file
 		for (File f : coreContentInputDir.listFiles()) {
-			if (f.getName().contains("AssociationReference")) {
+			if (f.getName().contains("Association")) {
 				if (coreAssociationReferenceInputFile != null)
 					throw new Exception(
-							"Multiple Association Reference Files!");
+							"Multiple Association Files!");
 				coreAssociationReferenceInputFile = f;
 			}
 		}
-		Logger.getLogger(getClass())
-				.info("      Association reference file = "
+		log
+				.info("      Association file = "
 						+ coreAssociationReferenceInputFile.toString() + " "
 						+ coreAssociationReferenceInputFile.exists());
 
@@ -691,14 +723,14 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 				coreAttributeValueInputFile = f;
 			}
 		}
-		Logger.getLogger(getClass())
+		log
 				.info("      Attribute value file = "
 						+ coreAttributeValueInputFile.toString() + " "
 						+ coreAttributeValueInputFile.exists());
 
 		// Refset/Map dir
 		File coreCrossmapInputDir = new File(coreRefsetInputDir, "/Map/");
-		Logger.getLogger(getClass())
+		log
 				.info("    Refset/Map dir = " + coreCrossmapInputDir.toString()
 						+ " " + coreCrossmapInputDir.exists());
 
@@ -711,7 +743,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 		// }
 		// }
 		// if (coreComplexMapInputFile != null) {
-		// Logger.getLogger(getClass()).info(
+		// log.info(
 		// " Complex map file = " + coreComplexMapInputFile.toString()
 		// + " " + coreComplexMapInputFile.exists());
 		// }
@@ -725,7 +757,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 			}
 		}
 		if (coreExtendedMapInputFile != null) {
-			Logger.getLogger(getClass())
+			log
 					.info("      Extended map file = "
 							+ coreExtendedMapInputFile.toString() + " "
 							+ coreExtendedMapInputFile.exists());
@@ -740,7 +772,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 			}
 		}
 		if (coreSimpleMapInputFile != null) {
-			Logger.getLogger(getClass())
+			log
 					.info("      Simple map file = "
 							+ coreSimpleMapInputFile.toString() + " "
 							+ coreSimpleMapInputFile.exists());
@@ -748,7 +780,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
 		// Refset/Langauge dir
 		File coreLanguageInputDir = new File(coreRefsetInputDir, "/Language/");
-		Logger.getLogger(getClass())
+		log
 				.info("    Refset/Language dir = "
 						+ coreLanguageInputDir.toString() + " "
 						+ coreLanguageInputDir.exists());
@@ -761,14 +793,14 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 				coreLanguageInputFile = f;
 			}
 		}
-		Logger.getLogger(getClass())
+		log
 				.info("      Language file = "
 						+ coreLanguageInputFile.toString() + " "
 						+ coreLanguageInputFile.exists());
 
 		// Refset/Metadata dir
 		File coreMetadataInputDir = new File(coreRefsetInputDir, "/Metadata/");
-		Logger.getLogger(getClass())
+		log
 				.info("    Refset/Metadata dir = "
 						+ coreMetadataInputDir.toString() + " "
 						+ coreMetadataInputDir.exists());
@@ -797,7 +829,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 		File extendedMapRefsetsByConceptsFile = new File(outputDir,
 				"extended_map_refsets_by_concept.sort");
 
-		Logger.getLogger(getClass()).info("      Sort files");
+		log.info("      Sort files");
 		// Sort concept files
 		if (coreConceptInputFile != null) {
 			sortRf2File(coreConceptInputFile, conceptsByConceptFile, 0);
@@ -816,7 +848,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 					descriptionsTextByDescriptionFile, 0);
 
 			// merge the two description files
-			Logger.getLogger(getClass())
+			log
 					.info("        Merging description files...");
 			File mergedDesc = mergeSortedFiles(
 					descriptionsTextByDescriptionFile,
@@ -901,7 +933,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 			}
 		};
 
-		Logger.getLogger(getClass())
+		log
 				.info("        Sorting " + fileIn.toString() + "  into "
 						+ fileOut.toString() + " by column "
 						+ Integer.toString(sortColumn));
@@ -1044,7 +1076,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
 				// regularly commit at intervals
 				if (++objectCt % commitCt == 0) {
-					Logger.getLogger(getClass())
+					log
 							.info("    commit = " + objectCt);
 					contentService.commit();
 					contentService.beginTransaction();
@@ -1060,10 +1092,10 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
 		// print memory information
 		Runtime runtime = Runtime.getRuntime();
-		Logger.getLogger(getClass()).info("MEMORY USAGE:");
-		Logger.getLogger(getClass()).info(" Total: " + runtime.totalMemory());
-		Logger.getLogger(getClass()).info(" Free:  " + runtime.freeMemory());
-		Logger.getLogger(getClass()).info(" Max:   " + runtime.maxMemory());
+		log.info("MEMORY USAGE:");
+		log.info(" Total: " + runtime.totalMemory());
+		log.info(" Free:  " + runtime.freeMemory());
+		log.info(" Max:   " + runtime.maxMemory());
 
 	}
 
@@ -1116,21 +1148,21 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
 					// regularly commit at intervals
 					if (++objectCt % commitCt == 0) {
-						Logger.getLogger(getClass())
+						log
 								.info("    commit = " + objectCt);
 						contentService.commit();
 						contentService.beginTransaction();
 					}
 				} else {
 					if (sourceConcept == null) {
-						Logger.getLogger(getClass())
+						log
 								.info("Relationship "
 										+ relationship.getTerminologyId()
 										+ " references non-existent source concept "
 										+ fields[4]);
 					}
 					if (destinationConcept == null) {
-						Logger.getLogger(getClass())
+						log
 								.info("Relationship "
 										+ relationship.getTerminologyId()
 										+ " references non-existent destination concept "
@@ -1147,10 +1179,10 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
 		// print memory information
 		Runtime runtime = Runtime.getRuntime();
-		Logger.getLogger(getClass()).info("MEMORY USAGE:");
-		Logger.getLogger(getClass()).info(" Total: " + runtime.totalMemory());
-		Logger.getLogger(getClass()).info(" Free:  " + runtime.freeMemory());
-		Logger.getLogger(getClass()).info(" Max:   " + runtime.maxMemory());
+		log.info("MEMORY USAGE:");
+		log.info(" Total: " + runtime.totalMemory());
+		log.info(" Free:  " + runtime.freeMemory());
+		log.info(" Max:   " + runtime.maxMemory());
 	}
 
 	/**
@@ -1191,7 +1223,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 					.compareTo(description.getTerminologyId()) < 0
 					&& !language.getTerminologyId().equals("-1")) {
 
-				Logger.getLogger(getClass())
+				log
 						.info("     " + "Language Ref Set "
 								+ language.getTerminologyId()
 								+ " references non-existent description "
@@ -1223,12 +1255,12 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 					// retrieve the concept for this description
 					concept = description.getConcept();
 					if (defaultPreferredNames.get(concept.getId()) != null) {
-						Logger.getLogger(getClass())
+						log
 								.info("Multiple default preferred names for concept "
 										+ concept.getTerminologyId());
-						Logger.getLogger(getClass()).info("  " + "Existing: "
+						log.info("  " + "Existing: "
 								+ defaultPreferredNames.get(concept.getId()));
-						Logger.getLogger(getClass()).info(
+						log.info(
 								"  " + "Replaced: " + description.getTerm());
 					}
 					defaultPreferredNames.put(concept.getId(),
@@ -1252,7 +1284,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
 			// regularly commit at intervals
 			if (descCt % commitCt == 0) {
-				Logger.getLogger(getClass()).info("    commit = " + descCt);
+				log.info("    commit = " + descCt);
 				contentService.commit();
 				contentService.beginTransaction();
 			}
@@ -1263,19 +1295,19 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 		contentService.commit();
 		contentService.close();
 
-		Logger.getLogger(getClass())
+		log
 				.info("      " + descCt + " descriptions loaded");
-		Logger.getLogger(getClass())
+		log
 				.info("      " + langCt + " language ref sets loaded");
-		Logger.getLogger(getClass()).info("      " + skipCt
+		log.info("      " + skipCt
 				+ " language ref sets skipped (no description)");
 
 		// print memory information
 		Runtime runtime = Runtime.getRuntime();
-		Logger.getLogger(getClass()).info("MEMORY USAGE:");
-		Logger.getLogger(getClass()).info(" Total: " + runtime.totalMemory());
-		Logger.getLogger(getClass()).info(" Free:  " + runtime.freeMemory());
-		Logger.getLogger(getClass()).info(" Max:   " + runtime.maxMemory());
+		log.info("MEMORY USAGE:");
+		log.info(" Total: " + runtime.totalMemory());
+		log.info(" Free:  " + runtime.freeMemory());
+		log.info(" Max:   " + runtime.maxMemory());
 	}
 
 	/**
@@ -1308,7 +1340,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 			}
 			contentService.updateConcept(dbConcept);
 			if (++objectCt % commitCt == 0) {
-				Logger.getLogger(getClass()).info("    commit = " + objectCt);
+				log.info("    commit = " + objectCt);
 				contentService.commit();
 				contentService.beginTransaction();
 			}
@@ -1318,10 +1350,10 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
 		// Log memory information
 		Runtime runtime = Runtime.getRuntime();
-		Logger.getLogger(getClass()).info("MEMORY USAGE:");
-		Logger.getLogger(getClass()).info(" Total: " + runtime.totalMemory());
-		Logger.getLogger(getClass()).info(" Free:  " + runtime.freeMemory());
-		Logger.getLogger(getClass()).info(" Max:   " + runtime.maxMemory());
+		log.info("MEMORY USAGE:");
+		log.info(" Total: " + runtime.totalMemory());
+		log.info(" Free:  " + runtime.freeMemory());
+		log.info(" Max:   " + runtime.maxMemory());
 
 	}
 
@@ -1366,7 +1398,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 				if (concept != null) {
 					description.setConcept(concept);
 				} else {
-					Logger.getLogger(getClass()).info("Description "
+					log.info("Description "
 							+ description.getTerminologyId()
 							+ " references non-existent concept " + fields[4]);
 				}
@@ -1500,13 +1532,13 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
 					// regularly commit at intervals
 					if (++objectCt % commitCt == 0) {
-						Logger.getLogger(getClass())
+						log
 								.info("    commit = " + objectCt);
 						contentService.commit();
 						contentService.beginTransaction();
 					}
 				} else {
-					Logger.getLogger(getClass())
+					log
 							.debug("attributeValueRefSetMember "
 									+ attributeValueRefSetMember
 											.getTerminologyId()
@@ -1522,10 +1554,10 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
 		// print memory information
 		Runtime runtime = Runtime.getRuntime();
-		Logger.getLogger(getClass()).info("MEMORY USAGE:");
-		Logger.getLogger(getClass()).info(" Total: " + runtime.totalMemory());
-		Logger.getLogger(getClass()).info(" Free:  " + runtime.freeMemory());
-		Logger.getLogger(getClass()).info(" Max:   " + runtime.maxMemory());
+		log.info("MEMORY USAGE:");
+		log.info(" Total: " + runtime.totalMemory());
+		log.info(" Free:  " + runtime.freeMemory());
+		log.info(" Max:   " + runtime.maxMemory());
 	}
 
 	/**
@@ -1578,13 +1610,13 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
 					// regularly commit at intervals
 					if (++objectCt % commitCt == 0) {
-						Logger.getLogger(getClass())
+						log
 								.info("    commit = " + objectCt);
 						contentService.commit();
 						contentService.beginTransaction();
 					}
 				} else {
-					Logger.getLogger(getClass()).info("simpleRefSetMember "
+					log.info("simpleRefSetMember "
 							+ simpleRefSetMember.getTerminologyId()
 							+ " references non-existent concept " + fields[5]);
 				}
@@ -1597,10 +1629,10 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
 		// print memory information
 		Runtime runtime = Runtime.getRuntime();
-		Logger.getLogger(getClass()).info("MEMORY USAGE:");
-		Logger.getLogger(getClass()).info(" Total: " + runtime.totalMemory());
-		Logger.getLogger(getClass()).info(" Free:  " + runtime.freeMemory());
-		Logger.getLogger(getClass()).info(" Max:   " + runtime.maxMemory());
+		log.info("MEMORY USAGE:");
+		log.info(" Total: " + runtime.totalMemory());
+		log.info(" Free:  " + runtime.freeMemory());
+		log.info(" Max:   " + runtime.maxMemory());
 	}
 
 	/**
@@ -1653,13 +1685,13 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
 					// regularly commit at intervals
 					if (++objectCt % commitCt == 0) {
-						Logger.getLogger(getClass())
+						log
 								.info("    commit = " + objectCt);
 						contentService.commit();
 						contentService.beginTransaction();
 					}
 				} else {
-					Logger.getLogger(getClass()).info("simpleMapRefSetMember "
+					log.info("simpleMapRefSetMember "
 							+ simpleMapRefSetMember.getTerminologyId()
 							+ " references non-existent concept " + fields[5]);
 				}
@@ -1672,10 +1704,10 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
 		// print memory information
 		Runtime runtime = Runtime.getRuntime();
-		Logger.getLogger(getClass()).info("MEMORY USAGE:");
-		Logger.getLogger(getClass()).info(" Total: " + runtime.totalMemory());
-		Logger.getLogger(getClass()).info(" Free:  " + runtime.freeMemory());
-		Logger.getLogger(getClass()).info(" Max:   " + runtime.maxMemory());
+		log.info("MEMORY USAGE:");
+		log.info(" Total: " + runtime.totalMemory());
+		log.info(" Free:  " + runtime.freeMemory());
+		log.info(" Max:   " + runtime.maxMemory());
 	}
 
 	/**
@@ -1728,9 +1760,9 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 	 * contentService.addComplexMapRefSetMember(complexMapRefSetMember);
 	 * 
 	 * // regularly commit at intervals if (++objectCt % commitCt == 0) {
-	 * Logger.getLogger(getClass()).info("    commit = " + objectCt);
+	 * log.info("    commit = " + objectCt);
 	 * contentService.commit(); contentService.beginTransaction(); } } else {
-	 * Logger.getLogger(getClass()).info("complexMapRefSetMember " +
+	 * log.info("complexMapRefSetMember " +
 	 * complexMapRefSetMember.getTerminologyId() +
 	 * " references non-existent concept " + fields[5]); }
 	 * 
@@ -1740,10 +1772,10 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 	 * contentService.close();
 	 * 
 	 * // print memory information Runtime runtime = Runtime.getRuntime();
-	 * Logger.getLogger(getClass()).info("MEMORY USAGE:");
-	 * Logger.getLogger(getClass()).info(" Total: " + runtime.totalMemory());
-	 * Logger.getLogger(getClass()).info(" Free:  " + runtime.freeMemory());
-	 * Logger.getLogger(getClass()).info(" Max:   " + runtime.maxMemory()); }
+	 * log.info("MEMORY USAGE:");
+	 * log.info(" Total: " + runtime.totalMemory());
+	 * log.info(" Free:  " + runtime.freeMemory());
+	 * log.info(" Max:   " + runtime.maxMemory()); }
 	 */
 
 	/**
@@ -1812,13 +1844,13 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
 					// regularly commit at intervals
 					if (++objectCt % commitCt == 0) {
-						Logger.getLogger(getClass())
+						log
 								.info("    commit = " + objectCt);
 						contentService.commit();
 						contentService.beginTransaction();
 					}
 				} else {
-					Logger.getLogger(getClass()).info("complexMapRefSetMember "
+					log.info("complexMapRefSetMember "
 							+ complexMapRefSetMember.getTerminologyId()
 							+ " references non-existent concept " + fields[5]);
 				}
@@ -1831,10 +1863,10 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
 		// print memory information
 		Runtime runtime = Runtime.getRuntime();
-		Logger.getLogger(getClass()).info("MEMORY USAGE:");
-		Logger.getLogger(getClass()).info(" Total: " + runtime.totalMemory());
-		Logger.getLogger(getClass()).info(" Free:  " + runtime.freeMemory());
-		Logger.getLogger(getClass()).info(" Max:   " + runtime.maxMemory());
+		log.info("MEMORY USAGE:");
+		log.info(" Total: " + runtime.totalMemory());
+		log.info(" Free:  " + runtime.freeMemory());
+		log.info(" Max:   " + runtime.maxMemory());
 	}
 	
 	/* see superclass */
@@ -1877,7 +1909,14 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 		for (int i = 0; i < listeners.size(); i++) {
 			listeners.get(i).updateProgress(pe);
 		}
-		Logger.getLogger(getClass()).info("    " + pct + "% " + note);
+		log.info("    " + pct + "% " + note);
+	}
+	
+	private String removeSpaces(String string) {
+		if (string != null)
+			return string.replace(" ", "").trim();
+		else
+			return null;
 	}
 
 }

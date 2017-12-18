@@ -34,6 +34,7 @@ import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
+import org.ihtsdo.otf.mapping.helpers.TrackingRecordList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowAction;
@@ -69,15 +70,19 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
+// TODO: Auto-generated Javadoc
 /**
  * REST implementation for workflow service.
+ *
+ * @author ${author}
  */
 @Path("/workflow")
 @Api(value = "/workflow", description = "Operations supporting workflow.")
 @Produces({
     MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 })
-public class WorkflowServiceRestImpl extends RootServiceRestImpl implements WorkflowServiceRest {
+public class WorkflowServiceRestImpl extends RootServiceRestImpl
+    implements WorkflowServiceRest {
 
   /** The security service. */
   private SecurityService securityService;
@@ -94,9 +99,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     securityService = new SecurityServiceJpa();
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#computeWorkflow(java.lang.Long, java.lang.String)
-   */
+  /* see superclass */
   @Override
   @POST
   @Path("/project/id/{id:[0-9][0-9]*}/compute")
@@ -131,9 +134,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#findAvailableConcepts(java.lang.Long, java.lang.String, java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
-  */
+
+  /* see superclass */
   @Override
   @POST
   @Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/availableConcepts")
@@ -214,9 +216,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#findAssignedConcepts(java.lang.Long, java.lang.String, java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
-   */
+
+  /* see superclass */
   @Override
   @POST
   @Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/assignedConcepts")
@@ -309,9 +310,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#findAvailableConflicts(java.lang.Long, java.lang.String, java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
-   */
+
+  /* see superclass */
   @Override
   @POST
   @Path("/project/id/{id:[0-9][0-9]*}/user/id/{userName}/availableConflicts")
@@ -358,10 +358,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       securityService.close();
     }
   }
-  
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#removeFeedbackConversation(org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa, java.lang.String)
-   */
+
+
+  /* see superclass */
   @Override
   @DELETE
   @Path("/conversation/delete")
@@ -380,25 +379,31 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.VIEWER, "remove feedback conversation",
-          securityService);
-      
-      /*for(Feedback feedback:feedbackConversation.getFeedbacks()){
-    	  workflowService.removeFeedback(feedback.getId());
-      }*/
+      user = authorizeApp(authToken, MapUserRole.VIEWER,
+          "remove feedback conversation", securityService);
+
+      /*
+       * for(Feedback feedback:feedbackConversation.getFeedbacks()){
+       * workflowService.removeFeedback(feedback.getId()); }
+       */
       workflowService.removeFeedbackConversation(feedbackConversation.getId());
     } catch (Exception e) {
       LocalException le = new LocalException(
           "Unable to delete feedback conversation. This is likely because the conversation is being used by a map project or map entry");
       handleException(le, "", user, "", "");
     } finally {
-    	workflowService.close();
+      workflowService.close();
       securityService.close();
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#removeFeedback(org.ihtsdo.otf.mapping.jpa.FeedbackJpa, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#removeFeedback(org.
+   * ihtsdo.otf.mapping.jpa.FeedbackJpa, java.lang.String)
    */
   @Override
   @DELETE
@@ -411,8 +416,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
 
     // log call
     Logger.getLogger(WorkflowServiceRestImpl.class)
-        .info("RESTful call (Workflow): /feedback/delete  "
-            + feedback.getId() + " " + feedback.getMessage() + " " + feedback.getIsError() + "  " + feedback.getMapError());
+        .info("RESTful call (Workflow): /feedback/delete  " + feedback.getId()
+            + " " + feedback.getMessage() + " " + feedback.getIsError() + "  "
+            + feedback.getMapError());
 
     String user = null;
     final WorkflowService workflowService = new WorkflowServiceJpa();
@@ -420,11 +426,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       // authorize call
       user = authorizeApp(authToken, MapUserRole.VIEWER, "remove feedback",
           securityService);
-      
-      // If there is one error feedback and it is to be removed, change the type of 
+
+      // If there is one error feedback and it is to be removed, change the type
+      // of
       // the feedback conversation to normal Feedback.
       if (feedback.getIsError()) {
-        FeedbackConversation conversation = workflowService.getFeedback(feedback.getId()).getFeedbackConversation();
+        FeedbackConversation conversation = workflowService
+            .getFeedback(feedback.getId()).getFeedbackConversation();
         int errorCt = 0;
         for (Feedback f : conversation.getFeedbacks()) {
           if (f.getIsError()) {
@@ -436,22 +444,72 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
           workflowService.updateFeedbackConversation(conversation);
         }
       }
-      
+
       // remove the feedback
       workflowService.removeFeedback(feedback.getId());
-      
+
     } catch (Exception e) {
-      LocalException le = new LocalException(
-          "Unable to delete feedback");
+      LocalException le = new LocalException("Unable to delete feedback");
       handleException(le, "", user, "", "");
     } finally {
-    	workflowService.close();
+      workflowService.close();
       securityService.close();
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#findAssignedConflicts(java.lang.Long, java.lang.String, java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
+
+
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/project/id/{id:[0-9][0-9]*}/trackingRecords")
+  @ApiOperation(value = "Get tracking records by project id", notes = "Gets tracking records for the specified project id.", response = TrackingRecordList.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public TrackingRecordList getTrackingRecordsForMapProject(
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(WorkflowServiceRestImpl.class).info(
+        "RESTful call (Workflow): /project/id/" + mapProjectId.toString() + "/trackingRecords");
+
+    final WorkflowService workflowService = new WorkflowServiceJpa();
+    try {
+      // authorize call
+      authorizeProject(mapProjectId, authToken, MapUserRole.VIEWER,
+          "get feedback conversations for terminology id", securityService);
+      
+      final MapProject mapProject = workflowService.getMapProject(mapProjectId);
+      
+      final TrackingRecordList trackingRecordList = workflowService
+          .getTrackingRecordsForMapProject(mapProject);
+      
+      // lazy initialize
+      for (final TrackingRecord trackingRecord : trackingRecordList.getTrackingRecords()) {
+        trackingRecord.getMapRecordIds().size();
+      }
+      
+      return trackingRecordList;
+
+    } catch (Exception e) {
+      handleException(e, "trying to get the tracking records");
+      return null;
+    } finally {
+      workflowService.close();
+      securityService.close();
+    }
+  }
+
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#findAssignedConflicts(
+   * java.lang.Long, java.lang.String, java.lang.String,
+   * org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
    */
   @Override
   @POST
@@ -500,8 +558,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#findAvailableReviewWork(java.lang.Long, java.lang.String, java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#
+   * findAvailableReviewWork(java.lang.Long, java.lang.String, java.lang.String,
+   * org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
    */
   @Override
   @POST
@@ -597,8 +660,14 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#findAvailableQAWork(java.lang.Long, java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#findAvailableQAWork(
+   * java.lang.Long, java.lang.String,
+   * org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
    */
   @Override
   @POST
@@ -649,8 +718,14 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#findAssignedReviewWork(java.lang.Long, java.lang.String, java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#findAssignedReviewWork
+   * (java.lang.Long, java.lang.String, java.lang.String,
+   * org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
    */
   @Override
   @POST
@@ -741,8 +816,14 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#findAssignedQAWork(java.lang.Long, java.lang.String, java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#findAssignedQAWork(
+   * java.lang.Long, java.lang.String, java.lang.String,
+   * org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
    */
   @Override
   @POST
@@ -793,8 +874,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#assignConceptFromMapRecord(java.lang.String, org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#
+   * assignConceptFromMapRecord(java.lang.String,
+   * org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
    */
   @Override
   @POST
@@ -843,8 +929,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#assignConcept(java.lang.Long, java.lang.String, java.lang.String, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#assignConcept(java.
+   * lang.Long, java.lang.String, java.lang.String, java.lang.String)
    */
   @Override
   @POST
@@ -891,8 +982,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#assignBatch(java.lang.Long, java.lang.String, java.util.List, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#assignBatch(java.lang.
+   * Long, java.lang.String, java.util.List, java.lang.String)
    */
   @Override
   @POST
@@ -957,8 +1053,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#unassignConcept(java.lang.Long, java.lang.String, java.lang.String, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#unassignConcept(java.
+   * lang.Long, java.lang.String, java.lang.String, java.lang.String)
    */
   @Override
   @POST
@@ -1010,8 +1111,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#unassignWorkBatch(java.lang.Long, java.lang.String, java.util.List, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#unassignWorkBatch(java
+   * .lang.Long, java.lang.String, java.util.List, java.lang.String)
    */
   @Override
   @POST
@@ -1065,8 +1171,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#finishWork(org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#finishWork(org.ihtsdo.
+   * otf.mapping.jpa.MapRecordJpa, java.lang.String)
    */
   @Override
   @POST
@@ -1120,8 +1231,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
 
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#publishWork(org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#publishWork(org.ihtsdo
+   * .otf.mapping.jpa.MapRecordJpa, java.lang.String)
    */
   @Override
   @POST
@@ -1163,12 +1279,14 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       // execute the workflow call
       workflowService.processWorkflowAction(mapProject, concept, mapUser,
           mapRecord, WorkflowAction.PUBLISH);
-      
+
       // mark all related feedback conversations resolved
-      for (FeedbackConversation conv : workflowService.getFeedbackConversationsForConcept(mapProject.getId(), 
-    	  concept.getTerminologyId()).getFeedbackConversations()) {
-    	  conv.setResolved(true);
-    	  workflowService.updateFeedbackConversation(conv);
+      for (FeedbackConversation conv : workflowService
+          .getFeedbackConversationsForConcept(mapProject.getId(),
+              concept.getTerminologyId())
+          .getFeedbackConversations()) {
+        conv.setResolved(true);
+        workflowService.updateFeedbackConversation(conv);
       }
 
     } catch (Exception e) {
@@ -1182,8 +1300,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
 
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#saveWork(org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#saveWork(org.ihtsdo.
+   * otf.mapping.jpa.MapRecordJpa, java.lang.String)
    */
   @Override
   @POST
@@ -1244,8 +1367,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
 
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#cancelWorkForMapRecord(org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#cancelWorkForMapRecord
+   * (org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
    */
   @Override
   @POST
@@ -1295,8 +1423,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
 
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#createQARecord(org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#createQARecord(org.
+   * ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
    */
   @Override
   @POST
@@ -1354,8 +1487,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
 
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#createQAWork(java.lang.Long, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#createQAWork(java.lang
+   * .Long, java.lang.String)
    */
   @Override
   @POST
@@ -1400,8 +1538,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
 
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#getAssignedMapRecordForConceptAndMapUser(java.lang.Long, java.lang.String, java.lang.String, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#
+   * getAssignedMapRecordForConceptAndMapUser(java.lang.Long, java.lang.String,
+   * java.lang.String, java.lang.String)
    */
   @Override
   @GET
@@ -1439,8 +1582,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
           mapProject.getSourceTerminology(),
           mapProject.getSourceTerminologyVersion());
 
-      final TrackingRecord trackingRecord =
-          workflowService.getTrackingRecord(mapProject, concept.getTerminologyId());
+      final TrackingRecord trackingRecord = workflowService
+          .getTrackingRecord(mapProject, concept.getTerminologyId());
 
       for (final MapRecord mr : workflowService
           .getMapRecordsForTrackingRecord(trackingRecord)) {
@@ -1462,8 +1605,12 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
 
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#isMapRecordFalseConflict(java.lang.Long, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#
+   * isMapRecordFalseConflict(java.lang.Long, java.lang.String)
    */
   @Override
   @GET
@@ -1521,8 +1668,14 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   // SCRUD functions: Feedback
   // ///////////////////////////////////////////////////
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#addFeedbackConversation(org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa, java.lang.String)
+  /* see superclass */
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#
+   * addFeedbackConversation(org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa,
+   * java.lang.String)
    */
   @Override
   @PUT
@@ -1564,8 +1717,12 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#setMapRecordFalseConflict(java.lang.Long, boolean, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#
+   * setMapRecordFalseConflict(java.lang.Long, boolean, java.lang.String)
    */
   @Override
   @POST
@@ -1659,8 +1816,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#updateFeedbackConversation(org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#
+   * updateFeedbackConversation(org.ihtsdo.otf.mapping.jpa.
+   * FeedbackConversationJpa, java.lang.String)
    */
   @Override
   @POST
@@ -1692,15 +1854,15 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
         // hack to prevent duplicate feedback msgs from being added
         Set<String> oldFeedbackMsgs = new HashSet<>();
         for (Feedback f : oldConvo.getFeedbacks()) {
-        	oldFeedbackMsgs.add(f.getMessage());
+          oldFeedbackMsgs.add(f.getMessage());
         }
         // Find the "new" messages from this conversation and add them
         boolean found = false;
         boolean noUpdate = false;
-        for (final Feedback feedback : conversation.getFeedbacks()) {        
+        for (final Feedback feedback : conversation.getFeedbacks()) {
           if (feedback.getId() == null) {
-              // check if "new" msg matches any already on conversation
-        	if (oldFeedbackMsgs.contains(feedback.getMessage())) {
+            // check if "new" msg matches any already on conversation
+            if (oldFeedbackMsgs.contains(feedback.getMessage())) {
               noUpdate = true;
               continue;
             }
@@ -1739,8 +1901,12 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#getFeedbackConversation(java.lang.Long, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#
+   * getFeedbackConversation(java.lang.Long, java.lang.String)
    */
   @Override
   @GET
@@ -1790,8 +1956,14 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#findFeedbackConversationsForMapProjectAndUser(java.lang.Long, java.lang.String, java.lang.String, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#
+   * findFeedbackConversationsForMapProjectAndUser(java.lang.Long,
+   * java.lang.String, java.lang.String,
+   * org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
    */
   @Override
   @POST
@@ -1841,8 +2013,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
 
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#getFeedbackConversationsForTerminologyId(java.lang.Long, java.lang.String, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#
+   * getFeedbackConversationsForTerminologyId(java.lang.Long, java.lang.String,
+   * java.lang.String)
    */
   @Override
   @GET
@@ -1881,8 +2058,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#assignBatchToFixErrorPath(java.lang.Long, java.util.List, java.lang.String, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#
+   * assignBatchToFixErrorPath(java.lang.Long, java.util.List, java.lang.String,
+   * java.lang.String)
    */
   @Override
   @POST
@@ -1894,7 +2076,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  //@CookieParam(value = "userInfo")
+  // @CookieParam(value = "userInfo")
   public ValidationResult assignBatchToFixErrorPath(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long mapProjectId,
     @ApiParam(value = "List of terminology ids to assign", required = true) List<String> terminologyIds,
@@ -2008,8 +2190,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
 
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#sendFeedbackEmail(java.util.List, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#sendFeedbackEmail(java
+   * .util.List, java.lang.String)
    */
   @Override
   @POST

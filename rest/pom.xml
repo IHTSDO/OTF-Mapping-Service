@@ -65,6 +65,12 @@
       <groupId>org.hibernate.javax.persistence</groupId>
       <artifactId>hibernate-jpa-2.0-api</artifactId>
     </dependency>
+    <!--
+	<dependency>
+	  <groupId>com.amazonaws</groupId>
+	  <artifactId>aws-java-sdk</artifactId>
+	</dependency>
+    -->
     <dependency>
       <groupId>javax.transaction</groupId>
       <artifactId>jta</artifactId>
@@ -130,6 +136,11 @@
       <artifactId>swagger-jersey2-jaxrs</artifactId>
     </dependency>
 
+	<dependency>
+	  <groupId>com.amazonaws</groupId>
+	  <artifactId>aws-java-sdk</artifactId>
+	</dependency>
+	  
     <!-- Sending email -->
     <dependency>
       <groupId>com.sun.mail</groupId>

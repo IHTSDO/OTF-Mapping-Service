@@ -3,6 +3,7 @@ package org.ihtsdo.otf.mapping.jpa.algo;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ import org.ihtsdo.otf.mapping.helpers.ConceptList;
 import org.ihtsdo.otf.mapping.helpers.DescriptionList;
 import org.ihtsdo.otf.mapping.helpers.LanguageRefSetMemberList;
 import org.ihtsdo.otf.mapping.helpers.RelationshipList;
+import org.ihtsdo.otf.mapping.jpa.helpers.LoggerUtility;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
@@ -149,6 +151,14 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 
 	/** The existing language ref set member ids. */
 	private Set<String> existingLanguageRefSetMemberIds = new HashSet<>();
+	   
+    /** The log. */
+    private static Logger log;
+    
+    /** The log file. */
+    private File logFile;
+    
+    
 
 	public Rf2DeltaLoaderAlgorithm(String terminology, String inputDir,
 			String lastPublicationDate) throws Exception {
@@ -156,10 +166,32 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 		this.terminology = terminology;
 		this.inputDir = inputDir;
 		this.lastPublicationDate = lastPublicationDate;
+		
+        //initialize logger
+        String rootPath = ConfigUtility.getConfigProperties()
+              .getProperty("map.principle.source.document.dir");
+        if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
+          rootPath += "/";
+        }
+        rootPath += "logs";
+        File logDirectory = new File(rootPath);
+        if (!logDirectory.exists()) {
+            logDirectory.mkdir();
+        }
+        
+        logFile = new File(logDirectory, "load_" + terminology + ".log");
+        LoggerUtility.setConfiguration("load", logFile.getAbsolutePath());
+        this.log = LoggerUtility.getLogger("load");
 	}
 
 	@Override
 	public void compute() throws Exception {
+	  
+	  // clear log before starting process
+      PrintWriter writer = new PrintWriter(logFile);
+      writer.print("");
+      writer.close(); 
+      
 		try {
 			setup();
 
@@ -168,31 +200,31 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 			for (Concept c : conceptList.getConcepts()) {
 				existingConceptCache.put(c.getTerminologyId(), c);
 			}
-			Logger.getLogger(getClass())
+			log
 					.info("  count = " + conceptList.getCount());
 
 			// Precache the description, langauge refset, and relationship ids
-			Logger.getLogger(getClass()).info(
+			log.info(
 					"  Load all description, language, and relationship ids");
 			existingDescriptionIds = contentService
 					.getAllDescriptionTerminologyIds(terminology, version);
-			Logger.getLogger(getClass()).info(
+			log.info(
 					"    descriptionCt = " + existingDescriptionIds.size());
 			existingLanguageRefSetMemberIds = contentService
 					.getAllLanguageRefSetMemberTerminologyIds(terminology,
 							version);
-			Logger.getLogger(getClass()).info("    languageCt = "
+			log.info("    languageCt = "
 					+ existingLanguageRefSetMemberIds.size());
 			existingRelationshipIds = contentService
 					.getAllRelationshipTerminologyIds(terminology, version);
-			Logger.getLogger(getClass()).info(
+			log.info(
 					"    relationshipCt = " + existingRelationshipIds.size());
 
 			// Load delta data
 			loadDelta();
 
 			// Compute the number of modified objects of each type
-			Logger.getLogger(getClass())
+			log
 					.info("  Computing number of modified objects");
 			int nConceptsUpdated = 0;
 			int nDescriptionsUpdated = 0;
@@ -222,23 +254,23 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 			}
 
 			// Report counts
-			Logger.getLogger(getClass())
+			log
 					.info("  Cached objects modified by this delta");
-			Logger.getLogger(getClass())
+			log
 					.info("    " + nConceptsUpdated + " concepts");
-			Logger.getLogger(getClass())
+			log
 					.info("    " + nDescriptionsUpdated + " descriptions");
-			Logger.getLogger(getClass())
+			log
 					.info("    " + nRelationshipsUpdated + " relationships");
-			Logger.getLogger(getClass()).info(
+			log.info(
 					"    " + nLanguagesUpdated + " language ref set members");
 
 			// Commit the content changes
-			Logger.getLogger(getClass()).info("  Committing.");
+			log.info("  Committing.");
 			contentService.commit();
 
 			// QA
-			Logger.getLogger(getClass()).info(
+			log.info(
 					"  QA - Check database contents against previously modified objects.");
 			ConceptList modifiedConcepts = contentService
 					.getConceptsModifiedSinceDate(terminology,
@@ -254,26 +286,25 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 							deltaLoaderStartDate);
 
 			// Report
-			Logger.getLogger(getClass())
+			log
 					.info((modifiedConcepts.getCount() != nConceptsUpdated)
 							? "    " + nConceptsUpdated
 									+ " concepts expected, found "
 									+ modifiedConcepts.getCount()
 							: "    Concept count matches");
-			Logger.getLogger(getClass()).info(
+			log.info(
 					(modifiedRelationships.getCount() != nRelationshipsUpdated)
 							? "   " + nRelationshipsUpdated
 									+ " relationships expected, found"
 									+ modifiedRelationships.getCount()
 							: "    Relationship count matches");
-			Logger.getLogger(getClass()).info(
+			log.info(
 					(modifiedDescriptions.getCount() != nDescriptionsUpdated)
 							? "    " + nDescriptionsUpdated
 									+ " descriptions expected, found"
 									+ modifiedDescriptions.getCount()
 							: "    Description count matches");
-			Logger.getLogger(getClass())
-					.info((modifiedLanguageRefSetMembers
+			log.info((modifiedLanguageRefSetMembers
 							.getCount() != nLanguagesUpdated)
 									? "    " + nLanguagesUpdated
 											+ " languageRefSetMembers expected, found"
@@ -285,19 +316,20 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 			contentService.close();
 
 			// Compute default preferred names
-			Logger.getLogger(getClass())
-					.info("  Compute preferred names for delta concepts.");
+			log.info("  Compute preferred names for delta concepts.");
 			contentService = new ContentServiceJpa();
 			contentService.setTransactionPerOperation(false);
 			contentService.beginTransaction();
 			computeDefaultPreferredNames();
 			contentService.commit();
-			Logger.getLogger(getClass()).info("Done");
+			log.info("Done");
 
-		} catch (
-
-		Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
+			log.info(e.getMessage());
+            for (StackTraceElement element : e.getStackTrace()) {
+              log.info(element.toString());
+            }
 			throw new Exception("Unexpected exception:", e);
 		}
 	}
@@ -378,9 +410,9 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 		}
 
 		// output relevant properties/settings to console
-		Logger.getLogger(getClass()).info("  typeId:          " + dpnTypeId);
-		Logger.getLogger(getClass()).info("  refsetId:        " + dpnRefsetId);
-		Logger.getLogger(getClass())
+		log.info("  typeId:          " + dpnTypeId);
+		log.info("  refsetId:        " + dpnRefsetId);
+		log
 				.info("  acceptabilityId: " + dpnAcceptabilityId);
 
 		// Open files
@@ -395,37 +427,37 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 	 */
 	private void instantiateFileReaders() throws Exception {
 
-		Logger.getLogger(getClass())
+		log
 				.info("  Open readers for terminology files");
 		// concepts file
 		for (File f : deltaDir.listFiles()) {
 			if (f.getName().contains("_Concept_Delta_")) {
-				Logger.getLogger(getClass())
+				log
 						.info("    Concepts: " + f.getName());
 				conceptReader = new BufferedReader(new FileReader(f));
 			} else if (f.getName().contains("_Relationship_Delta_")) {
-				Logger.getLogger(getClass())
+				log
 						.info("    Relationships: " + f.getName());
 				relationshipReader = new BufferedReader(new FileReader(f));
 
 				/*
 				 * Removed due to invalid relationship loading } else if
 				 * (f.getName().contains("_StatedRelationship_")) {
-				 * Logger.getLogger(getClass()).
+				 * log.
 				 * info("  Stated Relationship file: " + f.getName());
 				 * statedRelationshipReader = new BufferedReader(new
 				 * FileReader(f));
 				 */
 			} else if (f.getName().contains("_Description_")) {
-				Logger.getLogger(getClass())
+				log
 						.info("  Descriptions: " + f.getName());
 				descriptionReader = new BufferedReader(new FileReader(f));
 			} else if (f.getName().contains("_TextDefinition_")) {
-				Logger.getLogger(getClass())
+				log
 						.info("  Text Definitions: " + f.getName());
 				textDefinitionReader = new BufferedReader(new FileReader(f));
 			} else if (f.getName().contains("_LanguageDelta-en")) {
-				Logger.getLogger(getClass())
+				log
 						.info("  Languages: " + f.getName());
 				languageReader = new BufferedReader(new FileReader(f));
 			}
@@ -450,66 +482,66 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 	 *             the exception
 	 */
 	private void loadDelta() throws Exception {
-		Logger.getLogger(getClass()).info("  Load delta data");
+		log.info("  Load delta data");
 
 		// Load concepts
 		if (conceptReader != null) {
-			Logger.getLogger(getClass()).info("    Loading Concepts ...");
+			log.info("    Loading Concepts ...");
 			startTime = System.nanoTime();
 			loadConcepts(conceptReader);
 			contentService.commit();
 			contentService.beginTransaction();
-			Logger.getLogger(getClass())
+			log
 					.info("      evaluated = " + Integer.toString(objectCt)
 							+ " (Ended at " + ft.format(new Date()) + ")");
 		}
 
 		// Load relationships
 		if (relationshipReader != null) {
-			Logger.getLogger(getClass()).info("    Loading Relationships ...");
+			log.info("    Loading Relationships ...");
 			startTime = System.nanoTime();
 			loadRelationships(relationshipReader);
 			contentService.commit();
 			contentService.beginTransaction();
-			Logger.getLogger(getClass())
+			log
 					.info("      evaluated = " + Integer.toString(objectCt)
 							+ " (Ended at " + ft.format(new Date()) + ")");
 		}
 
 		// Load descriptions
 		if (descriptionReader != null) {
-			Logger.getLogger(getClass()).info("    Loading Descriptions ...");
+			log.info("    Loading Descriptions ...");
 			startTime = System.nanoTime();
 			loadDescriptions(descriptionReader);
 			contentService.commit();
 			contentService.beginTransaction();
-			Logger.getLogger(getClass())
+			log
 					.info("      evaluated = " + Integer.toString(objectCt)
 							+ " (Ended at " + ft.format(new Date()) + ")");
 		}
 
 		// Load text definitions
 		if (descriptionReader != null) {
-			Logger.getLogger(getClass())
+			log
 					.info("    Loading Text Definitions...");
 			startTime = System.nanoTime();
 			loadDescriptions(textDefinitionReader);
 			contentService.commit();
 			contentService.beginTransaction();
-			Logger.getLogger(getClass())
+			log
 					.info("      evaluated = " + Integer.toString(objectCt)
 							+ " (Ended at " + ft.format(new Date()) + ")");
 		}
 
 		// Load language refset members
 		if (languageReader != null) {
-			Logger.getLogger(getClass())
+			log
 					.info("    Loading Language Ref Sets...");
 			startTime = System.nanoTime();
 			loadLanguageRefSetMembers(languageReader);
 			contentService.commit();
 			contentService.beginTransaction();
-			Logger.getLogger(getClass())
+			log
 					.info("      evaluated = " + Integer.toString(objectCt)
 							+ " (Ended at " + ft.format(new Date()) + ")");
 		}
@@ -518,7 +550,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 
 		// Remove concepts in the DB that were created by prior
 		// deltas that no longer exist in the delta
-		Logger.getLogger(getClass()).info("    Retire non-existent content");
+		log.info("    Retire non-existent content");
 		retireRemovedContent();
 	}
 
@@ -574,7 +606,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 
 				// If concept is new, add it
 				if (concept == null) {
-					Logger.getLogger(getClass()).info("        add concept "
+					log.info("        add concept "
 							+ newConcept.getTerminologyId());
 					recomputePnConceptIds.add(fields[0]);
 					contentService.addConcept(newConcept);
@@ -583,7 +615,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 
 				// If concept has changed, update it
 				else if (!newConcept.equals(concept)) {
-					Logger.getLogger(getClass()).info("        update concept "
+					log.info("        update concept "
 							+ newConcept.getTerminologyId());
 					recomputePnConceptIds.add(fields[0]);
 					contentService.updateConcept(newConcept);
@@ -602,8 +634,8 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 
 		}
 
-		Logger.getLogger(getClass()).info("      new = " + objectsAdded);
-		Logger.getLogger(getClass()).info("      updated = " + objectsUpdated);
+		log.info("      new = " + objectsAdded);
+		log.info("      updated = " + objectsUpdated);
 
 	}
 
@@ -696,7 +728,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 
 					// If description is new, add it
 					if (description == null) {
-						Logger.getLogger(getClass())
+						log
 								.info("        add description "
 										+ newDescription.getTerminologyId());
 						recomputePnConceptIds.add(fields[4]);
@@ -707,7 +739,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 
 					// If description has changed, update it
 					else if (!newDescription.equals(description)) {
-						Logger.getLogger(getClass())
+						log
 								.info("        update description "
 										+ newDescription.getTerminologyId());
 						recomputePnConceptIds.add(fields[4]);
@@ -729,7 +761,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 				// non-existent concept
 				else {
 					// skip
-					Logger.getLogger(getClass())
+					log
 							.info("SKIP DESC with concept " + fields[4]);
 					continue;
 					// throw new Exception("Could not find concept " + fields[4]
@@ -737,8 +769,8 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 				}
 			}
 		}
-		Logger.getLogger(getClass()).info("      new = " + objectsAdded);
-		Logger.getLogger(getClass()).info("      updated = " + objectsUpdated);
+		log.info("      new = " + objectsAdded);
+		log.info("      updated = " + objectsUpdated);
 	}
 
 	/**
@@ -780,7 +812,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 
 				if (description == null) {
 					// skip
-					Logger.getLogger(getClass())
+					log
 							.info("SKIP LANG with desc " + fields[4]);
 					continue;
 					// throw new Exception("Could not find description " +
@@ -853,7 +885,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 
 				// If language refset entry is new, add it
 				if (languageRefSetMember == null) {
-					Logger.getLogger(getClass()).info("        add language "
+					log.info("        add language "
 							+ newLanguageRefSetMember.getTerminologyId());
 					recomputePnConceptIds
 							.add(description.getConcept().getTerminologyId());
@@ -866,7 +898,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 				// If language refset entry is changed, update it
 				else if (!newLanguageRefSetMember
 						.equals(languageRefSetMember)) {
-					Logger.getLogger(getClass()).info("        update language "
+					log.info("        update language "
 							+ newLanguageRefSetMember.getTerminologyId());
 					recomputePnConceptIds
 							.add(description.getConcept().getTerminologyId());
@@ -884,8 +916,8 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 			}
 		}
 
-		Logger.getLogger(getClass()).info("      new = " + objectsAdded);
-		Logger.getLogger(getClass()).info("      updated = " + objectsUpdated);
+		log.info("      new = " + objectsAdded);
+		log.info("      updated = " + objectsUpdated);
 
 	}
 
@@ -929,7 +961,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 				}
 				if (sourceConcept == null) {
 					// skip
-					Logger.getLogger(getClass())
+					log
 							.info("SKIP REL with source concept " + fields[4]);
 					continue;
 					// throw new Exception("Relationship " + fields[0] +
@@ -949,7 +981,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 				}
 				if (destinationConcept == null) {
 					// skip
-					Logger.getLogger(getClass())
+					log
 							.info("SKIP REL with source concept " + fields[5]);
 					continue;
 					// throw new Exception("Relationship " + fields[0]
@@ -1007,7 +1039,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 
 				// If relationship is new, add it
 				if (!existingRelationshipIds.contains(fields[0])) {
-					Logger.getLogger(getClass())
+					log
 							.info("        add relationship "
 									+ newRelationship.getTerminologyId());
 					contentService.addRelationship(newRelationship);
@@ -1018,7 +1050,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 				// If relationship is changed, update it
 				else if (relationship != null
 						&& !newRelationship.equals(relationship)) {
-					Logger.getLogger(getClass())
+					log
 							.info("        update relationship "
 									+ newRelationship.getTerminologyId());
 					contentService.updateRelationship(newRelationship);
@@ -1041,8 +1073,8 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 			}
 		}
 
-		Logger.getLogger(getClass()).info("      new = " + objectsAdded);
-		Logger.getLogger(getClass()).info("      updated = " + objectsUpdated);
+		log.info("      new = " + objectsAdded);
+		log.info("      updated = " + objectsUpdated);
 
 	}
 
@@ -1072,14 +1104,14 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 				continue;
 			}
 
-			Logger.getLogger(getClass())
+			log
 					.info("Checking concept " + concept.getTerminologyId());
 
 			boolean dpnFound = false;
 
 			// Iterate over descriptions
 			for (Description description : concept.getDescriptions()) {
-				Logger.getLogger(getClass())
+				log
 						.info("  Checking description "
 								+ description.getTerminologyId() + ", active = "
 								+ description.isActive() + ", typeId = "
@@ -1091,7 +1123,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 					// Iterate over language refset members
 					for (LanguageRefSetMember language : description
 							.getLanguageRefSetMembers()) {
-						Logger.getLogger(getClass())
+						log
 								.info("    Checking language "
 										+ language.getTerminologyId()
 										+ ", active = " + language.isActive()
@@ -1105,18 +1137,18 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 								&& language.isActive()
 								&& language.getAcceptabilityId()
 										.equals(dpnAcceptabilityId)) {
-							Logger.getLogger(getClass())
+							log
 									.info("      MATCH FOUND: "
 											+ description.getTerm());
 							// print warning for multiple names found
 							if (dpnFound) {
-								Logger.getLogger(getClass())
+								log
 										.warn("Multiple default preferred names found for concept "
 												+ concept.getTerminologyId());
-								Logger.getLogger(getClass()).warn("  "
+								log.warn("  "
 										+ "Existing: "
 										+ concept.getDefaultPreferredName());
-								Logger.getLogger(getClass())
+								log
 										.warn("  " + "Replaced with: "
 												+ description.getTerm());
 							}
@@ -1136,7 +1168,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 			// Pref name not found
 			if (!dpnFound) {
 				dpnNotFoundCt++;
-				Logger.getLogger(getClass())
+				log
 						.warn("Could not find defaultPreferredName for concept "
 								+ concept.getTerminologyId());
 				concept.setDefaultPreferredName("[Could not be determined]");
@@ -1145,9 +1177,9 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 			}
 		}
 
-		Logger.getLogger(getClass()).info("  found =  " + dpnFoundCt);
-		Logger.getLogger(getClass()).info("  not found = " + dpnNotFoundCt);
-		Logger.getLogger(getClass()).info("  skipped = " + dpnSkippedCt);
+		log.info("  found =  " + dpnFoundCt);
+		log.info("  not found = " + dpnNotFoundCt);
+		log.info("  skipped = " + dpnSkippedCt);
 
 	}
 
@@ -1177,7 +1209,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 		// These are concepts created after rf2Version that are no longer in
 		// the drip feed
 		int ct = 0;
-		Logger.getLogger(getClass()).info("    Retire removed concepts");
+		log.info("    Retire removed concepts");
 		for (Concept concept : existingConceptCache.values()) {
 			if (concept.getEffectiveTime().after(rf2Version)
 					&& !deltaConceptIds.contains(concept.getTerminologyId())
@@ -1223,7 +1255,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 				}
 			}
 		}
-		Logger.getLogger(getClass()).info("      count =  " + ct);
+		log.info("      count =  " + ct);
 		contentService.commit();
 		contentService.clear();
 		contentService.beginTransaction();
@@ -1239,7 +1271,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 		// we simply do not have the intermediate information
 		//
 		/**
-		 * ct = 0; Logger.getLogger(getClass()).info(" Retire removed
+		 * ct = 0; log.info(" Retire removed
 		 * relationships"); List<Relationship> relationships =
 		 * contentService.getRelationshipsModifiedSinceDate(terminology,
 		 * rf2Version).getRelationships(); contentService.clear();
@@ -1248,12 +1280,12 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 		 * 
 		 * if (relationship.getEffectiveTime().after(rf2Version) &&
 		 * !deltaRelationshipIds.contains(relationship.getTerminologyId()) &&
-		 * relationship.isActive()) { Logger.getLogger(getClass()).info(" retire
+		 * relationship.isActive()) { log.info(" retire
 		 * " + relationship.getTerminologyId()); ct++;
 		 * relationship.setActive(false);
 		 * relationship.setEffectiveTime(deltaLoaderStartDate);
 		 * contentService.updateRelationship(relationship); } }
-		 * Logger.getLogger(getClass()).info(" count = " + ct);
+		 * log.info(" count = " + ct);
 		 **/
 
 		contentService.commit();

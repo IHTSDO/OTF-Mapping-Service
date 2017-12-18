@@ -953,4 +953,10 @@ public class DefaultProjectSpecificAlgorithmHandler
   public boolean recordViolatesOneToOneConstraint(MapRecord record) throws Exception {
     return false;
   }
+
+  @Override
+  public boolean isMapRecordLineValid(String line) throws Exception {
+    // Default is to say line is valid
+    return true;
+  }
 }
