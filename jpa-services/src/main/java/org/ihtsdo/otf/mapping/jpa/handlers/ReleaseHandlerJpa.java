@@ -13,6 +13,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -2139,8 +2140,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   /* see superclass */
   @Override
   public void beginRelease() throws Exception {
-
+   
     logger = beginLog;
+    clearLog(logger);
 
     // instantiate required services
     final MappingService mappingService = new MappingServiceJpa();
@@ -2175,7 +2177,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
 
     // get the report definition
-    beginLog.info("  Create release QA report");
+    logger.info("  Create release QA report");
     ReportDefinition reportDefinition = null;
     for (final ReportDefinition rd : mapProject.getReportDefinitions()) {
       if (rd.getName().equals("Release QA"))
@@ -2202,21 +2204,21 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     reportService.addReport(report);
 
     // get all scope concept terminology ids for this project
-    beginLog.info("  Get scope concepts for map project");
+    logger.info("  Get scope concepts for map project");
     final Set<String> scopeConceptTerminologyIds = new HashSet<>();
     for (final SearchResult sr : mappingService
         .findConceptsInScope(mapProject.getId(), null).getSearchResults()) {
       scopeConceptTerminologyIds.add(sr.getTerminologyId());
     }
 
-    beginLog.info("    count = " + scopeConceptTerminologyIds.size());
+    logger.info("    count = " + scopeConceptTerminologyIds.size());
 
     // get all map records for this project
-    beginLog.info("  Get records for map project");
+    logger.info("  Get records for map project");
     final MapRecordList mapRecords =
         mappingService.getMapRecordsForMapProject(mapProject.getId());
 
-    beginLog.info("    count = " + mapRecords.getCount());
+    logger.info("    count = " + mapRecords.getCount());
 
     // create a temp set of scope terminology ids
     Set<String> conceptsWithNoRecord =
@@ -2245,7 +2247,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // for each map record, check for errors
     // NOTE: Report Result names are constructed from error lists assigned
     // Each individual result is stored as a Report Result Item
-    beginLog.info("  Validate records");
+    logger.info("  Validate records");
     boolean errorFlag = false;
     int pubCt = 0;
     while (mapRecordsToProcess.size() != 0) {
@@ -2253,7 +2255,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       // extract the concept and remove it from list
       final MapRecord mapRecord = mapRecordsToProcess.get(0);
       mapRecordsToProcess.remove(0);
-      beginLog.debug("    concept = " + mapRecord.getConceptId() + " "
+      logger.debug("    concept = " + mapRecord.getConceptId() + " "
           + mapRecord.getConceptName());
 
       // first, remove this concept id from the dynamic conceptsWithNoRecord set
@@ -2309,7 +2311,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         // specific validation checks
         ValidationResult result = algorithmHandler.validateRecord(mapRecord);
         if (!result.isValid()) {
-          beginLog.debug("    FAILED");
+          logger.debug("    FAILED");
           errorFlag = true;
           resultMessages.add("Map record failed validation check");
         } else {
@@ -2463,7 +2465,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     report.addResult(pubCtResult);
 
     // CHECK: In-scope concepts with no map record
-    beginLog.debug("  Report in scope concepts with no record");
+    logger.debug("  Report in scope concepts with no record");
     for (final String terminologyId : conceptsWithNoRecord) {
 
       // get the concept
@@ -2476,8 +2478,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       errorFlag = true;
     }
 
-    beginLog.info("  Adding Release QA Report");
-    beginLog.info("    Log into the application to see the report results");
+    logger.info("  Adding Release QA Report");
+    logger.info("    Log into the application to see the report results");
 
     // Commit the new report either way
     reportService.commit();
@@ -2492,7 +2494,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       }
     }
 
-    beginLog.info("Done.");
+    logger.info("Done.");
 
     mappingService.close();
     reportService.close();
@@ -2557,6 +2559,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     } else {
       logger = finishLog;
     }
+    clearLog(logger);
 
     logger.info(testModeFlag ? "Preview Finish Release" : "Finish Release");
 
@@ -3230,6 +3233,45 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           finishLogFile.getAbsolutePath());
       finishLog = LoggerUtility.getLogger("finishRelease");
 
+    } catch (Exception e) {
+      logger.info(e.getStackTrace());
+    }
+  }
+  
+  private void clearLog(Logger logger) {
+    try {
+      String rootPath = ConfigUtility.getConfigProperties()
+          .getProperty("map.principle.source.document.dir");
+      if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
+        rootPath += "/";
+      }
+      rootPath += mapProject.getId() + "/logs";
+      File logDirectory = new File(rootPath);
+      if (!logDirectory.exists()) {
+        return;
+      }
+      if (logger == beginLog) {
+        File beginLogFile = new File(logDirectory, "begin.log");
+        PrintWriter writer = new PrintWriter(beginLogFile);
+        writer.print("");
+        writer.close();      
+      }
+      if (logger == processLog) {
+        File processLogFile = new File(logDirectory, "process.log");
+        PrintWriter writer = new PrintWriter(processLogFile);
+        writer.print("");
+        writer.close();      
+      }
+
+      File previewFinishLogFile = new File(logDirectory, "previewFinish.log");
+      LoggerUtility.setConfiguration("previewFinishRelease",
+          previewFinishLogFile.getAbsolutePath());
+      previewFinishLog = LoggerUtility.getLogger("previewFinishRelease");
+
+      File finishLogFile = new File(logDirectory, "finish.log");
+      LoggerUtility.setConfiguration("finishRelease",
+          finishLogFile.getAbsolutePath());
+      finishLog = LoggerUtility.getLogger("finishRelease");
     } catch (Exception e) {
       logger.info(e.getStackTrace());
     }

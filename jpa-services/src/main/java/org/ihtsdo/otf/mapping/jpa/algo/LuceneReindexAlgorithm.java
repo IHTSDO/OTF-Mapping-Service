@@ -3,6 +3,8 @@
  */
 package org.ihtsdo.otf.mapping.jpa.algo;
 
+import java.io.File;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,7 +18,9 @@ import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.algo.Algorithm;
+import org.ihtsdo.otf.mapping.jpa.helpers.LoggerUtility;
 import org.ihtsdo.otf.mapping.jpa.services.RootServiceJpa;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.ProgressEvent;
 import org.ihtsdo.otf.mapping.services.helpers.ProgressListener;
 import org.reflections.Reflections;
@@ -37,6 +41,12 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
 
   /** The full text entity manager. */
   private FullTextEntityManager fullTextEntityManager;
+  
+  /** The log. */
+  private static Logger log;
+
+  /** The log file. */
+  private File logFile;
 
   /**
    * Instantiates an empty {@link LuceneReindexAlgorithm}.
@@ -44,6 +54,23 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
    */
   public LuceneReindexAlgorithm() throws Exception {
     super();
+    
+    
+    //initialize logger
+    String rootPath = ConfigUtility.getConfigProperties()
+          .getProperty("map.principle.source.document.dir");
+    if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
+      rootPath += "/";
+    }
+    rootPath += "logs";
+    File logDirectory = new File(rootPath);
+    if (!logDirectory.exists()) {
+        logDirectory.mkdir();
+    }
+    
+    logFile = new File(logDirectory, "reindex.log");
+    LoggerUtility.setConfiguration("reindex", logFile.getAbsolutePath());
+    this.log = LoggerUtility.getLogger("reindex");
   }
 
   /**
@@ -58,6 +85,12 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
   /* see superclass */
   @Override
   public void compute() throws Exception {
+    
+    // clear log before starting process
+    PrintWriter writer = new PrintWriter(logFile);
+    writer.print("");
+    writer.close(); 
+   
     if (fullTextEntityManager == null) {
       fullTextEntityManager = Search.getFullTextEntityManager(manager);
     }

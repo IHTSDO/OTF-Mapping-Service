@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.jpa.algo;
 
 import java.io.File;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -36,7 +37,11 @@ public class RemoverAlgorithm extends RootServiceJpa
 	/** Terminology version */
 	private String version;
 	
+	/** The log. */
 	private static Logger log;
+	
+	/** The log file. */
+	private File logFile;
 	
 	@SuppressWarnings("static-access")
 	public RemoverAlgorithm(String terminology, String version)
@@ -57,14 +62,19 @@ public class RemoverAlgorithm extends RootServiceJpa
 	        logDirectory.mkdir();
 	    }
 	    
-	    File removeLog = new File(logDirectory, "remove_" + terminology + ".log");
-		LoggerUtility.setConfiguration("remove", removeLog.getAbsolutePath());
+	    logFile = new File(logDirectory, "remove_" + terminology + ".log");
+		LoggerUtility.setConfiguration("remove", logFile.getAbsolutePath());
 		this.log = LoggerUtility.getLogger("remove");
 	}
 
 	@Override
 	public void compute() throws Exception {
-	    
+	  
+	  // clear log before starting process
+	  PrintWriter writer = new PrintWriter(logFile);
+      writer.print("");
+      writer.close(); 
+	  
 		log.info("Remove terminology");
 		log.info("  terminology  = " + terminology);
 		log.info("  version      = " + version);
@@ -195,7 +205,7 @@ public class RemoverAlgorithm extends RootServiceJpa
 		for (int i = 0; i < listeners.size(); i++) {
 			listeners.get(i).updateProgress(pe);
 		}
-		Logger.getLogger(getClass()).info("    " + pct + "% " + note);
+		log.info("    " + pct + "% " + note);
 	}
 
 	/* see superclass */

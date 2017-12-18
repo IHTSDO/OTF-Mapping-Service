@@ -4957,7 +4957,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       }
       File logFile = null;
       File logDir = null;
-      if (logTypes.get(0).toString().contains("Terminology")) {
+      if (logTypes.get(0).toString().contains("Terminology") ||
+          logTypes.get(0).toString().contains("PreviousMembers")) {
         logDir = new File(rootPath + "logs");
       } else {
         logDir = new File(rootPath + mapProject.getId() + "/logs");
@@ -4966,6 +4967,9 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
         if (logType.contains("Terminology")) {
           logFile = new File(logDir, logType.replace("Terminology",
               "_" + mapProject.getSourceTerminology()) + ".log");
+        } else if (logTypes.get(0).toString().contains("PreviousMembers")){
+          logFile = new File(logDir, logType.replace("PreviousMembers",
+              "_maps_" + mapProject.getRefSetId()) + ".log");
         } else {
           logFile = new File(logDir, logType + ".log");
         }

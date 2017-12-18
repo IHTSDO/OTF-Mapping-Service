@@ -1,5 +1,7 @@
 package org.ihtsdo.otf.mapping.jpa.algo;
 
+import java.io.File;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -12,6 +14,7 @@ import javax.persistence.Query;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.algo.Algorithm;
+import org.ihtsdo.otf.mapping.jpa.helpers.LoggerUtility;
 import org.ihtsdo.otf.mapping.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.ProgressListener;
@@ -33,17 +36,43 @@ public class MapsRemoverAlgorithm extends RootServiceJpa
 	
 	/** Ref set id to remove */
 	private String refsetId;
+	
+	   /** The log. */
+    private static Logger log;
+    
+    /** The log file. */
+    private File logFile;
 
 	public MapsRemoverAlgorithm(String refsetId) throws Exception {
 		super();
 		this.refsetId = refsetId;
+			      
+        //initialize logger
+        String rootPath = ConfigUtility.getConfigProperties()
+              .getProperty("map.principle.source.document.dir");
+        if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
+          rootPath += "/";
+        }
+        rootPath += "logs";
+        File logDirectory = new File(rootPath);
+        if (!logDirectory.exists()) {
+            logDirectory.mkdir();
+        }
+        
+        logFile = new File(logDirectory, "remove_maps_" + refsetId + ".log");
+        LoggerUtility.setConfiguration("remove_maps", logFile.getAbsolutePath());
+        this.log = LoggerUtility.getLogger("remove_maps");
 	}
 
 	@Override
 	public void compute() throws Exception {
-		
-		Logger.getLogger(getClass()).info("Starting removing terminology");
-		Logger.getLogger(getClass()).info("  refsetId = " + refsetId);
+	    // clear log before starting process
+      PrintWriter writer = new PrintWriter(logFile);
+      writer.print("");
+      writer.close(); 
+      
+		log.info("Starting removing terminology");
+		log.info("  refsetId = " + refsetId);
 		
 		try {
 			Properties config = ConfigUtility.getConfigProperties();
@@ -64,20 +93,18 @@ public class MapsRemoverAlgorithm extends RootServiceJpa
 						"DELETE From SimpleMapRefSetMemberJpa rs where refsetId = :refsetId");
 				query.setParameter("refsetId", refsetId);
 				int deleteRecords = query.executeUpdate();
-				Logger.getLogger(getClass())
-						.info("    simple_map_ref_set records deleted: "
+				log.info("    simple_map_ref_set records deleted: "
 								+ deleteRecords);
 
 				query = manager.createQuery(
 						"DELETE From ComplexMapRefSetMemberJpa rs where refsetId = :refsetId");
 				query.setParameter("refsetId", refsetId);
 				deleteRecords = query.executeUpdate();
-				Logger.getLogger(getClass())
-						.info("    complex_map_ref_set records deleted: "
+				log.info("    complex_map_ref_set records deleted: "
 								+ deleteRecords);
 
 				tx.commit();
-				Logger.getLogger(getClass()).info("Done ...");
+				log.info("Done ...");
 
 			} catch (Exception e) {
 				tx.rollback();
