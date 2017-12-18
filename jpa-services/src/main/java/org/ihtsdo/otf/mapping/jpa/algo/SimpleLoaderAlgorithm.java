@@ -3,6 +3,7 @@ package org.ihtsdo.otf.mapping.jpa.algo;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -12,6 +13,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.algo.Algorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.helpers.SimpleMetadataHelper;
+import org.ihtsdo.otf.mapping.jpa.helpers.LoggerUtility;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.mapping.rf2.Concept;
@@ -19,6 +21,7 @@ import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.ProgressListener;
 
 public class SimpleLoaderAlgorithm extends RootServiceJpa
@@ -44,7 +47,13 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
 	
 	/** The date format. */
 	final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-
+    
+    /** The log. */
+    private static Logger log;
+    
+    /** The log file. */
+    private File logFile;
+    
 	/**
 	 * Instantiates a {@link SimpleLoaderAlgorithm} from the
 	 * specified parameters.
@@ -58,6 +67,22 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
 		this.version = version;
 		this.inputFile = inputFile;
 		this.parChdFile = parChdFile;
+		
+        //initialize logger
+        String rootPath = ConfigUtility.getConfigProperties()
+              .getProperty("map.principle.source.document.dir");
+        if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
+          rootPath += "/";
+        }
+        rootPath += "logs";
+        File logDirectory = new File(rootPath);
+        if (!logDirectory.exists()) {
+            logDirectory.mkdir();
+        }
+        
+        logFile = new File(logDirectory, "load_" + terminology + ".log");
+        LoggerUtility.setConfiguration("load", logFile.getAbsolutePath());
+        this.log = LoggerUtility.getLogger("load");
 	}
 
 	/* see superclass */
@@ -65,11 +90,17 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
 	/* see superclass */
 	@Override
 	public void compute() throws Exception {
-		Logger.getLogger(getClass()).info("Starting loading simple data");
-		Logger.getLogger(getClass()).info("  terminology = " + terminology);
-		Logger.getLogger(getClass()).info("  version     = " + version);
-		Logger.getLogger(getClass()).info("  inputFile   = " + inputFile);
-		Logger.getLogger(getClass()).info("  parChdFile  = " + parChdFile);
+	  
+	  // clear log before starting process
+      PrintWriter writer = new PrintWriter(logFile);
+      writer.print("");
+      writer.close(); 
+      
+		log.info("Starting loading simple data");
+		log.info("  terminology = " + terminology);
+		log.info("  version     = " + version);
+		log.info("  inputFile   = " + inputFile);
+		log.info("  parChdFile  = " + parChdFile);
 
 		try {
 			final ContentService contentService = new ContentServiceJpa();
@@ -80,7 +111,7 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
 			final Date now = new Date();
 			SimpleMetadataHelper helper = new SimpleMetadataHelper(terminology,
 					version, dateFormat.format(now), contentService);
-			Logger.getLogger(getClass()).info("  Create concept metadata");
+			log.info("  Create concept metadata");
 			Map<String, Concept> conceptMap = helper.createMetadata();
 
 			// Set the input directory
@@ -90,7 +121,7 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
 			}
 
 			// Create the root concept
-			Logger.getLogger(getClass()).info("  Create the root concept");
+			log.info("  Create the root concept");
 			Concept rootConcept = new ConceptJpa();
 			rootConcept.setTerminologyId("root");
 			rootConcept.setEffectiveTime(now);
@@ -126,7 +157,7 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
 			//
 			// Open the file and process the data
 			// code\tpreferred\t[synonym\t,..]
-			Logger.getLogger(getClass()).info("  Load concepts");
+			log.info("  Load concepts");
 			String line;
 			final BufferedReader in = new BufferedReader(
 					new FileReader(new File(inputFile)));
@@ -195,8 +226,7 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
 					concept.addDescription(sy);
 				}
 
-				Logger.getLogger(getClass())
-						.info("  concept = " + concept.getTerminologyId() + ", "
+				log.info("  concept = " + concept.getTerminologyId() + ", "
 								+ concept.getDefaultPreferredName());
 				concept = contentService.addConcept(concept);
 				conceptMap.put(concept.getTerminologyId(), concept);
@@ -214,7 +244,7 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
 			// If there is a par/chd file, need to create all those
 			// relationships now
 			if (parChdFile != null) {
-				Logger.getLogger(getClass())
+				log
 						.info("  Load Parent/Child rels - " + parChdFile);
 				final BufferedReader in2 = new BufferedReader(
 						new FileReader(new File(parChdFile)));
@@ -249,13 +279,13 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
 
 			// Tree position computation
 			String isaRelType = conceptMap.get("isa").getTerminologyId();
-			Logger.getLogger(getClass())
+			log
 					.info("Start creating tree positions root, " + isaRelType);
 			contentService.computeTreePositions(terminology, version,
 					isaRelType, "root");
 
 			// Clean-up
-			Logger.getLogger(getClass()).info("done ...");
+			log.info("done ...");
 			contentService.close();
 
 		} catch (Exception e) {

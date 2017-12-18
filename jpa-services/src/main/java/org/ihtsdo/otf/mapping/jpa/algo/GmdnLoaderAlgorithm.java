@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.io.PushbackInputStream;
 import java.io.Reader;
 import java.text.SimpleDateFormat;
@@ -26,6 +27,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.algo.Algorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.helpers.GmdnMetadataHelper;
+import org.ihtsdo.otf.mapping.jpa.helpers.LoggerUtility;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.mapping.rf2.Component;
@@ -34,6 +36,7 @@ import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.ProgressListener;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -92,6 +95,13 @@ public class GmdnLoaderAlgorithm extends RootServiceJpa implements Algorithm {
 	/** The id ct for id assignment (descriptions and relationships). */
 	int idCt = 1000;
 
+    /** The log. */
+    private static Logger log;
+    
+    /** The log file. */
+    private File logFile;
+    
+    
 	/**
 	 * Instantiates a {@link GmdnLoaderAlgorithm} from the specified parameters.
 	 *
@@ -105,14 +115,35 @@ public class GmdnLoaderAlgorithm extends RootServiceJpa implements Algorithm {
 		this.terminology = "GMDN";
 		this.version = version;
 		this.inputDir = inputDir;
+		
+        //initialize logger
+        String rootPath = ConfigUtility.getConfigProperties()
+              .getProperty("map.principle.source.document.dir");
+        if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
+          rootPath += "/";
+        }
+        rootPath += "logs";
+        File logDirectory = new File(rootPath);
+        if (!logDirectory.exists()) {
+            logDirectory.mkdir();
+        }
+        
+        logFile = new File(logDirectory, "load_" + terminology + ".log");
+        LoggerUtility.setConfiguration("load", logFile.getAbsolutePath());
+        this.log = LoggerUtility.getLogger("load");
 	}
 
 	@Override
 	public void compute() throws Exception {
-		Logger.getLogger(getClass()).info("Starting loading GMDN terminology");
-		Logger.getLogger(getClass()).info("  terminology = " + terminology);
-		Logger.getLogger(getClass()).info("  version     = " + version);
-		Logger.getLogger(getClass()).info("  inputDir    = " + inputDir);
+	   // clear log before starting process
+      PrintWriter writer = new PrintWriter(logFile);
+      writer.print("");
+      writer.close(); 
+      
+		log.info("Starting loading GMDN terminology");
+		log.info("  terminology = " + terminology);
+		log.info("  version     = " + version);
+		log.info("  inputDir    = " + inputDir);
 
 		FileInputStream fis = null;
 		InputStream inputStream = null;
@@ -145,12 +176,12 @@ public class GmdnLoaderAlgorithm extends RootServiceJpa implements Algorithm {
 			// || collectivetermFile == null
 			// || cttreenodeFile == null || termcollectivetermFile == null
 			) {
-				Logger.getLogger(getClass()).error("term = " + termFile);
-				// Logger.getLogger(getClass()).error("collectiveterm = " +
+				log.error("term = " + termFile);
+				// log.error("collectiveterm = " +
 				// collectivetermFile);
-				// Logger.getLogger(getClass()).error("termcollectiveterm = " +
+				// log.error("termcollectiveterm = " +
 				// termcollectivetermFile);
-				// Logger.getLogger(getClass()).error("cttreenode = " +
+				// log.error("cttreenode = " +
 				// cttreenodeFile);
 				throw new Exception(
 						"Input dir does not have all necessary files.");
@@ -164,7 +195,7 @@ public class GmdnLoaderAlgorithm extends RootServiceJpa implements Algorithm {
 
 			// create Metadata
 			effectiveTime = new Date();
-			Logger.getLogger(getClass())
+			log
 					.info("  Create metadata classes - " + effectiveTime);
 			helper = new GmdnMetadataHelper(terminology, version,
 					dateFormat2.format(effectiveTime), contentService);
@@ -185,7 +216,7 @@ public class GmdnLoaderAlgorithm extends RootServiceJpa implements Algorithm {
 			DefaultHandler handler = new TermHandler();
 
 			// Open XML and begin parsing
-			Logger.getLogger(getClass()).info("  Process term file");
+			log.info("  Process term file");
 			fis = new FileInputStream(termFile);
 			inputStream = checkForBOM(fis);
 			reader = new InputStreamReader(inputStream, charSet);
@@ -201,7 +232,7 @@ public class GmdnLoaderAlgorithm extends RootServiceJpa implements Algorithm {
 			// //
 			//
 			// // Prep SAX parser
-			// Logger.getLogger(getClass()).info(" Process collectiveterm
+			// log.info(" Process collectiveterm
 			// file");
 			// factory = SAXParserFactory.newInstance();
 			// factory.setValidating(false);
@@ -224,7 +255,7 @@ public class GmdnLoaderAlgorithm extends RootServiceJpa implements Algorithm {
 			// //
 			//
 			// // Prep SAX parser
-			// Logger.getLogger(getClass()).info(" Process termcollectiveterm
+			// log.info(" Process termcollectiveterm
 			// file");
 			// factory = SAXParserFactory.newInstance();
 			// factory.setValidating(false);
@@ -247,7 +278,7 @@ public class GmdnLoaderAlgorithm extends RootServiceJpa implements Algorithm {
 			// //
 			//
 			// // Prep SAX parser
-			// Logger.getLogger(getClass()).info(" Process cttreenode file");
+			// log.info(" Process cttreenode file");
 			// factory = SAXParserFactory.newInstance();
 			// factory.setValidating(false);
 			// saxParser = factory.newSAXParser();
@@ -270,13 +301,13 @@ public class GmdnLoaderAlgorithm extends RootServiceJpa implements Algorithm {
 			// Let the service create its own transaction.
 			final String isaRelType = conceptMap.get("isa").getTerminologyId();
 			for (final String root : roots) {
-				Logger.getLogger(getClass()).info("Create tree positions for "
+				log.info("Create tree positions for "
 						+ root + ", " + isaRelType);
 				contentService.computeTreePositions(terminology, version,
 						isaRelType, root);
 			}
 
-			Logger.getLogger(getClass()).info("Done ...");
+			log.info("Done ...");
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -447,7 +478,7 @@ public class GmdnLoaderAlgorithm extends RootServiceJpa implements Algorithm {
 				description.setActive(true);
 
 				// connect concept and description
-				Logger.getLogger(getClass())
+				log
 						.debug("    description = " + description);
 				concept.addDescription(description);
 				description.setConcept(concept);
@@ -468,7 +499,7 @@ public class GmdnLoaderAlgorithm extends RootServiceJpa implements Algorithm {
 						// Use the "termID" as the key
 						conceptMap.put(termCode, concept);
 						contentService.addConcept(concept);
-						Logger.getLogger(getClass())
+						log
 								.debug("    concept = " + concept);
 
 					}
@@ -500,7 +531,7 @@ public class GmdnLoaderAlgorithm extends RootServiceJpa implements Algorithm {
 										.getTerminologyId()));
 						ivdDesc.setLanguageCode("en");
 						ivdDesc.setConcept(concept);
-						Logger.getLogger(getClass())
+						log
 								.debug("    description = " + description);
 						concept.addDescription(ivdDesc);
 						ivdDesc.setActive(true);
@@ -530,7 +561,7 @@ public class GmdnLoaderAlgorithm extends RootServiceJpa implements Algorithm {
 									.getTerminologyId()));
 					definition.setLanguageCode("en");
 					definition.setConcept(concept);
-					Logger.getLogger(getClass())
+					log
 							.debug("    description = " + description);
 					concept.addDescription(definition);
 					definition.setActive(true);
@@ -623,7 +654,7 @@ public class GmdnLoaderAlgorithm extends RootServiceJpa implements Algorithm {
 				description.setActive(true);
 
 				// connect concept and description
-				Logger.getLogger(getClass())
+				log
 						.debug("    description = " + description);
 				concept.addDescription(description);
 				description.setConcept(concept);
@@ -645,7 +676,7 @@ public class GmdnLoaderAlgorithm extends RootServiceJpa implements Algorithm {
 						conceptMap.put(termId, concept);
 					}
 
-					Logger.getLogger(getClass())
+					log
 							.debug("    concept = " + concept);
 				}
 
@@ -678,7 +709,7 @@ public class GmdnLoaderAlgorithm extends RootServiceJpa implements Algorithm {
 									.getTerminologyId()));
 					definition.setLanguageCode("en");
 					definition.setConcept(concept);
-					Logger.getLogger(getClass())
+					log
 							.debug("    description = " + description);
 					concept.addDescription(definition);
 					definition.setActive(true);
@@ -895,7 +926,7 @@ public class GmdnLoaderAlgorithm extends RootServiceJpa implements Algorithm {
 						}
 
 						// Create relationship
-						Logger.getLogger(getClass()).debug("REL " + chd + ":"
+						log.debug("REL " + chd + ":"
 								+ chdConcept.getTerminologyId() + " => " + par
 								+ ":" + parConcept.getTerminologyId());
 						helper.createIsaRelationship(parConcept, chdConcept,
@@ -950,7 +981,7 @@ public class GmdnLoaderAlgorithm extends RootServiceJpa implements Algorithm {
 			description.setTerm(newChdStart + " - " + newChdEnd);
 
 			contentService.addConcept(concept);
-			Logger.getLogger(getClass()).debug("    concept = " + concept);
+			log.debug("    concept = " + concept);
 
 			return concept;
 		}
@@ -1031,7 +1062,7 @@ public class GmdnLoaderAlgorithm extends RootServiceJpa implements Algorithm {
 						final String rootTerm = nodeTermMap.get(nodeId);
 						final String rootCode = conceptMap.get(rootTerm)
 								.getTerminologyId();
-						Logger.getLogger(getClass()).info("    ROOT = "
+						log.info("    ROOT = "
 								+ rootTerm + (rootTerm.equals(rootCode) ? ""
 										: ", " + rootCode));
 						roots.add(rootCode);
@@ -1064,7 +1095,7 @@ public class GmdnLoaderAlgorithm extends RootServiceJpa implements Algorithm {
 					final Concept parConcept = conceptMap.get(par);
 					// Only if chd/par concepts are active
 					if (chdConcept != null && parConcept != null) {
-						Logger.getLogger(getClass()).debug("REL2 " + chd + ":"
+						log.debug("REL2 " + chd + ":"
 								+ chdConcept.getTerminologyId() + " => " + par
 								+ ":" + parConcept.getTerminologyId());
 						helper.createIsaRelationship(
