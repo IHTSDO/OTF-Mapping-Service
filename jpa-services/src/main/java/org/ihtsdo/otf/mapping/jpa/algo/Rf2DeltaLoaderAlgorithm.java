@@ -304,8 +304,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 									+ " descriptions expected, found"
 									+ modifiedDescriptions.getCount()
 							: "    Description count matches");
-			log
-					.info((modifiedLanguageRefSetMembers
+			log.info((modifiedLanguageRefSetMembers
 							.getCount() != nLanguagesUpdated)
 									? "    " + nLanguagesUpdated
 											+ " languageRefSetMembers expected, found"
@@ -317,8 +316,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 			contentService.close();
 
 			// Compute default preferred names
-			log
-					.info("  Compute preferred names for delta concepts.");
+			log.info("  Compute preferred names for delta concepts.");
 			contentService = new ContentServiceJpa();
 			contentService.setTransactionPerOperation(false);
 			contentService.beginTransaction();
@@ -326,10 +324,12 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 			contentService.commit();
 			log.info("Done");
 
-		} catch (
-
-		Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
+			log.info(e.getMessage());
+            for (StackTraceElement element : e.getStackTrace()) {
+              log.info(element.toString());
+            }
 			throw new Exception("Unexpected exception:", e);
 		}
 	}

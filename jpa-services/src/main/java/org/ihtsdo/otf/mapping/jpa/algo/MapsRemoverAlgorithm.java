@@ -117,6 +117,10 @@ public class MapsRemoverAlgorithm extends RootServiceJpa
 
 		} catch (Exception e) {
 			e.printStackTrace();
+			log.info(e.getMessage());
+            for (StackTraceElement element : e.getStackTrace()) {
+              log.info(element.toString());
+            }
 			throw new Exception("Unexpected exception:", e);
 		}
 	}

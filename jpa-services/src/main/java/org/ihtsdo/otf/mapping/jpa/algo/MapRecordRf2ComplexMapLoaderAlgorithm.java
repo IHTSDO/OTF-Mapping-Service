@@ -357,6 +357,10 @@ public class MapRecordRf2ComplexMapLoaderAlgorithm extends RootServiceJpa
       log.info("Done ...");
     } catch (Exception e) {
       e.printStackTrace();
+      log.info(e.getMessage());
+      for (StackTraceElement element : e.getStackTrace()) {
+        log.info(element.toString());
+      }
       throw new Exception("Loading of RF2 Complex Maps failed.", e);
     } finally {
       try {

@@ -363,8 +363,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 						.getHierarchicalRelationshipTypes(terminology, version);
 				String isaRelType = hierRelTypeMap.keySet().iterator().next()
 						.toString();
-				log
-						.info("  Start creating tree positions.");
+				log.info("  Start creating tree positions.");
 				metadataService.close();
 
 				final ContentService contentService = new ContentServiceJpa();
@@ -374,8 +373,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 				String conceptId = isaRelType;
 				String rootId = null;
 				OUTER: while (true) {
-					log
-							.info("    Walk up tree from " + conceptId);
+					log.info("    Walk up tree from " + conceptId);
 					Concept c = contentService.getConcept(conceptId,
 							terminology, version);
 					for (Relationship r : c.getRelationships()) {
@@ -389,8 +387,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 					rootId = conceptId;
 					break;
 				}
-				log
-						.info("    Compute tree from rootId " + conceptId);
+				log.info("    Compute tree from rootId " + conceptId);
 				ValidationResult result = contentService.computeTreePositions(
 						terminology, version, isaRelType, rootId);
 				if (sendNotification && !result.isValid()) {
@@ -411,6 +408,10 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
 		} catch (Exception e) {
 			e.printStackTrace();
+			log.info(e.getMessage());
+            for (StackTraceElement element : e.getStackTrace()) {
+              log.info(element.toString());
+            }
 			throw e;
 		}
 
