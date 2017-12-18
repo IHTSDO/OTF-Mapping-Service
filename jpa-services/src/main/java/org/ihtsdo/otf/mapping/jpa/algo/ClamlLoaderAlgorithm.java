@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.io.PushbackInputStream;
 import java.io.Reader;
 import java.text.ParseException;
@@ -28,6 +29,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.algo.Algorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.helpers.ClamlMetadataHelper;
+import org.ihtsdo.otf.mapping.jpa.helpers.LoggerUtility;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.RootServiceJpa;
@@ -41,6 +43,7 @@ import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.SimpleRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.ProgressListener;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -97,7 +100,14 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 	/** The date format. */
 	private final SimpleDateFormat dateFormat = new SimpleDateFormat(
 			"yyyyMMdd");
-
+	   
+    /** The log. */
+    private static Logger log;
+    
+    /** The log file. */
+    private File logFile;
+    
+    
 	public ClamlLoaderAlgorithm(String terminology,
 			String terminologyVersion, String inputFile) throws Exception {
 
@@ -105,10 +115,31 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 		this.terminology = terminology;
 		this.terminologyVersion = terminologyVersion;
 		this.inputFile = inputFile;
+		
+	      //initialize logger
+        String rootPath = ConfigUtility.getConfigProperties()
+              .getProperty("map.principle.source.document.dir");
+        if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
+          rootPath += "/";
+        }
+        rootPath += "logs";
+        File logDirectory = new File(rootPath);
+        if (!logDirectory.exists()) {
+            logDirectory.mkdir();
+        }
+        
+        logFile = new File(logDirectory, "load_" + terminology + ".log");
+        LoggerUtility.setConfiguration("load", logFile.getAbsolutePath());
+        this.log = LoggerUtility.getLogger("load");
 	}
 
 	public void compute() throws Exception {
 
+	   // clear log before starting process
+      PrintWriter writer = new PrintWriter(logFile);
+      writer.print("");
+      writer.close(); 
+      
 		contentService = new ContentServiceJpa();
 		contentService.setTransactionPerOperation(false);
 		contentService.beginTransaction();
@@ -122,7 +153,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 		findVersion(inputFile);
 
 		// create Metadata
-		Logger.getLogger(getClass()).info("  Create metadata classes");
+		log.info("  Create metadata classes");
 		helper = new ClamlMetadataHelper(terminology, terminologyVersion,
 				effectiveTime, contentService);
 		conceptMap = helper.createMetadata();
@@ -162,18 +193,21 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 
 			// Let the service create its own transaction.
 			for (final String root : roots) {
-				Logger.getLogger(getClass())
-						.info("Start creating tree positions " + root + ", "
+				log.info("Start creating tree positions " + root + ", "
 								+ isaRelType);
 				contentService.computeTreePositions(terminology,
 						terminologyVersion, isaRelType, root);
 			}
 			contentService.close();
 
-			Logger.getLogger(getClass()).info("Done ...");
+			log.info("Done ...");
 
 		} catch (Exception e) {
 			e.printStackTrace();
+			log.info(e.getMessage());
+		      for (StackTraceElement element : e.getStackTrace()) {
+		        log.info(element.toString());
+		      }
 			throw new Exception("Conversion of Claml to RF2 objects failed", e);
 		}
 	}
@@ -315,7 +349,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 					String value = attributes.getValue("value");
 					roots = new ArrayList<>();
 					for (final String code : value.split(" ")) {
-						Logger.getLogger(getClass())
+						log
 								.info("  Adding root: " + code.trim());
 						roots.add(code.trim());
 					}
@@ -327,7 +361,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 			if (qName.equalsIgnoreCase("class")) {
 				code = attributes.getValue("code");
 				classUsage = attributes.getValue("usage");
-				Logger.getLogger(getClass()).info("  Encountered class " + code
+				log.info("  Encountered class " + code
 						+ " "
 						+ (classUsage == null ? "" : "(" + classUsage + ")"));
 			}
@@ -336,7 +370,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 			if (qName.equalsIgnoreCase("modifier")) {
 				code = attributes.getValue("code");
 				classUsage = attributes.getValue("usage");
-				Logger.getLogger(getClass()).info("  Encountered modifier "
+				log.info("  Encountered modifier "
 						+ code + " "
 						+ (classUsage == null ? "" : "(" + classUsage + ")"));
 			}
@@ -351,17 +385,17 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 				// CLAML FIXER - ICD10 is broken, fix it here
 				//
 				if (modifier.endsWith("_4") && !modifierCode.startsWith(".")) {
-					Logger.getLogger(getClass())
+					log
 							.info("  FIXING broken code, adding . to _4 code");
 					modifierCode = "." + modifierCode;
 				}
 				if (modifier.endsWith("_5") && modifierCode.startsWith(".")) {
-					Logger.getLogger(getClass()).info(
+					log.info(
 							"  FIXING broken code, removing . from _5 code");
 					modifierCode = modifierCode.substring(1);
 				}
 				classUsage = attributes.getValue("usage");
-				Logger.getLogger(getClass()).info("  Encountered modifierClass "
+				log.info("  Encountered modifierClass "
 						+ modifierCode + " for " + modifier + " "
 						+ (classUsage == null ? "" : "(" + classUsage + ")"));
 			}
@@ -403,7 +437,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 			// Encountered ModifiedBy, save modifier code information
 			if (qName.equalsIgnoreCase("modifiedby")) {
 				final String modifiedByCode = attributes.getValue("code");
-				Logger.getLogger(getClass()).info(
+				log.info(
 						"  Class " + code + " modified by " + modifiedByCode);
 				List<String> currentModifiers = new ArrayList<>();
 				if (classToModifierMap.containsKey(code)) {
@@ -417,7 +451,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 			// information
 			if (qName.equalsIgnoreCase("excludemodifier")) {
 				final String excludeModifierCode = attributes.getValue("code");
-				Logger.getLogger(getClass()).info("  Class and subclasses of "
+				log.info("  Class and subclasses of "
 						+ code + " exclude modifier " + excludeModifierCode);
 				List<String> currentModifiers = new ArrayList<>();
 				if (classToExcludedModifierMap.containsKey(code)) {
@@ -440,7 +474,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 							final String code = c + padI.substring(
 									padI.length() - startEnd[0].length() + 1,
 									padI.length());
-							Logger.getLogger(getClass())
+							log
 									.info("  Class and subclasses of " + code
 											+ " exclude modifier "
 											+ excludeModifierCode);
@@ -462,7 +496,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 			if (qName.equalsIgnoreCase("rubric")) {
 				rubricKind = attributes.getValue("kind");
 				rubricId = attributes.getValue("id");
-				Logger.getLogger(getClass()).info("  Class " + code
+				log.info("  Class " + code
 						+ " has rubric " + rubricKind + ", " + rubricId);
 			}
 
@@ -569,7 +603,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 						concept.setTerminology(terminology);
 						concept.setTerminologyVersion(terminologyVersion);
 						concept.setDefaultPreferredName(labelChars.toString());
-						Logger.getLogger(getClass())
+						log
 								.debug("  Add concept "
 										+ concept.getTerminologyId() + " "
 										+ concept.getDefaultPreferredName());
@@ -596,7 +630,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 							new Long(conceptMap.get("defaultCaseSignificance")
 									.getTerminologyId()));
 					desc.setLanguageCode("en");
-					Logger.getLogger(getClass())
+					log
 							.info("  Add Description for class " + code + " - "
 									+ rubricKind + " - "
 									+ (desc.getTerm().replaceAll("\r", "")
@@ -629,7 +663,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 					// endDocument(),
 					// save relevant data now in relsMap
 					reference = chars.toString();
-					Logger.getLogger(getClass())
+					log
 							.info("  Class " + code + " has reference to "
 									+ reference + " " + (referenceUsage == null
 											? "" : "(" + referenceUsage + ")"));
@@ -669,7 +703,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 					}
 					modifierCodeToClassMap.put(modifierCode, concept);
 					modifierMap.put(modifier, modifierCodeToClassMap);
-					Logger.getLogger(getClass()).info("  Modifier " + modifier
+					log.info("  Modifier " + modifier
 							+ " needs template class for " + modifierCode);
 				}
 
@@ -683,7 +717,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 					// endDocument(),
 					// save relevant data now in relsMap
 					if (isaRelNeeded && concept.getTerminologyId() != null) {
-						Logger.getLogger(getClass()).info("  Class " + code
+						log.info("  Class " + code
 								+ " has parent " + parentCode);
 						Set<Concept> children = new HashSet<>();
 						// check if this parentCode already has children
@@ -701,9 +735,9 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 
 					// Record class level dagger/asterisk info as refset member
 					if (classUsage != null) {
-						Logger.getLogger(getClass()).info(
+						log.info(
 								"  Class " + code + " has usage " + classUsage);
-						Logger.getLogger(getClass())
+						log
 								.info("    id = " + concept.getId());
 						final SimpleRefSetMember member = new SimpleRefSetMemberJpa();
 						member.setConcept(concept);
@@ -827,7 +861,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 					if (type.equals("dagger"))
 						type = "asterisk-to-dagger";
 					for (final Concept childConcept : mapEntry.getValue()) {
-						Logger.getLogger(getClass())
+						log
 								.info("  Create Relationship "
 										+ childConcept.getTerminologyId() + " "
 										+ type + " " + parentCode + " " + id);
@@ -873,13 +907,13 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 							childConcept.setRelationships(rels);
 
 						} else if (modifierMap.containsKey(parentCode)) {
-							Logger.getLogger(getClass())
+							log
 									.info("    IGNORE rel to modifier");
 						} else {
 							// throw new SAXException("Problem inserting
 							// relationship, code "
 							// + parentCode + " does not exist.");
-							Logger.getLogger(getClass())
+							log
 									.info("    WARNING rel to illegal concept");
 						}
 					}
@@ -911,7 +945,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 				concept.setTerminology(terminology);
 				concept.setTerminologyVersion(terminologyVersion);
 				concept.setDefaultPreferredName(labelChars.toString());
-				Logger.getLogger(getClass())
+				log
 						.info("  Add modifier concept "
 								+ concept.getTerminologyId() + " "
 								+ concept.getDefaultPreferredName());
@@ -956,7 +990,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 			final Map<String, String> modifiersToMatchedCodeMap = new HashMap<>();
 			final Map<String, String> excludedModifiersToMatchedCodeMap = new HashMap<>();
 			while (cmpCode.length() > 2) {
-				Logger.getLogger(getClass())
+				log
 						.info("    Determine if " + cmpCode + " has modifiers");
 
 				// If a matching modifier is found for this or any ancestor code
@@ -966,7 +1000,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 					for (final String modifier : classToModifierMap
 							.get(cmpCode)) {
 						modifiersToMatchedCodeMap.put(modifier, codeToModify);
-						Logger.getLogger(getClass()).info("      Use modifier "
+						log.info("      Use modifier "
 								+ modifier + " for " + cmpCode);
 						// If this modifier has been explicitly excluded at a
 						// lower level
@@ -981,7 +1015,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 										excludedModifiersToMatchedCodeMap
 												.get(modifier),
 										cmpCode)) {
-							Logger.getLogger(getClass())
+							log
 									.info("      Exclude modifier " + modifier
 											+ " for "
 											+ modifiersToMatchedCodeMap
@@ -992,7 +1026,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 							if (!overrideExclusion(codeToModify, modifier)) {
 								modifiersToMatchedCodeMap.remove(modifier);
 							} else {
-								Logger.getLogger(getClass())
+								log
 										.info("      Override exclude modifier "
 												+ modifier + " for "
 												+ codeToModify);
@@ -1025,7 +1059,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 
 			// Determine the modifiers that apply to the current code
 			Set<String> modifiersForCode = modifiersToMatchedCodeMap.keySet();
-			Logger.getLogger(getClass())
+			log
 					.info("      Final modifiers to generate classes for: "
 							+ modifiersForCode);
 
@@ -1045,7 +1079,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 							|| codeToModify.length() == 5
 									&& modifiedByCode.endsWith("_5")) {
 
-						Logger.getLogger(getClass())
+						log
 								.info("        Apply modifier " + modifiedByCode
 										+ " to " + codeToModify);
 
@@ -1099,7 +1133,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 
 						final Concept conceptToModify = conceptMap
 								.get(codeToModify);
-						Logger.getLogger(getClass())
+						log
 								.info("        Creating placeholder concept "
 										+ conceptToModify.getTerminologyId()
 										+ ".X");
@@ -1122,7 +1156,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 								conceptMap.get(codeToModify).getTerminologyId()
 										+ ".X");
 					} else {
-						Logger.getLogger(getClass())
+						log
 								.info("        SKIPPING modifier "
 										+ modifiedByCode + " for "
 										+ codeToModify);
@@ -1147,7 +1181,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 				return false;
 			}
 			final String cmpCode = code.substring(0, 3);
-			Logger.getLogger(getClass()).info("    CHECK OVERRIDE " + code
+			log.info("    CHECK OVERRIDE " + code
 					+ ", " + cmpCode + ", " + modifier);
 
 			final Set<String> overrideCodes = new HashSet<>(
@@ -1238,7 +1272,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 		private Concept createChildConcept(String childCode,
 				Concept parentConcept, Concept modConcept, int relId)
 				throws Exception {
-			Logger.getLogger(getClass()).info("        Creating concept "
+			log.info("        Creating concept "
 					+ childCode + " from " + parentConcept.getTerminologyId());
 			Concept childConcept = new ConceptJpa();
 			childConcept = helper.createNewActiveConcept(childCode, terminology,
@@ -1333,18 +1367,15 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 		br.close();
 		// Override terminology version with parameter
 		terminologyVersion = version;
-		Logger.getLogger(getClass())
-				.info("terminologyVersion: " + terminologyVersion);
+		log.info("terminologyVersion: " + terminologyVersion);
 
 		try {
 			dateFormat.parse(effectiveTime);
-			Logger.getLogger(getClass())
-					.info("effectiveTime: " + effectiveTime);
+			log.info("effectiveTime: " + effectiveTime);
 		} catch (Exception e) {
 			// just use today
 			effectiveTime = dateFormat.format(new Date());
-			Logger.getLogger(getClass())
-					.info("effectiveTime: " + effectiveTime);
+			log.info("effectiveTime: " + effectiveTime);
 		}
 	}
 
