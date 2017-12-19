@@ -1498,8 +1498,10 @@
   <table style="width: 100%" class="table pure-table">
     <thead>
       <tr>
-        <th style="width: 50%;">Initial File</th>
-        <th style="width: 50%;">Later File</th>
+        <th style="width: 47%;">Initial File</th>
+        <th style="width: 3%;"></th>
+        <th style="width: 47%;">Later File</th>
+        <th style="width: 3%;"></th>
       </tr>
     </thead>
     <tbody>
@@ -1510,6 +1512,11 @@
             ng-change="setFiles(selectedFile1, null)"
             ng-model="selectedFile1"></select>
         </td>
+        <td> <i ng-show="fileArray[0].terminology"
+      		style="margin-left: 5px; margin-right: 10px;"
+      		class="noul glyphicon glyphicon-download"
+      		title="Download initial release file."
+      		ng-click="downloadFileFromAmazonS3(fileArray[0])"></i></td>
 
         <td style="padding: 5px;">
            <select style="width: 500px;" id="compareFile2"
@@ -1517,6 +1524,16 @@
             ng-change="setFiles(null, selectedFile2)"
             ng-model="selectedFile2"></select>
         </td>
+        <td> <i ng-show="fileArray[1].terminology && fileArray[1].terminology != 'current'"
+      		style="margin-left: 5px; margin-right: 10px;"
+      		class="noul glyphicon glyphicon-download"
+      		title="Download later release file."
+      		ng-click="downloadFileFromAmazonS3(fileArray[1])"></i>
+      		<a href="doc/release/{{focusProject.sourceTerminology}}_to_{{focusProject.destinationTerminology}}_{{focusProject.refSetId}}/current/{{fileArray[1].value}}"
+    		target="_blank"><i ng-show="fileArray[1].terminology == 'current'"
+      		style="margin-left: 5px; margin-right: 10px;"
+      		class="noul glyphicon glyphicon-download"
+      		title="Download later release file."></i></a></td>      
       </tr>
     </tbody>
   </table>
