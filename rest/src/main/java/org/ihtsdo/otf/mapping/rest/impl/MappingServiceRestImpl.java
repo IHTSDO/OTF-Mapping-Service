@@ -5918,12 +5918,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       // Connect to server
       AmazonS3 s3Client = connectToAmazonS3();
       
-      // List Buckets
-      List<Bucket> buckets = s3Client.listBuckets();
-      for (Bucket b : buckets) {
-        Logger.getLogger(MappingServiceRestImpl.class)
-            .info("Bucket name " + b.getName());
-      }
+//      // List Buckets
+//      List<Bucket> buckets = s3Client.listBuckets();
+//      for (Bucket b : buckets) {
+//        Logger.getLogger(MappingServiceRestImpl.class)
+//            .info("Bucket name " + b.getName());
+//      }
 
       // Verify Buckets Exists
       if (!s3Client.doesBucketExist(bucketName)) {

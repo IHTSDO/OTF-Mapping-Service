@@ -25,7 +25,7 @@ import org.ihtsdo.otf.mapping.services.helpers.ProgressListener;
  * See admin/remover/pom.xml for a sample execution.
  * 
  */
-public class MapsRemoverAlgorithm extends RootServiceJpa
+public class RefsetmemberRemoverAlgorithm extends RootServiceJpa
 		implements Algorithm, AutoCloseable {
 
 	/** Listeners. */
@@ -43,7 +43,7 @@ public class MapsRemoverAlgorithm extends RootServiceJpa
     /** The log file. */
     private File logFile;
 
-	public MapsRemoverAlgorithm(String refsetId) throws Exception {
+	public RefsetmemberRemoverAlgorithm(String refsetId) throws Exception {
 		super();
 		this.refsetId = refsetId;
 			      

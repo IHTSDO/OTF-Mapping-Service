@@ -36,12 +36,13 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.TerminologyVersion;
 import org.ihtsdo.otf.mapping.helpers.TerminologyVersionList;
+import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.algo.ClamlLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.GmdnDownloadAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.GmdnLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.MapRecordRf2ComplexMapLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.MapRecordRf2SimpleMapLoaderAlgorithm;
-import org.ihtsdo.otf.mapping.jpa.algo.MapsRemoverAlgorithm;
+import org.ihtsdo.otf.mapping.jpa.algo.RefsetmemberRemoverAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.RemoverAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.Rf2DeltaLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.Rf2SnapshotLoaderAlgorithm;
@@ -75,22 +76,23 @@ import io.swagger.annotations.ApiParam;
  */
 @Path("/content")
 @Api(value = "/content", description = "Operations to get RF2 content for a terminology.")
-@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+@Produces({
+    MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+})
 public class ContentServiceRestImpl extends RootServiceRestImpl
-		implements ContentServiceRest {
+    implements ContentServiceRest {
 
-	/** The security service. */
-	private SecurityService securityService;
+  /** The security service. */
+  private SecurityService securityService;
 
-	/**
-	 * Instantiates an empty {@link ContentServiceRestImpl}.
-	 *
-	 * @throws Exception
-	 *             the exception
-	 */
-	public ContentServiceRestImpl() throws Exception {
-		securityService = new SecurityServiceJpa();
-	}
+  /**
+   * Instantiates an empty {@link ContentServiceRestImpl}.
+   *
+   * @throws Exception the exception
+   */
+  public ContentServiceRestImpl() throws Exception {
+    securityService = new SecurityServiceJpa();
+  }
 
   /*
    * (non-Javadoc)
@@ -103,7 +105,9 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   @GET
   @Path("/concept/id/{terminology}/{terminolgoyVersion}/{terminologyId}")
   @ApiOperation(value = "Get concept by id, terminology, and version", notes = "Gets the concept for the specified parameters.", response = Concept.class)
-  @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
   public Concept getConcept(
     @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
     @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
@@ -121,8 +125,8 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       authorizeApp(authToken, MapUserRole.VIEWER, "get concept",
           securityService);
 
-			final Concept c = contentService.getConcept(terminologyId,
-					terminology, terminologyVersion);
+      final Concept c = contentService.getConcept(terminologyId, terminology,
+          terminologyVersion);
 
       if (c != null) {
         // Make sure to read descriptions and relationships (prevents
@@ -157,7 +161,9 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   @GET
   @Path("/concept/id/{terminology}/{terminologyId}")
   @ApiOperation(value = "Get the concept for the latest version of an id and terminology.", notes = "Gets the concept for the specified parameters.", response = Concept.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
   public Concept getConcept(
     @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
     @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
@@ -175,10 +181,9 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       authorizeApp(authToken, MapUserRole.VIEWER, "get concept",
           securityService);
 
-			final String version = metadataService
-					.getLatestVersion(terminology);
-			final Concept c = contentService.getConcept(terminologyId,
-					terminology, version);
+      final String version = metadataService.getLatestVersion(terminology);
+      final Concept c =
+          contentService.getConcept(terminologyId, terminology, version);
       c.getDescriptions();
       c.getRelationships();
       return c;
@@ -217,8 +222,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       // authorize call
       authorizeApp(authToken, MapUserRole.VIEWER, "find concepts",
           securityService);
-			return contentService.findConceptsForQuery(query,
-					new PfsParameterJpa());
+      return contentService.findConceptsForQuery(query, new PfsParameterJpa());
 
     } catch (Exception e) {
       handleException(e, "trying to find the concepts by query");
@@ -240,7 +244,9 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   @GET
   @Path("/concept/id/{terminology}/{terminologyVersion}/{terminologyId}/descendants")
   @ApiOperation(value = "Find concept descendants.", notes = "Gets a list of search results for each descendant concept.", response = Concept.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
   public SearchResultList findDescendantConcepts(
     @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
     @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
@@ -250,18 +256,17 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
     Logger.getLogger(ContentServiceRestImpl.class)
         .info("RESTful call (Content): /concept/" + terminology + "/"
-						+ terminologyVersion + "/id/" + terminologyId
-						+ "/descendants");
+            + terminologyVersion + "/id/" + terminologyId + "/descendants");
 
     final ContentService contentService = new ContentServiceJpa();
     try {
       // authorize call
-			authorizeApp(authToken, MapUserRole.VIEWER,
-					"find descendant concepts", securityService);
+      authorizeApp(authToken, MapUserRole.VIEWER, "find descendant concepts",
+          securityService);
 
       // want all descendants, do not use PFS parameter
-			return contentService.findDescendantConcepts(terminologyId,
-					terminology, terminologyVersion, null);
+      return contentService.findDescendantConcepts(terminologyId, terminology,
+          terminologyVersion, null);
     } catch (Exception e) {
       handleException(e, "trying to find descendant concepts");
       return null;
@@ -274,15 +279,16 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   /*
    * (non-Javadoc)
    * 
-	 * @see
-	 * org.ihtsdo.otf.mapping.rest.impl.ContentServiceRest#findChildConcepts(
+   * @see org.ihtsdo.otf.mapping.rest.impl.ContentServiceRest#findChildConcepts(
    * java.lang.String, java.lang.String, java.lang.String, java.lang.String)
    */
   @Override
   @GET
   @Path("/concept/id/{terminology}/{terminologyVersion}/{terminologyId}/children")
   @ApiOperation(value = "Find concept children.", notes = "Gets a list of search results for each child concept.", response = Concept.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
   public SearchResultList findChildConcepts(
     @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("terminologyId") String id,
     @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
@@ -292,8 +298,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
     Logger.getLogger(ContentServiceRestImpl.class)
         .info("RESTful call (Content): /concept/" + terminology + "/"
-						+ terminologyVersion + "/id/" + id.toString()
-						+ "/descendants");
+            + terminologyVersion + "/id/" + id.toString() + "/descendants");
 
     final ContentService contentService = new ContentServiceJpa();
     final MetadataService metadataService = new MetadataServiceJpa();
@@ -304,10 +309,8 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
       String isaId = "";
       final Map<String, String> relTypesMap = metadataService
-					.getHierarchicalRelationshipTypes(terminology,
-							terminologyVersion);
-			for (final Map.Entry<String, String> entry : relTypesMap
-					.entrySet()) {
+          .getHierarchicalRelationshipTypes(terminology, terminologyVersion);
+      for (final Map.Entry<String, String> entry : relTypesMap.entrySet()) {
         if (entry.getValue().toLowerCase().startsWith("is"))
           isaId = entry.getKey();
       }
@@ -366,7 +369,9 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   @POST
   @Path("/terminology/id/{terminology}/{terminologyVersion}/delta")
   @ApiOperation(value = "Gets the most recently edited concepts", notes = "Gets a list of search results for concepts changed since the last delta run.", response = Concept.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
   public SearchResultList findDeltaConceptsForTerminology(
     @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
@@ -375,8 +380,8 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     throws Exception {
 
     Logger.getLogger(ContentServiceRestImpl.class)
-				.info("RESTful call (Content): /terminology/id/" + terminology
-						+ "/" + terminologyVersion + "/delta");
+        .info("RESTful call (Content): /terminology/id/" + terminology + "/"
+            + terminologyVersion + "/delta");
 
     final ContentService contentService = new ContentServiceJpa();
     try {
@@ -385,8 +390,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
           securityService);
 
       final ConceptList conceptList = contentService
-					.getConceptsModifiedSinceDate(terminology, null,
-							pfsParameter);
+          .getConceptsModifiedSinceDate(terminology, null, pfsParameter);
       final SearchResultList results = new SearchResultListJpa();
 
       for (final Concept c : conceptList.getConcepts()) {
@@ -402,8 +406,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
           if (!d.getEffectiveTime().equals(c.getEffectiveTime()))
             modifiedConcept = true;
-					for (final LanguageRefSetMember l : d
-							.getLanguageRefSetMembers()) {
+          for (final LanguageRefSetMember l : d.getLanguageRefSetMembers()) {
             if (!l.getEffectiveTime().equals(c.getEffectiveTime()))
               modifiedConcept = true;
           }
@@ -416,8 +419,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
         final SearchResult result = new SearchResultJpa();
         result.setId(c.getId());
-				result.setTerminologyVersion(
-						modifiedConcept ? "Modified" : "New");
+        result.setTerminologyVersion(modifiedConcept ? "Modified" : "New");
         result.setTerminologyId(c.getTerminologyId());
         result.setValue(c.getDefaultPreferredName());
         results.addSearchResult(result);
@@ -447,7 +449,9 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   @GET
   @Path("/index/{terminology}/{terminologyVersion}")
   @ApiOperation(value = "Get the index domains available for given terminology and version.", notes = "Gets the index domains available for the given terminology and version.", response = SearchResultList.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
   public SearchResultList getIndexDomains(
     @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
@@ -486,7 +490,9 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   @GET
   @Path("/index/{terminology}/{terminologyVersion}/{index}")
   @ApiOperation(value = "Return the index page names available for given terminology, version and domain.", notes = "Returns the pages available for the given terminology, version and domain.", response = SearchResultList.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
   public SearchResultList getIndexViewerPagesForIndex(
     @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
@@ -501,15 +507,14 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     final IndexViewerHandler indexViewerHandler = new IndexViewerHandler();
     try {
       // authorize call
-			authorizeApp(authToken, MapUserRole.VIEWER,
-					"get index pages for domain", securityService);
+      authorizeApp(authToken, MapUserRole.VIEWER, "get index pages for domain",
+          securityService);
 
       return indexViewerHandler.getIndexPagesForIndex(terminology,
           terminologyVersion, index);
 
     } catch (Exception e) {
-			handleException(e,
-					"trying to get the page names for the given index");
+      handleException(e, "trying to get the page names for the given index");
       return null;
     } finally {
       securityService.close();
@@ -527,7 +532,9 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   @GET
   @Path("/index/{terminology}/{terminologyVersion}/{domain}/details/{link}")
   @ApiOperation(value = "Peform the search given the search terms.", notes = "Performs the search given the search terms in the given terminology.", response = SearchResultList.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
   public String getIndexViewerDetailsForLink(
     @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
@@ -538,22 +545,19 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
     Logger.getLogger(ContentServiceRestImpl.class)
         .info("RESTful call (Content): /index/" + terminology + "/"
-						+ terminologyVersion + "/" + domain + "/details/"
-						+ link);
+            + terminologyVersion + "/" + domain + "/details/" + link);
 
     final IndexViewerHandler indexViewerHandler = new IndexViewerHandler();
     try {
       // authorize call
       authorizeApp(authToken, MapUserRole.VIEWER,
-					"get index viewer details for object link",
-					securityService);
+          "get index viewer details for object link", securityService);
 
       return indexViewerHandler.getDetailsAsHtmlForLink(terminology,
           terminologyVersion, domain, link);
 
     } catch (Exception e) {
-			handleException(e,
-					"trying to get index viewer details for object link");
+      handleException(e, "trying to get index viewer details for object link");
       return null;
     } finally {
       securityService.close();
@@ -572,7 +576,9 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   @GET
   @Path("/index/{terminology}/{terminologyVersion}/{domain}/search/{searchField}/subSearch/{subSearchField}/subSubSearch/{subSubSearchField}/{allFlag}")
   @ApiOperation(value = "Peform the search given the search terms.", notes = "Performs the search given the search terms in the given terminology.", response = SearchResultList.class)
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
   public SearchResultList findIndexViewerEntries(
     @ApiParam(value = "Concept terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Concept terminology version, e.g. 20140731", required = true) @PathParam("terminologyVersion") String terminologyVersion,
@@ -586,9 +592,8 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
     Logger.getLogger(ContentServiceRestImpl.class)
         .info("RESTful call (Content): /index/" + terminology + "/"
-						+ terminologyVersion + "/" + domain + "/" + searchField
-						+ "/" + subSearchField + "/" + subSubSearchField + "/"
-						+ allFlag);
+            + terminologyVersion + "/" + domain + "/" + searchField + "/"
+            + subSearchField + "/" + subSubSearchField + "/" + allFlag);
 
     final IndexViewerHandler indexViewerHandler = new IndexViewerHandler();
     try {
@@ -596,10 +601,9 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       authorizeApp(authToken, MapUserRole.VIEWER, "find index entries",
           securityService);
 
-			final SearchResultList searchResultList = indexViewerHandler
-					.findIndexEntries(terminology, terminologyVersion, domain,
-							searchField, subSearchField, subSubSearchField,
-							allFlag);
+      final SearchResultList searchResultList =
+          indexViewerHandler.findIndexEntries(terminology, terminologyVersion,
+              domain, searchField, subSearchField, subSubSearchField, allFlag);
       searchResultList.setTotalCount(searchResultList.getCount());
       return searchResultList;
 
@@ -611,7 +615,6 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     }
   }
 
-	
   /* see superclass */
   @Override
   @PUT
@@ -627,8 +630,8 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-		Logger.getLogger(getClass())
-				.info("RESTful call (Content): /map/record/rf2/complex");
+    Logger.getLogger(getClass())
+        .info("RESTful call (Content): /map/record/rf2/complex");
 
     // Track system level information
     long startTimeOrig = System.nanoTime();
@@ -636,13 +639,14 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "remove map record",
         securityService);
 
-		try (final MapRecordRf2ComplexMapLoaderAlgorithm algo = new MapRecordRf2ComplexMapLoaderAlgorithm(
-				inputFile, memeberFlag, recordFlag, refsetId, workflowStatus);) {
+    try (final MapRecordRf2ComplexMapLoaderAlgorithm algo =
+        new MapRecordRf2ComplexMapLoaderAlgorithm(inputFile, memeberFlag,
+            recordFlag, refsetId, workflowStatus);) {
 
       algo.compute();
 
-			Logger.getLogger(getClass()).info(
-					"Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+      Logger.getLogger(getClass())
+          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
 
     } catch (Exception e) {
       handleException(e, "trying to load complex map record");
@@ -667,8 +671,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-		Logger.getLogger(getClass())
-				.info("RESTful call (Content): /map/record/");
+    Logger.getLogger(getClass()).info("RESTful call (Content): /map/record/");
 
     // Track system level information
     long startTimeOrig = System.nanoTime();
@@ -676,13 +679,14 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
         "load map record RF2 simple", securityService);
 
-		try (final MapRecordRf2SimpleMapLoaderAlgorithm algo = new MapRecordRf2SimpleMapLoaderAlgorithm(
-				inputFile, memeberFlag, recordFlag, refsetId, workflowStatus);) {
+    try (final MapRecordRf2SimpleMapLoaderAlgorithm algo =
+        new MapRecordRf2SimpleMapLoaderAlgorithm(inputFile, memeberFlag,
+            recordFlag, refsetId, workflowStatus);) {
 
       algo.compute();
 
-			Logger.getLogger(getClass()).info(
-					"Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+      Logger.getLogger(getClass())
+          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
 
     } catch (Exception e) {
       handleException(e, "trying to load simple map record");
@@ -706,37 +710,34 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     throws Exception {
 
     Logger.getLogger(getClass())
-				.info("RESTful call (Content): /terminology/load/claml/"
-						+ terminology + "/" + version + " from input file "
-						+ inputFile);
+        .info("RESTful call (Content): /terminology/load/claml/" + terminology
+            + "/" + version + " from input file " + inputFile);
 
     // Track system level information
     long startTimeOrig = System.nanoTime();
-    
-    authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-			"load CLAML terminology", securityService);
-    
+
+    authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "load CLAML terminology",
+        securityService);
+
     final String localTerminology = removeSpaces(terminology);
     final String localVersion = removeSpaces(version);
-    
-    //validate that the terminology & version to not already exist.
-	if (doesTerminologyVersionExist(localTerminology, localVersion)) {
-		handleException(
-				new Exception("Terminology and version already exist."),
-				"Terminology and version already exist.");
-	}
-    
-	try (final ClamlLoaderAlgorithm algo = new ClamlLoaderAlgorithm(
-			localTerminology, localVersion, inputFile);) {
+
+    // validate that the terminology & version to not already exist.
+    if (doesTerminologyVersionExist(localTerminology, localVersion)) {
+      handleException(new Exception("Terminology and version already exist."),
+          "Terminology and version already exist.");
+    }
+
+    try (final ClamlLoaderAlgorithm algo =
+        new ClamlLoaderAlgorithm(localTerminology, localVersion, inputFile);) {
 
       algo.compute();
 
-	Logger.getLogger(getClass()).info(
-					"Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+      Logger.getLogger(getClass())
+          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
 
     } catch (Exception e) {
-			handleException(e,
-					"trying to load terminology claml from directory");
+      handleException(e, "trying to load terminology claml from directory");
     }
   }
 
@@ -762,8 +763,8 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
       algo.compute();
 
-            Logger.getLogger(getClass()).info(
-                    "Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+      Logger.getLogger(getClass())
+          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
 
     } catch (Exception e) {
       handleException(e,
@@ -784,9 +785,8 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     throws Exception {
 
     Logger.getLogger(getClass())
-				.info("RESTful call (Content): /terminology/load/gmdn/"
-						+ version + " from input directory "
-						+ inputDir);
+        .info("RESTful call (Content): /terminology/load/gmdn/" + version
+            + " from input directory " + inputDir);
 
     // If inputDir set as 'GENERATE', generate based on config.properties
     if (inputDir.equals("GENERATE")) {
@@ -804,24 +804,22 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         .info("Input directory generated from config.properties, and set to "
             + inputDir);
 
-		
     // Track system level information
     long startTimeOrig = System.nanoTime();
 
-		authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-				"load GMDN terminology", securityService);
+    authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "load GMDN terminology",
+        securityService);
 
-		try (final GmdnLoaderAlgorithm algo = new GmdnLoaderAlgorithm(
-				version, inputDir);) {
+    try (final GmdnLoaderAlgorithm algo =
+        new GmdnLoaderAlgorithm(version, inputDir);) {
 
       algo.compute();
 
-			Logger.getLogger(getClass()).info(
-					"Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+      Logger.getLogger(getClass())
+          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
 
     } catch (Exception e) {
-			handleException(e,
-					"trying to load terminology GMDN from directory");
+      handleException(e, "trying to load terminology GMDN from directory");
     }
   }
 
@@ -844,13 +842,13 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "remove map record",
         securityService);
 
-		try (final MapsRemoverAlgorithm algo = new MapsRemoverAlgorithm(
-				refsetId);) {
+    try (final RefsetmemberRemoverAlgorithm algo =
+        new RefsetmemberRemoverAlgorithm(refsetId);) {
 
       algo.compute();
 
-			Logger.getLogger(getClass()).info(
-					"Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+      Logger.getLogger(getClass())
+          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
 
       return true;
     } catch (Exception e) {
@@ -872,29 +870,27 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-		Logger.getLogger(getClass())
-				.info("RESTful call (Content): /terminology/" + terminology
-						+ "/" + version);
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Content): /terminology/" + terminology + "/" + version);
 
     // Track system level information
     long startTimeOrig = System.nanoTime();
 
-		final String userName = authorizeApp(authToken,
-				MapUserRole.ADMINISTRATOR, "remove terminology",
-				securityService);
+    final String userName = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+        "remove terminology", securityService);
 
-		try (final RemoverAlgorithm algo = new RemoverAlgorithm(terminology,
-				version);) {
+    try (final RemoverAlgorithm algo =
+        new RemoverAlgorithm(terminology, version);) {
 
       // Remove terminology
-			Logger.getLogger(getClass()).info(
-					"  Remove terminology for  " + terminology + "/" + version);
+      Logger.getLogger(getClass())
+          .info("  Remove terminology for  " + terminology + "/" + version);
 
       algo.setLastModifiedBy(userName);
       algo.compute();
 
-			Logger.getLogger(getClass()).info(
-					"Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+      Logger.getLogger(getClass())
+          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
 
       securityService.close();
       securityService = new SecurityServiceJpa();
@@ -939,12 +935,11 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
       algo.compute();
 
-			Logger.getLogger(getClass()).info(
-					"Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+      Logger.getLogger(getClass())
+          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
 
     } catch (Exception e) {
-			handleException(e,
-					"trying to load terminology delta from RF2 directory");
+      handleException(e, "trying to load terminology delta from RF2 directory");
     } finally {
       securityService.close();
     }
@@ -970,22 +965,21 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass())
         .info("RESTful call (Content): /terminology/load/rf2/snapshot/aws/"
             + " awsZipFileName " + awsZipFileName);
-    
+
     // Track system level information
     long startTimeOrig = System.nanoTime();
 
     authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
         "load RF2 snapshot terminology", securityService);
-    
+
     final String localTerminology = removeSpaces(terminology);
     final String localVersion = removeSpaces(version);
-    
-	// validate that the terminology & version to not already exist.
-	if (doesTerminologyVersionExist(localTerminology, localVersion)) {
-		handleException(
-				new Exception("Terminology and version already exist."),
-				"Terminology and version already exist.");
-	}
+
+    // validate that the terminology & version to not already exist.
+    if (doesTerminologyVersionExist(localTerminology, localVersion)) {
+      handleException(new Exception("Terminology and version already exist."),
+          "Terminology and version already exist.");
+    }
 
     File placementDir = null;
     Rf2SnapshotLoaderAlgorithm algo = null;
@@ -1003,7 +997,8 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
           + "TerminologyLoad_" + startTimeOrig);
       placementDir.mkdir();
 
-      Logger.getLogger(getClass()).info("AAA - downloading " + terminology + " " + version + " to " + placementDir);
+      Logger.getLogger(getClass()).info("AAA - downloading " + terminology + " "
+          + version + " to " + placementDir);
       S3ObjectInputStream inputStream = s3object.getObjectContent();
       File zippedFile = new File(placementDir,
           awsZipFileName.substring(awsZipFileName.lastIndexOf('/') + 1));
@@ -1011,7 +1006,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       inputStream.close();
 
       // UNZIP to Placement
-      Logger.getLogger(getClass()).info("AAA - decompressing " + zippedFile);      
+      Logger.getLogger(getClass()).info("AAA - decompressing " + zippedFile);
       unzipToDirectory(zippedFile, placementDir);
       Collection<File> files = FileUtils.listFiles(placementDir, null, true);
       for (File f : files) {
@@ -1019,8 +1014,11 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       }
       Logger.getLogger(getClass()).info("BBB with " + placementDir);
 
-      File testDir = new File(placementDir.getAbsolutePath() + File.separator + zippedFile.getName().substring(0, zippedFile.getName().indexOf(".")) + File.separator + "Snapshot");
-      Logger.getLogger(getClass()).info("CCC with " + testDir.getAbsolutePath() );
+      File testDir = new File(placementDir.getAbsolutePath() + File.separator
+          + zippedFile.getName().substring(0, zippedFile.getName().indexOf("."))
+          + File.separator + "Snapshot");
+      Logger.getLogger(getClass())
+          .info("CCC with " + testDir.getAbsolutePath());
       files = FileUtils.listFiles(testDir, null, true);
       for (File f : files) {
         Logger.getLogger(getClass()).info("DDD with " + f.getAbsolutePath());
@@ -1029,11 +1027,11 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       // Load content with input pulled from S3
       algo = new Rf2SnapshotLoaderAlgorithm(localTerminology, localVersion,
           testDir.getAbsolutePath(), treePositions, sendNotification);
-      
+
       Logger.getLogger(getClass()).info("EEE");
 
       algo.compute();
-      
+
       Logger.getLogger(getClass()).info("FFF");
 
       Logger.getLogger(getClass())
@@ -1050,10 +1048,12 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   }
 
   /* see superclass */
-@Override
+  @Override
   @PUT
   @Path("/terminology/load/rf2/snapshot/{terminology}/{version}")
-  @Consumes({ MediaType.TEXT_PLAIN })
+  @Consumes({
+      MediaType.TEXT_PLAIN
+  })
   @ApiOperation(value = "Loads terminology RF2 snapshot from directory", notes = "Loads terminology RF2 snapshot from directory for specified terminology and version")
   public void loadTerminologyRf2Snapshot(
     @ApiParam(value = "Terminology, e.g. SNOMEDCT_US", required = true) @PathParam("terminology") String terminology,
@@ -1070,18 +1070,17 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
             + inputDir);
 
     authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-            "load RF2 snapshot terminology", securityService);
-    
+        "load RF2 snapshot terminology", securityService);
+
     final String localTerminology = removeSpaces(terminology);
     final String localVersion = removeSpaces(version);
-    
-    //validate that the terminology & version to not already exist.
-	if (doesTerminologyVersionExist(localTerminology, localVersion)) {
-		handleException(
-				new Exception("Terminology and version already exist."),
-				"Terminology and version already exist.");
-	}
-    
+
+    // validate that the terminology & version to not already exist.
+    if (doesTerminologyVersionExist(localTerminology, localVersion)) {
+      handleException(new Exception("Terminology and version already exist."),
+          "Terminology and version already exist.");
+    }
+
     // Track system level information
     long startTimeOrig = System.nanoTime();
 
@@ -1096,14 +1095,14 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       localSendNotification = sendNotification;
     }
 
-	try (final Rf2SnapshotLoaderAlgorithm algo = new Rf2SnapshotLoaderAlgorithm(
-			localTerminology, localVersion,
-			inputDir, localTreePostions, localSendNotification);) {
+    try (final Rf2SnapshotLoaderAlgorithm algo =
+        new Rf2SnapshotLoaderAlgorithm(localTerminology, localVersion, inputDir,
+            localTreePostions, localSendNotification);) {
 
       algo.compute();
 
-      Logger.getLogger(getClass()).info(
-		"Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+      Logger.getLogger(getClass())
+          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
 
     } catch (Exception e) {
       handleException(e,
@@ -1126,37 +1125,34 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     throws Exception {
 
     Logger.getLogger(getClass())
-				.info("RESTful call (Content): /terminology/load/simple/ "
-						+ terminology + ", " + version
-						+ " from input file " + inputFile);
+        .info("RESTful call (Content): /terminology/load/simple/ " + terminology
+            + ", " + version + " from input file " + inputFile);
 
     // Track system level information
     long startTimeOrig = System.nanoTime();
 
     final String localTerminology = removeSpaces(terminology);
     final String localVersion = removeSpaces(version);
-    
-    //validate that the terminology & version to not already exist.
-	if (doesTerminologyVersionExist(localTerminology, localVersion)) {
-		handleException(
-				new Exception("Terminology and version already exist."),
-				"Terminology and version already exist.");
-	}
-	
+
+    // validate that the terminology & version to not already exist.
+    if (doesTerminologyVersionExist(localTerminology, localVersion)) {
+      handleException(new Exception("Terminology and version already exist."),
+          "Terminology and version already exist.");
+    }
+
     authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
         "load simple terminology", securityService);
 
-		try (final SimpleLoaderAlgorithm algo = new SimpleLoaderAlgorithm(
-				localTerminology, localVersion, inputFile, null);) {
+    try (final SimpleLoaderAlgorithm algo = new SimpleLoaderAlgorithm(
+        localTerminology, localVersion, inputFile, null);) {
 
       algo.compute();
 
-			Logger.getLogger(getClass()).info(
-					"Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+      Logger.getLogger(getClass())
+          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
 
     } catch (Exception e) {
-			handleException(e,
-					"trying to load simple terminology from directory");
+      handleException(e, "trying to load simple terminology from directory");
     }
   }
 
@@ -1164,7 +1160,9 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   @Override
   @PUT
   @Path("/terminology/reload/rf2/snapshot/{terminology}/{version}")
-	@Consumes({ MediaType.TEXT_PLAIN })
+  @Consumes({
+      MediaType.TEXT_PLAIN
+  })
   @ApiOperation(value = "Removes and Loads terminology RF2 snapshot from directory", notes = "Removes and loads terminology RF2 snapshot from directory for specified terminology and version")
   public void reloadTerminologyRf2Snapshot(
     @ApiParam(value = "Terminology, e.g. SNOMEDCT_US", required = true) @PathParam("terminology") String terminology,
@@ -1197,12 +1195,12 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     String userName = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
         "reload RF2 snapshot terminology", securityService);
 
-		try (final RemoverAlgorithm removeAlgo = new RemoverAlgorithm(terminology,
-				version);) {
+    try (final RemoverAlgorithm removeAlgo =
+        new RemoverAlgorithm(terminology, version);) {
 
       // Remove terminology
-			Logger.getLogger(getClass()).info(
-					"  Remove terminology for  " + terminology + "/" + version);
+      Logger.getLogger(getClass())
+          .info("  Remove terminology for  " + terminology + "/" + version);
 
       removeAlgo.setLastModifiedBy(userName);
       removeAlgo.compute();
@@ -1216,8 +1214,9 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
           "REMOVER", "Remove terminology");
 
       // if no errors try to load
-			try (final Rf2SnapshotLoaderAlgorithm loadAlgo = new Rf2SnapshotLoaderAlgorithm(
-					terminology, version, inputDir, localTreePostions, localSendNotification);) {
+      try (final Rf2SnapshotLoaderAlgorithm loadAlgo =
+          new Rf2SnapshotLoaderAlgorithm(terminology, version, inputDir,
+              localTreePostions, localSendNotification);) {
 
         loadAlgo.compute();
 
@@ -1261,106 +1260,111 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     throws Exception {
 
     Logger.getLogger(getClass())
-        .info("RESTful call (Content): /terminology/reload/aws/rf2/snapshot/" + terminology + "/" + removeVersion + "/" + loadVersion  
+        .info("RESTful call (Content): /terminology/reload/aws/rf2/snapshot/"
+            + terminology + "/" + removeVersion + "/" + loadVersion
             + " awsZipFileName= " + awsZipFileName);
-    
+
     // Track system level information
     long startTimeOrig = System.nanoTime();
 
     String userName = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
         "reload RF2 snapshot terminology from aws ", securityService);
-    
-    try (final RemoverAlgorithm removeAlgo = new RemoverAlgorithm(terminology,
-        removeVersion);) {
 
-// Remove terminology
-    Logger.getLogger(getClass()).info(
-            "  Remove terminology for  " + terminology + ", " + removeVersion);
+    try (final RemoverAlgorithm removeAlgo =
+        new RemoverAlgorithm(terminology, removeVersion);) {
 
-removeAlgo.setLastModifiedBy(userName);
-removeAlgo.compute();
+      // Remove terminology
+      Logger.getLogger(getClass()).info(
+          "  Remove terminology for  " + terminology + ", " + removeVersion);
 
-Logger.getLogger(getClass()).info(
-  "Remove Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+      removeAlgo.setLastModifiedBy(userName);
+      removeAlgo.compute();
 
-securityService.close();
-securityService = new SecurityServiceJpa();
-securityService.addLogEntry(userName, terminology, removeVersion, null,
-  "REMOVER", "Remove terminology");
-    
+      Logger.getLogger(getClass()).info(
+          "Remove Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
 
-// if no errors try to load from aws
+      securityService.close();
+      securityService = new SecurityServiceJpa();
+      securityService.addLogEntry(userName, terminology, removeVersion, null,
+          "REMOVER", "Remove terminology");
 
-    final String localTerminology = removeSpaces(terminology);
-    final String localVersion = removeSpaces(loadVersion);
+      // if no errors try to load from aws
 
-    File placementDir = null;
-    Rf2SnapshotLoaderAlgorithm algo = null;
+      final String localTerminology = removeSpaces(terminology);
+      final String localVersion = removeSpaces(loadVersion);
 
-    try {
-      // Access zipped awsFile
-      AmazonS3 s3Client = connectToAmazonS3();
+      File placementDir = null;
+      Rf2SnapshotLoaderAlgorithm algo = null;
 
-      final String bucketName = "release-ihtsdo-prod-published";
-      S3Object s3object = s3Client.getObject(bucketName, awsZipFileName);
+      try {
+        // Access zipped awsFile
+        AmazonS3 s3Client = connectToAmazonS3();
 
-      // Unzip awsFile to temp directory
-      File tempDir = FileUtils.getTempDirectory();
-      placementDir = new File(tempDir.getAbsolutePath() + File.separator
-          + "TerminologyLoad_" + startTimeOrig);
-      placementDir.mkdir();
+        final String bucketName = "release-ihtsdo-prod-published";
+        S3Object s3object = s3Client.getObject(bucketName, awsZipFileName);
 
-      Logger.getLogger(getClass()).info("Downloading " + terminology + " " + loadVersion + " to " + placementDir);
-      S3ObjectInputStream inputStream = s3object.getObjectContent();
-      File zippedFile = new File(placementDir,
-          awsZipFileName.substring(awsZipFileName.lastIndexOf('/') + 1));
-      FileUtils.copyInputStreamToFile(inputStream, zippedFile);
-      inputStream.close();
+        // Unzip awsFile to temp directory
+        File tempDir = FileUtils.getTempDirectory();
+        placementDir = new File(tempDir.getAbsolutePath() + File.separator
+            + "TerminologyLoad_" + startTimeOrig);
+        placementDir.mkdir();
 
-      // UNZIP to Placement
-      Logger.getLogger(getClass()).info("Decompressing " + zippedFile);      
-      unzipToDirectory(zippedFile, placementDir);
-      Collection<File> files = FileUtils.listFiles(placementDir, null, true);
-      for (File f : files) {
-        Logger.getLogger(getClass()).info("AAA with " + f.getAbsolutePath());
-      }
-      Logger.getLogger(getClass()).info("BBB with " + placementDir);
+        Logger.getLogger(getClass()).info("Downloading " + terminology + " "
+            + loadVersion + " to " + placementDir);
+        S3ObjectInputStream inputStream = s3object.getObjectContent();
+        File zippedFile = new File(placementDir,
+            awsZipFileName.substring(awsZipFileName.lastIndexOf('/') + 1));
+        FileUtils.copyInputStreamToFile(inputStream, zippedFile);
+        inputStream.close();
 
-      File testDir = new File(placementDir.getAbsolutePath() + File.separator + zippedFile.getName().substring(0, zippedFile.getName().indexOf(".")) + File.separator + "Snapshot");
-      Logger.getLogger(getClass()).info("CCC with " + testDir.getAbsolutePath() );
-      files = FileUtils.listFiles(testDir, null, true);
-      for (File f : files) {
-        Logger.getLogger(getClass()).info("DDD with " + f.getAbsolutePath());
-      }
+        // UNZIP to Placement
+        Logger.getLogger(getClass()).info("Decompressing " + zippedFile);
+        unzipToDirectory(zippedFile, placementDir);
+        Collection<File> files = FileUtils.listFiles(placementDir, null, true);
+        for (File f : files) {
+          Logger.getLogger(getClass()).info("AAA with " + f.getAbsolutePath());
+        }
+        Logger.getLogger(getClass()).info("BBB with " + placementDir);
 
-      // Load content with input pulled from S3
+        File testDir = new File(placementDir.getAbsolutePath() + File.separator
+            + zippedFile.getName().substring(0,
+                zippedFile.getName().indexOf("."))
+            + File.separator + "Snapshot");
+        Logger.getLogger(getClass())
+            .info("CCC with " + testDir.getAbsolutePath());
+        files = FileUtils.listFiles(testDir, null, true);
+        for (File f : files) {
+          Logger.getLogger(getClass()).info("DDD with " + f.getAbsolutePath());
+        }
+
+        // Load content with input pulled from S3
         algo = new Rf2SnapshotLoaderAlgorithm(localTerminology, localVersion,
-          testDir.getAbsolutePath(), treePositions, sendNotification);
-      
-      Logger.getLogger(getClass()).info("EEE");
+            testDir.getAbsolutePath(), treePositions, sendNotification);
 
-      algo.compute();
-      
-      Logger.getLogger(getClass()).info("FFF");
+        Logger.getLogger(getClass()).info("EEE");
 
-      Logger.getLogger(getClass())
-          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+        algo.compute();
 
-    } catch (Exception e) {
-      handleException(e,
-          "trying to load terminology snapshot from RF2 directory");
-    } finally {
-      // Remove directory
-      FileUtils.deleteDirectory(placementDir);
-      algo.close();
-    }
+        Logger.getLogger(getClass()).info("FFF");
+
+        Logger.getLogger(getClass())
+            .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+
+      } catch (Exception e) {
+        handleException(e,
+            "trying to load terminology snapshot from RF2 directory");
+      } finally {
+        // Remove directory
+        FileUtils.deleteDirectory(placementDir);
+        algo.close();
+      }
     } catch (Exception e) {
       handleException(e, "trying to remove terminology");
     } finally {
       securityService.close();
-    }    
-  }  
-  
+    }
+  }
+
   /* see superclass */
   @Override
   @PUT
@@ -1376,8 +1380,7 @@ securityService.addLogEntry(userName, terminology, removeVersion, null,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-		Logger.getLogger(getClass())
-				.info("RESTful call (Content): /map/record/");
+    Logger.getLogger(getClass()).info("RESTful call (Content): /map/record/");
 
     // Track system level information
     long startTimeOrig = System.nanoTime();
@@ -1385,8 +1388,8 @@ securityService.addLogEntry(userName, terminology, removeVersion, null,
     authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
         "load map record RF2 simple", securityService);
 
-		try (final MapsRemoverAlgorithm removeAlgo = new MapsRemoverAlgorithm(
-				refsetId);) {
+    try (final RefsetmemberRemoverAlgorithm removeAlgo =
+        new RefsetmemberRemoverAlgorithm(refsetId);) {
 
       removeAlgo.compute();
 
@@ -1394,8 +1397,9 @@ securityService.addLogEntry(userName, terminology, removeVersion, null,
           "Remove Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
 
       // if remove was successful do add
-			try (final MapRecordRf2SimpleMapLoaderAlgorithm loadAlgo = new MapRecordRf2SimpleMapLoaderAlgorithm(
-					inputFile, memeberFlag, recordFlag, refsetId, workflowStatus);) {
+      try (final MapRecordRf2SimpleMapLoaderAlgorithm loadAlgo =
+          new MapRecordRf2SimpleMapLoaderAlgorithm(inputFile, memeberFlag,
+              recordFlag, refsetId, workflowStatus);) {
 
         loadAlgo.compute();
 
@@ -1409,6 +1413,104 @@ securityService.addLogEntry(userName, terminology, removeVersion, null,
 
     } catch (Exception e) {
       handleException(e, "trying to remove map record");
+      return false;
+
+    } finally {
+      securityService.close();
+    }
+
+    return true;
+  }
+
+  /* see superclass */
+  @Override
+  @PUT
+  @Path("/refset/reload/aws/{refsetId}")
+  @Consumes(MediaType.TEXT_PLAIN)
+  @ApiOperation(value = "Removes refset member data based on refsetId, and reload from AWS snapshot file", notes = "Reload refset member data from AWS snapshot file.")
+  public boolean reloadRefsetMemberAwsSnapshot(
+    @ApiParam(value = "RefSet Id, e.g. 2014_09_01", required = true) @PathParam("refsetId") String refsetId,
+    @ApiParam(value = "Aws Zip MapSnapshot File Name, e.g. filename with full path", required = true) @QueryParam("awsFileName") String awsFileName,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info("RESTful call (Content): /map/record/");
+
+    // Track system level information
+    long startTimeOrig = System.nanoTime();
+
+    authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "reload refset members",
+        securityService);
+
+    try (final RefsetmemberRemoverAlgorithm removeAlgo =
+        new RefsetmemberRemoverAlgorithm(refsetId);) {
+
+      removeAlgo.compute();
+
+      Logger.getLogger(getClass()).info(
+          "Remove Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+
+      // if remove was successful try to load file from aws
+      String inputFile = null;
+      File placementDir = null;
+      try {
+        // Access zipped awsFile
+        AmazonS3 s3Client = connectToAmazonS3();
+
+        final String bucketName = "release-ihtsdo-prod-published";
+        S3Object s3object = s3Client.getObject(bucketName, awsFileName);
+
+        // Save awsFile to temp directory
+        File tempDir = FileUtils.getTempDirectory();
+        placementDir = new File(tempDir.getAbsolutePath() + File.separator
+            + "TerminologyLoad_" + startTimeOrig);
+        placementDir.mkdir();
+
+        Logger.getLogger(getClass())
+            .info("Downloading " + awsFileName + " to " + placementDir);
+        S3ObjectInputStream inputStream = s3object.getObjectContent();
+        File downloadedFile = new File(placementDir,
+            awsFileName.substring(awsFileName.lastIndexOf('/') + 1));
+        FileUtils.copyInputStreamToFile(inputStream, downloadedFile);
+        inputStream.close();
+
+        inputFile = downloadedFile.getAbsolutePath();
+
+        // Load extended or simple maps using downloaded AWS file
+        if (awsFileName.contains("ExtendedMapSnapshot")) {
+          final MapRecordRf2ComplexMapLoaderAlgorithm loadAlgo =
+              new MapRecordRf2ComplexMapLoaderAlgorithm(inputFile, true, false,
+                  refsetId, "PUBLISHED");
+
+          loadAlgo.compute();
+          loadAlgo.close();
+
+        } else if (awsFileName.contains("SimpleMapSnapshot")) {
+
+          final MapRecordRf2SimpleMapLoaderAlgorithm loadAlgo =
+              new MapRecordRf2SimpleMapLoaderAlgorithm(inputFile, true, false,
+                  refsetId, "PUBLISHED");
+
+          loadAlgo.compute();
+          loadAlgo.close();
+        } else {
+          throw new Exception(
+              "Filename must be a Simple or Extended map snapshot.");
+        }
+
+        Logger.getLogger(getClass()).info(
+            "Load Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+
+      } catch (Exception e) {
+        handleException(e, "trying to load refset members");
+        return false;
+      } finally {
+        // Remove directory
+        FileUtils.deleteDirectory(placementDir);
+      }
+
+    } catch (Exception e) {
+      handleException(e, "trying to remove refset members");
       return false;
 
     } finally {
@@ -1444,7 +1546,6 @@ securityService.addLogEntry(userName, terminology, removeVersion, null,
     String currentYear = Integer.toString(year);
     String nextYear = Integer.toString(year + 1);
     String lastYear = Integer.toString(year - 1);
-    
 
     try {
       // authorize call
@@ -1466,17 +1567,17 @@ securityService.addLogEntry(userName, terminology, removeVersion, null,
         fullKeyList.addAll(objects.getObjectSummaries());
         objects = s3Client.listNextBatchOfObjects(objects);
       }
-      
+
       fullKeyList.addAll(objects.getObjectSummaries());
       TerminologyVersionList returnList = new TerminologyVersionList();
       for (S3ObjectSummary obj : fullKeyList) {
-        if (obj.getKey().endsWith("zip")
-            && obj.getKey().contains(terminology)
+        if (obj.getKey().endsWith("zip") && obj.getKey().contains(terminology)
             && !obj.getKey().contains("published_build_backup")
             && (obj.getKey().contains(lastYear)
                 || obj.getKey().contains(currentYear)
                 || obj.getKey().contains(nextYear))
-            && (obj.getKey().matches(".*\\d.zip") || obj.getKey().matches(".*\\dZ.zip"))) {
+            && (obj.getKey().matches(".*\\d.zip")
+                || obj.getKey().matches(".*\\dZ.zip"))) {
           returnList.addTerminologyVersion(
               new TerminologyVersion(obj.getKey(), terminology));
         }
@@ -1524,9 +1625,8 @@ securityService.addLogEntry(userName, terminology, removeVersion, null,
       authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
           "load map record RF2 simple", securityService);
 
-       // Connect to server 
+      // Connect to server
       AmazonS3 s3Client = connectToAmazonS3();
-
 
       List<S3ObjectSummary> fullKeyList = new ArrayList<S3ObjectSummary>();
       ObjectListing objects = s3Client.listObjects(bucketName);
@@ -1539,20 +1639,21 @@ securityService.addLogEntry(userName, terminology, removeVersion, null,
       }
       fullKeyList.addAll(objects.getObjectSummaries());
 
-      TerminologyVersionList returnList = new TerminologyVersionList(); 
-      
+      TerminologyVersionList returnList = new TerminologyVersionList();
+
       for (S3ObjectSummary obj : fullKeyList) {
         if (obj.getKey().endsWith("zip") && obj.getKey().contains(terminology)
             && !obj.getKey().contains("published_build_backup")
             && obj.getKey().contains(version)
-            && (obj.getKey().matches(".*\\d.zip") || obj.getKey().matches(".*\\dZ.zip"))) {
+            && (obj.getKey().matches(".*\\d.zip")
+                || obj.getKey().matches(".*\\dZ.zip"))) {
           TerminologyVersion tv =
               new TerminologyVersion(terminology, version, null, obj.getKey());
           tv.identifyScope();
           returnList.addTerminologyVersion(tv);
         }
       }
-      
+
       returnList.removeDupScopes();
 
       // want all descendants, do not use PFS parameter
@@ -1570,7 +1671,7 @@ securityService.addLogEntry(userName, terminology, removeVersion, null,
     throws IOException {
     if (zippedFile == null) {
     }
-    
+
     if (placementDir == null) {
     }
 
@@ -1616,17 +1717,17 @@ securityService.addLogEntry(userName, terminology, removeVersion, null,
     }
     bos.close();
   }
-  
+
   /**
    * 
    * @param string
    * @return
    */
-	private String removeSpaces(String string) {
-		if (string != null)
-			return string.replace(" ", "").trim();
-		else
-			return null;
-	}
-  
+  private String removeSpaces(String string) {
+    if (string != null)
+      return string.replace(" ", "").trim();
+    else
+      return null;
+  }
+
 }
