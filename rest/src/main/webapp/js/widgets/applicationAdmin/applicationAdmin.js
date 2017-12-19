@@ -53,8 +53,18 @@ angular
         $scope.newHandler;
 
         $scope.terminologyVersionPairs = new Array();
+        $scope.terminologyVersionPairCount = 0;
+        $scope.terminologyVersionScopeTriplets = new Array();
         $scope.mapProjectMetadataPairs = new Array();
 
+        $scope.termLoadVersions = new Array();
+        $scope.termLoadScopes = new Array();
+        $scope.termLoadAwsZipFileName = '';
+        $scope.termLoadVersionFileNameMap = new Map();
+        $scope.termLoadScopeFileNameMap = new Map();
+        
+        $scope.downloadedGmdnVersions = new Array();
+        
         var editingPerformed = new Array();
         var previousUserPage = 1;
         var previousAdvicePage = 1;
@@ -102,6 +112,9 @@ angular
 
         $scope.userApplicationRoles = [ 'VIEWER', 'ADMINISTRATOR' ];
 
+        //get list of type in $scope.terminologyFiles?
+        $scope.terminologyInputTypes = [ 'GMDN', 'SNOMED CT' ];
+        
         // Event for focus project change
         $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
           $scope.focusProject = parameters.focusProject;
@@ -131,24 +144,8 @@ angular
 
         // Load metadata once focus project is ready
         $scope.go = function() {
-          $http({
-            url : root_metadata + 'terminology/terminologies',
-            dataType : 'json',
-            method : 'GET',
-            headers : {
-              'Content-Type' : 'application/json'
-            }
-          }).success(
-            function(data) {
-              for (var i = 0; i < data.keyValuePairList.length; i++) {
-                for (var j = 0; j < data.keyValuePairList[i].keyValuePair.length; j++) {
-                  $scope.terminologyVersionPairs.push(data.keyValuePairList[i].keyValuePair[j].key
-                    + ' ' + data.keyValuePairList[i].keyValuePair[j].value);
-                }
-              }
-            }).error(function(data, status, headers, config) {
-            $rootScope.handleHttpError(data, status, headers, config);
-          });
+          // reload the application's Terminologies
+          reloadTerminologies();
 
           // initialize map project metadata variables
           initializeMapProjectMetadata();
@@ -161,9 +158,9 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-        	// reconstruct emails for ihtsdo.gov users - privacy caution
+        // reconstruct emails for ihtsdo.gov users - privacy caution
             // others will remain as 'Private email'
-        	for (var i = 0; i < data.mapUser.length; i++) {
+        for (var i = 0; i < data.mapUser.length; i++) {
               if (data.mapUser[i].email != 'Private email') {
                 data.mapUser[i].email = data.mapUser[i].email + '@ihtsdo.gov';
               }
@@ -418,6 +415,15 @@ angular
           previousQaDefinitionPage = page;
         };
 
+        $scope.getPagedTerminologies = function(terminology, filter) {
+          $scope.userFilter = filter;
+          $scope.pagedUser = $scope.sortByKey($scope.mapUsers, 'id').filter(containsUserFilter);
+          $scope.pagedUserCount = $scope.pagedUser.length;
+          $scope.pagedUser = $scope.pagedUser.slice((page - 1) * $scope.pageSize, page
+            * $scope.pageSize);
+          previousUserPage = page;
+        };        
+        
         // functions to reset the filter and retrieve
         // unfiltered results
         $scope.resetUserFilter = function() {
@@ -585,7 +591,64 @@ angular
           }
           return false;
         }
+        
+        function reloadTerminologies() {
+          
+          var deferred = $q.defer();
 
+          $http({
+            url : root_metadata + 'terminology/terminologies',
+            dataType : 'json',
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(
+            function(data) {
+              $scope.terminologyVersionPairs = new Array();
+              for (var i = 0; i < data.keyValuePairList.length; i++) {
+                for (var j = 0; j < data.keyValuePairList[i].keyValuePair.length; j++) {
+                  $scope.terminologyVersionPairs.push(data.keyValuePairList[i].keyValuePair[j].key
+                    + ' ' + data.keyValuePairList[i].keyValuePair[j].value);
+                }
+              }
+              $scope.terminologyVersionPairCount = $scope.terminologyVersionPairs.length;
+              
+              deferred.resolve();
+              
+            }).error(function(data, status, headers, config) {
+            $rootScope.handleHttpError(data, status, headers, config);
+            deferred.reject();            
+          });
+
+          return deferred.promise;          
+        }
+        
+        function getDownloadedGmdnVersions() {
+          
+          var deferred = $q.defer();
+
+          $http({
+            url : root_metadata + 'terminology/gmdn',
+            dataType : 'text/plain',
+            method : 'GET'
+          }).success(
+            function(data) {
+              $scope.downloadedGmdnVersions = new Array();
+              var downloadedVersionArray = data.split(';');
+              for (var i = 0; i < downloadedVersionArray.length; i++) {
+                $scope.downloadedGmdnVersions.push(downloadedVersionArray[i]);
+                }            
+              deferred.resolve();
+              
+            }).error(function(data, status, headers, config) {
+            $rootScope.handleHttpError(data, status, headers, config);
+            deferred.reject();            
+          });
+
+          return deferred.promise;          
+        }        
+        
         function initializeMapProjectMetadata() {
           if ($scope.mapProjectMetadata != null) {
             for (var i = 0; i < $scope.mapProjectMetadata.keyValuePairList.length; i++) {
@@ -659,7 +722,7 @@ angular
         $scope.getMapType = function(project) {
           for (var i = $scope.allowableMapTypes.length; i--;) {
             if ($scope.allowableMapTypes[i].key === project.mapRefsetPattern ||
-            		$scope.allowableMapTypes[i].key == project.mapRefsetPattern.key)
+            $scope.allowableMapTypes[i].key == project.mapRefsetPattern.key)
               return $scope.allowableMapTypes[i];
           }
         };
@@ -667,7 +730,7 @@ angular
         $scope.getWorkflowType = function(project) {
           for (var i = $scope.allowableWorkflowTypes.length; i--;) {
             if ($scope.allowableWorkflowTypes[i].key === project.workflowType ||
-            		$scope.allowableWorkflowTypes[i].key == project.workflowType.key)
+            $scope.allowableWorkflowTypes[i].key == project.workflowType.key)
               return $scope.allowableWorkflowTypes[i];
           }
         };
@@ -675,7 +738,7 @@ angular
         $scope.getMapRelationStyle = function(project) {
           for (var i = $scope.allowableMapRelationStyles.length; i--;) {
             if ($scope.allowableMapRelationStyles[i].key === project.mapRelationStyle ||
-            		$scope.allowableMapRelationStyles[i].key == project.mapRelationStyle.key)
+            $scope.allowableMapRelationStyles[i].key == project.mapRelationStyle.key)
               return $scope.allowableMapRelationStyles[i];
           }
         };
@@ -2421,7 +2484,7 @@ angular
          * strings instead of individual fields
          */
         $scope.updateMapProjectFromList = function(project) {
-          var projectCopy =	angular.copy(project);
+          var projectCopy =angular.copy(project);
           // get source and version and dest and version
           var src = project.sourceTerminologyAndVersion.split(' ');
           projectCopy.sourceTerminology = src[0];
@@ -2561,10 +2624,10 @@ angular
                   var r = confirm('Module id ' + newMapProjectModuleId + ' is already used by project '
                           + $scope.mapProjects[i].name + '.\nDo you want to proceed?');
                   if (r == true) {
-                	    break;
-                	} else {
-                		return;
-                	}
+                    break;
+                } else {
+                return;
+                }
               }
             }          
           
@@ -2715,4 +2778,597 @@ angular
             // });
           }
         };
-      } ]);
+        
+        $scope.deleteTerminology = function(terminologyVersion) {
+
+          if (confirm('Are you sure that you want to delete ' + terminologyVersion + '?') == false)
+            return;
+          
+          $rootScope.glassPane++;
+
+          var termVerArray = terminologyVersion.split(' ');
+          var terminology = termVerArray[0];
+          var version = termVerArray[1];
+          
+          $http({
+            url : root_content + 'terminology/' + terminology + '/' + version,
+            method : 'DELETE',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            //Reload terminology metadata
+            var promise = reloadTerminologies();
+            promise.then(function(data){
+              $rootScope.glassPane--;
+            });
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $scope.recordError = 'Error deleting terminology from application.';
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        };        
+    
+        $scope.downloadTerminologyGmdn = function() {
+          $rootScope.glassPane++;
+         
+          // download the latest version of gmdn from SFTP   
+          $http({
+            url : root_content + 'terminology/download/gmdn',
+            method : 'POST',
+            }).success(function(data) {
+              //Reload downloaded gmdn version metadata
+              var promise = getDownloadedGmdnVersions();
+              promise.then(function(data){
+                $rootScope.glassPane--;
+              });
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        };
+
+        //hold select list for terminologies and versions.
+        $scope.termLoad = {};
+        $scope.termLoad.terminology = '';
+        $scope.termLoad.version = '';
+        $scope.termLoad.scope = '';
+        
+        $scope.getTerminologyVersions = function(terminology) {
+          if (terminology == 'GMDN'){
+            getDownloadedGmdnVersions();
+            return;
+          }
+
+          $rootScope.glassPane++;
+
+          // download the latest version of gmdn from SFTP
+          $http({
+            url : root_content + 'terminology/versions/' + terminology,
+            dataType : 'json',
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            $scope.termLoadVersions = new Array();
+            $scope.termLoadVersionFileNameMap = new Map();
+            
+            for (var i = 0; i < data.TerminologyVersion.length; i++) {
+              $scope.termLoadVersions.push(data.TerminologyVersion[i].version);
+              $scope.termLoad.version = ''; //reset
+              if (terminology != 'SNOMED CT')
+                $scope.termLoadVersionFileNameMap.set(data.TerminologyVersion[i].version, data.TerminologyVersion[i].awsZipFileName)
+            }
+            $rootScope.glassPane--;
+
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        };
+        
+        function getTerminologyScopes(terminology, version) {
+          $rootScope.glassPane++;
+
+          // download the latest version of gmdn from SFTP
+          $http(
+            {
+              url : root_content + 'terminology/scope/' + terminology + "/"
+                + version,
+              dataType : 'json',
+              method : 'GET',
+              headers : {
+                'Content-Type' : 'application/json'
+              }
+            }).success(function(data) {
+            $scope.termLoadScopes = new Array();
+            $scope.termLoadScopeFileNameMap = new Map();
+
+            for (var i = 0; i < data.TerminologyVersion.length; i++) {
+              $scope.termLoadScopes.push(data.TerminologyVersion[i].scope);
+              $scope.termLoadScopeFileNameMap.set(data.TerminologyVersion[i].scope, data.TerminologyVersion[i].awsZipFileName)
+            }
+            $rootScope.glassPane--;
+
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        };
+        
+        $scope.handleVersionSelection = function(terminology, version) {
+          if (version) {
+            if (terminology == 'SNOMED CT') {
+              getTerminologyScopes(terminology, version);
+            } else {
+              // Not SNOMED.  So access awsZipFileName
+              $scope.termLoadAwsZipFileName = $scope.termLoadVersionFileNameMap.get(version);
+              console.log("AAA with ", $scope.termLoadAwsZipFileName);
+            }
+          }
+        }
+        
+        $scope.handleScopeSelection = function(terminology, scope) {
+          if (terminology != 'SNOMED CT')
+            return;
+         
+          // Only valid for SNOMED usage of SCOPE.  
+          $scope.termLoadAwsZipFileName = $scope.termLoadScopeFileNameMap.get(scope);
+        }
+        
+        // ASD
+        // terminology/load/aws/{terminology}
+        $scope.loadTerminologyAws = function(terminology, version, scope) {
+          $rootScope.glassPane++;
+
+          var errors = '';
+          for (var i = 0; i < $scope.terminologyVersionPairs.length; i++) {
+            console.log("check", errors);
+            var loadVersion = version.replace(' ', '');
+            var terminologyVersionPair = $scope.terminologyVersionPairs[i];
+            if (terminology != 'SNOMED CT') {
+              if(terminologyVersionPair == terminology.replace(' ', '') + ' ' + loadVersion){
+                errors += terminology + ' ' + loadVersion + ' is already loaded in the application.\n';
+                break;
+              }
+            } else {
+              // For SNOMED & it's scope
+              loadVersion = loadVersion + (scope == 'Alpha' || scope == 'Beta' ? '_' + scope : '');
+              if(terminologyVersionPair == terminology.replace(' ', '') + ' ' + loadVersion){
+                errors += terminology + ' ' + loadVersion + ' is already loaded in the application.\n';
+                break;
+              }
+            }
+          }
+          
+          console.log("errors", errors);
+          
+          if (errors.length > 0) {
+            alert(errors);
+            $rootScope.glassPane--;
+            return;
+          }
+          
+          // load the version of gmdn into the application   
+          if (isRf2Terminology(terminology)) {
+            loadTerminologyAwsRf2Snapshot(terminology, loadVersion, scope);
+          }
+          reloadTerminologies();
+          $rootScope.glassPane--;          
+        };
+        
+        
+        function isRf2Terminology(terminology) {
+          return terminology == 'SNOMED CT' || 
+            terminology == 'ICNP Diagnoses' || 
+            terminology == 'ICNP Interventions' ||
+            terminology == 'ICPC';
+        }
+        
+        // terminology/load/gmdn
+        $scope.loadTerminologyGmdn = function(gmdnVersion) {
+          $rootScope.glassPane++;
+
+          var errors = '';
+          for (var i = 0; i < $scope.terminologyVersionPairs.length; i++) {
+            var terminologyVersionPair = $scope.terminologyVersionPairs[i];
+            if(terminologyVersionPair == 'GMDN ' + gmdnVersion){
+              errors += 'GMDN ' + gmdnVersion + ' is already loaded in the application.\n';
+              break;
+            }
+          }
+
+          if (errors.length > 0) {
+            alert(errors);
+            $rootScope.glassPane--;
+            return;
+          }
+          
+          // load the version of gmdn into the application   
+          $http({
+            url : root_content + 'terminology/load/gmdn/' + gmdnVersion,
+            data : 'GENERATE',
+            method : 'PUT',
+            headers : {
+              'Content-Type' : 'text/plain'
+            }
+            }).success(function(data) {
+              //Reload terminology metadata
+              var promise = reloadTerminologies();
+              promise.then(function(data){
+                $rootScope.glassPane--;
+              });
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        };
+        
+        
+        // load load Map Record Rf2 Complex Map
+        $scope.loadMapRecordRf2ComplexMap = function(loadTerminology) {
+          $rootScope.glassPane++;
+
+          var errors = '';
+
+          if (error.length > 0) {
+            alert(errors);
+            $rootScope.glassPane--;
+            return;
+          }
+          
+          var queryString = '';
+          if (loadTerminology.memberFlag) 
+            queryString += "memberFlag=" + loadTerminology.memberFlag;
+          
+          if (queryString !== '') 
+            queryString = "&" + queryString;
+          
+          if (loadTerminology.recordFlag) 
+            queryString += "recordFlag=" + loadTerminology.recordFlag;
+          
+          if (queryString !== '') 
+            queryString = "&" + queryString;
+          
+          if (loadTerminology.workflowStatus) 
+            queryString += "workflowStatus" + loadTerminology.workflowStatus;
+          
+          if (queryString !== '') 
+            queryString = "&" + queryString;
+          
+          // rest call   
+          $http({
+            url: root_content + "map/record/rf2/complex" + queryString,
+            data: loadTerminology.inputFileOrDirectory,
+            method: "PUT",
+            headers: { 'Content-Type' : 'text/plain' }
+            }).success(function(data) {
+              //nothing
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+        };
+        
+        
+        // load Map Record Rf2 Simple Map
+        $scope.loadMapRecordRf2SimpleMap = function(loadTerminology) {
+          $rootScope.glassPane++;
+
+          var errors = '';
+
+          if (error.length > 0) {
+            alert(errors);
+            $rootScope.glassPane--;
+            return;
+          }
+          
+          var queryString = '';
+          if (loadTerminology.memberFlag) 
+            queryString += "memberFlag=" + loadTerminology.memberFlag;
+          
+          if (queryString !== '') 
+            queryString = "&" + queryString;          
+          
+          if (loadTerminology.recordFlag) 
+            queryString += "recordFlag=" + loadTerminology.recordFlag;
+          
+          if (queryString !== '') 
+            queryString = "&" + queryString;
+          
+          if (loadTerminology.workflowStatus) 
+            queryString += "workflowStatus" + loadTerminology.workflowStatus;
+          
+          if (queryString !== '') 
+            queryString = "&" + queryString;
+          
+          // rest call   
+          $http({
+            url: root_content + "map/record/rf2/simple" + queryString,
+            data: loadTerminology.inputFileOrDirectory,
+            method: "PUT",
+            headers: { 'Content-Type' : 'text/plain' }
+            }).success(function(data) {
+              //nothing
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+        };
+        
+        // load terminology Claml
+        $scope.loadTerminologyClaml = function(loadTerminology) {
+          $rootScope.glassPane++;
+
+          var errors = '';
+
+          if (error.length > 0) {
+            alert(errors);
+            $rootScope.glassPane--;
+            return;
+          }
+          
+          // rest call   
+          $http({
+            url: root_content + "terminology/load/claml/" 
+              + loadTerminology.terminology + "/" + loadTerminology.version,
+            data: loadTerminology.inputFileOrDirectory,
+            method: "PUT",
+            headers: { 'Content-Type' : 'text/plain' }
+            }).success(function(data) {
+              //nothing
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+        }; 
+        
+        
+        // remove Map Record
+        $scope.removeMapRecord = function(loadTerminology) {
+          $rootScope.glassPane++;
+
+          var errors = '';
+
+          if (error.length > 0) {
+            alert(errors);
+            $rootScope.glassPane--;
+            return;
+          }
+          
+          // rest call   
+          $http({
+            url: root_content + "map/record/" + loadTerminology.refsetId,
+            method: "DELETE",
+            headers: { 'Content-Type' : 'text/plain' }
+            }).success(function(data) {
+              //nothing
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+        }; 
+        
+        
+        // remove terminology
+        $scope.removeTerminology = function(removeTerminology) {
+          $rootScope.glassPane++;
+
+          var errors = '';
+
+          if (error.length > 0) {
+            alert(errors);
+            $rootScope.glassPane--;
+            return;
+          }
+          
+          // rest call   
+          $http({
+            url: root_content + "terminology/" 
+              + removeTerminology.terminology + "/" + removeTerminology.version,
+            method: "DELETE",
+            headers: { 'Content-Type' : 'text/plain' }
+            }).success(function(data) {
+              //nothing
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+        }; 
+        
+        // load terminology Rf2 delta
+        $scope.loadTerminologyRf2Delta = function(loadTerminology) {
+          $rootScope.glassPane++;
+
+          var errors = '';
+
+          if (error.length > 0) {
+            alert(errors);
+            $rootScope.glassPane--;
+            return;
+          }
+          
+          // rest call   
+          $http({
+            url: root_content + "terminology/load/rf2/delta/" 
+              + loadTerminology.terminology + "/" + loadTerminology.lastPublicationDate,
+            data: loadTerminology.inputFileOrDirectory,
+            method: "PUT",
+            headers: { 'Content-Type' : 'text/plain' }
+            }).success(function(data) {
+              //nothing
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+        }; 
+        
+        // load terminology Rf2 snapshot
+        // ASD
+        function loadTerminologyAwsRf2Snapshot(terminology, version, scope) {
+          $rootScope.glassPane++;
+
+          var errors = '';
+          for (var i = 0; i < $scope.terminologyVersionPairs.length; i++) {
+            var terminologyVersionPair = $scope.terminologyVersionPairs[i];
+            if (terminology == 'SNOMED CT') {
+              if(terminologyVersionPair == (terminology.replace(' ', '') + ' ' + version.replace(' ', ''))){
+                errors += terminology + ' ' + version + ' is already loaded in the application.\n';
+                break;
+              }
+            } else {
+              // For SNOMED & it's scope
+            }
+          }
+
+          console.log("errors", errors);
+          
+          if (errors.length > 0) {
+            alert(errors);
+            $rootScope.glassPane--;
+            return;
+          }
+          
+          var queryString = '?';
+          queryString += "awsZipFileName=" + $scope.termLoadAwsZipFileName;
+
+          queryString += "&treePositions=true&sendNotification=true";
+          
+          console.log("CCC: ", terminology, version, queryString);
+          // rest call
+          $http({
+            url: root_content + "terminology/load/aws/rf2/snapshot/" 
+              + terminology + "/" + version + "/" + queryString,
+            method: "PUT",
+            data: null, 
+            headers: { 'Content-Type' : 'text/plain' }
+            }).success(function(data) {
+              $rootScope.glassPane--;
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+        }; 
+        
+        
+        // load terminology simple
+        $scope.loadTerminologySimple = function(loadTerminology) {
+          $rootScope.glassPane++;
+
+          var errors = '';
+
+          if (error.length > 0) {
+            alert(errors);
+            $rootScope.glassPane--;
+            return;
+          }
+          
+          // rest call   
+          $http({
+            url: root_content + "terminology/load/simple/" + terminology + "/" + version,
+            data: loadTerminology.inputFileOrDirectory,
+            method: "PUT",
+            headers: { 'Content-Type' : 'text/plain' }
+            }).success(function(data) {
+              //nothing
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+        };
+        
+        
+        // reload terminology Rf2 snapshot
+        $scope.reloadTerminologyRf2Snapshot = function(loadTerminology) {
+          $rootScope.glassPane++;
+
+          var errors = '';
+
+          if (error.length > 0) {
+            alert(errors);
+            $rootScope.glassPane--;
+            return;
+          }
+          
+          var queryString = '';
+          if (loadTerminology.treePositions) 
+            queryString += "treePositions=" + loadTerminology.treePositions;
+          
+          if (queryString !== '') 
+            queryString = "&" + queryString;
+          
+          if (loadTerminology.sendNotification) 
+            queryString += "sendNotification=" + loadTerminology.sendNotification;
+          
+          if (queryString !== '') 
+            queryString = "&" + queryString;
+
+          
+          // rest call   
+          $http({
+            url: root_content + "terminology/reload/rf2/snapshot/" 
+              + loadTerminology.terminology + "/" + loadTerminology.version + queryString,
+            data: loadTerminology.inputFileOrDirectory,
+            method: "PUT",
+            headers: { 'Content-Type' : 'text/plain' }
+            }).success(function(data) {
+              //nothing
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+        };
+        
+        // reload map record
+        $scope.reloadMapRecord = function(loadTerminology) {
+          $rootScope.glassPane++;
+
+          var errors = '';
+
+          if (error.length > 0) {
+            alert(errors);
+            $rootScope.glassPane--;
+            return;
+          }
+          
+          var queryString = '';
+          if (loadTerminology.memberFlag) 
+            queryString += "treePositions=" + loadTerminology.treePositions;
+          
+          if (queryString !== '') 
+            queryString = "&" + queryString;
+          
+          if (loadTerminology.recordFlag) 
+            queryString += "sendNotification=" + loadTerminology.sendNotification;
+          
+          if (queryString !== '') 
+            queryString = "&" + queryString;
+
+          
+          // rest call   
+          $http({
+            url: root_content + "map/record/reload/" + refsetId + queryString,
+            data: loadTerminology.inputFileOrDirectory,
+            method: "PUT",
+            headers: { 'Content-Type' : 'text/plain' }
+            }).success(function(data) {
+              //nothing
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+        }; 
+        
+
+} ]);

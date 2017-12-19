@@ -131,6 +131,11 @@
       <artifactId>swagger-jersey2-jaxrs</artifactId>
     </dependency>
 
+	<dependency>
+	  <groupId>com.amazonaws</groupId>
+	  <artifactId>aws-java-sdk</artifactId>
+	</dependency>
+	  
     <!-- Sending email -->
     <dependency>
       <groupId>com.sun.mail</groupId>

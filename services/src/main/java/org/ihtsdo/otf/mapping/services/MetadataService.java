@@ -234,4 +234,16 @@ public interface MetadataService extends RootService, Configurable {
   public Map<String, String> getRelationshipModifiers(String terminology,
     String version) throws Exception;
 
+  /**
+   * Returns true if the terminology and version already exist.
+   * Returns false if the terminology and version do not exist.
+   * 
+   * @param terminology the terminology
+   * @param version the version
+   * @return True if the terminology and version exists, false if the terminology and version do not exist.
+   * @throws Exception
+   */
+  public Boolean checkTerminologyVersionExists(String terminology, String version)
+		throws Exception;
+
 }
