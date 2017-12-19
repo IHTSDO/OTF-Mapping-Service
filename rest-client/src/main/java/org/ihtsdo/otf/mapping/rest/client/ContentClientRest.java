@@ -546,4 +546,11 @@ public class ContentClientRest extends RootClientRest
     
   }
 
+  @Override
+  public boolean reloadRefsetMemberAwsSnapshot(String refsetId,
+    String awsFileName, String authToken) throws Exception {
+    // not yet implemented in rest client
+    return false;
+  }
+
 }
