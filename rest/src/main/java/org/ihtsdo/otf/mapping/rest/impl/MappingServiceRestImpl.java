@@ -5505,7 +5505,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
                   && tokens2[8].equals(lineData.getMapRule())
                   && tokens2[9].equals(lineData.getMapAdvice())
                   && tokens2[11].equals(lineData.getCorrelationId())
-                  && lineData.getEffectiveTime().equals(tokens2[1])) {
+                  /*&& lineData.getEffectiveTime().equals(tokens2[1])*/) {
               inactivatedList.put(tokens2[5], line2);
               inactivated = true;
               break;
@@ -5815,8 +5815,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       }
       for (File file : releaseFiles) {
         // filter out human readable and any other release by-products
-        if (!file.getName().contains("SimpleMap")
-            && !file.getName().contains("ExtendedMap")) {
+        if (!file.getName().contains("SimpleMapSnapshot")
+            && !file.getName().contains("ExtendedMapSnapshot")) {
           continue;
         }
         BasicFileAttributes attributes = Files.readAttributes(file.toPath(),
@@ -5844,6 +5844,46 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     }
   }
 
+  @POST
+  @Path("/amazons3/file")
+  @ApiOperation(value = "Downloads file from AWS", notes = "Downloads file from AWS.", response = InputStream.class)
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @Produces("text/plain")
+  public InputStream getFileFromAmazonS3(
+    @ApiParam(value = "File path, in JSON or XML POST data", required = true) String filePath,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(MappingServiceRest.class).info(
+        "RESTful call (Mapping): /amazons3/file" + " " + filePath);
+
+    String user = "";
+    try {
+      // authorize
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "download file from aws", securityService);
+     
+      AmazonS3 s3Client = null;
+      s3Client = connectToAmazonS3();
+     
+      // stream first file from aws
+      S3Object file1 = s3Client.getObject(
+          new GetObjectRequest("release-ihtsdo-prod-published", filePath));
+      InputStream objectData1 = file1.getObjectContent();
+                
+      return objectData1;
+      
+    } catch (Exception e) {
+      handleException(e,
+          "trying to download file from AWS", user, "", "");
+      return null;
+    } finally {
+      securityService.close();
+    }
+  }
+  
+  
   @Override
   @GET
   @Path("/amazons3/files/{id:[0-9][0-9]*}")
@@ -5936,20 +5976,13 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
           }
           if ((fileName.contains("ICPC2ExtendedMap")
               || fileName.contains("GMDNMapSimpleMap")) && !fileName.contains("Full")
-              && !fileName.contains("backup")) {
+              && !fileName.contains("backup")  && !fileName.contains("Delta")) {
             Logger.getLogger(MappingServiceRestImpl.class)
                 .info(mapProject.getDestinationTerminology() + " Summary #"
                     + i++ + " with: " + sum.getKey());
             SearchResult result = new SearchResultJpa();
-            String shortName = fileName.substring(fileName.lastIndexOf('/'));
-            if (fileName.toLowerCase().contains("alpha")) {
-              result.setTerminology("ALPHA");
-            } else if (fileName.toLowerCase().contains("beta")) {
-              result.setTerminology("BETA");
-            } else {
-              result.setTerminology("FINAL");
-            }
-            
+            String shortName = fileName.substring(fileName.lastIndexOf('/'));            
+            result.setTerminology("FINAL");            
             result.setTerminologyVersion(fileDate);
             result.setValue(shortName);
             result.setValue2(fileName);

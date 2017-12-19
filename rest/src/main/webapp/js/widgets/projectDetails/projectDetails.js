@@ -322,6 +322,7 @@ angular
           $scope.getPagedScopeExcludedConcepts(1);
           $scope.getPagedReportDefinitions(1);
           $scope.getPagedReleaseReports(1);
+          $scope.fileArray = new Array();
           $scope.amazons3FilesPlusCurrent = new Array();
           $scope.getFilesFromAmazonS3();
           $scope.getCurrentReleaseFile();
@@ -1036,6 +1037,40 @@ angular
           });
         }
 
+        // call rest service to retrieve file from amazon s3
+        $scope.downloadFileFromAmazonS3 = function(file) {
+                    
+          $rootScope.glassPane++;
+          $http({
+            url : root_mapping + 'amazons3/file',
+            dataType : 'json',
+            data : file.value2,
+            method : 'POST',
+            headers : {
+              'Content-Type' : 'application/json'
+            },
+            responseType : 'arraybuffer'
+          }).success(function(data) {
+            $scope.definitionMsg = 'Successfully downloaded file';
+            var blob = new Blob([ data ], {
+                type : 'text/plain'
+              });
+              // hack to download store a file having its URL
+              var fileURL = URL.createObjectURL(blob);
+              var a = document.createElement('a');
+              a.href = fileURL;
+              a.target = '_blank';
+              a.download = file.value;
+              document.body.appendChild(a);
+              $rootScope.glassPane--;
+              a.click();
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        }
+
+        
         $scope.getFilesFromAmazonS3 = function() {
 
           $rootScope.glassPane++;
