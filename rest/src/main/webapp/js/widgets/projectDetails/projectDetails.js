@@ -2417,4 +2417,34 @@ angular
 
         }; 
         
+        $scope.loadRefsetMembers = function() {
+          var terminology = $scope.focusProject.destinationTerminology;
+          var availableFiles = $scope.amazons3Files;
+          var finalSnapshotFiles = [];
+          for (var i = 0; i < availableFiles.length; i++) {
+                if(availableFiles[i].terminology == 'FINAL' && availableFiles[i].value.indexOf('Snapshot') !== -1){
+                        finalSnapshotFiles.push(availableFiles[i]);
+                }
+          }
+          var mostRecentFinalShapshotFile = $scope.sortByKeyDesc(finalSnapshotFiles, 'value')[0];
+          
+          var queryString = '?';
+          queryString += "awsFileName=" + mostRecentFinalShapshotFile.value2;
+
+          // rest call
+          $http({
+            url: root_content + "refset/reload/aws/" 
+              + $scope.focusProject.refSetId + "/" + queryString,
+            method: "PUT",
+            data: null, 
+            headers: { 'Content-Type' : 'text/plain' }
+            }).success(function(data) {
+              $rootScope.glassPane--;
+            }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+          
+        }
+        
       } ]);

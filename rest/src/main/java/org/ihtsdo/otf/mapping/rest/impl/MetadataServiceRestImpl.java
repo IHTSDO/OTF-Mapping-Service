@@ -288,7 +288,6 @@ public class MetadataServiceRestImpl extends RootServiceRestImpl
         if (listOfFiles[i].isDirectory()
             && listOfFiles[i].getName().matches("\\d{2}_\\d{1,2}")) {
           gmdnVersions += listOfFiles[i].getName() + ";";
-          System.out.println("Directory " + listOfFiles[i].getName());
         }
       }
 

@@ -357,4 +357,16 @@ public interface ContentServiceRest {
     String loadVersion, String awsZipFileName, Boolean treePositions,
     Boolean sendNotification, String authToken) throws Exception;
 
+  /**
+   * Reload refset member aws snapshot.
+   *
+   * @param refsetId the refset id
+   * @param awsFileName the aws file name
+   * @param authToken the auth token
+   * @return true, if successful
+   * @throws Exception the exception
+   */
+  boolean reloadRefsetMemberAwsSnapshot(String refsetId, String awsFileName,
+    String authToken) throws Exception;
+
 }
