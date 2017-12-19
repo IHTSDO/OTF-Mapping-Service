@@ -5659,7 +5659,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
           for (SimpleLine lineData : entries) {
             if (lineData.getTargetId().equals(tokens2[6])
                 && lineData.isActive() != new Boolean(tokens2[2])
-                && lineData.getEffectiveTime().equals(tokens2[1])) {
+                /*&& lineData.getEffectiveTime().equals(tokens2[1])*/) {
               inactivatedList.put(tokens2[5] + ":" + tokens2[6], line2);
               inactivated = true;
               break;
