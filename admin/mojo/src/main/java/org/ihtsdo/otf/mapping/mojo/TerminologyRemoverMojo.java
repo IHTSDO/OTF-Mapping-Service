@@ -16,19 +16,9 @@
  */
 package org.ihtsdo.otf.mapping.mojo;
 
-import java.util.Properties;
-
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import javax.persistence.Persistence;
-import javax.persistence.Query;
-
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
-import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
-import org.ihtsdo.otf.mapping.services.ContentService;
-import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
+import org.ihtsdo.otf.mapping.rest.client.ContentClientRest;
+import org.ihtsdo.otf.mapping.rest.impl.ContentServiceRestImpl;
 
 /**
  * Goal which removes a terminology from a database.
@@ -36,149 +26,91 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
  * See admin/remover/pom.xml for a sample execution.
  * 
  * @goal remove-terminology
- * 
  * @phase package
+ * 
  */
-public class TerminologyRemoverMojo extends AbstractMojo {
+public class TerminologyRemoverMojo extends AbstractTerminologyLoaderMojo {
 
-  /**
-   * Name of terminology to be removed.
-   * @parameter
-   * @required
-   */
-  private String terminology;
+	/**
+	 * Whether to run this mojo against an active server.
+	 * @parameter 
+	 */
+	private boolean server = false;
+	
+	/**
+	 * Name of terminology to be loaded.
+	 * 
+	 * @parameter
+	 * @required
+	 */
+	protected String terminology;
 
-  /**
-   * The terminology version.
-   * @parameter
-   * @required
-   */
-  private String terminologyVersion;
+	/**
+	 * Version of terminology to be loaded.
+	 * 
+	 * @parameter
+	 * @required
+	 */
+	protected String version;
 
-  /**
-   * Instantiates a {@link TerminologyRemoverMojo} from the specified
-   * parameters.
-   * 
-   */
-  public TerminologyRemoverMojo() {
-    // do nothing
-  }
+	/**
+	 * Whether to send email notification of any errors. Default is false.
+	 * 
+	 * @parameter
+	 */
+	protected boolean sendNotification = false;
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.maven.plugin.Mojo#execute()
-   */
-  @Override
-  public void execute() throws MojoFailureException {
-    getLog().info("Starting removing terminology");
-    getLog().info("  terminology = " + terminology);
-    getLog().info("  terminologyVersion = " + terminologyVersion);
+	/**
+	 * Instantiates a {@link TerminologyRemoverMojo} from the specified
+	 * parameters.
+	 * 
+	 */
+	public TerminologyRemoverMojo() {
+		super();
+		// do nothing
+	}
 
-    try {
-      Properties config = ConfigUtility.getConfigProperties();
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.apache.maven.plugin.Mojo#execute()
+	 */
+	@Override
+	public void execute() throws MojoFailureException {
 
-      // NOTE: ideall this would not use entity manager,
-      // but we do not have services for all data types yet.
-      EntityManagerFactory factory =
-          Persistence.createEntityManagerFactory("MappingServiceDS", config);
-      EntityManager manager = factory.createEntityManager();
+		getLog().info("Starting removing terminology");
+		getLog().info("  terminology = " + terminology);
+		getLog().info("  version     = " + version);
 
-      EntityTransaction tx = manager.getTransaction();
-      try {
+		try {
 
-        // truncate all the tables that we are going to use first
-        tx.begin();
+			// Track system level information
+			setProcessStartTime();
 
-        // truncate RefSets
-        Query query =
-            manager
-                .createQuery("DELETE From SimpleRefSetMemberJpa rs where terminology = :terminology and terminologyVersion = :version");
-        query.setParameter("terminology", terminology);
-        query.setParameter("version", terminologyVersion);
-        int deleteRecords = query.executeUpdate();
-        getLog().info("    simple_ref_set records deleted: " + deleteRecords);
+			// throws exception if server is required but not running.
+			// or if server is not required but running.
+			validateServerStatus(server);
 
-        query =
-            manager
-                .createQuery("DELETE From SimpleMapRefSetMemberJpa rs where terminology = :terminology and terminologyVersion = :version");
-        query.setParameter("terminology", terminology);
-        query.setParameter("version", terminologyVersion);
-        deleteRecords = query.executeUpdate();
-        getLog().info(
-            "    simple_map_ref_set records deleted: " + deleteRecords);
+			if (serverRunning != null && !serverRunning) {
+				getLog().info("Running directly");
 
-        query =
-            manager
-                .createQuery("DELETE From ComplexMapRefSetMemberJpa rs where terminology = :terminology and terminologyVersion = :version");
-        query.setParameter("terminology", terminology);
-        query.setParameter("version", terminologyVersion);
-        deleteRecords = query.executeUpdate();
-        getLog().info(
-            "    complex_map_ref_set records deleted: " + deleteRecords);
+				ContentServiceRestImpl service = new ContentServiceRestImpl();
+				service.removeTerminology(terminology, version, getAuthToken());
 
-        query =
-            manager
-                .createQuery("DELETE From AttributeValueRefSetMemberJpa rs where terminology = :terminology and terminologyVersion = :version");
-        query.setParameter("terminology", terminology);
-        query.setParameter("version", terminologyVersion);
-        deleteRecords = query.executeUpdate();
-        getLog().info(
-            "    attribute_value_ref_set records deleted: " + deleteRecords);
+			} else {
+				getLog().info("Running against server");
 
-        query =
-            manager
-                .createQuery("DELETE From LanguageRefSetMemberJpa rs where terminology = :terminology and terminologyVersion = :version");
-        query.setParameter("terminology", terminology);
-        query.setParameter("version", terminologyVersion);
-        deleteRecords = query.executeUpdate();
-        getLog().info("    language_ref_set records deleted: " + deleteRecords);
+				// invoke the client
+				ContentClientRest client = new ContentClientRest(properties);
+				client.removeTerminology(terminology, version, getAuthToken());
+			}
 
-        // Truncate Terminology Elements
-        query =
-            manager
-                .createQuery("DELETE From DescriptionJpa d where terminology = :terminology and terminologyVersion = :version");
-        query.setParameter("terminology", terminology);
-        query.setParameter("version", terminologyVersion);
-        deleteRecords = query.executeUpdate();
-        getLog().info("    description records deleted: " + deleteRecords);
-        query =
-            manager
-                .createQuery("DELETE From RelationshipJpa r where terminology = :terminology and terminologyVersion = :version");
-        query.setParameter("terminology", terminology);
-        query.setParameter("version", terminologyVersion);
-        deleteRecords = query.executeUpdate();
-        getLog().info("    relationship records deleted: " + deleteRecords);
-        query =
-            manager
-                .createQuery("DELETE From ConceptJpa c where terminology = :terminology and terminologyVersion = :version");
-        query.setParameter("terminology", terminology);
-        query.setParameter("version", terminologyVersion);
-        deleteRecords = query.executeUpdate();
-        getLog().info("    concept records deleted: " + deleteRecords);
-
-        tx.commit();
-
-        ContentService contentService = new ContentServiceJpa();
-        getLog().info("Start removing tree positions from " + terminology);
-        contentService.clearTreePositions(terminology, terminologyVersion);
-        contentService.close();
-
-        getLog().info("Done ...");
-
-      } catch (Exception e) {
-        tx.rollback();
-        throw e;
-      }
-
-      // Clean-up
-      manager.close();
-      factory.close();
-
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw new MojoFailureException("Unexpected exception:", e);
-    }
-  }
-
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new MojoFailureException("Unexpected exception:", e);
+		} finally {
+			getLog().info("      elapsed time = " + getTotalElapsedTimeStr());
+			getLog().info("done ...");
+		}
+	}
 }

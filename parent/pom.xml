@@ -42,12 +42,13 @@
     <javax.ws.version>2.0.1</javax.ws.version>
     <jettison.version>1.1</jettison.version>
     <asm.version>3.1</asm.version>
-    <swagger.version>1.3.0</swagger.version>
+    <swagger.version>1.5.17</swagger.version>
     <junit.version>4.11</junit.version>
     <cglib.version>2.2.2</cglib.version>
     <javax.mail.version>1.5.2</javax.mail.version>
     <xom.version>1.2.5</xom.version>
     <apache.poi>3.10-FINAL</apache.poi>
+    <amazonaws.version>1.11.106</amazonaws.version>
   </properties>
 
   <dependencyManagement>
@@ -84,6 +85,11 @@
         <artifactId>mapping-rest</artifactId>
         <version>${releaseVersion}</version>
         <classifier>classes</classifier>
+      </dependency>
+      <dependency>
+        <groupId>org.ihtsdo.otf.mapping</groupId>
+        <artifactId>mapping-rest-client</artifactId>
+        <version>${releaseVersion}</version>
       </dependency>
 
       <!-- JPA dependencies -->
@@ -197,7 +203,7 @@
       <dependency>
         <groupId>io.swagger</groupId>
         <artifactId>swagger-jersey2-jaxrs</artifactId>
-        <version>1.5.17</version>
+        <version>${swagger.version}</version>
       </dependency>
       <dependency>
         <groupId>javax.servlet</groupId>
@@ -206,7 +212,12 @@
         <scope>provided</scope>
       </dependency>
 
-
+	  <!-- Amazon AWS -->
+	  <dependency>
+		<groupId>com.amazonaws</groupId>
+		<artifactId>aws-java-sdk</artifactId>
+		<version>${amazonaws.version}</version>
+	  </dependency>
 
       <!-- Unit testing -->
       <dependency>
@@ -300,7 +311,7 @@
           <version>1.7</version>
         </plugin>
 
-        <plugin>
+       <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>${maven.compiler.plugin.version}</version>
@@ -309,7 +320,7 @@
             <target>1.7</target>
           </configuration>
         </plugin>
-
+        
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>

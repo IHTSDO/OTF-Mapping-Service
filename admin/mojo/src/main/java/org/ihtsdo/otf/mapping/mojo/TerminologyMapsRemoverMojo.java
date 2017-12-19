@@ -16,17 +16,10 @@
  */
 package org.ihtsdo.otf.mapping.mojo;
 
-import java.util.Properties;
-
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import javax.persistence.Persistence;
-import javax.persistence.Query;
-
-import org.apache.maven.plugin.AbstractMojo;
+import org.apache.log4j.Logger;
 import org.apache.maven.plugin.MojoFailureException;
-import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
+import org.ihtsdo.otf.mapping.rest.client.ContentClientRest;
+import org.ihtsdo.otf.mapping.rest.impl.ContentServiceRestImpl;
 
 /**
  * Goal which removes a terminology from a database.
@@ -37,80 +30,71 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
  * 
  * @phase package
  */
-public class TerminologyMapsRemoverMojo extends AbstractMojo {
+public class TerminologyMapsRemoverMojo extends AbstractTerminologyLoaderMojo {
 
-  /**
-   * Ref set id to remove
-   * @parameter
-   * @required
-   */
-  private String refsetId;
+	/**
+	 * Whether to run this mojo against an active server.
+	 * @parameter 
+	 */
+	private boolean server = false;
+	
+	/**
+	 * Ref set id to remove
+	 * 
+	 * @parameter
+	 * @required
+	 */
+	private String refsetId;
 
-  /**
-   * Instantiates a {@link TerminologyMapsRemoverMojo} from the specified
-   * parameters.
-   * 
-   */
-  public TerminologyMapsRemoverMojo() {
-    // do nothing
-  }
+	/**
+	 * Instantiates a {@link TerminologyMapsRemoverMojo} from the specified
+	 * parameters.
+	 * 
+	 */
+	public TerminologyMapsRemoverMojo() {
+		super();
+	}
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.maven.plugin.Mojo#execute()
-   */
-  @Override
-  public void execute() throws MojoFailureException {
-    getLog().info("Starting removing terminology");
-    getLog().info("  refsetId = " + refsetId);
-    try {
-      Properties config = ConfigUtility.getConfigProperties();
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.apache.maven.plugin.Mojo#execute()
+	 */
+	@Override
+	public void execute() throws MojoFailureException {
+		getLog().info("Starting removing terminology");
+		getLog().info("  refsetId = " + refsetId);
 
-      // NOTE: ideally this would not use entity manager,
-      // but we do not have services for all data types yet.
-      EntityManagerFactory factory =
-          Persistence.createEntityManagerFactory("MappingServiceDS", config);
-      EntityManager manager = factory.createEntityManager();
+		try {
 
-      EntityTransaction tx = manager.getTransaction();
-      try {
+			// Track system level information
+			setProcessStartTime();
 
-        // truncate all the tables that we are going to use first
-        tx.begin();
+			// throws exception if server is required but not running.
+			// or if server is not required but running.
+            Logger.getLogger(getClass()).info("server is:" + this.server);
+			validateServerStatus(server);
 
-        Query query =
-            manager
-                .createQuery("DELETE From SimpleMapRefSetMemberJpa rs where refsetId = :refsetId");
-        query.setParameter("refsetId", refsetId);
-        int deleteRecords = query.executeUpdate();
-        getLog().info(
-            "    simple_map_ref_set records deleted: " + deleteRecords);
+			if (serverRunning != null && !serverRunning) {
+				getLog().info("Running directly");
 
-        query =
-            manager
-                .createQuery("DELETE From ComplexMapRefSetMemberJpa rs where refsetId = :refsetId");
-        query.setParameter("refsetId", refsetId);
-        deleteRecords = query.executeUpdate();
-        getLog().info(
-            "    complex_map_ref_set records deleted: " + deleteRecords);
+				ContentServiceRestImpl service = new ContentServiceRestImpl();
+				service.removeMapRecord(refsetId, getAuthToken());
 
-        tx.commit();
-        getLog().info("Done ...");
+			} else {
+				getLog().info("Running against server");
 
-      } catch (Exception e) {
-        tx.rollback();
-        throw e;
-      }
+				// invoke the client
+				ContentClientRest client = new ContentClientRest(properties);
+				client.removeMapRecord(refsetId, getAuthToken());
+			}
 
-      // Clean-up
-      manager.close();
-      factory.close();
-
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw new MojoFailureException("Unexpected exception:", e);
-    }
-  }
-
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new MojoFailureException("Unexpected exception:", e);
+		} finally {
+			getLog().info("      elapsed time = " + getTotalElapsedTimeStr());
+			getLog().info("done ...");
+		}
+	}
 }

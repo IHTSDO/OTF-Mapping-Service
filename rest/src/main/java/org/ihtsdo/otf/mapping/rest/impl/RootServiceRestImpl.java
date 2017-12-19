@@ -4,9 +4,20 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
+import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.rest.RootServiceRest;
+import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.OtfErrorHandler;
+
+import com.amazonaws.SdkClientException;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.InstanceProfileCredentialsProvider;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 
 /**
  * Top level class for all REST services.
@@ -86,5 +97,65 @@ public class RootServiceRestImpl implements RootServiceRest {
 		resultnum = resultnum / 60;
 		result = result + " / " + resultnum.toString() + "h";
 		return result;
+	}
+	
+	/**
+	 * Gets an AmazonS3 object based first on InstanceProfileCredentialsProvider. 
+	 * If not available, will then use AWSStaticCredentialsProvider.
+	 * 
+	 * @return AmazonS3 AWS S3 client
+	 * @throws Exception the exception
+	 */
+	  protected AmazonS3 connectToAmazonS3() throws Exception {
+	    // Connect to server using instance profile credentials
+	    AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
+	        .withRegion(Regions.US_EAST_1)
+	        .withCredentials(new InstanceProfileCredentialsProvider(false)).build();
+
+	    // Check if connection was successful. If not, try to connect with static
+	    // keys instead
+	    try {
+	      s3Client.listBuckets();
+	    } catch (SdkClientException e) {
+	      // Connet to server with static keys
+	      BasicAWSCredentials awsCreds = new BasicAWSCredentials(
+	          ConfigUtility.getConfigProperties().getProperty("aws.access.key.id"),
+	          ConfigUtility.getConfigProperties()
+	              .getProperty("aws.secret.access.key"));
+	      s3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
+	          .withCredentials(new AWSStaticCredentialsProvider(awsCreds)).build();
+
+	      // Check connection again. If this fails as well, it will throw the
+	      // exception to the calling method
+	      s3Client.listBuckets();
+	    }
+
+	    return s3Client;
+	  }
+	  
+	/**
+	 * Checks if the terminology and version exist in the system.
+	 * 
+	 * @param terminology the terminology
+	 * @param version the version
+	 * @return Boolean true if the terminology exists and false if it does not exist. 
+	 * @throws Exception the exception
+	 */
+	protected Boolean doesTerminologyVersionExist(String terminology,
+			String version) throws Exception {
+		Boolean exists = false;
+
+		// validate that the terminology & version to not already exist.
+		MetadataService ms;
+
+		ms = new MetadataServiceJpa();
+		if (ms.checkTerminologyVersionExists(terminology, version)) {
+			exists = true;
+		}
+
+		ms.close();
+
+		return exists;
+
 	}
 }

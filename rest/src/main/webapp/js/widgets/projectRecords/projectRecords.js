@@ -126,7 +126,11 @@ angular
               + '&relationshipName='
               + ($scope.searchParameters.relationshipName
                 && $scope.searchParameters.advancedMode ? encodeURIComponent($scope.searchParameters.relationshipName)
-            : '') + '&query='
+            : '') 
+            + '&relationshipValue='
+            + ($scope.searchParameters.relationshipValue
+              && $scope.searchParameters.advancedMode ? encodeURIComponent($scope.searchParameters.relationshipValue)
+          : '') + '&query='
           + encodeURIComponent($scope.searchParameters.query)
         + '&excludeDescendants='
         + ($scope.searchParameters.advancedMode && $scope.searchParameters.descendants == 'excludes' ? 'true'
@@ -549,6 +553,7 @@ angular
         // advanced options
         ancestorId : null,
         relationshipName : null,
+        relationshipValue : null,
         descendants : null,
         rootId : null,
         targetId : [],
@@ -595,6 +600,7 @@ angular
         $scope.searchParameters.rootId = null;
         $scope.searchParameters.ancestorId = null;
         $scope.searchParameters.relationshipName = null;
+        $scope.searchParameters.relationshipValue = null;
         $scope.searchParameters.adviceName = null;
         $scope.searchParameters.adviceContained = null;
         $scope.searchParameters.ruleCategory = null;

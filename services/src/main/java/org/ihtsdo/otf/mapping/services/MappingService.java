@@ -822,9 +822,9 @@ public interface MappingService extends RootService {
    * @throws Exception
    */
   public SearchResultList findMapRecords(Long mapProjectd, String ancestorId,
-    boolean excludeDescendants, String relationshipName, String terminology,
-    String terminologyVersion, PfsParameter pfsParameter,
-    Collection<String> mapConcepts) throws Exception;
+    boolean excludeDescendants, String relationshipName,
+    String relationshipValue, String terminology, String terminologyVersion,
+    PfsParameter pfsParameter, Collection<String> mapConcepts) throws Exception;
 
   /**
    * Retrieve latest map record for a given terminology id.
@@ -837,4 +837,13 @@ public interface MappingService extends RootService {
   public MapRecord getLatestMapRecordForConcept(Long mapProjectId,
     String terminologyId) throws Exception;
   
+  /**
+   * Returns the release file names.
+   *
+   * @param mapProject the map project
+   * @return the release file names
+   * @throws Exception the exception
+   */
+  public String getReleaseFileNames(MapProject mapProject) throws Exception;
+
 }
