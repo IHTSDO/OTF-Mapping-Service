@@ -5821,15 +5821,15 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
         }
         BasicFileAttributes attributes = Files.readAttributes(file.toPath(),
             BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
-        FileTime creationTime = attributes.creationTime();
+        FileTime lastModifiedTime = attributes.lastModifiedTime();
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-        String dateCreated = df.format(creationTime.toMillis());
+        String lastModified = df.format(lastModifiedTime.toMillis());
         // if this is the most recent, return this file
         if (searchResult.getValue2() == null
-            || dateCreated.compareTo(searchResult.getValue2()) > 0) {
+            || lastModified.compareTo(searchResult.getValue2()) > 0) {
           searchResult.setValue(file.getName());
           searchResult.setValue2(file.getName());
-          searchResult.setTerminologyVersion(dateCreated);
+          searchResult.setTerminologyVersion(lastModified);
           searchResult.setTerminology("current");
         }
       }
