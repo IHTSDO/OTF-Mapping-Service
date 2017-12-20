@@ -1986,7 +1986,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ExtendedMap) {
       entryLine = member.getTerminologyId() // the UUID
           + "\t"
-          + (trueEffectiveTimeFlag
+          + (trueEffectiveTimeFlag && !member.getEffectiveTime().equals("99999999")
               ? dateFormat.format(member.getEffectiveTime()) : effectiveTime)
           + "\t" + (member.isActive() ? "1" : "0") + "\t" + moduleId + "\t"
           + member.getRefSetId() + "\t" + member.getConcept().getTerminologyId()
@@ -2002,7 +2002,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap) {
       entryLine = member.getTerminologyId() // the UUID
           + "\t"
-          + (trueEffectiveTimeFlag
+          + (trueEffectiveTimeFlag && !member.getEffectiveTime().equals("99999999")
               ? dateFormat.format(member.getEffectiveTime()) : effectiveTime)
           + "\t" + (member.isActive() ? "1" : "0") + "\t" + moduleId + "\t"
           + member.getRefSetId() + "\t" + member.getConcept().getTerminologyId()
@@ -2022,7 +2022,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       }
       entryLine = member.getTerminologyId() // the UUID
           + "\t"
-          + (trueEffectiveTimeFlag
+          + (trueEffectiveTimeFlag && !member.getEffectiveTime().equals("99999999")
               ? dateFormat.format(member.getEffectiveTime()) : effectiveTime)
           + "\t" + (member.isActive() ? "1" : "0") + "\t" + moduleId + "\t"
           + member.getRefSetId() + "\t" + member.getConcept().getTerminologyId()
