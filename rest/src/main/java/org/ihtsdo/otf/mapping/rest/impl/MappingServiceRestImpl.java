@@ -5895,7 +5895,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-
+    
     Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping):  /amazons3/files/" + mapProjectId);
 
@@ -6611,5 +6611,39 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
      */
 
   }
+  
+
+  private void callTestMethod3() throws Exception {
+    Logger.getLogger(MappingServiceRestImpl.class).info("AAA");
+    String bucketName = "release-ihtsdo-prod-published";
+    String testFileName =
+        "international/SnomedCT_InternationalRF2_PRODUCTION_20170731T150000Z.zip";
+
+    // Connect to server
+    AmazonS3 s3Client = connectToAmazonS3();
+
+    // Verify Buckets Exists
+    if (!s3Client.doesBucketExist(bucketName)) {
+      throw new Exception("Cannot find Bucket Name");
+    } else {
+      Logger.getLogger(MappingServiceRestImpl.class)
+          .info("CCC Bucket " + bucketName + " accessed.");
+    }
+
+    S3Object s3object = s3Client.getObject(bucketName, testFileName);
+
+    // Unzip awsFile to temp directory
+    File tempDir = FileUtils.getTempDirectory();
+    File placementDir = new File(tempDir.getAbsolutePath() + File.separator
+        + "TerminologyLoad");
+    placementDir.mkdir();
+
+    S3ObjectInputStream inputStream = s3object.getObjectContent();
+    File zippedFile = new File(placementDir,
+        testFileName.substring(testFileName.lastIndexOf('/') + 1));
+    FileUtils.copyInputStreamToFile(inputStream, zippedFile);
+    inputStream.close();
+
+  }  
 
 }
