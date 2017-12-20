@@ -2402,8 +2402,10 @@ angular
         
         // reload terminology from AWS Rf2 snapshot
         $scope.reloadTerminologyAwsRf2Snapshot = function (terminology, version, scope) {
-          $rootScope.glassPane++;
-
+          if(!confirm('Are you sure you want to remove and reload ' + terminology + '?')){
+            return;
+          }
+          
           var errors = '';
           var removeVersion = $scope.focusProject.sourceTerminologyVersion;
           var loadVersion = version.replace(' ', '') + (scope == 'Production' ? '' : '_' + scope);
@@ -2415,7 +2417,6 @@ angular
           
           if (errors.length > 0) {
             alert(errors);
-            $rootScope.glassPane--;
             return;
           }
           
@@ -2424,7 +2425,7 @@ angular
 
           queryString += "&treePositions=true&sendNotification=true";
           
-          console.log("CCC: ", terminology, version, queryString);
+          //console.log("CCC: ", terminology, version, queryString);
           // rest call
           $http({
             url: root_content + "terminology/reload/aws/rf2/snapshot/" 
@@ -2434,6 +2435,7 @@ angular
             headers: { 'Content-Type' : 'text/plain' }
             }).success(function(data) {
               // If successful, update all projects where the sourceTerminology was the one just reloaded
+              window.alert(terminology + ' successfully reloaded.');
               var mapProjects = $scope.mapProjects;
 
               for (var i = 0; i < mapProjects.length; i++) {
@@ -2444,15 +2446,18 @@ angular
               }
               
               
-              $rootScope.glassPane--;
-            }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;          
+            }).error(function(data, status, headers, config) { 
+             window.alert(terminology + ' reload failed.  Please view log for details.');
             $rootScope.handleHttpError(data, status, headers, config);
           });
 
         }; 
         
         $scope.loadRefsetMembers = function() {
+          if(!confirm('Are you sure you want to remove and reload ' + $scope.focusProject.destinationTerminology + ' refset members?')){
+            return;
+          }
+          
           var terminology = $scope.focusProject.destinationTerminology;
           var availableFiles = $scope.amazons3Files;
           var finalSnapshotFiles = [];
@@ -2475,8 +2480,10 @@ angular
             headers: { 'Content-Type' : 'text/plain' }
             }).success(function(data) {
               window
-              .alert('Reloading ' + $scope.focusProject.destinationTerminology + ' Refset Members has completed');
+              .alert('Reloading ' + $scope.focusProject.destinationTerminology + ' Refset Members has successfully completed');
             }).error(function(data, status, headers, config) {       
+              window
+              .alert('Reloading ' + $scope.focusProject.destinationTerminology + ' Refset Members has failed.  Please view log for details.');
             $rootScope.handleHttpError(data, status, headers, config);
           });
           
