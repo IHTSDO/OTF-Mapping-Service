@@ -1,9 +1,13 @@
 package org.ihtsdo.otf.mapping.rest.impl;
 
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -36,7 +40,6 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.TerminologyVersion;
 import org.ihtsdo.otf.mapping.helpers.TerminologyVersionList;
-import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.algo.ClamlLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.GmdnDownloadAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.GmdnLoaderAlgorithm;
@@ -1474,7 +1477,23 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         FileUtils.copyInputStreamToFile(inputStream, downloadedFile);
         inputStream.close();
 
-        inputFile = downloadedFile.getAbsolutePath();
+        // Remove any inactive rows
+        File filteredFile = new File(placementDir,
+            awsFileName.substring(awsFileName.lastIndexOf('/') + 1) + "_ActiveOnly");
+        BufferedReader fileReader = new BufferedReader(new FileReader(downloadedFile));
+        BufferedWriter fileWriter = new BufferedWriter(new FileWriter(filteredFile));
+        String input;
+        while ((input = fileReader.readLine()) != null) {
+            String[]fields = input.split("\\t");
+            if(fields[2].equals("1")){
+              fileWriter.write(input);
+              fileWriter.newLine();
+            }
+        }
+        fileReader.close();
+        fileWriter.close();
+        
+        inputFile = filteredFile.getAbsolutePath();
 
         // Load extended or simple maps using downloaded AWS file
         if (awsFileName.contains("ExtendedMapSnapshot")) {

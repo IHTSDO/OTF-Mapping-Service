@@ -2474,9 +2474,9 @@ angular
             data: null, 
             headers: { 'Content-Type' : 'text/plain' }
             }).success(function(data) {
-              $rootScope.glassPane--;
-            }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;          
+              window
+              .alert('Reloading ' + $scope.focusProject.destinationTerminology + ' Refset Members has completed');
+            }).error(function(data, status, headers, config) {       
             $rootScope.handleHttpError(data, status, headers, config);
           });
           
