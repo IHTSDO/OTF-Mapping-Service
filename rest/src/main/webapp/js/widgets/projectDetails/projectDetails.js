@@ -1106,6 +1106,14 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
+        	// remove previously created current, if one exists
+        	for (var i = 0; i<$scope.amazons3FilesPlusCurrent.length; i++) {
+        		if ($scope.amazons3FilesPlusCurrent[i].terminology == 'current') {
+        			$scope.amazons3FilesPlusCurrent.splice(i, 1);
+        			break;
+        		}
+        	}
+        	// add local current release file to list of aws retrieved files
             if (data) {
               $scope.amazons3FilesPlusCurrent.push(data);
             }
