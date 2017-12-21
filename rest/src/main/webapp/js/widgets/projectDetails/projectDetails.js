@@ -2410,7 +2410,8 @@ angular
         
         // reload terminology from AWS Rf2 snapshot
         $scope.reloadTerminologyAwsRf2Snapshot = function (terminology, version, scope) {
-          if(!confirm('Are you sure you want to remove and reload ' + terminology + '?')){
+          if(!confirm('Are you sure you want to remove and reload ' + terminology + '?' +
+        		  (terminology.indexOf('SNOMED') == 0 ? 'This process may take several hours.' : ''))){
             return;
           }
           
