@@ -48,16 +48,16 @@ public class LoggerUtility {
 		LoggerUtility.loggerName = loggerName;
 
 		if (initializationFlags != null) {
-			if (initializationFlags.get(loggerName) == null
-					|| initializationFlags.get(loggerName) == false) {
-				intializeLogger(loggerName);
-				initializationFlags.put(loggerName, true);
-				return Logger.getLogger(loggerName);
+			if (initializationFlags.get(loggerName + "|" + fileName) == null
+					|| initializationFlags.get(loggerName + "|" + fileName) == false) {
+				intializeLogger(loggerName + "|" + fileName);
+				initializationFlags.put(loggerName + "|" + fileName, true);
+				return Logger.getLogger(loggerName + "|" + fileName);
 			} else {
-				return Logger.getLogger(loggerName);
+				return Logger.getLogger(loggerName + "|" + fileName);
 			}
 		} else {
-			return Logger.getLogger(loggerName);
+			return Logger.getLogger(loggerName + "|" + fileName);
 		}
 	}
 
