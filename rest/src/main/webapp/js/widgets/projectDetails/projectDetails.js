@@ -288,10 +288,16 @@ angular
             $rootScope.handleHttpError(data, status, headers, config);
           });
 
-          $scope.getTerminologyVersions($scope.focusProject.sourceTerminology);
+          if ($scope.currentRole == 'Administrator') {
+            $scope.getTerminologyVersions($scope.focusProject.sourceTerminology);          
+            $scope.loadProjectReleaseFiles();
+            $scope.fileArray = new Array();
+            $scope.amazons3FilesPlusCurrent = new Array();
+            $scope.getFilesFromAmazonS3();
+            $scope.getCurrentReleaseFile();
+            $scope.getPagedReleaseReports(1);
+          }
           
-          $scope.loadProjectReleaseFiles();
-
           // find selected elements from the allowable
           // lists
           $scope.selectedMapType = $scope.getSelectedMapType();
@@ -321,11 +327,6 @@ angular
           $scope.getPagedScopeConcepts(1);
           $scope.getPagedScopeExcludedConcepts(1);
           $scope.getPagedReportDefinitions(1);
-          $scope.getPagedReleaseReports(1);
-          $scope.fileArray = new Array();
-          $scope.amazons3FilesPlusCurrent = new Array();
-          $scope.getFilesFromAmazonS3();
-          $scope.getCurrentReleaseFile();
 
           // need to initialize selected qa check definitions since they
           // are persisted in the
@@ -2411,7 +2412,7 @@ angular
         // reload terminology from AWS Rf2 snapshot
         $scope.reloadTerminologyAwsRf2Snapshot = function (terminology, version, scope) {
           if(!confirm('Are you sure you want to remove and reload ' + terminology + '?' +
-        		  (terminology.indexOf('SNOMED') == 0 ? 'This process may take several hours.' : ''))){
+        		  (terminology.indexOf('SNOMED') == 0 ? '  This process may take several hours.' : ''))){
             return;
           }
           

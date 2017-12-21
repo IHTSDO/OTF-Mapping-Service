@@ -4550,7 +4550,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeProject(mapProjectId, authToken, MapUserRole.VIEWER,
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.ADMINISTRATOR,
           "get scope concepts", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
@@ -5303,7 +5303,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize
-      user = authorizeApp(authToken, MapUserRole.VIEWER, "compare map files", securityService);
+      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "compare map files", securityService);
       
       MapProject mapProject = mappingService.getMapProject(mapProjectId);
       
@@ -5744,7 +5744,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.VIEWER, "get release reports",
+      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "get release reports",
           securityService);
 
       // get directory for release reports
@@ -5801,7 +5801,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.VIEWER,
+      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
           "get current release file", securityService);
 
       MapProject mapProject = mappingService.getMapProject(mapProjectId);
@@ -5862,7 +5862,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     String user = "";
     try {
       // authorize
-      user = authorizeApp(authToken, MapUserRole.VIEWER, "download file from aws", securityService);
+      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "download file from aws", securityService);
      
       AmazonS3 s3Client = null;
       s3Client = connectToAmazonS3();
@@ -5904,7 +5904,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
 
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.VIEWER,
+      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
           "get current release file", securityService);
 
       final MapProject mapProject =

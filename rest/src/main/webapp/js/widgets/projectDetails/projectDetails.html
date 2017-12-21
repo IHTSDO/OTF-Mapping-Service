@@ -1296,7 +1296,7 @@
         <td>Checks that all in-scope records are ready for publication.<br>
             If 'Check Completion' runs clean, ready for WCI to clone to release server.  Details available in Reports accordion, 'Project Dashboard' report.</td>
       </tr>
-      <tr>
+      <tr ng-show="currentRole == 'Administrator'">
         <td>
           <button class="btn btn-primary btn-xs"
             ng-click="startEditingCycle()">Start Editing Cycle</button>
@@ -1304,7 +1304,9 @@
         <td>Sets the editing cycle start date for the project to
           today's date. Current value:
           {{focusProject.editingCycleBeginDate | date:'short'}}</td>
-      </tr>   
+      </tr> 
+    </table>
+    <table class="table" ng-show="currentRole == 'Administrator'">  
       <tr style="border-bottom:3px solid black"><td colspan="100%"><b>Release processing steps</b> - executed on release server after clone</td></tr>      
       <tr>
         <td colspan="100%">
@@ -1388,6 +1390,8 @@
               title="View the log"></i>          
           </td>          
       </tr>
+    </table>
+    <table class="table" ng-show="currentRole == 'Administrator'"> 
       <tr style="border-bottom:3px solid black"><td colspan="100%"><b>Finalize release steps</b> -  executed on prod mapping after release file is transfered by WCI</td></tr>            
       <tr>
         <td>
@@ -1430,7 +1434,7 @@
 
   </div>
 
-  <div class="col-md-6">
+  <div class="col-md-6"  ng-show="currentRole == 'Administrator'">
     <h4>Parameters</h4>
     <table class="table">
 
@@ -1445,9 +1449,7 @@
         
       </tr>
     </table>
-    
-    <br>
-  
+
     <h4>Releases</h4>
     <!-- 
     Effective Time:
@@ -1480,7 +1482,7 @@
 
 
 </uib-accordion-group> <!--  Release Reports --> <uib-accordion-group
-  ng-show="currentRole == 'Administrator' || currentRole == 'Lead'">
+  ng-show="currentRole == 'Administrator'">
 <uib-accordion-heading>
 <h5>Release Reports</h5>
 </uib-accordion-heading> 
