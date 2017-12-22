@@ -120,6 +120,7 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
+import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
@@ -4047,9 +4048,27 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       boolean isValid = algorithmHandler.isTargetCodeValid(terminologyId);
 
       if (isValid) {
-        final Concept c = contentService.getConcept(terminologyId,
+        Concept c = contentService.getConcept(terminologyId,
             mapProject.getDestinationTerminology(),
             mapProject.getDestinationTerminologyVersion());
+        
+        // if ICDO, it is possible that the behavioral code has been changed and the exact
+        // targetId will not be a loaded concept from the source
+        // as a result, we fudge the concept from a concept sharing its base targetId from
+        // ICDO.  For example, if the editor enters '9270/6', '9270/1' will be the
+        // concept returned with the updated terminologyId '9270/6'.  See MAP-1467.
+        if (c == null && mapProject.getDestinationTerminology().equals("ICDO")) {
+          SearchResultList list = contentService.findConceptsForQuery(
+              "terminologyId:" + terminologyId.substring(0,4) + "* AND terminology:ICDO",
+              null);
+          SearchResult result = list.getSearchResults().get(0);
+          c = new ConceptJpa();
+          c.setTerminologyId(terminologyId);
+          c.setTerminology(result.getTerminology());
+          c.setDefaultPreferredName(result.getValue());
+          c.setTerminologyVersion(result.getTerminologyVersion());
+          c.setId(result.getId());
+        }
         // Empty descriptions/relationships
         c.setDescriptions(new HashSet<Description>());
         c.setRelationships(new HashSet<Relationship>());
