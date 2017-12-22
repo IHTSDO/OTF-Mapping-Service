@@ -132,13 +132,7 @@ import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
-import com.amazonaws.SdkClientException;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.auth.InstanceProfileCredentialsProvider;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
@@ -5363,9 +5357,14 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
         throw new LocalException("Full files cannot be compared with this tool.");
       }
       
+      List<String> notes = new ArrayList<>();
+      if (mapProject.getDestinationTerminology().equals("ICDO") && newerInputFile2.contains("99999999")) {
+        notes.add("NOTE: ICDO current release file only contains morphology records, so that should be taken into account when interpreting report results.");
+      }
+      
       // compare extended map files and compose report name
       if (olderInputFile1.contains("ExtendedMap") && newerInputFile2.contains("ExtendedMap")) {
-        reportInputStream = compareExtendedMapFiles(objectData1, objectData2, mapProject, files);
+        reportInputStream = compareExtendedMapFiles(objectData1, objectData2, mapProject, files, notes);
         reportName.append(olderInputFile1.substring(olderInputFile1.lastIndexOf("Extended"), olderInputFile1.lastIndexOf('.')));
         if (olderInputFile1.toLowerCase().contains("alpha")) {reportName.append("_ALPHA");}
         if (olderInputFile1.toLowerCase().contains("beta")) {reportName.append("_BETA");}
@@ -5377,7 +5376,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
         
       // compare simple map files and compose report name
       } else if (olderInputFile1.contains("SimpleMap") && newerInputFile2.contains("SimpleMap")) {
-        reportInputStream = compareSimpleMapFiles(objectData1, objectData2, mapProject, files);
+        reportInputStream = compareSimpleMapFiles(objectData1, objectData2, mapProject, files, notes);
         reportName.append(olderInputFile1.substring(olderInputFile1.lastIndexOf("Simple"), olderInputFile1.lastIndexOf('.')));
         if (olderInputFile1.toLowerCase().contains("alpha")) {reportName.append("_ALPHA");}
         if (olderInputFile1.toLowerCase().contains("beta")) {reportName.append("_BETA");}
@@ -5427,7 +5426,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
   }
   
   private InputStream compareExtendedMapFiles(InputStream data1,
-    InputStream data2, MapProject mapProject, List<String> files) throws Exception {
+    InputStream data2, MapProject mapProject, List<String> files, List<String> notes) throws Exception {
 
     // map to list of records that have been updated (sorted by key)
     TreeMap<String, String> updatedList = new TreeMap<>();
@@ -5591,12 +5590,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     // produce Excel report file
     final ExportReportHandler handler = new ExportReportHandler();
     return handler.exportExtendedFileComparisonReport(updatedList, newList,
-        inactivatedList, removedList, files);
+        inactivatedList, removedList, files, notes);
   }
   
   
   private InputStream compareSimpleMapFiles(InputStream data1,
-    InputStream data2, MapProject mapProject, List<String> files) throws Exception {
+    InputStream data2, MapProject mapProject, List<String> files, List<String> notes) throws Exception {
 
     // map to list of records that have been updated (sorted by key)
     TreeMap<String, String> updatedList = new TreeMap<>();
@@ -5742,7 +5741,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     // produce Excel report file
     final ExportReportHandler handler = new ExportReportHandler();
     return handler.exportSimpleFileComparisonReport(updatedList, newList,
-        inactivatedList, removedList, files);
+        inactivatedList, removedList, files, notes);
   }
 
   @Override
@@ -6423,6 +6422,9 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     String newerInputFile2 =
         "C:\\Temp\\s3\\ssa_ssb\\betaxder2_sRefset_SimpleMapSnapshot_INT_20180131.txt";
     List<String> files = new ArrayList<>();
+    files.add(olderInputFile1);
+    files.add(newerInputFile2);
+    List<String> notes = new ArrayList<>();
     
     InputStream objectData1 = new FileInputStream(olderInputFile1);
     InputStream objectData2 = new FileInputStream(newerInputFile2);
@@ -6436,7 +6438,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     // compare extended map files and compose report name
     if (olderInputFile1.contains("ExtendedMap")
         && newerInputFile2.contains("ExtendedMap")) {
-      reportInputStream = compareExtendedMapFiles(objectData1, objectData2, mapProject, files);
+      reportInputStream = compareExtendedMapFiles(objectData1, objectData2, mapProject, files, notes);
       reportName.append(
           olderInputFile1.substring(olderInputFile1.lastIndexOf("Extended"),
               olderInputFile1.lastIndexOf('.')));
@@ -6461,7 +6463,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       // compare simple map files and compose report name
     } else if (olderInputFile1.contains("SimpleMap")
         && newerInputFile2.contains("SimpleMap")) {
-      reportInputStream = compareSimpleMapFiles(objectData1, objectData2, mapProject, files);
+      reportInputStream = compareSimpleMapFiles(objectData1, objectData2, mapProject, files, notes);
       reportName.append(
           olderInputFile1.substring(olderInputFile1.lastIndexOf("Simple"),
               olderInputFile1.lastIndexOf('.')));
