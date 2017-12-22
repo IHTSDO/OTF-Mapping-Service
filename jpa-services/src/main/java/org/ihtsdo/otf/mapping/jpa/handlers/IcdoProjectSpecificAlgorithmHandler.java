@@ -3,6 +3,7 @@ package org.ihtsdo.otf.mapping.jpa.handlers;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
@@ -24,12 +25,13 @@ public class IcdoProjectSpecificAlgorithmHandler
 
     final ContentService contentService = new ContentServiceJpa();
     try {
-      // Concept must exist
-      final Concept concept = contentService.getConcept(terminologyId,
-          mapProject.getDestinationTerminology(),
-          mapProject.getDestinationTerminologyVersion());
+      // behavior code may be different and not in the source
+      // so we just check that the base code is in the source
+      SearchResultList list = contentService.findConceptsForQuery(
+          "terminologyId:" + terminologyId.substring(0,4) + "* AND terminology:ICDO",
+          null);
 
-      return concept != null;
+      return list.getSearchResults().size() > 0;
 
     } catch (Exception e) {
       throw e;
