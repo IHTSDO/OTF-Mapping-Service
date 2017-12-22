@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -18,6 +19,7 @@ import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
 import org.ihtsdo.otf.mapping.reports.Report;
@@ -209,13 +211,13 @@ public class ExportReportHandler {
      *             the exception
      */
     public InputStream exportExtendedFileComparisonReport(TreeMap<String, String> updatedList, Map<String, String> newList, Map<String, 
-      String> inactivatedList, Map<String, String> removedList ) throws Exception {
+      String> inactivatedList, Map<String, String> removedList, List<String> files) throws Exception {
 
         // Create workbook
         Workbook wb = new HSSFWorkbook();
 
         // Export report
-        handleExportExtendedFileComparisonReport(updatedList, newList, inactivatedList, removedList, wb);
+        handleExportExtendedFileComparisonReport(updatedList, newList, inactivatedList, removedList, files, wb);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         wb.write(out);
@@ -310,7 +312,7 @@ public class ExportReportHandler {
      */
     @SuppressWarnings("static-method")
     private void handleExportExtendedFileComparisonReport(TreeMap<String, String> updatedList, 
-      Map<String, String> newList, Map<String, String> inactivatedList, Map<String, String> removedList, Workbook wb) throws Exception {
+      Map<String, String> newList, Map<String, String> inactivatedList, Map<String, String> removedList, List<String> files, Workbook wb) throws Exception {
         Logger.getLogger(ReportServiceJpa.class).info("Exporting file comparison report " );
 
         try {
@@ -325,14 +327,15 @@ public class ExportReportHandler {
             CellStyle style = wb.createCellStyle();
             style.setFont(font);
 
-            Sheet sheet = wb.createSheet("New Records");
-            Sheet sheet2 = wb.createSheet("Updated Records");
-            Sheet sheet3 = wb.createSheet("Inactivated Records");
-            Sheet sheet4 = wb.createSheet("Removed Records");
+            Sheet sheet = wb.createSheet("New");
+            Sheet sheet2 = wb.createSheet("Updated");
+            Sheet sheet3 = wb.createSheet("Retired");
+            Sheet sheet4 = wb.createSheet("Removed");
 
             // Create sheet1 for new records
             int rownum = 0;
             int cellnum = 0;
+            rownum = createFileHeader("New Records in Later File", sheet, rownum++, files);           
             Row row = sheet.createRow(rownum++);
             Cell cell = null;
             for (String header : new String[] {"UUID", "Effective Time", "Active", "ModuleId", "RefsetId", 
@@ -352,6 +355,7 @@ public class ExportReportHandler {
             // Create sheet2 for updated records
             rownum = 0;
             cellnum = 0;
+            rownum = createFileHeader("Records Updated in Later File", sheet2, rownum++, files);           
             row = sheet2.createRow(rownum++);
             cell = null;
             for (String header : new String[] {"", "Effective Time", "Active", "ModuleId", "RefsetId", 
@@ -382,6 +386,7 @@ public class ExportReportHandler {
             // Create sheet3 for inactivated records
             rownum = 0;
             cellnum = 0;
+            rownum = createFileHeader("Records Retired in Later File", sheet3, rownum++, files);           
             row = sheet3.createRow(rownum++);
             for (String header : new String[] {"UUID", "Effective Time", "Active", "ModuleId", "RefsetId", 
                 "ReferencedComponentId", "MapGroup", "MapPriority", "MapRule", "MapAdvice", "MapTarget", "CorrelationId", "MapCategoryId" }) {
@@ -400,6 +405,7 @@ public class ExportReportHandler {
             // Create sheet4 for removed records
             rownum = 0;
             cellnum = 0;
+            rownum = createFileHeader("Records Removed in Later File", sheet4, rownum++, files);           
             row = sheet4.createRow(rownum++);
             for (String header : new String[] {"UUID", "Effective Time", "Active", "ModuleId", "RefsetId", 
                 "ReferencedComponentId", "MapGroup", "MapPriority", "MapRule", "MapAdvice", "MapTarget", "CorrelationId", "MapCategoryId" }) {
@@ -436,13 +442,13 @@ public class ExportReportHandler {
     }
     
     public InputStream exportSimpleFileComparisonReport(TreeMap<String, String> updatedList, Map<String, String> newList, 
-      Map<String, String> inactivatedList, Map<String, String> removedList ) throws Exception {
+      Map<String, String> inactivatedList, Map<String, String> removedList, List<String> files ) throws Exception {
 
       // Create workbook
       Workbook wb = new HSSFWorkbook();
 
       // Export report
-      handleExportSimpleFileComparisonReport(updatedList, newList, inactivatedList, removedList, wb);
+      handleExportSimpleFileComparisonReport(updatedList, newList, inactivatedList, removedList, files, wb);
 
       ByteArrayOutputStream out = new ByteArrayOutputStream();
       wb.write(out);
@@ -464,7 +470,7 @@ public class ExportReportHandler {
     @SuppressWarnings("static-method")
     private void handleExportSimpleFileComparisonReport(TreeMap<String, String> updatedList, 
       Map<String, String> newList, Map<String, String> inactivatedList, 
-      Map<String, String> removedList, Workbook wb) throws Exception {
+      Map<String, String> removedList, List<String> files, Workbook wb) throws Exception {
         Logger.getLogger(ReportServiceJpa.class).info("Exporting file comparison report " );
 
         try {
@@ -479,16 +485,18 @@ public class ExportReportHandler {
             CellStyle style = wb.createCellStyle();
             style.setFont(font);
 
-            Sheet sheet = wb.createSheet("New Records");
-            Sheet sheet2 = wb.createSheet("Updated Records");
-            Sheet sheet3 = wb.createSheet("Inactivated Records");
-            Sheet sheet4 = wb.createSheet("Removed Records");
-
+            Sheet sheet = wb.createSheet("New");
+            Sheet sheet2 = wb.createSheet("Updated");
+            Sheet sheet3 = wb.createSheet("Retired");
+            Sheet sheet4 = wb.createSheet("Removed");
+            
             // Create sheet1 for new records
             int rownum = 0;
             int cellnum = 0;
-            Row row = sheet.createRow(rownum++);
             Cell cell = null;
+            rownum = createFileHeader("New Records in Later File", sheet, rownum++, files);
+            Row row = sheet.createRow(rownum++);
+            
             for (String header : new String[] {"UUID", "Effective Time", "Active", "ModuleId", "RefsetId", 
                 "ReferencedComponentId", "MapTarget"}) {
                 cell = row.createCell(cellnum++);
@@ -506,6 +514,7 @@ public class ExportReportHandler {
             // Create sheet2 for updated records
             rownum = 0;
             cellnum = 0;
+            rownum = createFileHeader("Records Updated in Later File", sheet2, rownum++, files);
             row = sheet2.createRow(rownum++);
             cell = null;
             for (String header : new String[] {"", "Effective Time", "Active", "ModuleId", "RefsetId", 
@@ -537,6 +546,7 @@ public class ExportReportHandler {
             // Create sheet3 for inactivated records
             rownum = 0;
             cellnum = 0;
+            rownum = createFileHeader("Records Retired in Later File", sheet3, rownum++, files);
             row = sheet3.createRow(rownum++);
             for (String header : new String[] {"UUID", "Effective Time", "Active", "ModuleId", "RefsetId", 
                 "ReferencedComponentId", "MapTarget"}) {
@@ -555,6 +565,7 @@ public class ExportReportHandler {
             // Create sheet4 for removed records
             rownum = 0;
             cellnum = 0;
+            rownum = createFileHeader("Records Removed in Later File", sheet4, rownum++, files);
             row = sheet4.createRow(rownum++);
             for (String header : new String[] {"UUID", "Effective Time", "Active", "ModuleId", "RefsetId", 
                 "ReferencedComponentId", "MapTarget"}) {
@@ -636,5 +647,42 @@ public class ExportReportHandler {
       cell.setCellValue(createHelper.createRichTextString(tokens[6]));
       
  
+    }
+    
+    /**
+     * Provides a header with the sheet label and file names.
+     *
+     * @param label the label
+     * @param sheet the sheet
+     * @param rownum the rownum
+     * @param files the files
+     * @return the int
+     */
+    private int createFileHeader(String label, Sheet sheet, int rownum, List<String> files) {
+      // Label
+      Row row = sheet.createRow((short) 0);
+      Cell cell = row.createCell((short) 0);
+      cell.setCellValue(label);
+      
+      // Initial file
+      row = sheet.createRow((short) 1);
+      cell = row.createCell((short) 0);
+      cell.setCellValue("Initial File:");
+      cell = row.createCell((short) 1);
+      cell.setCellValue(files.get(0).substring(files.get(0).lastIndexOf('/')));
+      
+      // Later file
+      row = sheet.createRow((short) 2);
+      cell = row.createCell((short) 0);
+      cell.setCellValue("Later File:");
+      cell = row.createCell((short) 1);
+      cell.setCellValue(files.get(1).substring(files.get(1).lastIndexOf('/')));
+
+      // Merge cells in the first few rows to provide space for the file names
+      sheet.addMergedRegion(CellRangeAddress.valueOf("B1:H1"));
+      sheet.addMergedRegion(CellRangeAddress.valueOf("B2:H2"));
+      sheet.addMergedRegion(CellRangeAddress.valueOf("B3:H3"));
+      
+      return 4;
     }
 }
