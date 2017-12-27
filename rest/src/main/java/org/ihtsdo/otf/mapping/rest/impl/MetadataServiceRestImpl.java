@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.rest.impl;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.Map;
 
@@ -281,6 +282,10 @@ public class MetadataServiceRestImpl extends RootServiceRestImpl
           ConfigUtility.getConfigProperties().getProperty("gmdnsftp.dir");
 
       File folder = new File(gmdnDir);
+      if(!folder.exists()){
+        throw new FileNotFoundException(folder + " not found");
+      }
+      
       File[] listOfFiles = folder.listFiles();
 
       // We only care about the directories that follow a yy_M naming convention
@@ -297,7 +302,11 @@ public class MetadataServiceRestImpl extends RootServiceRestImpl
       }
       
       return gmdnVersions;
-    } catch (Exception e) {
+    } catch (FileNotFoundException e) {
+      handleException(e, "get downloaded versions of gmdn: " + e.getMessage(),
+          user, "", "");
+      return null;
+   } catch (Exception e) {
       handleException(e, "trying to get downloaded versions of gmdn",
           user, "", "");
       return null;
