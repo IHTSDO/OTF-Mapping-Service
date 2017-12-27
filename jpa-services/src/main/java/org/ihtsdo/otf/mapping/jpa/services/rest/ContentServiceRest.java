@@ -5,7 +5,6 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TerminologyVersionList;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Interface ContentServiceRest.
  *
@@ -324,7 +323,7 @@ public interface ContentServiceRest {
    * @throws Exception the exception
    */
   TerminologyVersionList getTerminologyVersionScopes(String terminology,
-    String version, String authToken) throws Exception;
+    String version, TerminologyVersionList termVersionList, String authToken) throws Exception;
 
   /**
    * Load terminology rf 2 snapshot aws.

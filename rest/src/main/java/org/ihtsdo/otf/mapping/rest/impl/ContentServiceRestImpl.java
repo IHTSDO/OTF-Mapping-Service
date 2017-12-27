@@ -1000,7 +1000,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
           + "TerminologyLoad_" + startTimeOrig);
       placementDir.mkdir();
 
-      Logger.getLogger(getClass()).info("AAA - downloading " + terminology + " "
+      Logger.getLogger(getClass()).info("loadTerminologyAwsRf2Snapshot - downloading " + terminology + " "
           + version + " to " + placementDir);
       S3ObjectInputStream inputStream = s3object.getObjectContent();
       File zippedFile = new File(placementDir,
@@ -1009,33 +1009,17 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       inputStream.close();
 
       // UNZIP to Placement
-      Logger.getLogger(getClass()).info("AAA - decompressing " + zippedFile);
       unzipToDirectory(zippedFile, placementDir);
-      Collection<File> files = FileUtils.listFiles(placementDir, null, true);
-      for (File f : files) {
-        Logger.getLogger(getClass()).info("AAA with " + f.getAbsolutePath());
-      }
-      Logger.getLogger(getClass()).info("BBB with " + placementDir);
-
+      
       File testDir = new File(placementDir.getAbsolutePath() + File.separator
           + zippedFile.getName().substring(0, zippedFile.getName().indexOf("."))
           + File.separator + "Snapshot");
-      Logger.getLogger(getClass())
-          .info("CCC with " + testDir.getAbsolutePath());
-      files = FileUtils.listFiles(testDir, null, true);
-      for (File f : files) {
-        Logger.getLogger(getClass()).info("DDD with " + f.getAbsolutePath());
-      }
 
       // Load content with input pulled from S3
       algo = new Rf2SnapshotLoaderAlgorithm(localTerminology, localVersion,
           testDir.getAbsolutePath(), treePositions, sendNotification);
 
-      Logger.getLogger(getClass()).info("EEE");
-
       algo.compute();
-
-      Logger.getLogger(getClass()).info("FFF");
 
       Logger.getLogger(getClass())
           .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
@@ -1539,80 +1523,82 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     return true;
   }
 
-  @Override
-  @GET
-  @Path("/terminology/versions/{terminology}")
-  @ApiOperation(value = "Find versions for terminology.", notes = "Gets a list of recont versions for a given terminology.", response = Concept.class)
-  @Produces({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
-  public TerminologyVersionList getTerminologyVersions(
-    @ApiParam(value = "Terminology name, e.g. SNOMED CT", required = true) @PathParam("terminology") String terminology,
-    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+	@Override
+	@GET
+	@Path("/terminology/versions/{terminology}")
+	@ApiOperation(value = "Find versions for terminology.", notes = "Gets a list of recont versions for a given terminology.", response = Concept.class)
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+	public TerminologyVersionList getTerminologyVersions(
+			@ApiParam(value = "Terminology name, e.g. SNOMED CT", required = true) @PathParam("terminology") String terminology,
+			@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+			throws Exception {
 
-    Logger.getLogger(ContentServiceRestImpl.class)
-        .info("RESTful call (Content): /terminology/" + terminology + "/");
+		Logger.getLogger(ContentServiceRestImpl.class)
+				.info("RESTful call (Content): /terminology/" + terminology + "/");
 
-    if (removeSpaces(terminology).equals("SNOMEDCT")) {
-      terminology = "InternationalRF2";
-    } else if (terminology.startsWith("ICNP")) {
-      terminology = terminology.substring(0, terminology.indexOf(" "))
-          + terminology.substring(terminology.indexOf(" ") + 1);
-    }
+		if (removeSpaces(terminology).equals("SNOMEDCT")) {
+			terminology = "InternationalRF2";
+		} else if (terminology.startsWith("ICNP")) {
+			terminology = terminology.substring(0, terminology.indexOf(" "))
+					+ terminology.substring(terminology.indexOf(" ") + 1);
+		}
 
-    int year = Calendar.getInstance().get(Calendar.YEAR);
-    String currentYear = Integer.toString(year);
-    String nextYear = Integer.toString(year + 1);
-    String lastYear = Integer.toString(year - 1);
+		int year = Calendar.getInstance().get(Calendar.YEAR);
+		String currentYear = Integer.toString(year);
+		String nextYear = Integer.toString(year + 1);
+		String lastYear = Integer.toString(year - 1);
 
-    try {
-      // authorize call
-      authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-          "load map record RF2 simple", securityService);
+		try {
+			// authorize call
+			authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "load map record RF2 simple", securityService);
 
-      // Connect to server
-      final String bucketName = "release-ihtsdo-prod-published";
-      AmazonS3 s3Client = connectToAmazonS3();
+			// Connect to server
+			final String bucketName = "release-ihtsdo-prod-published";
+			AmazonS3 s3Client = connectToAmazonS3();
 
-      List<S3ObjectSummary> fullKeyList = new ArrayList<S3ObjectSummary>();
-      ObjectListing objects = s3Client.listObjects(bucketName);
+			List<S3ObjectSummary> fullKeyList = new ArrayList<S3ObjectSummary>();
+			ObjectListing objects = s3Client.listObjects(bucketName, "international");
 
-      fullKeyList = objects.getObjectSummaries();
+			fullKeyList = objects.getObjectSummaries();
 
-      objects = s3Client.listNextBatchOfObjects(objects);
+			objects = s3Client.listNextBatchOfObjects(objects);
 
-      while (objects.isTruncated()) {
-        fullKeyList.addAll(objects.getObjectSummaries());
-        objects = s3Client.listNextBatchOfObjects(objects);
-      }
+			while (objects.isTruncated()) {
+				fullKeyList.addAll(objects.getObjectSummaries());
+				objects = s3Client.listNextBatchOfObjects(objects);
+			}
 
-      fullKeyList.addAll(objects.getObjectSummaries());
-      TerminologyVersionList returnList = new TerminologyVersionList();
-      for (S3ObjectSummary obj : fullKeyList) {
-        if (obj.getKey().endsWith("zip") && obj.getKey().contains(terminology)
-            && !obj.getKey().contains("published_build_backup")
-            && (obj.getKey().contains(lastYear)
-                || obj.getKey().contains(currentYear)
-                || obj.getKey().contains(nextYear))
-            && (obj.getKey().matches(".*\\d.zip")
-                || obj.getKey().matches(".*\\dZ.zip"))) {
-          returnList.addTerminologyVersion(
-              new TerminologyVersion(obj.getKey(), terminology));
-        }
-      }
-      returnList.removeDupVersions();
+			fullKeyList.addAll(objects.getObjectSummaries());
+			TerminologyVersionList returnList = new TerminologyVersionList();
+			for (S3ObjectSummary obj : fullKeyList) {
+				if (obj.getKey().endsWith("zip") && obj.getKey().contains(terminology)
+						&& !obj.getKey().contains("published_build_backup")
+						&& (obj.getKey().contains(lastYear) 
+								|| obj.getKey().contains(currentYear)
+								|| obj.getKey().contains(nextYear))
+						&& (obj.getKey().matches(".*\\d.zip") || obj.getKey().matches(".*\\dZ.zip"))) {
+					TerminologyVersion tv = new TerminologyVersion(obj.getKey(), terminology);
+					tv.identifyScope();
+					returnList.addTerminologyVersion(tv);
+				}
+			}
+			Logger.getLogger(ContentServiceRestImpl.class).info("Before Remove Dup:" + returnList.toString());
 
-      // want all descendants, do not use PFS parameter
-      return returnList;
-    } catch (Exception e) {
-      handleException(e, "trying to find descendant concepts");
-      return null;
-    } finally {
-      securityService.close();
-    }
-  }
+//			returnList.removeDupVersions();
+//			Logger.getLogger(ContentServiceRestImpl.class).info("After Remove Version Dup:" + returnList.toString());
+			returnList.removeDups();
+			Logger.getLogger(ContentServiceRestImpl.class).info("After Remove Scope Dup:" + returnList.toString());
 
+			// want all descendants, do not use PFS parameter
+			return returnList;
+		} catch (Exception e) {
+			handleException(e, "trying to find descendant concepts");
+			return null;
+		} finally {
+			securityService.close();
+		}
+	}
+	/*
   @Override
   @GET
   @Path("/terminology/scope/{terminology}/{version}")
@@ -1623,6 +1609,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   public TerminologyVersionList getTerminologyVersionScopes(
     @ApiParam(value = "Terminology name, e.g. SNOMED CT", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Version name, e.g. 20170131", required = true) @PathParam("version") String version,
+    @ApiParam(value = "Terminology Version List", required = true) @QueryParam("terminologyList") TerminologyVersionList termVersionList,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
@@ -1636,6 +1623,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       terminology = "InternationalRF2";
     }
 
+    /*
     final String bucketName = "release-ihtsdo-prod-published";
 
     final ContentService contentService = new ContentServiceJpa();
@@ -1673,19 +1661,33 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         }
       }
 
-      returnList.removeDupScopes();
+	*/
+  /*
+	try {
+    TerminologyVersionList newTermList = new TerminologyVersionList();
+	for (TerminologyVersion termVersion : termVersionList.getTerminologyVersionList()) {
+		if (termVersion.getTerminology().toLowerCase().equals(terminology) && 
+				termVersion.getVersion().toLowerCase().equals(version)) {
+			newTermList.addTerminologyVersion(termVersion);
+		}
+	}
+	
+	newTermList.removeDupScopes();
 
       // want all descendants, do not use PFS parameter
-      return returnList;
-    } catch (Exception e) {
+      return newTermList;
+*/
+  
+  
+  /*    } catch (Exception e) {
       handleException(e, "trying to find descendant concepts");
       return null;
-    } finally {
-      contentService.close();
+*//*    } finally {
+//      contentService.close();
       securityService.close();
     }
   }
-
+*/
   private void unzipToDirectory(File zippedFile, File placementDir)
     throws IOException {
     if (zippedFile == null) {
@@ -1748,5 +1750,12 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     else
       return null;
   }
+
+@Override
+public TerminologyVersionList getTerminologyVersionScopes(String terminology, String version,
+		TerminologyVersionList termVersionList, String authToken) throws Exception {
+	// TODO Auto-generated method stub
+	return null;
+}
 
 }
