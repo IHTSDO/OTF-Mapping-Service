@@ -524,13 +524,6 @@ public class ContentClientRest extends RootClientRest
   }
 
   @Override
-  public TerminologyVersionList getTerminologyVersionScopes(String terminology,
-    String version, TerminologyVersionList termVersionList, String authToken) throws Exception {
-    // not yet implemented in rest client
-    return null;
-  }
-
-  @Override
   public void loadTerminologyAwsRf2Snapshot(String terminology, String version,
     String awsFileName, Boolean treePositions, Boolean sendNotification,
     String authToken) throws Exception {
@@ -552,5 +545,4 @@ public class ContentClientRest extends RootClientRest
     // not yet implemented in rest client
     return false;
   }
-
 }

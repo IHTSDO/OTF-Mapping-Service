@@ -1582,14 +1582,10 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 					returnList.addTerminologyVersion(tv);
 				}
 			}
-			Logger.getLogger(ContentServiceRestImpl.class).info("Before Remove Dup:" + returnList.toString());
 
-//			returnList.removeDupVersions();
-//			Logger.getLogger(ContentServiceRestImpl.class).info("After Remove Version Dup:" + returnList.toString());
+			// Remove all duplicates defined by term-version-scope
 			returnList.removeDups();
-			Logger.getLogger(ContentServiceRestImpl.class).info("After Remove Scope Dup:" + returnList.toString());
 
-			// want all descendants, do not use PFS parameter
 			return returnList;
 		} catch (Exception e) {
 			handleException(e, "trying to find descendant concepts");
@@ -1598,96 +1594,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 			securityService.close();
 		}
 	}
-	/*
-  @Override
-  @GET
-  @Path("/terminology/scope/{terminology}/{version}")
-  @ApiOperation(value = "Find versions for terminology.", notes = "Gets a list of recont versions for a given terminology.", response = Concept.class)
-  @Produces({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
-  public TerminologyVersionList getTerminologyVersionScopes(
-    @ApiParam(value = "Terminology name, e.g. SNOMED CT", required = true) @PathParam("terminology") String terminology,
-    @ApiParam(value = "Version name, e.g. 20170131", required = true) @PathParam("version") String version,
-    @ApiParam(value = "Terminology Version List", required = true) @QueryParam("terminologyList") TerminologyVersionList termVersionList,
-    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
 
-    Logger.getLogger(ContentServiceRestImpl.class)
-        .info("RESTful call (Content): /terminology/scope/" + terminology + "/"
-            + version + "/");
-
-    if (!removeSpaces(terminology).equals("SNOMEDCT")) {
-      throw new Exception("Scope not relevant to handle " + terminology);
-    } else {
-      terminology = "InternationalRF2";
-    }
-
-    /*
-    final String bucketName = "release-ihtsdo-prod-published";
-
-    final ContentService contentService = new ContentServiceJpa();
-    try {
-      // authorize call
-      authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-          "load map record RF2 simple", securityService);
-
-      // Connect to server
-      AmazonS3 s3Client = connectToAmazonS3();
-
-      List<S3ObjectSummary> fullKeyList = new ArrayList<S3ObjectSummary>();
-      ObjectListing objects = s3Client.listObjects(bucketName);
-      fullKeyList = objects.getObjectSummaries();
-      objects = s3Client.listNextBatchOfObjects(objects);
-
-      while (objects.isTruncated()) {
-        fullKeyList.addAll(objects.getObjectSummaries());
-        objects = s3Client.listNextBatchOfObjects(objects);
-      }
-      fullKeyList.addAll(objects.getObjectSummaries());
-
-      TerminologyVersionList returnList = new TerminologyVersionList();
-
-      for (S3ObjectSummary obj : fullKeyList) {
-        if (obj.getKey().endsWith("zip") && obj.getKey().contains(terminology)
-            && !obj.getKey().contains("published_build_backup")
-            && obj.getKey().contains(version)
-            && (obj.getKey().matches(".*\\d.zip")
-                || obj.getKey().matches(".*\\dZ.zip"))) {
-          TerminologyVersion tv =
-              new TerminologyVersion(terminology, version, null, obj.getKey());
-          tv.identifyScope();
-          returnList.addTerminologyVersion(tv);
-        }
-      }
-
-	*/
-  /*
-	try {
-    TerminologyVersionList newTermList = new TerminologyVersionList();
-	for (TerminologyVersion termVersion : termVersionList.getTerminologyVersionList()) {
-		if (termVersion.getTerminology().toLowerCase().equals(terminology) && 
-				termVersion.getVersion().toLowerCase().equals(version)) {
-			newTermList.addTerminologyVersion(termVersion);
-		}
-	}
-	
-	newTermList.removeDupScopes();
-
-      // want all descendants, do not use PFS parameter
-      return newTermList;
-*/
-  
-  
-  /*    } catch (Exception e) {
-      handleException(e, "trying to find descendant concepts");
-      return null;
-*//*    } finally {
-//      contentService.close();
-      securityService.close();
-    }
-  }
-*/
   private void unzipToDirectory(File zippedFile, File placementDir)
     throws IOException {
     if (zippedFile == null) {
@@ -1750,12 +1657,4 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     else
       return null;
   }
-
-@Override
-public TerminologyVersionList getTerminologyVersionScopes(String terminology, String version,
-		TerminologyVersionList termVersionList, String authToken) throws Exception {
-	// TODO Auto-generated method stub
-	return null;
-}
-
 }

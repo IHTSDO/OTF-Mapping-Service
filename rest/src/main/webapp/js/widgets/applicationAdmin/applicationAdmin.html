@@ -1838,7 +1838,7 @@
 				<td>Terminology to Load</td>
 				<td><select ng-model="termLoad.terminology"
 					ng-options="item for item in terminologyInputTypes"
-					ng-change="getTerminologyVersions(termLoad.terminology)">
+					ng-change="handleTerminologySelection(termLoad.terminology)">
 				</select></td>
 			</tr>
 
@@ -1892,7 +1892,5 @@
 	(termLoad.version)"
 		ng-click="loadTerminologyAws(termLoad.terminology, termLoad.version, termLoad.scope)">Load
 		{{termLoad.terminology}}</button>
-
-	<!--  TODO: While going from SNOMED to ICxx (or other way), clears versions, ICxx to ICyy does NOT clear versions  -->
 </div>
 </uib-accordion-group> </uib-accordion>
