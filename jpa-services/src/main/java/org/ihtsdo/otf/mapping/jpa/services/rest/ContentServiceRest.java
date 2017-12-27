@@ -314,18 +314,6 @@ public interface ContentServiceRest {
     String authToken) throws Exception;
 
   /**
-   * Returns the terminology version scopes.
-   *
-   * @param terminology the terminology
-   * @param version the version
-   * @param authToken the auth token
-   * @return the terminology version scopes
-   * @throws Exception the exception
-   */
-  TerminologyVersionList getTerminologyVersionScopes(String terminology,
-    String version, TerminologyVersionList termVersionList, String authToken) throws Exception;
-
-  /**
    * Load terminology rf 2 snapshot aws.
    *
    * @param terminology the terminology

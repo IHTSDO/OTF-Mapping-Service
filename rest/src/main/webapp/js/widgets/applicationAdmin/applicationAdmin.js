@@ -2834,7 +2834,7 @@ angular
         $scope.termLoad.version = '';
         $scope.termLoad.scope = '';
         
-        $scope.getTerminologyVersions = function(terminology) {
+        $scope.handleTerminologySelection = function(terminology) {
           if (terminology == 'GMDN'){
             getDownloadedGmdnVersions();
             return;
@@ -2875,41 +2875,7 @@ angular
             $rootScope.handleHttpError(data, status, headers, config);
           });
         };
-        
-        function getTerminologyScopes(terminology, version) {
-          $rootScope.glassPane++;
-          
-          for (var i = 0; i < $scope.termLoadVersions.length; i++) {
-	          $scope.termLoadScopes.push($scope.termLoadVersions[i].scope);
-          }
-/*
-          // download the latest version of gmdn from SFTP
-          $http(
-            {
-              url : root_content + 'terminology/scope/' + terminology + "/"
-                + version,
-              dataType : 'json',
-              method : 'GET',
-              headers : {
-                'Content-Type' : 'application/json'
-              }
-            }).success(function(data) {
-            $scope.termLoadScopes = new Array();
-            $scope.termLoadScopeFileNameMap = new Map();
 
-            for (var i = 0; i < data.TerminologyVersion.length; i++) {
-              $scope.termLoadScopes.push(data.TerminologyVersion[i].scope);
-              $scope.termLoadScopeFileNameMap.set(data.TerminologyVersion[i].scope, data.TerminologyVersion[i].awsZipFileName)
-            }
-            */
-            $rootScope.glassPane--;
-
-/*          }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
-            $rootScope.handleHttpError(data, status, headers, config);
-          });
-*/        };
-        
         $scope.handleVersionSelection = function(terminology, version) {
           if (version) {
               $scope.termLoadScopeFileNameMap = new Map();
@@ -2924,7 +2890,7 @@ angular
                 	}
                 }
             } else {
-              // Not SNOMED.  So access awsZipFileName
+              // Not SNOMED.  So simply define the awsZipFileName
               $scope.termLoadAwsZipFileName = $scope.termLoadVersionFileNameMap.get(version);
             }
           }
@@ -3257,10 +3223,8 @@ angular
           
           var queryString = '?';
           queryString += "awsZipFileName=" + $scope.termLoadAwsZipFileName;
-
           queryString += "&treePositions=true&sendNotification=true";
           
-          console.log("CCC: ", terminology, version, queryString);
           // rest call
           $http({
             url: root_content + "terminology/load/aws/rf2/snapshot/" 

@@ -1,9 +1,7 @@
 package org.ihtsdo.otf.mapping.helpers;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.xml.bind.annotation.XmlElement;
 
@@ -65,26 +63,6 @@ public class TerminologyVersionList {
 		int result = 1;
 		result = prime * result + ((terminologyVersionList == null) ? 0 : terminologyVersionList.hashCode());
 		return result;
-	}
-
-	/**
-	 * Removes the dup versions.
-	 */
-	public void removeDupVersions() {
-		List<TerminologyVersion> tmpList = new ArrayList<>();
-		Set<String> observedVersions = new HashSet<>();
-
-		// TODO: Other restrictions required to define approach?
-		for (TerminologyVersion tv : terminologyVersionList) {
-			if (!observedVersions.contains(tv.getVersion())) {
-				observedVersions.add(tv.getVersion());
-				tmpList.add(new TerminologyVersion(tv.getTerminology(), tv.getVersion(), tv.getScope(),
-						tv.getAwsZipFileName()));
-			}
-		}
-
-		terminologyVersionList.clear();
-		terminologyVersionList.addAll(tmpList);
 	}
 
 	/**
