@@ -57,11 +57,11 @@ angular
         $scope.terminologyVersionScopeTriplets = new Array();
         $scope.mapProjectMetadataPairs = new Array();
 
+        $scope.termLoadData = new Array();
         $scope.termLoadVersions = new Array();
         $scope.termLoadScopes = new Array();
         $scope.termLoadAwsZipFileName = '';
         $scope.termLoadVersionFileNameMap = new Map();
-        $scope.termLoadScopeFileNameMap = new Map();
         
         $scope.downloadedGmdnVersions = new Array();
         
@@ -2852,14 +2852,22 @@ angular
             }
           }).success(function(data) {
             $scope.termLoadVersions = new Array();
+            $scope.termLoadData = new Array();
             $scope.termLoadVersionFileNameMap = new Map();
+            $scope.termLoad.version = ''; //reset
+            $scope.termLoad.scope = ''; // reset
             
             for (var i = 0; i < data.TerminologyVersion.length; i++) {
-              $scope.termLoadVersions.push(data.TerminologyVersion[i].version);
-              $scope.termLoad.version = ''; //reset
-              if (terminology != 'SNOMED CT')
-                $scope.termLoadVersionFileNameMap.set(data.TerminologyVersion[i].version, data.TerminologyVersion[i].awsZipFileName)
-            }
+                if ($scope.termLoadVersions.indexOf(data.TerminologyVersion[i].version) < 0) {
+                    $scope.termLoadVersions.push(data.TerminologyVersion[i].version);
+            	}
+                if (terminology != 'SNOMED CT')
+                    $scope.termLoadVersionFileNameMap.set(data.TerminologyVersion[i].version, data.TerminologyVersion[i].awsZipFileName)
+                else
+                    $scope.termLoadData.push(data.TerminologyVersion[i]);
+
+            } 
+            
             $rootScope.glassPane--;
 
           }).error(function(data, status, headers, config) {
@@ -2870,7 +2878,11 @@ angular
         
         function getTerminologyScopes(terminology, version) {
           $rootScope.glassPane++;
-
+          
+          for (var i = 0; i < $scope.termLoadVersions.length; i++) {
+	          $scope.termLoadScopes.push($scope.termLoadVersions[i].scope);
+          }
+/*
           // download the latest version of gmdn from SFTP
           $http(
             {
@@ -2889,27 +2901,36 @@ angular
               $scope.termLoadScopes.push(data.TerminologyVersion[i].scope);
               $scope.termLoadScopeFileNameMap.set(data.TerminologyVersion[i].scope, data.TerminologyVersion[i].awsZipFileName)
             }
+            */
             $rootScope.glassPane--;
 
-          }).error(function(data, status, headers, config) {
+/*          }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
             $rootScope.handleHttpError(data, status, headers, config);
           });
-        };
+*/        };
         
         $scope.handleVersionSelection = function(terminology, version) {
           if (version) {
-            if (terminology == 'SNOMED CT') {
-              getTerminologyScopes(terminology, version);
+              $scope.termLoadScopeFileNameMap = new Map();
+              $scope.termLoad.scope = ''; // reset
+              $scope.termLoadScopes = new Array();
+              
+              if (terminology == 'SNOMED CT') {
+                for (var i = 0; i < $scope.termLoadData.length; i++) {
+                	if ($scope.termLoadData[i].version == version) {
+                		$scope.termLoadScopes.push($scope.termLoadData[i].scope);
+                		$scope.termLoadScopeFileNameMap.set($scope.termLoadData[i].scope, $scope.termLoadData[i].awsZipFileName)
+                	}
+                }
             } else {
               // Not SNOMED.  So access awsZipFileName
               $scope.termLoadAwsZipFileName = $scope.termLoadVersionFileNameMap.get(version);
-              console.log("AAA with ", $scope.termLoadAwsZipFileName);
             }
           }
         }
         
-        $scope.handleScopeSelection = function(terminology, scope) {
+        $scope.handleScopeSelection = function(terminology, version, scope) {
           if (terminology != 'SNOMED CT')
             return;
          
@@ -2917,7 +2938,6 @@ angular
           $scope.termLoadAwsZipFileName = $scope.termLoadScopeFileNameMap.get(scope);
         }
         
-        // ASD
         // terminology/load/aws/{terminology}
         $scope.loadTerminologyAws = function(terminology, version, scope) {
           $rootScope.glassPane++;
@@ -3211,7 +3231,6 @@ angular
         }; 
         
         // load terminology Rf2 snapshot
-        // ASD
         function loadTerminologyAwsRf2Snapshot(terminology, version, scope) {
           $rootScope.glassPane++;
 

@@ -525,7 +525,7 @@ public class ContentClientRest extends RootClientRest
 
   @Override
   public TerminologyVersionList getTerminologyVersionScopes(String terminology,
-    String version, String authToken) throws Exception {
+    String version, TerminologyVersionList termVersionList, String authToken) throws Exception {
     // not yet implemented in rest client
     return null;
   }
