@@ -531,18 +531,18 @@ public class ContentClientRest extends RootClientRest
   }
 
   @Override
-  public void reloadTerminologyAwsRf2Snapshot(String terminology,
+  public String reloadTerminologyAwsRf2Snapshot(String terminology,
     String removeVersion, String loadVersion, String awsZipFileName,
     Boolean treePositions, Boolean sendNotification, String authToken)
     throws Exception {
     // not yet implemented in rest client
-    
+    return null;
   }
 
   @Override
-  public boolean reloadRefsetMemberAwsSnapshot(String refsetId,
+  public String reloadRefsetMemberAwsSnapshot(String refsetId,
     String awsFileName, String authToken) throws Exception {
     // not yet implemented in rest client
-    return false;
+    return null;
   }
 }

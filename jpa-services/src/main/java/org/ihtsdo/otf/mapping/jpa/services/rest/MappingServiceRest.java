@@ -799,7 +799,7 @@ public interface MappingServiceRest {
 	   * @param authToken the auth token
 	   * @throws Exception the exception
 	   */
-	void beginReleaseForMapProject(String effectiveTime, Long mapProjectId, String authToken) throws Exception;
+	String beginReleaseForMapProject(String effectiveTime, Long mapProjectId, String authToken) throws Exception;
 
 	/**
 	   * Process release for map project.
@@ -811,7 +811,7 @@ public interface MappingServiceRest {
 	   * @param authToken the auth token
 	   * @throws Exception the exception
 	   */
-	void processReleaseForMapProject(String moduleId, String effectiveTime, Long mapProjectId, 
+	String processReleaseForMapProject(String moduleId, String effectiveTime, Long mapProjectId, 
 	  boolean writeDelta, String authToken)
 			throws Exception;
 
@@ -824,7 +824,7 @@ public interface MappingServiceRest {
 	   * @param authToken the auth token
 	   * @throws Exception the exception
 	   */
-	void finishReleaseForMapProject(boolean testModeFlag, Long mapProjectId, String effectiveTime, String authToken)
+	String finishReleaseForMapProject(boolean testModeFlag, Long mapProjectId, String effectiveTime, String authToken)
 			throws Exception;
 
 	/**

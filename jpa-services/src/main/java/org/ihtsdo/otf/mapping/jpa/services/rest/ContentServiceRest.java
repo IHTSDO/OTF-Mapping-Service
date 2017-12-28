@@ -340,7 +340,7 @@ public interface ContentServiceRest {
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  void reloadTerminologyAwsRf2Snapshot(String terminology, String removeVersion,
+  String reloadTerminologyAwsRf2Snapshot(String terminology, String removeVersion,
     String loadVersion, String awsZipFileName, Boolean treePositions,
     Boolean sendNotification, String authToken) throws Exception;
 
@@ -353,7 +353,7 @@ public interface ContentServiceRest {
    * @return true, if successful
    * @throws Exception the exception
    */
-  boolean reloadRefsetMemberAwsSnapshot(String refsetId, String awsFileName,
+  String reloadRefsetMemberAwsSnapshot(String refsetId, String awsFileName,
     String authToken) throws Exception;
 
 }
