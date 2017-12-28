@@ -104,6 +104,7 @@ import org.ihtsdo.otf.mapping.jpa.helpers.TerminologyUtility;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.rest.MappingServiceRest;
@@ -4482,14 +4483,17 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
   @POST
   @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/begin")
   @ApiOperation(value = "Begin release for map project", notes = "Generates release validation report for map project")
-  public void beginReleaseForMapProject(
+  @Produces({
+    MediaType.TEXT_PLAIN
+})
+  public String beginReleaseForMapProject(
     @ApiParam(value = "Effective Time, e.g. 20170131", required = true) @PathParam("effectiveTime") String effectiveTime,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Mapping): /project/id/" + mapProjectId.toString()
-            + "/release/begin");
+            + "/release/" + effectiveTime + "/begin");
 
     String user = null;
     String project = "";
@@ -4498,19 +4502,35 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     try {
       // authorize call
       user = authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
-          "begin release", securityService);
-
+          "begin release", securityService);   
+      
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
 
+      // If other processes are already running, return the currently running
+      // process information as an Exception
+      // If not, obtain the processLock
+      try {
+        RootServiceJpa
+            .lockProcess(user + " is currently running process = Begin Release for map project "
+                + mapProject.getName());
+      } catch (Exception e) {
+        return e.getMessage();
+      } finally {
+        securityService.close();
+      }   
+      
       // create release handler in test mode
       ReleaseHandler handler = new ReleaseHandlerJpa(true);
       handler.setEffectiveTime(effectiveTime);
       handler.setMapProject(mapProject);
       handler.beginRelease();
+      RootServiceJpa.unlockProcess();   
+      return "Success";       
     } catch (Exception e) {
+      RootServiceJpa.unlockProcess();
       handleException(e, "trying to begin release", user, project, "");
+      return "Failure";
     } finally {
-
       mappingService.close();
       securityService.close();
     }
@@ -4598,7 +4618,10 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
   @POST
   @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/module/id/{moduleId}/process")
   @ApiOperation(value = "Process release for map project", notes = "Processes release and creates release files for map project")
-  public void processReleaseForMapProject(
+  @Produces({
+    MediaType.TEXT_PLAIN
+  })  
+  public String processReleaseForMapProject(
     @ApiParam(value = "Module Id, e.g. 20170131", required = false) @PathParam("moduleId") String moduleId,
     @ApiParam(value = "Effective Time, e.g. 20170131", required = true) @PathParam("effectiveTime") String effectiveTime,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
@@ -4621,6 +4644,19 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
 
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
 
+      // If other processes are already running, return the currently running
+      // process information as an Exception
+      // If not, obtain the processLock
+      try {
+        RootServiceJpa
+            .lockProcess(user + " is currently running process = Process Release for map project "
+                + mapProject.getName());
+      } catch (Exception e) {
+        return e.getMessage();
+      } finally {
+        securityService.close();
+      }        
+      
       if (moduleId.equals("null") || moduleId.equals("")) {
         moduleId = mapProject.getModuleId();
         if (moduleId == null || moduleId.equals("")) {
@@ -4662,8 +4698,13 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
 
       // process release
       handler.processRelease();
+
+      RootServiceJpa.unlockProcess();   
+      return "Success";       
     } catch (Exception e) {
-      handleException(e, "trying to process release", user, project, "");
+      RootServiceJpa.unlockProcess();
+      handleException(e, "trying to process release", user, project, "");  
+      return "Failure";       
     } finally {
 
       mappingService.close();
@@ -4682,7 +4723,10 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
   @POST
   @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/finish")
   @ApiOperation(value = "Finish release for map project", notes = "Finishes release for map project from release files")
-  public void finishReleaseForMapProject(
+  @Produces({
+    MediaType.TEXT_PLAIN
+  })  
+  public String finishReleaseForMapProject(
     @ApiParam(value = "Preview mode", required = false) @QueryParam("test") boolean testModeFlag,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Effective Time, e.g. 20170131", required = true) @PathParam("effectiveTime") String effectiveTime,
@@ -4703,6 +4747,26 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
 
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
 
+      // If other processes are already running, return the currently running
+      // process information as an Exception
+      // If not, obtain the processLock
+      try {
+        if(testModeFlag){
+        RootServiceJpa
+            .lockProcess(user + " is currently running process = Create Release Finalization QA Report for map project "
+                + mapProject.getName());
+        }
+        else{
+          RootServiceJpa
+          .lockProcess(user + " is currently running process = Finishing Release for map project "
+              + mapProject.getName());
+        }
+      } catch (Exception e) {
+        return e.getMessage();
+      } finally {
+        securityService.close();
+      }        
+      
       // create release handler NOT in test mode
       // TODO Decide whether to remove the out of scope map records,
       // currently thinking NO
@@ -4729,8 +4793,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
 
       // process release
       handler.finishRelease();
+      
+      RootServiceJpa.unlockProcess();   
+      return "Success";             
     } catch (Exception e) {
-      handleException(e, "trying to finish release", user, project, "");
+      handleException(e, "trying to finish release", user, project, ""); 
+      return "Failure";
     } finally {
 
       mappingService.close();

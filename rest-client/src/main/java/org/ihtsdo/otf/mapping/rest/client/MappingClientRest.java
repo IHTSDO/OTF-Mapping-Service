@@ -556,19 +556,19 @@ public class MappingClientRest extends RootClientRest
   }
 
   @Override
-  public void beginReleaseForMapProject(String effectiveTime, Long mapProjectId,
+  public String beginReleaseForMapProject(String effectiveTime, Long mapProjectId,
     String authToken) throws Exception {
     // N/A
-
+    return null;
   }
 
 
   @Override
-  public void finishReleaseForMapProject(boolean testModeFlag,
+  public String finishReleaseForMapProject(boolean testModeFlag,
     Long mapProjectId, String effectiveTime, String authToken)
     throws Exception {
     // N/A
-
+    return null;
   }
 
   @Override
@@ -615,10 +615,11 @@ public class MappingClientRest extends RootClientRest
   }
 
   @Override
-  public void processReleaseForMapProject(String moduleId,
+  public String processReleaseForMapProject(String moduleId,
           String effectiveTime, Long mapProjectId, boolean writeDelta,
           String authToken) throws Exception {
       // TODO Auto-generated method stub
+    return null;
       
   }
 

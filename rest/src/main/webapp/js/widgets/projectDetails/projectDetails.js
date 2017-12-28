@@ -2054,17 +2054,26 @@ angular
             window.alert('Must set effective time to begin release');
           }
 
-          $rootScope.glassPane++;
+          if(!confirm('Are you sure you want to create the Release QA report?')){
+              return;
+            }          
+          
           $http.post(
             root_mapping + 'project/id/' + $scope.focusProject.id + '/release/'
               + $scope.release.effectiveTime + '/begin').then(
 
             // Success
             function(response) {
-              $rootScope.glassPane--;
+              if(response.data == "Success"){
+                window
+                .alert('Release QA report successfully created for ' + $scope.focusProject.name);
+              }
+              else{
+                window.alert(response.data);                
+              }                          
             },
             function(response) {
-              $rootScope.glassPane--;
+              window.alert('Release QA report creation failed for ' + $scope.focusProject.name);            
               $rootScope.handleHttpError(response.data, response.status, response.headers,
                 response.config);
             })
@@ -2111,12 +2120,15 @@ angular
         };
 
         $scope.processRelease = function() {
-          $rootScope.glassPane++;
 
           if (!$scope.release.effectiveTime || !$scope.focusProject.moduleId) {
             window.alert('Must set effective time and module id to process release');
           }
 
+          if(!confirm('Are you sure you want to create the release files?')){
+            return;
+          }
+          
           // @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/module/id/{moduleId}/process")
           $http.post(
             root_mapping + 'project/id/' + $scope.focusProject.id + '/release/'
@@ -2125,28 +2137,33 @@ angular
 
             // Success
             function(response) {
-              $scope.loadProjectReleaseFiles();
-              $rootScope.glassPane--;
-
+              if(response.data == "Success"){
+                $scope.loadProjectReleaseFiles();
+                window.alert('Release files successfully created for ' + $scope.focusProject.name);            
+              }
+              else{
+                window.alert(response.data);
+              }
             },
             function(response) {
-              $rootScope.glassPane--;
+              window.alert('Release files creation failed for ' + $scope.focusProject.name);            
               $rootScope.handleHttpError(response.data, response.status, response.headers,
                 response.config);
             })
         }
 
         $scope.finishRelease = function(testMode) {
-          $rootScope.glassPane++;
 
           if (!$scope.release.effectiveTime) {
             window.alert('Must set effective time to finish or preview release');
-            $rootScope.glassPane--;
             return;
           }
 
+          if (testMode && !window.confirm("Are you sure you want to create the Release Finalization QA report?")) {
+            return;
+          }
+          
           if (!testMode && !window.confirm("Are you absolutely sure? This action cannot be undone")) {
-            $rootScope.glassPane--;
             return;
           }
 
@@ -2156,10 +2173,23 @@ angular
               + $scope.release.effectiveTime + '/finish' + (testMode ? '?test=true' : '')).then(
             // Success
             function(response) {
-              $rootScope.glassPane--;
+              if(testMode && response.data == "Success"){            
+                  window.alert('Release Finalization QA report successfully created for ' + $scope.focusProject.name);
+              }
+              else if (!testMode && response.data == "Success"){
+                window.alert('Success finishing release for ' + $scope.focusProject.name);
+              }
+              else{
+                window.alert(response.data);
+              }
             },
             function(response) {
-              $rootScope.glassPane--;
+              if(testMode){
+                window.alert('Release Finalization QA report creation failed for ' + $scope.focusProject.name);                            
+              }
+              else{
+                window.alert('Error finishing release for ' + $scope.focusProject.name);                                                                          
+              }
               $rootScope.handleHttpError(response.data, response.status, response.headers,
                 response.config);
             });
@@ -2444,6 +2474,7 @@ angular
             data: null, 
             headers: { 'Content-Type' : 'text/plain' }
             }).success(function(data) {
+              if(data == "Success"){
               // If successful, update all projects where the sourceTerminology was the one just reloaded
               window.alert(terminology + ' successfully reloaded.');
               var mapProjects = $scope.mapProjects;
@@ -2454,8 +2485,10 @@ angular
                   $scope.updateMapProject(mapProjects[i]);
                 }
               }
-              
-              
+              }
+              else{
+                window.alert(data);                
+              }   
             }).error(function(data, status, headers, config) { 
              window.alert(terminology + ' reload failed.  Please view log for details.');
             $rootScope.handleHttpError(data, status, headers, config);
@@ -2467,7 +2500,7 @@ angular
           if(!confirm('Are you sure you want to remove and reload ' + $scope.focusProject.destinationTerminology + ' refset members?')){
             return;
           }
-          
+ 
           var terminology = $scope.focusProject.destinationTerminology;
           var availableFiles = $scope.amazons3Files;
           var finalSnapshotFiles = [];
@@ -2489,12 +2522,17 @@ angular
             data: null, 
             headers: { 'Content-Type' : 'text/plain' }
             }).success(function(data) {
-              window
-              .alert('Reloading ' + $scope.focusProject.destinationTerminology + ' Refset Members has successfully completed');
+              if(data == "Success"){
+                window
+                .alert('Reloading ' + $scope.focusProject.destinationTerminology + ' Refset Members has successfully completed');
+              }
+              else{
+                window.alert(data);                
+              }
             }).error(function(data, status, headers, config) {       
               window
               .alert('Reloading ' + $scope.focusProject.destinationTerminology + ' Refset Members has failed.  Please view log for details.');
-            $rootScope.handleHttpError(data, status, headers, config);
+              $rootScope.handleHttpError(data, status, headers, config);
           });
           
         }
