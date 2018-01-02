@@ -53,6 +53,7 @@ import org.ihtsdo.otf.mapping.jpa.algo.SimpleLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.handlers.IndexViewerHandler;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.rest.ContentServiceRest;
 import org.ihtsdo.otf.mapping.rf2.Concept;
@@ -1000,8 +1001,9 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
           + "TerminologyLoad_" + startTimeOrig);
       placementDir.mkdir();
 
-      Logger.getLogger(getClass()).info("AAA - downloading " + terminology + " "
-          + version + " to " + placementDir);
+      Logger.getLogger(getClass())
+          .info("loadTerminologyAwsRf2Snapshot - downloading " + terminology
+              + " " + version + " to " + placementDir);
       S3ObjectInputStream inputStream = s3object.getObjectContent();
       File zippedFile = new File(placementDir,
           awsZipFileName.substring(awsZipFileName.lastIndexOf('/') + 1));
@@ -1009,33 +1011,17 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       inputStream.close();
 
       // UNZIP to Placement
-      Logger.getLogger(getClass()).info("AAA - decompressing " + zippedFile);
       unzipToDirectory(zippedFile, placementDir);
-      Collection<File> files = FileUtils.listFiles(placementDir, null, true);
-      for (File f : files) {
-        Logger.getLogger(getClass()).info("AAA with " + f.getAbsolutePath());
-      }
-      Logger.getLogger(getClass()).info("BBB with " + placementDir);
 
       File testDir = new File(placementDir.getAbsolutePath() + File.separator
           + zippedFile.getName().substring(0, zippedFile.getName().indexOf("."))
           + File.separator + "Snapshot");
-      Logger.getLogger(getClass())
-          .info("CCC with " + testDir.getAbsolutePath());
-      files = FileUtils.listFiles(testDir, null, true);
-      for (File f : files) {
-        Logger.getLogger(getClass()).info("DDD with " + f.getAbsolutePath());
-      }
 
       // Load content with input pulled from S3
       algo = new Rf2SnapshotLoaderAlgorithm(localTerminology, localVersion,
           testDir.getAbsolutePath(), treePositions, sendNotification);
 
-      Logger.getLogger(getClass()).info("EEE");
-
       algo.compute();
-
-      Logger.getLogger(getClass()).info("FFF");
 
       Logger.getLogger(getClass())
           .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
@@ -1171,7 +1157,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Terminology, e.g. SNOMEDCT_US", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Version, e.g. 2014_09_01", required = true) @PathParam("version") String version,
     @ApiParam(value = "RF2 input directory", required = true) String inputDir,
-    @ApiParam(value = "Calcualte tree positions", required = false) @QueryParam("treePositions") Boolean treePositions,
+    @ApiParam(value = "Calculate tree positions", required = false) @QueryParam("treePositions") Boolean treePositions,
     @ApiParam(value = "Send notification", required = false) @QueryParam("sendNotification") Boolean sendNotification,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -1197,6 +1183,19 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
     String userName = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
         "reload RF2 snapshot terminology", securityService);
+
+    // If other processes are already running, return the currently running
+    // process information as an Exception
+    // If not, obtain the processLock
+    try {
+      RootServiceJpa
+          .lockProcess(userName + " is currently running process = Reload "
+              + terminology + ", " + version);
+    } catch (Exception e) {
+      handleException(e, e.getMessage());
+    } finally {
+      securityService.close();
+    }
 
     try (final RemoverAlgorithm removeAlgo =
         new RemoverAlgorithm(terminology, version);) {
@@ -1237,8 +1236,9 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       }
 
     } catch (Exception e) {
-      handleException(e, "trying to remove terminology");
+      handleException(e, "trying to reload terminology");
     } finally {
+      RootServiceJpa.unlockProcess();
       securityService.close();
     }
 
@@ -1251,8 +1251,11 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   @Consumes({
       MediaType.TEXT_PLAIN
   })
+  @Produces({
+    MediaType.TEXT_PLAIN
+})
   @ApiOperation(value = "Removes a terminology, and loads terminology RF2 snapshot from aws", notes = "Removes terminology and loads RF2 snapshot from aws for specified terminology and version")
-  public void reloadTerminologyAwsRf2Snapshot(
+  public String reloadTerminologyAwsRf2Snapshot(
     @ApiParam(value = "Terminology, e.g. SNOMED CT", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Version to remove, e.g. 20170131", required = true) @PathParam("removeVersion") String removeVersion,
     @ApiParam(value = "Version to load, e.g. 20170131", required = true) @PathParam("loadVersion") String loadVersion,
@@ -1272,6 +1275,20 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
     String userName = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
         "reload RF2 snapshot terminology from aws ", securityService);
+
+    // If other processes are already running, return the currently running
+    // process information as an Exception
+    // If not, obtain the processLock
+    try {
+      RootServiceJpa
+          .lockProcess(userName + " is currently running process = Reload "
+              + terminology + ", removeVersion=" + removeVersion
+              + ", loadVersion=" + loadVersion);
+    } catch (Exception e) {
+      return e.getMessage();
+    } finally {
+      securityService.close();
+    }
 
     try (final RemoverAlgorithm removeAlgo =
         new RemoverAlgorithm(terminology, removeVersion);) {
@@ -1353,9 +1370,11 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         Logger.getLogger(getClass())
             .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
 
+        return "Success";
       } catch (Exception e) {
         handleException(e,
             "trying to load terminology snapshot from RF2 directory");
+        return "Failure";
       } finally {
         // Remove directory
         FileUtils.deleteDirectory(placementDir);
@@ -1363,7 +1382,9 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       }
     } catch (Exception e) {
       handleException(e, "trying to remove terminology");
+      return "Failure";
     } finally {
+      RootServiceJpa.unlockProcess();
       securityService.close();
     }
   }
@@ -1431,7 +1452,10 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   @Path("/refset/reload/aws/{refsetId}")
   @Consumes(MediaType.TEXT_PLAIN)
   @ApiOperation(value = "Removes refset member data based on refsetId, and reload from AWS snapshot file", notes = "Reload refset member data from AWS snapshot file.")
-  public boolean reloadRefsetMemberAwsSnapshot(
+  @Produces({
+    MediaType.TEXT_PLAIN
+  })
+  public String reloadRefsetMemberAwsSnapshot(
     @ApiParam(value = "RefSet Id, e.g. 2014_09_01", required = true) @PathParam("refsetId") String refsetId,
     @ApiParam(value = "Aws Zip MapSnapshot File Name, e.g. filename with full path", required = true) @QueryParam("awsFileName") String awsFileName,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
@@ -1442,8 +1466,21 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     // Track system level information
     long startTimeOrig = System.nanoTime();
 
-    authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "reload refset members",
-        securityService);
+    final String userName = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+        "reload refset members", securityService);
+
+    // If other processes are already running, return the currently running
+    // process information string
+    // If not, obtain the processLock
+    try {
+      RootServiceJpa.lockProcess(userName
+          + " is currently running process = Reload refset members for refsetId: "
+          + refsetId);
+    } catch (Exception e) {
+      return e.getMessage();
+    } finally {
+      securityService.close();
+    }
 
     try (final RefsetmemberRemoverAlgorithm removeAlgo =
         new RefsetmemberRemoverAlgorithm(refsetId);) {
@@ -1479,20 +1516,23 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
         // Remove any inactive rows
         File filteredFile = new File(placementDir,
-            awsFileName.substring(awsFileName.lastIndexOf('/') + 1) + "_ActiveOnly");
-        BufferedReader fileReader = new BufferedReader(new FileReader(downloadedFile));
-        BufferedWriter fileWriter = new BufferedWriter(new FileWriter(filteredFile));
+            awsFileName.substring(awsFileName.lastIndexOf('/') + 1)
+                + "_ActiveOnly");
+        BufferedReader fileReader =
+            new BufferedReader(new FileReader(downloadedFile));
+        BufferedWriter fileWriter =
+            new BufferedWriter(new FileWriter(filteredFile));
         String input;
         while ((input = fileReader.readLine()) != null) {
-            String[]fields = input.split("\\t");
-            if(fields[2].equals("1")){
-              fileWriter.write(input);
-              fileWriter.newLine();
-            }
+          String[] fields = input.split("\\t");
+          if (fields[2].equals("1")) {
+            fileWriter.write(input);
+            fileWriter.newLine();
+          }
         }
         fileReader.close();
         fileWriter.close();
-        
+
         inputFile = filteredFile.getAbsolutePath();
 
         // Load extended or simple maps using downloaded AWS file
@@ -1522,7 +1562,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
       } catch (Exception e) {
         handleException(e, "trying to load refset members");
-        return false;
+        return "Failure";
       } finally {
         // Remove directory
         FileUtils.deleteDirectory(placementDir);
@@ -1530,13 +1570,14 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
     } catch (Exception e) {
       handleException(e, "trying to remove refset members");
-      return false;
+      return "Failure";
 
     } finally {
+      RootServiceJpa.unlockProcess();
       securityService.close();
     }
 
-    return true;
+    return "Success";
   }
 
   @Override
@@ -1576,7 +1617,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       AmazonS3 s3Client = connectToAmazonS3();
 
       List<S3ObjectSummary> fullKeyList = new ArrayList<S3ObjectSummary>();
-      ObjectListing objects = s3Client.listObjects(bucketName);
+      ObjectListing objects = s3Client.listObjects(bucketName, "international");
 
       fullKeyList = objects.getObjectSummaries();
 
@@ -1597,91 +1638,21 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
                 || obj.getKey().contains(nextYear))
             && (obj.getKey().matches(".*\\d.zip")
                 || obj.getKey().matches(".*\\dZ.zip"))) {
-          returnList.addTerminologyVersion(
-              new TerminologyVersion(obj.getKey(), terminology));
-        }
-      }
-      returnList.removeDupVersions();
-
-      // want all descendants, do not use PFS parameter
-      return returnList;
-    } catch (Exception e) {
-      handleException(e, "trying to find descendant concepts");
-      return null;
-    } finally {
-      securityService.close();
-    }
-  }
-
-  @Override
-  @GET
-  @Path("/terminology/scope/{terminology}/{version}")
-  @ApiOperation(value = "Find versions for terminology.", notes = "Gets a list of recont versions for a given terminology.", response = Concept.class)
-  @Produces({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
-  public TerminologyVersionList getTerminologyVersionScopes(
-    @ApiParam(value = "Terminology name, e.g. SNOMED CT", required = true) @PathParam("terminology") String terminology,
-    @ApiParam(value = "Version name, e.g. 20170131", required = true) @PathParam("version") String version,
-    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-
-    Logger.getLogger(ContentServiceRestImpl.class)
-        .info("RESTful call (Content): /terminology/scope/" + terminology + "/"
-            + version + "/");
-
-    if (!removeSpaces(terminology).equals("SNOMEDCT")) {
-      throw new Exception("Scope not relevant to handle " + terminology);
-    } else {
-      terminology = "InternationalRF2";
-    }
-
-    final String bucketName = "release-ihtsdo-prod-published";
-
-    final ContentService contentService = new ContentServiceJpa();
-    try {
-      // authorize call
-      authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-          "load map record RF2 simple", securityService);
-
-      // Connect to server
-      AmazonS3 s3Client = connectToAmazonS3();
-
-      List<S3ObjectSummary> fullKeyList = new ArrayList<S3ObjectSummary>();
-      ObjectListing objects = s3Client.listObjects(bucketName);
-      fullKeyList = objects.getObjectSummaries();
-      objects = s3Client.listNextBatchOfObjects(objects);
-
-      while (objects.isTruncated()) {
-        fullKeyList.addAll(objects.getObjectSummaries());
-        objects = s3Client.listNextBatchOfObjects(objects);
-      }
-      fullKeyList.addAll(objects.getObjectSummaries());
-
-      TerminologyVersionList returnList = new TerminologyVersionList();
-
-      for (S3ObjectSummary obj : fullKeyList) {
-        if (obj.getKey().endsWith("zip") && obj.getKey().contains(terminology)
-            && !obj.getKey().contains("published_build_backup")
-            && obj.getKey().contains(version)
-            && (obj.getKey().matches(".*\\d.zip")
-                || obj.getKey().matches(".*\\dZ.zip"))) {
           TerminologyVersion tv =
-              new TerminologyVersion(terminology, version, null, obj.getKey());
+              new TerminologyVersion(obj.getKey(), terminology);
           tv.identifyScope();
           returnList.addTerminologyVersion(tv);
         }
       }
 
-      returnList.removeDupScopes();
+      // Remove all duplicates defined by term-version-scope
+      returnList.removeDups();
 
-      // want all descendants, do not use PFS parameter
       return returnList;
     } catch (Exception e) {
       handleException(e, "trying to find descendant concepts");
       return null;
     } finally {
-      contentService.close();
       securityService.close();
     }
   }
@@ -1748,5 +1719,4 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     else
       return null;
   }
-
 }
