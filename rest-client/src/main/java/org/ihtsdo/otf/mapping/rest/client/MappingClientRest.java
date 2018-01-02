@@ -638,10 +638,24 @@ public class MappingClientRest extends RootClientRest
   }
 
   @Override
-  public SearchResult getCurrentReleaseFile(Long mapProjectId,
+  public SearchResult getCurrentReleaseFileName(Long mapProjectId,
           String authToken) throws Exception {
       // TODO Auto-generated method stub
       return null;
+  }
+
+  @Override
+  public InputStream downloadFileFromAmazonS3(String filePath, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public InputStream downloadCurrentReleaseFile(String fileName,
+    Long mapProjectId, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
   }
   
 }

@@ -1071,6 +1071,41 @@ angular
             $rootScope.handleHttpError(data, status, headers, config);
           });
         }
+        
+        // call rest service to retrieve current release file
+        // note: attempted to do this with <a href...> technique, but download attribute
+        // would not work on dev-mapping server and .txt file would open in another tab
+        $scope.downloadFileFromCurrentRelease = function(file) {
+          
+          $rootScope.glassPane++;
+          $http({
+            url : root_mapping + 'current/file/' + $scope.focusProject.id,
+            dataType : 'json',
+            data : file.value,
+            method : 'POST',
+            headers : {
+              'Content-Type' : 'application/json'
+            },
+            responseType : 'arraybuffer'
+          }).success(function(data) {
+            $scope.definitionMsg = 'Successfully downloaded file';
+            var blob = new Blob([ data ], {
+              type : 'text/plain'
+            });
+            // hack to download store a file having its URL
+            var fileURL = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = fileURL;
+            a.target = '_blank';
+            a.download = file.value;
+            document.body.appendChild(a);
+            $rootScope.glassPane--;
+            a.click();
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        }
 
         $scope.getFilesFromAmazonS3 = function() {
 
