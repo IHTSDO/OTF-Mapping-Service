@@ -140,7 +140,7 @@ public class GmdnLoaderAlgorithm extends RootServiceJpa implements Algorithm {
       writer.print("");
       writer.close(); 
       
-		log.info("Starting loading GMDN terminology");
+		log.info("Start loading GMDN terminology.");
 		log.info("  terminology = " + terminology);
 		log.info("  version     = " + version);
 		log.info("  inputDir    = " + inputDir);
@@ -307,7 +307,7 @@ public class GmdnLoaderAlgorithm extends RootServiceJpa implements Algorithm {
 						isaRelType, root);
 			}
 
-			log.info("Done ...");
+			log.info("Done loading GMDN terminology.");
 
 		} catch (Exception e) {
 			e.printStackTrace();

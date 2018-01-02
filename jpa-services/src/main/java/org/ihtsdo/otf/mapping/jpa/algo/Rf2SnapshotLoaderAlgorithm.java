@@ -245,6 +245,8 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 		log.info(" Total: " + runtime.totalMemory());
 		log.info(" Free:  " + runtime.freeMemory());
 		log.info(" Max:   " + runtime.maxMemory());
+		
+		log.info("Start load of RF2 Snapshot");
 
 		SimpleDateFormat ft = new SimpleDateFormat("hh:mm:ss a"); // format for
 
@@ -403,6 +405,8 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 							result);
 				}
 
+				log.info("Done load of RF2 snapshot.");
+                
 				// Close service
 				contentService.close();
 

@@ -71,7 +71,7 @@ public class RefsetmemberRemoverAlgorithm extends RootServiceJpa
       writer.print("");
       writer.close(); 
       
-		log.info("Starting removing terminology");
+		log.info("Start removing refset members.");
 		log.info("  refsetId = " + refsetId);
 		
 		try {
@@ -104,7 +104,7 @@ public class RefsetmemberRemoverAlgorithm extends RootServiceJpa
 								+ deleteRecords);
 
 				tx.commit();
-				log.info("Done ...");
+				log.info("Done removing refset members.");
 
 			} catch (Exception e) {
 				tx.rollback();

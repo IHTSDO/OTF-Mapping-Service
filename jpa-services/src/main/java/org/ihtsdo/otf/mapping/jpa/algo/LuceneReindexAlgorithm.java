@@ -151,7 +151,7 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
 
     }
 
-    Logger.getLogger(getClass()).info("Starting reindexing for:");
+    Logger.getLogger(getClass()).info("Start reindexing for:");
     for (String objectToReindex : objectsToReindex) {
       Logger.getLogger(getClass()).info("  " + objectToReindex);
     }
@@ -184,7 +184,7 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
     }
 
     // Cleanup
-    Logger.getLogger(getClass()).info("done ...");
+    Logger.getLogger(getClass()).info("Done reindexing.");
     } catch(Exception e) {
       log.info(e.getMessage());
       for (StackTraceElement element : e.getStackTrace()) {

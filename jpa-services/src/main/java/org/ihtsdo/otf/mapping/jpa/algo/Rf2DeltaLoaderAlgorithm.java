@@ -193,6 +193,9 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
       writer.close(); 
       
 		try {
+
+            log.info("Start load of RF2 Delta.");
+            
 			setup();
 
 			ConceptList conceptList = contentService.getAllConcepts(terminology,
@@ -322,7 +325,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 			contentService.beginTransaction();
 			computeDefaultPreferredNames();
 			contentService.commit();
-			log.info("Done");
+			log.info("Done load of RF2 Delta.");
 
 		} catch (Exception e) {
 			e.printStackTrace();

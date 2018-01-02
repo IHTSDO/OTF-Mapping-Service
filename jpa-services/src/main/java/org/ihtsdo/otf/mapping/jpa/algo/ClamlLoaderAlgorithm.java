@@ -151,6 +151,8 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 
 		// open input file and get effective time and version
 		findVersion(inputFile);
+		
+		log.info("Start loading Claml data.");
 
 		// create Metadata
 		log.info("  Create metadata classes");
@@ -200,7 +202,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 			}
 			contentService.close();
 
-			log.info("Done ...");
+			log.info("Done loading Claml data.");
 
 		} catch (Exception e) {
 			e.printStackTrace();

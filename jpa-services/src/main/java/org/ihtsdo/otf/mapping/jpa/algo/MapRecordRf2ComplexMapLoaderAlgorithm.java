@@ -105,7 +105,7 @@ public class MapRecordRf2ComplexMapLoaderAlgorithm extends RootServiceJpa
     writer.print("");
     writer.close(); 
     
-    log.info("Starting loading complex map data");
+    log.info("Start loading of RF2 Complex Maps.");
     log.info("  inputFile      = " + inputFile);
     log.info("  workflowStatus = " + workflowStatus);
     log.info("  userName       = " + userName);
@@ -354,7 +354,7 @@ public class MapRecordRf2ComplexMapLoaderAlgorithm extends RootServiceJpa
       // clean-up
       mappingService.close();
       // outputFile.delete();
-      log.info("Done ...");
+      log.info("Done loading of RF2 Complex Maps.");
     } catch (Exception e) {
       e.printStackTrace();
       log.info(e.getMessage());

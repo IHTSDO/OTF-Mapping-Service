@@ -106,7 +106,7 @@ public class MapRecordRf2SimpleMapLoaderAlgorithm extends RootServiceJpa
       writer.print("");
       writer.close(); 
       
-	    log.info("Starting loading simple map data");
+	    log.info("Start loading of RF2 Simple Maps.");
 	    log.info("  inputFile      = " + inputFile);
 	    log.info("  membersFlag    = " + memberFlag);
 	    log.info("  recordFlag     = " + recordFlag);
@@ -253,7 +253,7 @@ public class MapRecordRf2SimpleMapLoaderAlgorithm extends RootServiceJpa
 	      }
 
 	      // clean-up
-	      log.info("Done ...");
+	      log.info("Done loading of RF2 Simple Maps.");
 	    } catch (Exception e) {
 	      e.printStackTrace();
 	      log.info(e.getMessage());
@@ -261,7 +261,7 @@ public class MapRecordRf2SimpleMapLoaderAlgorithm extends RootServiceJpa
             log.info(element.toString());
           }
 	      throw new Exception(
-	          "Loading of Unpublished RF2 Complex Maps failed.", e);
+	          "Loading of Unpublished RF2 Simple Maps failed.", e);
 	    } finally {
 	      try {
 	        mappingService.close();

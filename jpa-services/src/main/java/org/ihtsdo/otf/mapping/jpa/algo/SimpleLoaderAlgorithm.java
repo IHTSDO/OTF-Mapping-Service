@@ -96,7 +96,7 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
       writer.print("");
       writer.close(); 
       
-		log.info("Starting loading simple data");
+		log.info("Start load of simple data.");
 		log.info("  terminology = " + terminology);
 		log.info("  version     = " + version);
 		log.info("  inputFile   = " + inputFile);
@@ -285,7 +285,7 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
 					isaRelType, "root");
 
 			// Clean-up
-			log.info("done ...");
+			log.info("Done load of simple data.");
 			contentService.close();
 
 		} catch (Exception e) {

@@ -75,7 +75,7 @@ public class RemoverAlgorithm extends RootServiceJpa
       writer.print("");
       writer.close(); 
 	  
-		log.info("Remove terminology");
+		log.info("Start removal of terminology.");
 		log.info("  terminology  = " + terminology);
 		log.info("  version      = " + version);
 		
@@ -169,7 +169,7 @@ public class RemoverAlgorithm extends RootServiceJpa
 				log.info("Start removing tree positions from " + terminology);
 				contentService.clearTreePositions(terminology, version);
 				contentService.close();
-				log.info("Done ...");
+				log.info("Done removal of terminology.");
 
 			} catch (Exception e) {
 				tx.rollback();
