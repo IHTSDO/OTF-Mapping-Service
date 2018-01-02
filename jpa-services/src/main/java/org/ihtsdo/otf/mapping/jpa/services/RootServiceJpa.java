@@ -25,9 +25,12 @@ import org.ihtsdo.otf.mapping.jpa.helpers.IndexUtility;
 import org.ihtsdo.otf.mapping.services.RootService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
+// TODO: Auto-generated Javadoc
 /**
  * The root service for managing the entity manager factory and hibernate search
- * field names
+ * field names.
+ *
+ * @author ${author}
  */
 public abstract class RootServiceJpa implements RootService {
 
@@ -45,14 +48,17 @@ public abstract class RootServiceJpa implements RootService {
 
   /** The transaction entity. */
   protected EntityTransaction tx;
-  
+
   /** The last modified by. */
   private String lastModifiedBy = null;
 
+  /** The process lock. */
+  private static String processLock = "";
+
   /**
    * Instantiates an empty {@link RootServiceJpa}.
-   * 
-   * @throws Exception
+   *
+   * @throws Exception the exception
    */
   public RootServiceJpa() throws Exception {
     // created once or if the factory has closed
@@ -65,6 +71,7 @@ public abstract class RootServiceJpa implements RootService {
     tx = manager.getTransaction();
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -85,6 +92,7 @@ public abstract class RootServiceJpa implements RootService {
 
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -97,6 +105,7 @@ public abstract class RootServiceJpa implements RootService {
     }
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -109,6 +118,7 @@ public abstract class RootServiceJpa implements RootService {
     return transactionPerOperation;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -121,6 +131,7 @@ public abstract class RootServiceJpa implements RootService {
     this.transactionPerOperation = transactionPerOperation;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -140,6 +151,7 @@ public abstract class RootServiceJpa implements RootService {
     tx.begin();
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -162,6 +174,7 @@ public abstract class RootServiceJpa implements RootService {
     manager.clear();
   }
 
+  /* see superclass */
   @Override
   public void rollback() throws Exception {
 
@@ -179,11 +192,13 @@ public abstract class RootServiceJpa implements RootService {
     manager.clear();
   }
 
+  /* see superclass */
   @Override
   public void clear() throws Exception {
     manager.clear();
   }
 
+  /* see superclass */
   @Override
   public void close() throws Exception {
     if (manager.isOpen()) {
@@ -234,6 +249,7 @@ public abstract class RootServiceJpa implements RootService {
 
   }
 
+  /* see superclass */
   // this is called by REST layer and so needs to be exposed through RootService
   @Override
   public <T> List<T> applyPfsToList(List<T> list, Class<T> clazz, int[] totalCt,
@@ -338,7 +354,7 @@ public abstract class RootServiceJpa implements RootService {
   public EntityManager getEntityManager() {
     return manager;
   }
-  
+
   /**
    * Returns the last modified by.
    *
@@ -358,7 +374,7 @@ public abstract class RootServiceJpa implements RootService {
   public void setLastModifiedBy(String lastModifiedBy) {
     this.lastModifiedBy = lastModifiedBy;
   }
-  
+
   /* see superclass */
   @Override
   public LogEntry addLogEntry(final LogEntry logEntry) throws Exception {
@@ -366,7 +382,7 @@ public abstract class RootServiceJpa implements RootService {
     logEntry.setLastModified(new Date());
     return addObject(logEntry);
   }
-  
+
   /* see superclass */
   @Override
   public void updateLogEntry(final LogEntry logEntry) throws Exception {
@@ -387,7 +403,7 @@ public abstract class RootServiceJpa implements RootService {
   public LogEntry getLogEntry(final Long id) throws Exception {
     return getHasLastModified(id, LogEntry.class);
   }
-  
+
   /* see superclass */
   @Override
   public LogEntry addLogEntry(final String userName, final Long projectId,
@@ -445,7 +461,7 @@ public abstract class RootServiceJpa implements RootService {
     return addLogEntry(entry);
 
   }
-  
+
   /**
    * Returns the checks for object.
    *
@@ -462,7 +478,7 @@ public abstract class RootServiceJpa implements RootService {
     final T component = manager.find(clazz, id);
     return component;
   }
-  
+
   /**
    * Adds the object.
    *
@@ -490,7 +506,7 @@ public abstract class RootServiceJpa implements RootService {
       throw e;
     }
   }
-  
+
   /**
    * Update object.
    *
@@ -517,7 +533,7 @@ public abstract class RootServiceJpa implements RootService {
       throw e;
     }
   }
-  
+
   /**
    * Removes the object.
    *
@@ -555,7 +571,7 @@ public abstract class RootServiceJpa implements RootService {
       throw e;
     }
   }
-  
+
   /**
    * Returns the checks for last modified.
    *
@@ -575,4 +591,23 @@ public abstract class RootServiceJpa implements RootService {
     final T component = manager.find(clazz, id);
     return component;
   }
+
+  public synchronized static void lockProcess(String processInfo)
+    throws Exception {
+    // If processLock is populated, return the existing processInfo as an
+    // Exception
+    if (!processLock.equals("")) {
+      throw new Exception(processLock);
+    }
+    // Otherwise, populate the processLock with the upcoming processes' info
+    else {
+      processLock = processInfo;
+    }
+  }
+
+  public synchronized static void unlockProcess() {
+    // clear out the processLock
+    processLock = "";
+  }
+
 }

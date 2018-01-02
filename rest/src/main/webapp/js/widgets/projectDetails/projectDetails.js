@@ -106,12 +106,13 @@ angular
         $scope.amazons3Files = new Array();
         $scope.amazons3FilesPlusCurrent = new Array();
 
+        $scope.termLoadData = new Array();
         $scope.termLoadVersions = new Array();
         $scope.termLoadScopes = new Array();
         $scope.termLoadAwsZipFileName = '';
         $scope.termLoadVersionFileNameMap = new Map();
-        $scope.termLoadScopeFileNameMap = new Map();        
-        
+        $scope.termLoadScopeFileNameMap = new Map();
+
         $scope.projectReleaseFiles = new Array();
 
         $scope.allowableMapTypes = [ {
@@ -288,9 +289,15 @@ angular
             $rootScope.handleHttpError(data, status, headers, config);
           });
 
-          $scope.getTerminologyVersions($scope.focusProject.sourceTerminology);
-          
-          $scope.loadProjectReleaseFiles();
+          if ($scope.currentRole == 'Administrator') {
+            $scope.handleTerminologySelection($scope.focusProject.sourceTerminology);
+            $scope.loadProjectReleaseFiles();
+            $scope.fileArray = new Array();
+            $scope.amazons3FilesPlusCurrent = new Array();
+            $scope.getFilesFromAmazonS3();
+            $scope.getCurrentReleaseFile();
+            $scope.getPagedReleaseReports(1);
+          }
 
           // find selected elements from the allowable
           // lists
@@ -321,11 +328,6 @@ angular
           $scope.getPagedScopeConcepts(1);
           $scope.getPagedScopeExcludedConcepts(1);
           $scope.getPagedReportDefinitions(1);
-          $scope.getPagedReleaseReports(1);
-          $scope.fileArray = new Array();
-          $scope.amazons3FilesPlusCurrent = new Array();
-          $scope.getFilesFromAmazonS3();
-          $scope.getCurrentReleaseFile();
 
           // need to initialize selected qa check definitions since they
           // are persisted in the
@@ -1039,7 +1041,7 @@ angular
 
         // call rest service to retrieve file from amazon s3
         $scope.downloadFileFromAmazonS3 = function(file) {
-                    
+
           $rootScope.glassPane++;
           $http({
             url : root_mapping + 'amazons3/file',
@@ -1053,24 +1055,23 @@ angular
           }).success(function(data) {
             $scope.definitionMsg = 'Successfully downloaded file';
             var blob = new Blob([ data ], {
-                type : 'text/plain'
-              });
-              // hack to download store a file having its URL
-              var fileURL = URL.createObjectURL(blob);
-              var a = document.createElement('a');
-              a.href = fileURL;
-              a.target = '_blank';
-              a.download = file.value;
-              document.body.appendChild(a);
-              $rootScope.glassPane--;
-              a.click();
+              type : 'text/plain'
+            });
+            // hack to download store a file having its URL
+            var fileURL = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = fileURL;
+            a.target = '_blank';
+            a.download = file.value;
+            document.body.appendChild(a);
+            $rootScope.glassPane--;
+            a.click();
           }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
             $rootScope.handleHttpError(data, status, headers, config);
           });
         }
 
-        
         $scope.getFilesFromAmazonS3 = function() {
 
           $rootScope.glassPane++;
@@ -1106,6 +1107,14 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
+            // remove previously created current, if one exists
+            for (var i = 0; i < $scope.amazons3FilesPlusCurrent.length; i++) {
+              if ($scope.amazons3FilesPlusCurrent[i].terminology == 'current') {
+                $scope.amazons3FilesPlusCurrent.splice(i, 1);
+                break;
+              }
+            }
+            // add local current release file to list of aws retrieved files
             if (data) {
               $scope.amazons3FilesPlusCurrent.push(data);
             }
@@ -1947,10 +1956,10 @@ angular
         $scope.updateMapProject = function(project) {
           console.debug('Update map project');
           // if this is the focus project, add the modified project to the cache, 
-          if($scope.focusProject.name == project.name){
-                localStorageService.add('focusProject', project);
+          if ($scope.focusProject.name == project.name) {
+            localStorageService.add('focusProject', project);
           }
-          
+
           var deferred = $q.defer();
 
           $rootScope.glassPane++;
@@ -2045,17 +2054,25 @@ angular
             window.alert('Must set effective time to begin release');
           }
 
-          $rootScope.glassPane++;
+          if (!confirm('Are you sure you want to create the Release QA report?')) {
+            return;
+          }
+
           $http.post(
             root_mapping + 'project/id/' + $scope.focusProject.id + '/release/'
               + $scope.release.effectiveTime + '/begin').then(
 
             // Success
             function(response) {
-              $rootScope.glassPane--;
+              if (response.data == "Success") {
+                window.alert('Release QA report successfully created for '
+                  + $scope.focusProject.name);
+              } else {
+                window.alert(response.data);
+              }
             },
             function(response) {
-              $rootScope.glassPane--;
+              window.alert('Release QA report creation failed for ' + $scope.focusProject.name);
               $rootScope.handleHttpError(response.data, response.status, response.headers,
                 response.config);
             })
@@ -2102,10 +2119,13 @@ angular
         };
 
         $scope.processRelease = function() {
-          $rootScope.glassPane++;
 
           if (!$scope.release.effectiveTime || !$scope.focusProject.moduleId) {
             window.alert('Must set effective time and module id to process release');
+          }
+
+          if (!confirm('Are you sure you want to create the release files?')) {
+            return;
           }
 
           // @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/module/id/{moduleId}/process")
@@ -2116,28 +2136,34 @@ angular
 
             // Success
             function(response) {
-              $scope.loadProjectReleaseFiles();
-              $rootScope.glassPane--;
-
+              if (response.data == "Success") {
+                $scope.loadProjectReleaseFiles();
+                window.alert('Release files successfully created for ' + $scope.focusProject.name);
+              } else {
+                window.alert(response.data);
+              }
             },
             function(response) {
-              $rootScope.glassPane--;
+              window.alert('Release files creation failed for ' + $scope.focusProject.name);
               $rootScope.handleHttpError(response.data, response.status, response.headers,
                 response.config);
             })
         }
 
         $scope.finishRelease = function(testMode) {
-          $rootScope.glassPane++;
 
           if (!$scope.release.effectiveTime) {
             window.alert('Must set effective time to finish or preview release');
-            $rootScope.glassPane--;
+            return;
+          }
+
+          if (testMode
+            && !window
+              .confirm("Are you sure you want to create the Release Finalization QA report?")) {
             return;
           }
 
           if (!testMode && !window.confirm("Are you absolutely sure? This action cannot be undone")) {
-            $rootScope.glassPane--;
             return;
           }
 
@@ -2147,10 +2173,22 @@ angular
               + $scope.release.effectiveTime + '/finish' + (testMode ? '?test=true' : '')).then(
             // Success
             function(response) {
-              $rootScope.glassPane--;
+              if (testMode && response.data == "Success") {
+                window.alert('Release Finalization QA report successfully created for '
+                  + $scope.focusProject.name);
+              } else if (!testMode && response.data == "Success") {
+                window.alert('Success finishing release for ' + $scope.focusProject.name);
+              } else {
+                window.alert(response.data);
+              }
             },
             function(response) {
-              $rootScope.glassPane--;
+              if (testMode) {
+                window.alert('Release Finalization QA report creation failed for '
+                  + $scope.focusProject.name);
+              } else {
+                window.alert('Error finishing release for ' + $scope.focusProject.name);
+              }
               $rootScope.handleHttpError(response.data, response.status, response.headers,
                 response.config);
             });
@@ -2319,13 +2357,13 @@ angular
             $rootScope.handleHttpError(data, status, headers, config);
           });
         }
-        
+
         //hold select list for terminologies and versions.
         $scope.termLoad = {};
         $scope.termLoad.version = '';
-        $scope.termLoad.scope = '';        
-        
-        $scope.getTerminologyVersions = function(terminology) {
+        $scope.termLoad.scope = '';
+
+        $scope.handleTerminologySelection = function(terminology) {
 
           $rootScope.glassPane++;
 
@@ -2336,104 +2374,100 @@ angular
             headers : {
               'Content-Type' : 'application/json'
             }
-          }).success(function(data) {
-            $scope.termLoadVersions = new Array();
-            $scope.termLoadVersionFileNameMap = new Map();
-            
-            for (var i = 0; i < data.TerminologyVersion.length; i++) {
-              $scope.termLoadVersions.push(data.TerminologyVersion[i].version);
+          }).success(
+            function(data) {
+              $scope.termLoadVersions = new Array();
+              $scope.termLoadData = new Array();
+              $scope.termLoadVersionFileNameMap = new Map();
               $scope.termLoad.version = ''; //reset
-              if (terminology != 'SNOMEDCT')
-                $scope.termLoadVersionFileNameMap.set(data.TerminologyVersion[i].version, data.TerminologyVersion[i].awsZipFileName)
-            }
-            $rootScope.glassPane--;
+              $scope.termLoad.scope = ''; // reset
 
-          }).error(function(data, status, headers, config) {
+              for (var i = 0; i < data.TerminologyVersion.length; i++) {
+                if ($scope.termLoadVersions.indexOf(data.TerminologyVersion[i].version) < 0) {
+                  $scope.termLoadVersions.push(data.TerminologyVersion[i].version);
+                }
+                if (terminology != 'SNOMEDCT')
+                  $scope.termLoadVersionFileNameMap.set(data.TerminologyVersion[i].version,
+                    data.TerminologyVersion[i].awsZipFileName)
+                else
+                  $scope.termLoadData.push(data.TerminologyVersion[i]);
+
+              }
+              $rootScope.glassPane--;
+
+            }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
             $rootScope.handleHttpError(data, status, headers, config);
           });
-        };        
-        
+        };
+
         $scope.handleVersionSelection = function(terminology, version) {
           if (version) {
+            $scope.termLoadScopeFileNameMap = new Map();
+            $scope.termLoad.scope = ''; // reset
+            $scope.termLoadScopes = new Array();
+
             if (terminology == 'SNOMEDCT') {
-              getTerminologyScopes(terminology, version);
+              for (var i = 0; i < $scope.termLoadData.length; i++) {
+                if ($scope.termLoadData[i].version == version) {
+                  $scope.termLoadScopes.push($scope.termLoadData[i].scope);
+                  $scope.termLoadScopeFileNameMap.set($scope.termLoadData[i].scope,
+                    $scope.termLoadData[i].awsZipFileName)
+                }
+              }
             } else {
               // All projects are SNOMEDCT at this point, so N/A
             }
           }
-        }        
-        
+        }
+
         $scope.handleScopeSelection = function(terminology, scope) {
           if (terminology != 'SNOMEDCT')
             return;
-         
+
           // Only valid for SNOMED usage of SCOPE.  
           $scope.termLoadAwsZipFileName = $scope.termLoadScopeFileNameMap.get(scope);
         }
-        
-        function getTerminologyScopes(terminology, version) {
-          $rootScope.glassPane++;
 
-          $http(
-            {
-              url : root_content + 'terminology/scope/' + terminology + "/"
-                + version,
-              dataType : 'json',
-              method : 'GET',
-              headers : {
-                'Content-Type' : 'application/json'
-              }
-            }).success(function(data) {
-            $scope.termLoadScopes = new Array();
-            $scope.termLoadScopeFileNameMap = new Map();
-
-            for (var i = 0; i < data.TerminologyVersion.length; i++) {
-              $scope.termLoadScopes.push(data.TerminologyVersion[i].scope);
-              $scope.termLoadScopeFileNameMap.set(data.TerminologyVersion[i].scope, data.TerminologyVersion[i].awsZipFileName)
-            }
-            $rootScope.glassPane--;
-
-          }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
-            $rootScope.handleHttpError(data, status, headers, config);
-          });
-        };        
-        
         // reload terminology from AWS Rf2 snapshot
-        $scope.reloadTerminologyAwsRf2Snapshot = function (terminology, version, scope) {
-          if(!confirm('Are you sure you want to remove and reload ' + terminology + '?')){
+        $scope.reloadTerminologyAwsRf2Snapshot = function(terminology, version, scope) {
+          if (!confirm('Are you sure you want to remove and reload ' + terminology + '?'
+            + (terminology.indexOf('SNOMED') == 0 ? '  This process may take several hours.' : ''))) {
             return;
           }
-          
+
           var errors = '';
           var removeVersion = $scope.focusProject.sourceTerminologyVersion;
           var loadVersion = version.replace(' ', '') + (scope == 'Production' ? '' : '_' + scope);
-            if (removeVersion == loadVersion){
-                errors += terminology + ' ' + loadVersion + ' is already loaded in the application.\n';
-            }
+          if (removeVersion == loadVersion) {
+            errors += terminology + ' ' + loadVersion + ' is already loaded in the application.\n';
+          }
 
           console.log("errors", errors);
-          
+
           if (errors.length > 0) {
             alert(errors);
             return;
           }
-          
+
           var queryString = '?';
           queryString += "awsZipFileName=" + $scope.termLoadAwsZipFileName;
 
           queryString += "&treePositions=true&sendNotification=true";
-          
+
           //console.log("CCC: ", terminology, version, queryString);
           // rest call
-          $http({
-            url: root_content + "terminology/reload/aws/rf2/snapshot/" 
-              + terminology + "/" + removeVersion + "/" + loadVersion + "/" + queryString,
-            method: "PUT",
-            data: null, 
-            headers: { 'Content-Type' : 'text/plain' }
+          $http(
+            {
+              url : root_content + "terminology/reload/aws/rf2/snapshot/" + terminology + "/"
+                + removeVersion + "/" + loadVersion + "/" + queryString,
+              method : "PUT",
+              data : null,
+              headers : {
+                'Content-Type' : 'text/plain'
+              }
             }).success(function(data) {
+            if (data == "Success") {
               // If successful, update all projects where the sourceTerminology was the one just reloaded
               window.alert(terminology + ' successfully reloaded.');
               var mapProjects = $scope.mapProjects;
@@ -2444,49 +2478,61 @@ angular
                   $scope.updateMapProject(mapProjects[i]);
                 }
               }
-              
-              
-            }).error(function(data, status, headers, config) { 
-             window.alert(terminology + ' reload failed.  Please view log for details.');
+            } else {
+              window.alert(data);
+            }
+          }).error(function(data, status, headers, config) {
+            window.alert(terminology + ' reload failed.  Please view log for details.');
             $rootScope.handleHttpError(data, status, headers, config);
           });
 
-        }; 
-        
+        };
+
         $scope.loadRefsetMembers = function() {
-          if(!confirm('Are you sure you want to remove and reload ' + $scope.focusProject.destinationTerminology + ' refset members?')){
+          if (!confirm('Are you sure you want to remove and reload '
+            + $scope.focusProject.destinationTerminology + ' refset members?')) {
             return;
           }
-          
+
           var terminology = $scope.focusProject.destinationTerminology;
           var availableFiles = $scope.amazons3Files;
           var finalSnapshotFiles = [];
           for (var i = 0; i < availableFiles.length; i++) {
-                if(availableFiles[i].terminology == 'FINAL' && availableFiles[i].value.indexOf('Snapshot') !== -1){
-                        finalSnapshotFiles.push(availableFiles[i]);
-                }
+            if (availableFiles[i].terminology == 'FINAL'
+              && availableFiles[i].value.indexOf('Snapshot') !== -1) {
+              finalSnapshotFiles.push(availableFiles[i]);
+            }
           }
           var mostRecentFinalShapshotFile = $scope.sortByKeyDesc(finalSnapshotFiles, 'value')[0];
-          
+
           var queryString = '?';
           queryString += "awsFileName=" + mostRecentFinalShapshotFile.value2;
 
           // rest call
-          $http({
-            url: root_content + "refset/reload/aws/" 
-              + $scope.focusProject.refSetId + "/" + queryString,
-            method: "PUT",
-            data: null, 
-            headers: { 'Content-Type' : 'text/plain' }
-            }).success(function(data) {
-              window
-              .alert('Reloading ' + $scope.focusProject.destinationTerminology + ' Refset Members has successfully completed');
-            }).error(function(data, status, headers, config) {       
-              window
-              .alert('Reloading ' + $scope.focusProject.destinationTerminology + ' Refset Members has failed.  Please view log for details.');
-            $rootScope.handleHttpError(data, status, headers, config);
-          });
-          
+          $http(
+            {
+              url : root_content + "refset/reload/aws/" + $scope.focusProject.refSetId + "/"
+                + queryString,
+              method : "PUT",
+              data : null,
+              headers : {
+                'Content-Type' : 'text/plain'
+              }
+            }).success(
+            function(data) {
+              if (data == "Success") {
+                window.alert('Reloading ' + $scope.focusProject.destinationTerminology
+                  + ' Refset Members has successfully completed');
+              } else {
+                window.alert(data);
+              }
+            }).error(
+            function(data, status, headers, config) {
+              window.alert('Reloading ' + $scope.focusProject.destinationTerminology
+                + ' Refset Members has failed.  Please view log for details.');
+              $rootScope.handleHttpError(data, status, headers, config);
+            });
+
         }
-        
+
       } ]);
