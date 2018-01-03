@@ -6074,7 +6074,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     try {
       // authorize call
       user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-          "get current release file", securityService);
+          "get file list from amazon s3", securityService);
 
       final MapProject mapProject =
           mappingService.getMapProject(new Long(mapProjectId).longValue());
