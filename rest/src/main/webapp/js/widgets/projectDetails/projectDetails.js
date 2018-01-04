@@ -2534,7 +2534,7 @@ angular
           // rest call
           $http(
             {
-              url : root_content + "refset/reload/aws/" + terminology,
+              url : root_content + "refset/reload/aws/terminology/" + terminology,
               method : "PUT",
               data : null,
               headers : {

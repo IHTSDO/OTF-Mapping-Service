@@ -10,6 +10,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
@@ -1189,34 +1190,35 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     String userName = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
         "reload RF2 snapshot terminology", securityService);
 
-	String rootPath = ConfigUtility.getConfigProperties()
-			.getProperty("map.principle.source.document.dir");
-	if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
-		rootPath += "/";
-	}
-	rootPath += "logs";
-	File logDirectory = new File(rootPath);
-	if (!logDirectory.exists()) {
-		logDirectory.mkdir();
-	}
-	
-	// this process uses two log files.  need to reset both to empty
-	// before the process begins.
-	File logFile;
-	FileOutputStream fileStream;
-	
-	//remove terminology - file name must match RefsetmemberRemoverAlgorithm
-	logFile = new File(logDirectory, "remove_" + terminology + ".log");
-	fileStream = new FileOutputStream(logFile, false);
-	fileStream.write("".getBytes());
-	fileStream.close();
-	
-	//load terminology - file name must match MapRecordRf2ComplexMapLoaderAlgorithm
-	logFile = new File(logDirectory, "load_" + terminology + ".log");
-	fileStream = new FileOutputStream(logFile, false);
-	fileStream.write("".getBytes());
-	fileStream.close();	
-    
+    String rootPath = ConfigUtility.getConfigProperties()
+        .getProperty("map.principle.source.document.dir");
+    if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
+      rootPath += "/";
+    }
+    rootPath += "logs";
+    File logDirectory = new File(rootPath);
+    if (!logDirectory.exists()) {
+      logDirectory.mkdir();
+    }
+
+    // this process uses two log files. need to reset both to empty
+    // before the process begins.
+    File logFile;
+    FileOutputStream fileStream;
+
+    // remove terminology - file name must match RefsetmemberRemoverAlgorithm
+    logFile = new File(logDirectory, "remove_" + terminology + ".log");
+    fileStream = new FileOutputStream(logFile, false);
+    fileStream.write("".getBytes());
+    fileStream.close();
+
+    // load terminology - file name must match
+    // MapRecordRf2ComplexMapLoaderAlgorithm
+    logFile = new File(logDirectory, "load_" + terminology + ".log");
+    fileStream = new FileOutputStream(logFile, false);
+    fileStream.write("".getBytes());
+    fileStream.close();
+
     // If other processes are already running, return the currently running
     // process information as an Exception
     // If not, obtain the processLock
@@ -1515,36 +1517,34 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
 
-    
-	String rootPath = ConfigUtility.getConfigProperties()
-			.getProperty("map.principle.source.document.dir");
-	if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
-		rootPath += "/";
-	}
-	rootPath += "logs";
-	File logDirectory = new File(rootPath);
-	if (!logDirectory.exists()) {
-		logDirectory.mkdir();
-	}
+    String rootPath = ConfigUtility.getConfigProperties()
+        .getProperty("map.principle.source.document.dir");
+    if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
+      rootPath += "/";
+    }
+    rootPath += "logs";
+    File logDirectory = new File(rootPath);
+    if (!logDirectory.exists()) {
+      logDirectory.mkdir();
+    }
 
-	// this process uses two log files.  need to reset both to empty
-	// before the process begins.
-	File logFile;
-	FileOutputStream fileStream;
-	
-	//remove_maps - file name must match RefsetmemberRemoverAlgorithm
-	logFile = new File(logDirectory, "remove_maps_" + refsetId + ".log");
-	fileStream = new FileOutputStream(logFile, false);
-	fileStream.write("".getBytes());
-	fileStream.close();
-	
-	//load_maps - file name must match MapRecordRf2ComplexMapLoaderAlgorithm
-	logFile = new File(logDirectory, "load_maps_" + refsetId + ".log");
-	fileStream = new FileOutputStream(logFile, false);
-	fileStream.write("".getBytes());
-	fileStream.close();	
-	
-      
+    // this process uses two log files. need to reset both to empty
+    // before the process begins.
+    File logFile;
+    FileOutputStream fileStream;
+
+    // remove_maps - file name must match RefsetmemberRemoverAlgorithm
+    logFile = new File(logDirectory, "remove_maps_" + refsetId + ".log");
+    fileStream = new FileOutputStream(logFile, false);
+    fileStream.write("".getBytes());
+    fileStream.close();
+
+    // load_maps - file name must match MapRecordRf2ComplexMapLoaderAlgorithm
+    logFile = new File(logDirectory, "load_maps_" + refsetId + ".log");
+    fileStream = new FileOutputStream(logFile, false);
+    fileStream.write("".getBytes());
+    fileStream.close();
+
     try (final RefsetmemberRemoverAlgorithm removeAlgo =
         new RefsetmemberRemoverAlgorithm(refsetId);) {
 
@@ -1646,18 +1646,19 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   /* see superclass */
   @Override
   @PUT
-  @Path("/refset/reload/aws/{sourceTerminology}")
+  @Path("/refset/reload/aws/terminology/{sourceTerminology}")
   @ApiOperation(value = "Removes refset member data for all projects that use source terminology, and reload from AWS snapshot file", notes = "Reload refset member data from AWS snapshot file.")
   @Produces({
       MediaType.TEXT_PLAIN
   })
-  public String reloadRefsetMembersAllProjectsAwsSnapshot(
+  public String reloadRefsetMembersForTerminologyAwsSnapshot(
     @ApiParam(value = "Source terminology, e.g. SNOMEDCT", required = true) @PathParam("sourceTerminology") String sourceTerminology,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(getClass()).info(
-        "RESTful call (Content): /refset/reload/aws/" + sourceTerminology);
+    Logger.getLogger(getClass())
+        .info("RESTful call (Content): /refset/reload/aws/terminology/"
+            + sourceTerminology);
 
     // Track system level information
     long startTimeOrig = System.nanoTime();
@@ -1684,10 +1685,15 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     final AmazonS3Service amazonS3Service = new AmazonS3ServiceJpa();
     ArrayList<MapProject> mapProjectsForSourceTerminology = new ArrayList<>();
 
+    // Also don't include retired or pilot projects
+    ArrayList<String> excludeProjects = new ArrayList<>(
+        Arrays.asList("SNOMED to ICD9CM", "SNOMED to ICD11 Pilot"));
+
     for (MapProject mapProject : mappingService.getMapProjects()
         .getMapProjects()) {
       if (mapProject.getSourceTerminology().equals(sourceTerminology)
-          && !mapProject.getRefSetId().startsWith("P")) {
+          && !mapProject.getRefSetId().startsWith("P")
+          && !excludeProjects.contains(mapProject.getName())) {
         mapProjectsForSourceTerminology.add(mapProject);
       }
     }
@@ -1739,8 +1745,33 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         // Find most recent Final mapProjectFile that predates the mapProject's
         // source Terminoloy version
         String awsFileName = null;
-        for (SearchResult mapProjectFile : mapProjectFiles.getSearchResults()) {
-          String fileName = mapProjectFile.toString();
+        String currentTerminologyVersion = null;
+        if (mapProject.getSourceTerminologyVersion().equals("latest")) {
+          currentTerminologyVersion = "99999999";
+        } else if (mapProject.getSourceTerminologyVersion().contains("_")) {
+          currentTerminologyVersion =
+              mapProject.getSourceTerminologyVersion().substring(0,
+                  mapProject.getSourceTerminologyVersion().indexOf("_"));
+        } else {
+          currentTerminologyVersion = mapProject.getSourceTerminologyVersion();
+        }
+        // Results are sorted in order, so as soon as the first Snapshot (i.e.
+        // non-delta) file that has a version lower than the
+        // currenTerminologyVersion, that's the file we want.
+        for (SearchResult searchResult : mapProjectFiles.getSearchResults()) {
+          if (searchResult.getTerminology().equals("FINAL")
+              && searchResult.getValue2().contains("Snapshot")
+              && Long.parseLong(currentTerminologyVersion) > Long
+                  .parseLong(searchResult.getTerminologyVersion())) {
+            awsFileName = searchResult.getValue2();
+            break;
+          }
+        }
+
+        // If no file identified, error
+        if (awsFileName == null) {
+          throw new Exception("Could not find a Final Snapshot file for "
+              + mapProject.getName());
         }
 
         // Access zipped awsFile

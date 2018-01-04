@@ -547,7 +547,7 @@ public class ContentClientRest extends RootClientRest
   }
 
   @Override
-  public String reloadRefsetMembersAllProjectsAwsSnapshot(
+  public String reloadRefsetMembersForTerminologyAwsSnapshot(
     String sourceTerminology, String authToken) throws Exception {
     // not yet implemented in rest client
     return null;
