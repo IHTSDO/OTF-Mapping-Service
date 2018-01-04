@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.mapping.rest.impl;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -5918,7 +5919,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public SearchResult getCurrentReleaseFile(
+  public SearchResult getCurrentReleaseFileName(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -5972,6 +5973,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     }
   }
 
+  @Override
   @POST
   @Path("/amazons3/file")
   @ApiOperation(value = "Downloads file from AWS", notes = "Downloads file from AWS.", response = InputStream.class)
@@ -5979,7 +5981,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   @Produces("text/plain")
-  public InputStream getFileFromAmazonS3(
+  public InputStream downloadFileFromAmazonS3(
     @ApiParam(value = "File path, in JSON or XML POST data", required = true) String filePath,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -6010,6 +6012,45 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
   }
+  
+  @Override
+  @POST
+  @Path("/current/file/{id:[0-9][0-9]*}")
+  @ApiOperation(value = "Downloads current release file", notes = "Downloads current release file.", response = InputStream.class)
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @Produces("text/plain")
+  public InputStream downloadCurrentReleaseFile(
+    @ApiParam(value = "File name, in JSON or XML POST data", required = true) String fileName,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(MappingServiceRest.class)
+        .info("RESTful call (Mapping): /current/file" + " " + fileName);
+
+    final MappingService mappingService = new MappingServiceJpa();
+    String user = "";
+    try {
+      // authorize call
+      user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+          "download current release file", securityService);
+
+      MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      final File projectDir =
+          new File(this.getReleaseDirectoryPath(mapProject, "current"));
+      InputStream objectData1 = new FileInputStream(new File(projectDir, fileName));
+
+      return objectData1;
+
+    } catch (Exception e) {
+      handleException(e, "trying to download current release file", user, "", "");
+      return null;
+    } finally {
+      securityService.close();
+    }
+  }
 
   @Override
   @GET
@@ -6033,7 +6074,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     try {
       // authorize call
       user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
-          "get current release file", securityService);
+          "get file list from amazon s3", securityService);
 
       final MapProject mapProject =
           mappingService.getMapProject(new Long(mapProjectId).longValue());

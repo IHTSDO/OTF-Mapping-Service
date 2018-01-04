@@ -415,7 +415,11 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
               log.info(element.toString());
             }
 			throw e;
+		} finally {
+			LoggerUtility.removeLogger("load");
 		}
+		
+		
 
 	}
 

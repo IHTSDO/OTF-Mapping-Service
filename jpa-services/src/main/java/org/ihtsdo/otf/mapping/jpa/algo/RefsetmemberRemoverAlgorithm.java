@@ -1,7 +1,6 @@
 package org.ihtsdo.otf.mapping.jpa.algo;
 
 import java.io.File;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -66,10 +65,6 @@ public class RefsetmemberRemoverAlgorithm extends RootServiceJpa
 
 	@Override
 	public void compute() throws Exception {
-	    // clear log before starting process
-      PrintWriter writer = new PrintWriter(logFile);
-      writer.print("");
-      writer.close(); 
       
 		log.info("Starting removing terminology");
 		log.info("  refsetId = " + refsetId);
@@ -122,6 +117,9 @@ public class RefsetmemberRemoverAlgorithm extends RootServiceJpa
               log.info(element.toString());
             }
 			throw new Exception("Unexpected exception:", e);
+		}
+		finally {
+			LoggerUtility.removeLogger("remove_maps");
 		}
 	}
 

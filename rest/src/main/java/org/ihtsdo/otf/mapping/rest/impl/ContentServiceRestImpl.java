@@ -1189,6 +1189,34 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     String userName = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
         "reload RF2 snapshot terminology", securityService);
 
+	String rootPath = ConfigUtility.getConfigProperties()
+			.getProperty("map.principle.source.document.dir");
+	if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
+		rootPath += "/";
+	}
+	rootPath += "logs";
+	File logDirectory = new File(rootPath);
+	if (!logDirectory.exists()) {
+		logDirectory.mkdir();
+	}
+	
+	// this process uses two log files.  need to reset both to empty
+	// before the process begins.
+	File logFile;
+	FileOutputStream fileStream;
+	
+	//remove terminology - file name must match RefsetmemberRemoverAlgorithm
+	logFile = new File(logDirectory, "remove_" + terminology + ".log");
+	fileStream = new FileOutputStream(logFile, false);
+	fileStream.write("".getBytes());
+	fileStream.close();
+	
+	//load terminology - file name must match MapRecordRf2ComplexMapLoaderAlgorithm
+	logFile = new File(logDirectory, "load_" + terminology + ".log");
+	fileStream = new FileOutputStream(logFile, false);
+	fileStream.write("".getBytes());
+	fileStream.close();	
+    
     // If other processes are already running, return the currently running
     // process information as an Exception
     // If not, obtain the processLock
@@ -1487,6 +1515,36 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
 
+    
+	String rootPath = ConfigUtility.getConfigProperties()
+			.getProperty("map.principle.source.document.dir");
+	if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
+		rootPath += "/";
+	}
+	rootPath += "logs";
+	File logDirectory = new File(rootPath);
+	if (!logDirectory.exists()) {
+		logDirectory.mkdir();
+	}
+
+	// this process uses two log files.  need to reset both to empty
+	// before the process begins.
+	File logFile;
+	FileOutputStream fileStream;
+	
+	//remove_maps - file name must match RefsetmemberRemoverAlgorithm
+	logFile = new File(logDirectory, "remove_maps_" + refsetId + ".log");
+	fileStream = new FileOutputStream(logFile, false);
+	fileStream.write("".getBytes());
+	fileStream.close();
+	
+	//load_maps - file name must match MapRecordRf2ComplexMapLoaderAlgorithm
+	logFile = new File(logDirectory, "load_maps_" + refsetId + ".log");
+	fileStream = new FileOutputStream(logFile, false);
+	fileStream.write("".getBytes());
+	fileStream.close();	
+	
+      
     try (final RefsetmemberRemoverAlgorithm removeAlgo =
         new RefsetmemberRemoverAlgorithm(refsetId);) {
 

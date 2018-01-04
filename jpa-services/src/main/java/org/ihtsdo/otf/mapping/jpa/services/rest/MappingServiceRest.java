@@ -915,14 +915,37 @@ public interface MappingServiceRest {
       String authToken) throws Exception;
 
     /**
-     * Gets the current release file.
+     * Gets the current release file name.
      *
      * @param mapProjectId the map project id
      * @param authToken the auth token
      * @return the current release file
      * @throws Exception the exception
      */
-    SearchResult getCurrentReleaseFile(Long mapProjectId, String authToken)
+    SearchResult getCurrentReleaseFileName(Long mapProjectId, String authToken)
       throws Exception;
+
+    /**
+     * Download file from amazon s3.
+     *
+     * @param filePath the file path
+     * @param authToken the auth token
+     * @return the input stream
+     * @throws Exception the exception
+     */
+    InputStream downloadFileFromAmazonS3(String filePath, String authToken)
+      throws Exception;
+
+    /**
+     * Download current release file.
+     *
+     * @param fileName the file name
+     * @param mapProjectId the map project id
+     * @param authToken the auth token
+     * @return the input stream
+     * @throws Exception the exception
+     */
+    InputStream downloadCurrentReleaseFile(String fileName, Long mapProjectId,
+      String authToken) throws Exception;
 
 }
