@@ -366,7 +366,7 @@ public interface ContentServiceRest {
    * @return the string
    * @throws Exception the exception
    */
-  String reloadRefsetMembersAllProjectsAwsSnapshot(String sourceTerminology,
+  String reloadRefsetMembersForTerminologyAwsSnapshot(String sourceTerminology,
     String authToken) throws Exception;
 
 }
