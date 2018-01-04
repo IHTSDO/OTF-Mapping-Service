@@ -2490,29 +2490,16 @@ angular
 
         $scope.loadRefsetMembers = function() {
           if (!confirm('Are you sure you want to remove and reload '
-            + $scope.focusProject.destinationTerminology + ' refset members?')) {
+            + $scope.focusProject.sourceTerminology + ' refset members?')) {
             return;
           }
 
-          var terminology = $scope.focusProject.destinationTerminology;
-          var availableFiles = $scope.amazons3Files;
-          var finalSnapshotFiles = [];
-          for (var i = 0; i < availableFiles.length; i++) {
-            if (availableFiles[i].terminology == 'FINAL'
-              && availableFiles[i].value.indexOf('Snapshot') !== -1) {
-              finalSnapshotFiles.push(availableFiles[i]);
-            }
-          }
-          var mostRecentFinalShapshotFile = $scope.sortByKeyDesc(finalSnapshotFiles, 'value')[0];
-
-          var queryString = '?';
-          queryString += "awsFileName=" + mostRecentFinalShapshotFile.value2;
+          var terminology = $scope.focusProject.sourceTerminology;
 
           // rest call
           $http(
             {
-              url : root_content + "refset/reload/aws/" + $scope.focusProject.refSetId + "/"
-                + queryString,
+              url : root_content + "refset/reload/aws/" + terminology,
               method : "PUT",
               data : null,
               headers : {
@@ -2521,14 +2508,14 @@ angular
             }).success(
             function(data) {
               if (data == "Success") {
-                window.alert('Reloading ' + $scope.focusProject.destinationTerminology
+                window.alert('Reloading ' + terminology
                   + ' Refset Members has successfully completed');
               } else {
                 window.alert(data);
               }
             }).error(
             function(data, status, headers, config) {
-              window.alert('Reloading ' + $scope.focusProject.destinationTerminology
+              window.alert('Reloading ' + terminology
                 + ' Refset Members has failed.  Please view log for details.');
               $rootScope.handleHttpError(data, status, headers, config);
             });

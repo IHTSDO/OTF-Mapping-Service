@@ -545,4 +545,11 @@ public class ContentClientRest extends RootClientRest
     // not yet implemented in rest client
     return null;
   }
+
+  @Override
+  public String reloadRefsetMembersAllProjectsAwsSnapshot(
+    String sourceTerminology, String authToken) throws Exception {
+    // not yet implemented in rest client
+    return null;
+  }
 }

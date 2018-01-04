@@ -22,7 +22,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -34,8 +33,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.naming.AuthenticationException;
 import javax.ws.rs.Consumes;
@@ -101,6 +98,7 @@ import org.ihtsdo.otf.mapping.jpa.handlers.BeginEditingCycleHandlerJpa;
 import org.ihtsdo.otf.mapping.jpa.handlers.ExportReportHandler;
 import org.ihtsdo.otf.mapping.jpa.handlers.ReleaseHandlerJpa;
 import org.ihtsdo.otf.mapping.jpa.helpers.TerminologyUtility;
+import org.ihtsdo.otf.mapping.jpa.services.AmazonS3ServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
@@ -122,6 +120,7 @@ import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
+import org.ihtsdo.otf.mapping.services.AmazonS3Service;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
@@ -5406,7 +5405,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       String newerInputFile2 = files.get(1);
 
       AmazonS3 s3Client = null;
-      s3Client = connectToAmazonS3();
+      s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
 
       // stream first file from aws
       S3Object file1 = s3Client.getObject(new GetObjectRequest(
@@ -5995,7 +5994,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
           "download file from aws", securityService);
 
       AmazonS3 s3Client = null;
-      s3Client = connectToAmazonS3();
+      s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
 
       // stream first file from aws
       S3Object file1 = s3Client.getObject(
@@ -6028,6 +6027,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call (Mapping):  /amazons3/files/" + mapProjectId);
 
     final MappingService mappingService = new MappingServiceJpa();
+    final AmazonS3Service amazonS3Service = new AmazonS3ServiceJpa();
     String user = "";
 
     try {
@@ -6037,221 +6037,13 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
 
       final MapProject mapProject =
           mappingService.getMapProject(new Long(mapProjectId).longValue());
-      String sourceTerminology = mapProject.getSourceTerminology();
-      String destinationTerminology = mapProject.getDestinationTerminology();
-
-      String bucketName = "release-ihtsdo-prod-published";
-      SearchResultList searchResults = new SearchResultListJpa();
-
-      // Connect to server
-      AmazonS3 s3Client = connectToAmazonS3();
-
-      // // List Buckets
-      // List<Bucket> buckets = s3Client.listBuckets();
-      // for (Bucket b : buckets) {
-      // Logger.getLogger(MappingServiceRestImpl.class)
-      // .info("Bucket name " + b.getName());
-      // }
-
-      // Verify Buckets Exists
-      if (!s3Client.doesBucketExist(bucketName)) {
-        throw new Exception("Cannot find Bucket Name");
-      } else {
-        Logger.getLogger(MappingServiceRestImpl.class)
-            .info("Bucket " + bucketName + " accessed.");
-      }
-
-      // Determine international or U.S.
-      String nationalPrefix =
-          sourceTerminology.equals("SNOMEDCT_US") ? "us" : "international";
-
-      // Determine year
-      int year = Calendar.getInstance().get(Calendar.YEAR);
-      String lastYear = Integer.toString(year - 1);
-      // Only keep alpha and beta from most recent version
-      String mostRecentAlphaBeta = "";
-      // Map to ensure only latest version of a file is included in list
-      Map<String, String> shortNameToFullDateMap = new HashMap<>();
-
-      // TODO: Note: Logic here should be moved into a ProjectSpecificHandler
-      if (mapProject.getDestinationTerminology().equals("ICPC")
-          || mapProject.getDestinationTerminology().equals("GMDN")
-          || mapProject.getDestinationTerminology().equals("ICNP")) {
-        // List Files on Bucket "release-ihtsdo-prod-published"
-        ObjectListing listing = null;
-        if (mapProject.getDestinationTerminology().equals("ICPC")) {
-          listing = s3Client.listObjects(bucketName,
-              nationalPrefix + "/SnomedCT_GPFPICPC2");
-        } else if (mapProject.getDestinationTerminology().equals("GMDN")) {
-          listing = s3Client.listObjects(bucketName,
-              nationalPrefix + "/SnomedCT_GMDN");
-        } else if (mapProject.getDestinationTerminology().equals("ICNP")) {
-          // There are two projects that use ICNP as their destination
-          // terminology. Distinguish by refsetId.
-          if (mapProject.getRefSetId().equals("711112009")) {
-            listing = s3Client.listObjects(bucketName,
-                nationalPrefix + "/SnomedCT_ICNPDiagnoses");
-          } else if (mapProject.getRefSetId().equals("712505008")) {
-            listing = s3Client.listObjects(bucketName,
-                nationalPrefix + "/SnomedCT_ICNPInterventions");
-          } else {
-            throw new Exception(
-                " unhandled ICNP refset Id= " + mapProject.getRefSetId());
-          }
-        } else {
-          throw new Exception(" list S3 files for terminology= "
-              + mapProject.getDestinationTerminology());
-        }
-        List<S3ObjectSummary> summaries = listing.getObjectSummaries();
-
-        int i = 1;
-        for (S3ObjectSummary sum : summaries) {
-          String fileName = sum.getKey();
-          Matcher m = Pattern.compile("[0-9T]{15}").matcher(fileName);
-          String fileYear = "";
-          String fileDate = "";
-          String fullFileDate = "";
-          while (m.find()) {
-            fullFileDate = m.group();
-            fileDate = fullFileDate.substring(0, 8);
-            fileYear = fileDate.substring(0, 4);
-          }
-          if (fileYear.compareTo(lastYear) < 0) {
-            continue;
-          }
-          if ((fileName.contains("ICPC2ExtendedMap")
-              || fileName.contains("GMDNMapSimpleMap")
-              || fileName.contains("ICNPSimpleMap"))
-              && !fileName.contains("Full") && !fileName.contains("backup")
-              && !fileName.contains("Delta")) {
-            Logger.getLogger(MappingServiceRestImpl.class)
-                .info(mapProject.getDestinationTerminology() + " Summary #"
-                    + i++ + " with: " + sum.getKey());
-            SearchResult result = new SearchResultJpa();
-            String shortName = fileName.substring(fileName.lastIndexOf('/'));
-            result.setTerminology("FINAL");
-            result.setTerminologyVersion(fileDate);
-            result.setValue(shortName);
-            result.setValue2(fileName);
-            searchResults.addSearchResult(result);
-          }
-        }
-      } else {
-
-        // List All Files on Bucket "release-ihtsdo-prod-published"
-        ObjectListing listing =
-            s3Client.listObjects(bucketName, nationalPrefix + "/");
-        List<S3ObjectSummary> summaries = listing.getObjectSummaries();
-        int j = 0;
-        int i = 1;
-        Logger.getLogger(MappingServiceRestImpl.class)
-            .info("Destination terminology *" + destinationTerminology + "*");
-        while (listing.isTruncated()) {
-          listing = s3Client.listNextBatchOfObjects(listing);
-          summaries = listing.getObjectSummaries();
-
-          Logger.getLogger(MappingServiceRestImpl.class)
-              .info("CCC start with " + j++ + ": " + summaries.size());
-          for (S3ObjectSummary sum : summaries) {
-            String fileName = sum.getKey();
-            Matcher m = Pattern.compile("[0-9T]{15}").matcher(fileName);
-            String fileYear = "";
-            String fileDate = "";
-            String fullFileDate = "";
-            while (m.find()) {
-              fullFileDate = m.group();
-              fileDate = fullFileDate.substring(0, 8);
-              fileYear = fileDate.substring(0, 4);
-            }
-            // last year okay, but not before that
-            if (fileYear.compareTo(lastYear) < 0) {
-              continue;
-            }
-            if (((mapProject.getName().contains("ICD10")
-                && fileName.contains("ExtendedMap"))
-                || (mapProject.getName().contains("ICDO")
-                    && fileName.contains("SimpleMap")))
-                && !fileName.contains("Full") && !fileName.contains("backup")
-                && !fileName.contains("LOINC") && !fileName.contains("MRCM")
-                && !fileName.contains("Starter")
-                && !fileName.contains("Nursing")
-                && !fileName.contains("Odontogram")
-                && !fileName.contains("WithoutRT")
-                && !fileName.contains("ButOld") && !fileName.contains("UPDATED")
-                && !fileName.contains("ICNP")
-                && !fileName.contains("SnomedCT_RF2Release")) {
-              Logger.getLogger(MappingServiceRestImpl.class)
-                  .info("Summary #" + i++ + " with: " + sum.getKey());
-              SearchResult result = new SearchResultJpa();
-              String shortName = fileName.substring(fileName.lastIndexOf('/'));
-              if (shortNameToFullDateMap.containsKey(shortName)) {
-                String savedFullFileDate =
-                    shortNameToFullDateMap.get(shortName);
-                // if current one is later, save this one into the map
-                if (savedFullFileDate.compareTo(fullFileDate) < 0) {
-                  shortNameToFullDateMap.put(shortName, fullFileDate);
-                }
-              } else {
-                shortNameToFullDateMap.put(shortName, fullFileDate);
-              }
-              if (fileName.toLowerCase().contains("alpha")) {
-                result.setTerminology("ALPHA");
-                if (fileDate.compareTo(mostRecentAlphaBeta) > 0) {
-                  mostRecentAlphaBeta = fileDate;
-                }
-              } else if (fileName.toLowerCase().contains("beta")) {
-                result.setTerminology("BETA");
-                if (fileDate.compareTo(mostRecentAlphaBeta) > 0) {
-                  mostRecentAlphaBeta = fileDate;
-                }
-              } else {
-                result.setTerminology("FINAL");
-              }
-
-              result.setTerminologyVersion(fileDate);
-              result.setValue(shortName);
-              result.setValue2(fileName);
-              searchResults.addSearchResult(result);
-            }
-          }
-        }
-      }
-
-      // sort files by release date
-      searchResults.sortBy(new Comparator<SearchResult>() {
-        @Override
-        public int compare(SearchResult o1, SearchResult o2) {
-          String releaseDate1 = o1.getTerminologyVersion();
-          String releaseDate2 = o2.getTerminologyVersion();
-          return releaseDate2.compareTo(releaseDate1);
-        }
-      });
-
-      // only keep most recent finals and most recent alpha/betas
-      SearchResultList resultsToKeep = new SearchResultListJpa();
-      for (SearchResult result : searchResults.getSearchResults()) {
-        // must be final or the most current release alpha/beta
-        if (result.getTerminology().equals("FINAL")
-            || result.getTerminologyVersion().equals(mostRecentAlphaBeta)) {
-          // also must be the most recent version of the release file
-          if (shortNameToFullDateMap.containsKey(result.getValue())) {
-            if (result.getValue2()
-                .contains(shortNameToFullDateMap.get(result.getValue()))) {
-              resultsToKeep.addSearchResult(result);
-            }
-          } else {
-            resultsToKeep.addSearchResult(result);
-          }
-        }
-      }
-
-      return resultsToKeep;
+      return amazonS3Service.getFileListFromAmazonS3(mapProject);
 
     } catch (Exception e) {
       handleException(e, "trying to get files from amazon s3", user,
           mapProjectId.toString(), "");
     } finally {
-
+      amazonS3Service.close();
       mappingService.close();
       securityService.close();
     }
@@ -6518,7 +6310,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
         "international/SnomedCT_GMDNMapRelease_Production_20170908T120000Z/SnomedCT_GMDNMapRelease_Production_20170908T120000Z/Snapshot/Refset/Map/der2_sRefset_GMDNMapSimpleMapSnapshot_INT_20170731.txt";
 
     // Connect to server
-    AmazonS3 s3Client = connectToAmazonS3();
+    AmazonS3 s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
 
     // List Buckets
     /*
@@ -6685,7 +6477,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
         "international/xSnomedCT_RF2Release_INT_20170131/Delta/Terminology/xsct2_Concept_Delta_INT_20170131.txt";
 
     // Connect to server
-    AmazonS3 s3Client = connectToAmazonS3();
+    AmazonS3 s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
 
     // List Buckets
     Logger.getLogger(MappingServiceRestImpl.class).info("BBB start");
@@ -6784,7 +6576,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
         "international/SnomedCT_InternationalRF2_PRODUCTION_20170731T150000Z.zip";
 
     // Connect to server
-    AmazonS3 s3Client = connectToAmazonS3();
+    AmazonS3 s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
 
     // Verify Buckets Exists
     if (!s3Client.doesBucketExist(bucketName)) {
