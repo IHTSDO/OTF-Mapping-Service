@@ -3,7 +3,6 @@
  */
 package org.ihtsdo.otf.mapping.rest.impl;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,8 +12,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
@@ -55,7 +52,6 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
@@ -134,12 +130,8 @@ import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -6049,6 +6041,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       return null;
     } finally {
       securityService.close();
+      mappingService.close();
     }
   }
 
@@ -6342,305 +6335,4 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       return MappingServiceRestImpl.this;
     }
   }
-
-  private void callTestMethod() throws Exception {
-    Logger.getLogger(MappingServiceRestImpl.class).info("AAA");
-    String bucketName = "release-ihtsdo-prod-published";
-    String testFileName =
-        // "international/xSnomedCT_RF2Release_INT_20170131/Delta/Terminology/xsct2_Concept_Delta_INT_20170131.txt";
-        "international/SnomedCT_GMDNMapRelease_Production_20170908T120000Z/SnomedCT_GMDNMapRelease_Production_20170908T120000Z/Snapshot/Refset/Map/der2_sRefset_GMDNMapSimpleMapSnapshot_INT_20170731.txt";
-
-    // Connect to server
-    AmazonS3 s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
-
-    // List Buckets
-    /*
-     * Logger.getLogger(MappingServiceRestImpl.class).info("BBB start");
-     * List<Bucket> buckets = s3Client.listBuckets(); for (Bucket b : buckets) {
-     * Logger.getLogger(MappingServiceRestImpl.class)
-     * .info("BBB with bucket name" + b.getName()); }
-     * Logger.getLogger(MappingServiceRestImpl.class).info("BBB end");
-     * 
-     * // Verify Buckets Exists if (!s3Client.doesBucketExist(bucketName)) {
-     * throw new Exception("Cannot find Bucket Name"); } else {
-     * Logger.getLogger(MappingServiceRestImpl.class) .info("CCC Bucket " +
-     * bucketName + " accessed."); }
-     * 
-     * // List All Files on Bucket "release-ihtsdo-prod-published" ObjectListing
-     * listing = s3Client.listObjects(bucketName); List<S3ObjectSummary>
-     * summaries = listing.getObjectSummaries();
-     * 
-     * System.out.println("CCC start with " + summaries.size()); int i = 1; for
-     * (S3ObjectSummary sum : summaries) {
-     * Logger.getLogger(MappingServiceRestImpl.class) .info("Summary #" + i++ +
-     * " with: " + sum.getKey()); }
-     * Logger.getLogger(MappingServiceRestImpl.class).info("CCC end");
-     */
-
-    // Pull File Down and Copy to Local Directory (Directory must have rw/rw/rw
-    // (666) permissions )
-    Logger.getLogger(MappingServiceRestImpl.class).info("DDD start");
-    S3Object s3object = s3Client.getObject(bucketName, testFileName);
-    S3ObjectInputStream inputStream = s3object.getObjectContent();
-    FileUtils.copyInputStreamToFile(inputStream, new File("~/aws/",
-        testFileName.substring(testFileName.lastIndexOf('/') + 1)));
-    inputStream.close();
-    Logger.getLogger(MappingServiceRestImpl.class).info("DDD end");
-  }
-
-  private InputStream callTestCompare(MapProject mapProject) throws Exception {
-
-    // hardcoded files for testing
-    String olderInputFile1 =
-        "C:\\Temp\\s3\\ssa_ssb\\alphaxder2_sRefset_SimpleMapSnapshot_INT_20180131.txt";
-    String newerInputFile2 =
-        "C:\\Temp\\s3\\ssa_ssb\\betaxder2_sRefset_SimpleMapSnapshot_INT_20180131.txt";
-    List<String> files = new ArrayList<>();
-    files.add(olderInputFile1);
-    files.add(newerInputFile2);
-    List<String> notes = new ArrayList<>();
-
-    InputStream objectData1 = new FileInputStream(olderInputFile1);
-    InputStream objectData2 = new FileInputStream(newerInputFile2);
-
-    InputStream reportInputStream = null;
-    StringBuffer reportName = new StringBuffer();
-    if (olderInputFile1.contains("Full") || newerInputFile2.contains("Full")) {
-      throw new LocalException("Full files cannot be compared with this tool.");
-    }
-
-    // compare extended map files and compose report name
-    if (olderInputFile1.contains("ExtendedMap")
-        && newerInputFile2.contains("ExtendedMap")) {
-      reportInputStream = compareExtendedMapFiles(objectData1, objectData2,
-          mapProject, files, notes);
-      reportName.append(
-          olderInputFile1.substring(olderInputFile1.lastIndexOf("Extended"),
-              olderInputFile1.lastIndexOf('.')));
-      if (olderInputFile1.toLowerCase().contains("alpha")) {
-        reportName.append("_ALPHA");
-      }
-      if (olderInputFile1.toLowerCase().contains("beta")) {
-        reportName.append("_BETA");
-      }
-      reportName.append("_");
-      reportName.append(
-          newerInputFile2.substring(newerInputFile2.lastIndexOf("Extended"),
-              newerInputFile2.lastIndexOf('.')));
-      if (newerInputFile2.toLowerCase().contains("alpha")) {
-        reportName.append("_ALPHA");
-      }
-      if (newerInputFile2.toLowerCase().contains("beta")) {
-        reportName.append("_BETA");
-      }
-      reportName.append(".xls");
-
-      // compare simple map files and compose report name
-    } else if (olderInputFile1.contains("SimpleMap")
-        && newerInputFile2.contains("SimpleMap")) {
-      reportInputStream = compareSimpleMapFiles(objectData1, objectData2,
-          mapProject, files, notes);
-      reportName.append(
-          olderInputFile1.substring(olderInputFile1.lastIndexOf("Simple"),
-              olderInputFile1.lastIndexOf('.')));
-      if (olderInputFile1.toLowerCase().contains("alpha")) {
-        reportName.append("_ALPHA");
-      }
-      if (olderInputFile1.toLowerCase().contains("beta")) {
-        reportName.append("_BETA");
-      }
-      reportName.append("_");
-      reportName.append(
-          newerInputFile2.substring(newerInputFile2.lastIndexOf("Simple"),
-              newerInputFile2.lastIndexOf('.')));
-      if (newerInputFile2.toLowerCase().contains("alpha")) {
-        reportName.append("_ALPHA");
-      }
-      if (newerInputFile2.toLowerCase().contains("beta")) {
-        reportName.append("_BETA");
-      }
-      reportName.append(".xls");
-    }
-
-    // create destination directory for saved report
-    final Properties config = ConfigUtility.getConfigProperties();
-    final String docDir =
-        config.getProperty("map.principle.source.document.dir");
-
-    final File projectDir = new File(docDir, mapProject.getId().toString());
-    if (!projectDir.exists()) {
-      projectDir.mkdir();
-    }
-
-    final File reportsDir = new File(projectDir, "reports");
-    if (!reportsDir.exists()) {
-      reportsDir.mkdir();
-    }
-
-    final File file = new File(reportsDir, reportName.toString());
-
-    // save the file to the server
-    saveFile(reportInputStream, file.getAbsolutePath());
-
-    objectData1.close();
-    objectData2.close();
-
-    return reportInputStream;
-  }
-
-  // /**
-  // * Reads an InputStream and returns its contents as a String. Also effects
-  // * rate control.
-  // * @param inputStream The InputStream to read from.
-  // * @return The contents of the InputStream as a String.
-  // * @throws Exception on error.
-  // */
-  // private static String inputStreamToString(final InputStream inputStream)
-  // throws Exception {
-  // final StringBuilder outputBuilder = new StringBuilder();
-  //
-  // String string;
-  // if (inputStream != null) {
-  // BufferedReader reader =
-  // new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
-  // while (null != (string = reader.readLine())) {
-  // outputBuilder.append(string).append('\n');
-  // }
-  // }
-  //
-  // return outputBuilder.toString();
-  // }
-
-  private void callTestMethod2() throws Exception {
-    Logger.getLogger(MappingServiceRestImpl.class).info("AAA");
-    String bucketName = "release-ihtsdo-prod-published";
-    String testFileName =
-        "international/xSnomedCT_RF2Release_INT_20170131/Delta/Terminology/xsct2_Concept_Delta_INT_20170131.txt";
-
-    // Connect to server
-    AmazonS3 s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
-
-    // List Buckets
-    Logger.getLogger(MappingServiceRestImpl.class).info("BBB start");
-    List<Bucket> buckets = s3Client.listBuckets();
-    for (Bucket b : buckets) {
-      Logger.getLogger(MappingServiceRestImpl.class)
-          .info("BBB with bucket name" + b.getName());
-    }
-    Logger.getLogger(MappingServiceRestImpl.class).info("BBB end");
-
-    // Verify Buckets Exists
-    if (!s3Client.doesBucketExist(bucketName)) {
-      throw new Exception("Cannot find Bucket Name");
-    } else {
-      Logger.getLogger(MappingServiceRestImpl.class)
-          .info("CCC Bucket " + bucketName + " accessed.");
-    }
-
-    // List All Files on Bucket "release-ihtsdo-prod-published"
-    /*
-     * ObjectListing listing = s3Client.listObjects(bucketName);
-     * List<S3ObjectSummary> summaries = listing.getObjectSummaries();
-     * 
-     * System.out.println("CCC start with " + summaries.size()); int i = 1; for
-     * (S3ObjectSummary sum : summaries) {
-     * Logger.getLogger(MappingServiceRestImpl.class) .info("Summary #" + i++ +
-     * " with: " + sum.getKey()); }
-     */
-    Logger.getLogger(MappingServiceRestImpl.class).info("DDD Start");
-
-    List<S3ObjectSummary> keyList = new ArrayList<S3ObjectSummary>();
-    ObjectListing objects = s3Client.listObjects(bucketName);
-    keyList = objects.getObjectSummaries();
-    objects = s3Client.listNextBatchOfObjects(objects);
-    int loopCounter = 0;
-
-    while (objects.isTruncated()) {
-      keyList.addAll(objects.getObjectSummaries());
-      objects = s3Client.listNextBatchOfObjects(objects);
-
-      Logger.getLogger(MappingServiceRestImpl.class).info("DDD1 at loop #"
-          + ++loopCounter + " with keList.size(): " + keyList.size());
-    }
-    keyList.addAll(objects.getObjectSummaries());
-    Logger.getLogger(MappingServiceRestImpl.class)
-        .info("DDD2 with total keyList size = " + keyList.size());
-
-    PrintWriter summaryWriter = new PrintWriter(new OutputStreamWriter(
-        new FileOutputStream(new File("/home/jefron/aws/listOfFiles.txt")),
-        "UTF-8"));
-
-    File file = new File("/home/jefron/aws/listOfFiles2.txt");
-
-    for (S3ObjectSummary obj : keyList) {
-      summaryWriter.append(obj.getKey()).append("\n");
-      FileUtils.writeStringToFile(file, obj.getKey() + "\n");
-    }
-    summaryWriter.close();
-    Logger.getLogger(MappingServiceRestImpl.class).info("DDD end");
-
-    /*
-     * 
-     * PrintWriter summaryWriter = new PrintWriter(new OutputStreamWriter( new
-     * FileOutputStream( new File("~/aws/listOfFiles.txt")), "UTF-8"));
-     * 
-     * 
-     * 
-     * final ListObjectsV2Request req = new
-     * ListObjectsV2Request().withBucketName(bucketName).withMaxKeys(2);
-     * ListObjectsV2Result result; int objectCounter = 0; int loopCounter = 0;
-     * do { result = s3Client.listObjectsV2(req);
-     * 
-     * for (S3ObjectSummary objectSummary : result.getObjectSummaries()) { if
-     * (++objectCounter % 250 == 0) {
-     * Logger.getLogger(MappingServiceRestImpl.class).
-     * info("CCC1 with Object Counter: " + objectCounter); }
-     * 
-     * summaryWriter.println(objectSummary.getKey());
-     * 
-     * } System.out.println("Next Continuation Token : " +
-     * result.getNextContinuationToken()); summaryWriter.flush();
-     * req.setContinuationToken(result.getNextContinuationToken());
-     * Logger.getLogger(MappingServiceRestImpl.class).info("" + "" + "" +
-     * " with Loop Counter: " + ++loopCounter);
-     * 
-     * } while(result.isTruncated() == true ); summaryWriter.close();
-     * Logger.getLogger(MappingServiceRestImpl.class).info("CCC end");
-     */
-
-  }
-
-  private void callTestMethod3() throws Exception {
-    Logger.getLogger(MappingServiceRestImpl.class).info("AAA");
-    String bucketName = "release-ihtsdo-prod-published";
-    String testFileName =
-        "international/SnomedCT_InternationalRF2_PRODUCTION_20170731T150000Z.zip";
-
-    // Connect to server
-    AmazonS3 s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
-
-    // Verify Buckets Exists
-    if (!s3Client.doesBucketExist(bucketName)) {
-      throw new Exception("Cannot find Bucket Name");
-    } else {
-      Logger.getLogger(MappingServiceRestImpl.class)
-          .info("CCC Bucket " + bucketName + " accessed.");
-    }
-
-    S3Object s3object = s3Client.getObject(bucketName, testFileName);
-
-    // Unzip awsFile to temp directory
-    File tempDir = FileUtils.getTempDirectory();
-    File placementDir = new File(
-        tempDir.getAbsolutePath() + File.separator + "TerminologyLoad");
-    placementDir.mkdir();
-
-    S3ObjectInputStream inputStream = s3object.getObjectContent();
-    File zippedFile = new File(placementDir,
-        testFileName.substring(testFileName.lastIndexOf('/') + 1));
-    FileUtils.copyInputStreamToFile(inputStream, zippedFile);
-    inputStream.close();
-
-  }
-
 }
