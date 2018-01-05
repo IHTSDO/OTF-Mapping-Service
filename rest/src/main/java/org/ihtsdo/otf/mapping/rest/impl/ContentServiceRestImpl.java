@@ -10,6 +10,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
@@ -51,16 +52,21 @@ import org.ihtsdo.otf.mapping.jpa.algo.Rf2DeltaLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.Rf2SnapshotLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.SimpleLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.handlers.IndexViewerHandler;
+import org.ihtsdo.otf.mapping.jpa.services.AmazonS3ServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.rest.ContentServiceRest;
+import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
+import org.ihtsdo.otf.mapping.services.AmazonS3Service;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
@@ -990,7 +996,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
     try {
       // Access zipped awsFile
-      AmazonS3 s3Client = connectToAmazonS3();
+      AmazonS3 s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
 
       final String bucketName = "release-ihtsdo-prod-published";
       S3Object s3object = s3Client.getObject(bucketName, awsZipFileName);
@@ -1184,6 +1190,35 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     String userName = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
         "reload RF2 snapshot terminology", securityService);
 
+    String rootPath = ConfigUtility.getConfigProperties()
+        .getProperty("map.principle.source.document.dir");
+    if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
+      rootPath += "/";
+    }
+    rootPath += "logs";
+    File logDirectory = new File(rootPath);
+    if (!logDirectory.exists()) {
+      logDirectory.mkdir();
+    }
+
+    // this process uses two log files. need to reset both to empty
+    // before the process begins.
+    File logFile;
+    FileOutputStream fileStream;
+
+    // remove terminology - file name must match RefsetmemberRemoverAlgorithm
+    logFile = new File(logDirectory, "remove_" + terminology + ".log");
+    fileStream = new FileOutputStream(logFile, false);
+    fileStream.write("".getBytes());
+    fileStream.close();
+
+    // load terminology - file name must match
+    // MapRecordRf2ComplexMapLoaderAlgorithm
+    logFile = new File(logDirectory, "load_" + terminology + ".log");
+    fileStream = new FileOutputStream(logFile, false);
+    fileStream.write("".getBytes());
+    fileStream.close();
+
     // If other processes are already running, return the currently running
     // process information as an Exception
     // If not, obtain the processLock
@@ -1252,8 +1287,8 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       MediaType.TEXT_PLAIN
   })
   @Produces({
-    MediaType.TEXT_PLAIN
-})
+      MediaType.TEXT_PLAIN
+  })
   @ApiOperation(value = "Removes a terminology, and loads terminology RF2 snapshot from aws", notes = "Removes terminology and loads RF2 snapshot from aws for specified terminology and version")
   public String reloadTerminologyAwsRf2Snapshot(
     @ApiParam(value = "Terminology, e.g. SNOMED CT", required = true) @PathParam("terminology") String terminology,
@@ -1318,7 +1353,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
       try {
         // Access zipped awsFile
-        AmazonS3 s3Client = connectToAmazonS3();
+        AmazonS3 s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
 
         final String bucketName = "release-ihtsdo-prod-published";
         S3Object s3object = s3Client.getObject(bucketName, awsZipFileName);
@@ -1453,7 +1488,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   @Consumes(MediaType.TEXT_PLAIN)
   @ApiOperation(value = "Removes refset member data based on refsetId, and reload from AWS snapshot file", notes = "Reload refset member data from AWS snapshot file.")
   @Produces({
-    MediaType.TEXT_PLAIN
+      MediaType.TEXT_PLAIN
   })
   public String reloadRefsetMemberAwsSnapshot(
     @ApiParam(value = "RefSet Id, e.g. 2014_09_01", required = true) @PathParam("refsetId") String refsetId,
@@ -1482,6 +1517,34 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
 
+    String rootPath = ConfigUtility.getConfigProperties()
+        .getProperty("map.principle.source.document.dir");
+    if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
+      rootPath += "/";
+    }
+    rootPath += "logs";
+    File logDirectory = new File(rootPath);
+    if (!logDirectory.exists()) {
+      logDirectory.mkdir();
+    }
+
+    // this process uses two log files. need to reset both to empty
+    // before the process begins.
+    File logFile;
+    FileOutputStream fileStream;
+
+    // remove_maps - file name must match RefsetmemberRemoverAlgorithm
+    logFile = new File(logDirectory, "remove_maps_" + refsetId + ".log");
+    fileStream = new FileOutputStream(logFile, false);
+    fileStream.write("".getBytes());
+    fileStream.close();
+
+    // load_maps - file name must match MapRecordRf2ComplexMapLoaderAlgorithm
+    logFile = new File(logDirectory, "load_maps_" + refsetId + ".log");
+    fileStream = new FileOutputStream(logFile, false);
+    fileStream.write("".getBytes());
+    fileStream.close();
+
     try (final RefsetmemberRemoverAlgorithm removeAlgo =
         new RefsetmemberRemoverAlgorithm(refsetId);) {
 
@@ -1495,7 +1558,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       File placementDir = null;
       try {
         // Access zipped awsFile
-        AmazonS3 s3Client = connectToAmazonS3();
+        AmazonS3 s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
 
         final String bucketName = "release-ihtsdo-prod-published";
         S3Object s3object = s3Client.getObject(bucketName, awsFileName);
@@ -1580,6 +1643,220 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     return "Success";
   }
 
+  /* see superclass */
+  @Override
+  @PUT
+  @Path("/refset/reload/aws/terminology/{sourceTerminology}")
+  @ApiOperation(value = "Removes refset member data for all projects that use source terminology, and reload from AWS snapshot file", notes = "Reload refset member data from AWS snapshot file.")
+  @Produces({
+      MediaType.TEXT_PLAIN
+  })
+  public String reloadRefsetMembersForTerminologyAwsSnapshot(
+    @ApiParam(value = "Source terminology, e.g. SNOMEDCT", required = true) @PathParam("sourceTerminology") String sourceTerminology,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("RESTful call (Content): /refset/reload/aws/terminology/"
+            + sourceTerminology);
+
+    // Track system level information
+    long startTimeOrig = System.nanoTime();
+
+    final String userName = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+        "reload refset members for source terminology " + sourceTerminology,
+        securityService);
+
+    // If other processes are already running, return the currently running
+    // process information string
+    // If not, obtain the processLock
+    try {
+      RootServiceJpa.lockProcess(userName
+          + " is currently running process = Reload refset members for all projects that use source terminology= "
+          + sourceTerminology);
+    } catch (Exception e) {
+      securityService.close();
+      return e.getMessage();
+    }
+
+    // Get all non-published projects that have source terminology matching the
+    // passed-in terminology
+    final MappingService mappingService = new MappingServiceJpa();
+    final AmazonS3Service amazonS3Service = new AmazonS3ServiceJpa();
+    ArrayList<MapProject> mapProjectsForSourceTerminology = new ArrayList<>();
+
+    // Also don't include retired or pilot projects
+    ArrayList<String> excludeProjects = new ArrayList<>(
+        Arrays.asList("SNOMED to ICD9CM", "SNOMED to ICD11 Pilot"));
+
+    for (MapProject mapProject : mappingService.getMapProjects()
+        .getMapProjects()) {
+      if (mapProject.getSourceTerminology().equals(sourceTerminology)
+          && !mapProject.getRefSetId().startsWith("P")
+          && !excludeProjects.contains(mapProject.getName())) {
+        mapProjectsForSourceTerminology.add(mapProject);
+      }
+    }
+
+    // Remove all refsetMembers for each map project's refset id
+    Logger.getLogger(getClass()).info("Removing refset members");
+
+    try {
+      for (MapProject mapProject : mapProjectsForSourceTerminology) {
+        final String refsetId = mapProject.getRefSetId();
+        Logger.getLogger(getClass())
+            .info("Removing refset members for refsetId = " + refsetId);
+
+        final RefsetmemberRemoverAlgorithm removeAlgo =
+            new RefsetmemberRemoverAlgorithm(refsetId);
+        removeAlgo.compute();
+        removeAlgo.close();
+
+      }
+    } catch (Exception e) {
+      RootServiceJpa.unlockProcess();
+      handleException(e, "trying to remove refset members");
+      mappingService.close();
+      amazonS3Service.close();
+      securityService.close();
+      return "Failure";
+    }
+
+    Logger.getLogger(getClass())
+        .info("Remove Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+
+    // If remove was successful,
+    // Identify the most-recent, final MapSnapshot file for each
+    // project.
+    // Note: this file must predate the loaded version of Snomed
+    // e.g. if Snomed_Beta_20180131 is loaded, this should grab a Final_20170731
+    // MapSnapshot, even if Final_20180131 is available
+    Logger.getLogger(getClass())
+        .info("Loading most recent release refset members");
+
+    String inputFile = null;
+    File placementDir = null;
+    try {
+      for (MapProject mapProject : mapProjectsForSourceTerminology) {
+
+        SearchResultList mapProjectFiles =
+            amazonS3Service.getFileListFromAmazonS3(mapProject);
+
+        // Find most recent Final mapProjectFile that predates the mapProject's
+        // source Terminoloy version
+        String awsFileName = null;
+        String currentTerminologyVersion = null;
+        if (mapProject.getSourceTerminologyVersion().equals("latest")) {
+          currentTerminologyVersion = "99999999";
+        } else if (mapProject.getSourceTerminologyVersion().contains("_")) {
+          currentTerminologyVersion =
+              mapProject.getSourceTerminologyVersion().substring(0,
+                  mapProject.getSourceTerminologyVersion().indexOf("_"));
+        } else {
+          currentTerminologyVersion = mapProject.getSourceTerminologyVersion();
+        }
+        // Results are sorted in order, so as soon as the first Snapshot (i.e.
+        // non-delta) file that has a version lower than the
+        // currenTerminologyVersion, that's the file we want.
+        for (SearchResult searchResult : mapProjectFiles.getSearchResults()) {
+          if (searchResult.getTerminology().equals("FINAL")
+              && searchResult.getValue2().contains("Snapshot")
+              && Long.parseLong(currentTerminologyVersion) > Long
+                  .parseLong(searchResult.getTerminologyVersion())) {
+            awsFileName = searchResult.getValue2();
+            break;
+          }
+        }
+
+        // If no file identified, error
+        if (awsFileName == null) {
+          throw new Exception("Could not find a Final Snapshot file for "
+              + mapProject.getName());
+        }
+
+        // Access zipped awsFile
+        AmazonS3 s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
+
+        final String bucketName = "release-ihtsdo-prod-published";
+        S3Object s3object = s3Client.getObject(bucketName, awsFileName);
+
+        // Save awsFile to temp directory
+        File tempDir = FileUtils.getTempDirectory();
+        placementDir = new File(tempDir.getAbsolutePath() + File.separator
+            + "TerminologyLoad_" + startTimeOrig);
+        placementDir.mkdir();
+
+        Logger.getLogger(getClass())
+            .info("Downloading " + awsFileName + " to " + placementDir);
+        S3ObjectInputStream inputStream = s3object.getObjectContent();
+        File downloadedFile = new File(placementDir,
+            awsFileName.substring(awsFileName.lastIndexOf('/') + 1));
+        FileUtils.copyInputStreamToFile(inputStream, downloadedFile);
+        inputStream.close();
+
+        // Remove any inactive rows
+        File filteredFile = new File(placementDir,
+            awsFileName.substring(awsFileName.lastIndexOf('/') + 1)
+                + "_ActiveOnly");
+        BufferedReader fileReader =
+            new BufferedReader(new FileReader(downloadedFile));
+        BufferedWriter fileWriter =
+            new BufferedWriter(new FileWriter(filteredFile));
+        String input;
+        while ((input = fileReader.readLine()) != null) {
+          String[] fields = input.split("\\t");
+          if (fields[2].equals("1")) {
+            fileWriter.write(input);
+            fileWriter.newLine();
+          }
+        }
+        fileReader.close();
+        fileWriter.close();
+
+        inputFile = filteredFile.getAbsolutePath();
+
+        // Load extended or simple maps using downloaded AWS file
+        if (awsFileName.contains("ExtendedMapSnapshot")) {
+          final MapRecordRf2ComplexMapLoaderAlgorithm loadAlgo =
+              new MapRecordRf2ComplexMapLoaderAlgorithm(inputFile, true, false,
+                  mapProject.getRefSetId(), "PUBLISHED");
+
+          loadAlgo.compute();
+          loadAlgo.close();
+
+        } else if (awsFileName.contains("SimpleMapSnapshot")) {
+
+          final MapRecordRf2SimpleMapLoaderAlgorithm loadAlgo =
+              new MapRecordRf2SimpleMapLoaderAlgorithm(inputFile, true, false,
+                  mapProject.getRefSetId(), "PUBLISHED");
+
+          loadAlgo.compute();
+          loadAlgo.close();
+        } else {
+          throw new Exception(
+              "Filename must be a Simple or Extended map snapshot.");
+        }
+
+        Logger.getLogger(getClass()).info(
+            "Load Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+
+      }
+
+    } catch (Exception e) {
+      handleException(e, "trying to load refset members");
+      return "Failure";
+    } finally {
+      // Remove directory
+      FileUtils.deleteDirectory(placementDir);
+      RootServiceJpa.unlockProcess();
+      mappingService.close();
+      amazonS3Service.close();
+      securityService.close();
+    }
+
+    return "Success";
+  }
+
   @Override
   @GET
   @Path("/terminology/versions/{terminology}")
@@ -1614,7 +1891,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
       // Connect to server
       final String bucketName = "release-ihtsdo-prod-published";
-      AmazonS3 s3Client = connectToAmazonS3();
+      AmazonS3 s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
 
       List<S3ObjectSummary> fullKeyList = new ArrayList<S3ObjectSummary>();
       ObjectListing objects = s3Client.listObjects(bucketName, "international");

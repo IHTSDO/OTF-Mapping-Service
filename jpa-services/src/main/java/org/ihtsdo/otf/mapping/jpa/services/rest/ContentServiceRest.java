@@ -5,6 +5,7 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TerminologyVersionList;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Interface ContentServiceRest.
  *
@@ -338,6 +339,7 @@ public interface ContentServiceRest {
    * @param treePositions the tree positions
    * @param sendNotification the send notification
    * @param authToken the auth token
+   * @return the string
    * @throws Exception the exception
    */
   String reloadTerminologyAwsRf2Snapshot(String terminology, String removeVersion,
@@ -354,6 +356,17 @@ public interface ContentServiceRest {
    * @throws Exception the exception
    */
   String reloadRefsetMemberAwsSnapshot(String refsetId, String awsFileName,
+    String authToken) throws Exception;
+
+  /**
+   * Reload refset members all projects aws snapshot.
+   *
+   * @param sourceTerminology the source terminology
+   * @param authToken the auth token
+   * @return the string
+   * @throws Exception the exception
+   */
+  String reloadRefsetMembersForTerminologyAwsSnapshot(String sourceTerminology,
     String authToken) throws Exception;
 
 }
