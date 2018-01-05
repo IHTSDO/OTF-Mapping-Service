@@ -648,7 +648,7 @@ angular
 
               if (lowerValueValid) {
                 $scope.rule += ruleText + ' | '
-                  + (ageRange.lowerInclusive ? '>=' : '>') + ' '
+                  + (ageRange.lowerInclusive === "true" ? '>=' : '>') + ' '
                   + parseFloat(ageRange.lowerValue, 10).toFixed(1) + ' '
                   + ageRange.lowerUnits;
               }
@@ -659,7 +659,7 @@ angular
 
               if (upperValueValid) {
                 $scope.rule += ruleText + ' | '
-                  + (ageRange.upperInclusive ? '<=' : '<') + ' '
+                  + (ageRange.upperInclusive === "true" ? '<=' : '<') + ' '
                   + parseFloat(ageRange.upperValue, 10).toFixed(1) + ' '
                   + ageRange.upperUnits;
 
