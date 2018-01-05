@@ -298,8 +298,7 @@ public class AmazonS3ServiceJpa extends RootServiceJpa
             + ".txt");
       }
       // special processing for other projects bc the zip file has a different
-      // version date
-      // from the file name
+      // version date from the file name
     } else {
       for (S3ObjectSummary obj : fullKeyList) {
         if (obj.getKey()
