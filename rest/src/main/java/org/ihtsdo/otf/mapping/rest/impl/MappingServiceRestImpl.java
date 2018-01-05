@@ -20,6 +20,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -134,7 +135,9 @@ import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -6087,8 +6090,10 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
 
       final MapProject mapProject =
           mappingService.getMapProject(new Long(mapProjectId).longValue());
-      return amazonS3Service.getFileListFromAmazonS3(mapProject);
+      //return amazonS3Service.getFileListFromAmazonS3(mapProject);
       
+      String sourceTerminology = mapProject.getSourceTerminology();
+      String destinationTerminology = mapProject.getDestinationTerminology();
       
       // determine filter that will be used on s3 file list
       // TODO: for SNOMEDCT_US decide between Edition and Extension files for filtering
@@ -6128,7 +6133,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       SearchResultList searchResults = new SearchResultListJpa();
 
       // Connect to server
-      AmazonS3 s3Client = connectToAmazonS3();
+      AmazonS3 s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
 
       // Get full list of files on aws s3
       List<S3ObjectSummary> fullKeyList = new ArrayList<S3ObjectSummary>();
