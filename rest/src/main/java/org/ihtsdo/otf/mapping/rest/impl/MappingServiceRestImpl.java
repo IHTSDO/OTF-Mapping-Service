@@ -76,6 +76,7 @@ import org.ihtsdo.otf.mapping.helpers.MapPrincipleListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapProjectListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapRecordListJpa;
+import org.ihtsdo.otf.mapping.helpers.MapRefsetPattern;
 import org.ihtsdo.otf.mapping.helpers.MapRelationListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
@@ -86,6 +87,8 @@ import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
+import org.ihtsdo.otf.mapping.helpers.TerminologyVersion;
+import org.ihtsdo.otf.mapping.helpers.TerminologyVersionList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
@@ -6052,7 +6055,19 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
   }
-
+  
+  /**
+   * 
+   * @param string
+   * @return
+   */
+  private String removeSpaces(String string) {
+    if (string != null)
+      return string.replace(" ", "").trim();
+    else
+      return null;
+  }
+  
   @Override
   @GET
   @Path("/amazons3/files/{id:[0-9][0-9]*}")
@@ -6071,6 +6086,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     final MappingService mappingService = new MappingServiceJpa();
     String user = "";
 
+
     try {
       // authorize call
       user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
@@ -6080,184 +6096,126 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
           mappingService.getMapProject(new Long(mapProjectId).longValue());
       String sourceTerminology = mapProject.getSourceTerminology();
       String destinationTerminology = mapProject.getDestinationTerminology();
+      
+      
+      // determine filter that will be used on s3 file list
+      // TODO: for SNOMEDCT_US decide between Edition and Extension files for filtering
+      String filterTerminology = "";
+      if (destinationTerminology.startsWith("GMDN")) {
+        filterTerminology = "GMDN";
+      } else if (destinationTerminology.startsWith("ICPC")) {
+        filterTerminology = "SnomedCT_GPFPICPC2";
+      } else if (destinationTerminology.contains("ICNP")) {
+        // There are two projects that use ICNP as their destination
+        // terminology. Distinguish by refsetId.
+        if (mapProject.getRefSetId().equals("711112009")) {
+          filterTerminology = "SnomedCT_ICNPDiagnoses";
+        } else if (mapProject.getRefSetId().equals("712505008")) {
+          filterTerminology = "SnomedCT_ICNPInterventions";
+        } else {
+          throw new Exception(
+              " unhandled ICNP refset Id= " + mapProject.getRefSetId());
+        }
+      } else if (removeSpaces(sourceTerminology).equals("SNOMEDCT")) {
+        filterTerminology = "InternationalRF2";
+      } else if (sourceTerminology.startsWith("ICNP")) {
+        filterTerminology = sourceTerminology.substring(0, sourceTerminology.indexOf(" "))
+            + sourceTerminology.substring(sourceTerminology.indexOf(" ") + 1);
+      }
 
+      int year = Calendar.getInstance().get(Calendar.YEAR);
+      String currentYear = Integer.toString(year);
+      String nextYear = Integer.toString(year + 1);
+      String lastYear = Integer.toString(year - 1);
+      
+      // Determine international or U.S.
+      String nationalPrefix =
+          sourceTerminology.equals("SNOMEDCT_US") ? "us" : "international";
+      
       String bucketName = "release-ihtsdo-prod-published";
       SearchResultList searchResults = new SearchResultListJpa();
 
       // Connect to server
       AmazonS3 s3Client = connectToAmazonS3();
 
-      // // List Buckets
-      // List<Bucket> buckets = s3Client.listBuckets();
-      // for (Bucket b : buckets) {
-      // Logger.getLogger(MappingServiceRestImpl.class)
-      // .info("Bucket name " + b.getName());
-      // }
+      // Get full list of files on aws s3
+      List<S3ObjectSummary> fullKeyList = new ArrayList<S3ObjectSummary>();
+      
+      ObjectListing objects = s3Client.listObjects(bucketName, nationalPrefix);
+      fullKeyList = objects.getObjectSummaries();
+      objects = s3Client.listNextBatchOfObjects(objects);
 
-      // Verify Buckets Exists
-      if (!s3Client.doesBucketExist(bucketName)) {
-        throw new Exception("Cannot find Bucket Name");
-      } else {
-        Logger.getLogger(MappingServiceRestImpl.class)
-            .info("Bucket " + bucketName + " accessed.");
+      while (objects.isTruncated()) {
+        fullKeyList.addAll(objects.getObjectSummaries());
+        objects = s3Client.listNextBatchOfObjects(objects);
       }
 
-      // Determine international or U.S.
-      String nationalPrefix =
-          sourceTerminology.equals("SNOMEDCT_US") ? "us" : "international";
+      fullKeyList.addAll(objects.getObjectSummaries());
+      
+      // start filtering full list, to keep only relevant zip files
+      TerminologyVersionList returnList = new TerminologyVersionList();
+      for (S3ObjectSummary obj : fullKeyList) {
+        if (obj.getKey().endsWith("zip") && obj.getKey().contains(filterTerminology)
+            && !obj.getKey().contains("published_build_backup")
+            && (obj.getKey().contains(lastYear)
+                || obj.getKey().contains(currentYear)
+                || obj.getKey().contains(nextYear))
+            && (obj.getKey().matches(".*\\d.zip")
+                || obj.getKey().matches(".*\\dZ.zip"))) {
+          TerminologyVersion tv =
+              new TerminologyVersion(obj.getKey().replace(".zip", "").replace(nationalPrefix + '/', ""), filterTerminology);          
+          tv.identifyScope();
+          returnList.addTerminologyVersion(tv);
+        }
+      }
 
-      // Determine year
-      int year = Calendar.getInstance().get(Calendar.YEAR);
-      String lastYear = Integer.toString(year - 1);
-      // Only keep alpha and beta from most recent version
+      // Remove all duplicates defined by term-version-scope
+      returnList.removeDups();
+
       String mostRecentAlphaBeta = "";
-      // Map to ensure only latest version of a file is included in list
-      Map<String, String> shortNameToFullDateMap = new HashMap<>();
-
-      // TODO: Note: Logic here should be moved into a ProjectSpecificHandler
-      if (mapProject.getDestinationTerminology().equals("ICPC")
-          || mapProject.getDestinationTerminology().equals("GMDN")
-          || mapProject.getDestinationTerminology().equals("ICNP")) {
-        // List Files on Bucket "release-ihtsdo-prod-published"
-        ObjectListing listing = null;
-        if (mapProject.getDestinationTerminology().equals("ICPC")) {
-          listing = s3Client.listObjects(bucketName,
-              nationalPrefix + "/SnomedCT_GPFPICPC2");
-        } else if (mapProject.getDestinationTerminology().equals("GMDN")) {
-          listing = s3Client.listObjects(bucketName,
-              nationalPrefix + "/SnomedCT_GMDN");
-        } else if (mapProject.getDestinationTerminology().equals("ICNP")) {
-          // There are two projects that use ICNP as their destination
-          // terminology. Distinguish by refsetId.
-          if (mapProject.getRefSetId().equals("711112009")) {
-            listing = s3Client.listObjects(bucketName,
-                nationalPrefix + "/SnomedCT_ICNPDiagnoses");
-          } else if (mapProject.getRefSetId().equals("712505008")) {
-            listing = s3Client.listObjects(bucketName,
-                nationalPrefix + "/SnomedCT_ICNPInterventions");
-          } else {
-            throw new Exception(
-                " unhandled ICNP refset Id= " + mapProject.getRefSetId());
+      
+      // Create search result for each file
+      for (TerminologyVersion tv : returnList.getTerminologyVersionList()) {
+        SearchResult result = new SearchResultJpa();
+        if (tv.getAwsZipFileName().toLowerCase().contains("alpha")) {
+          result.setTerminology("ALPHA");    
+          if (tv.getVersion().compareTo(mostRecentAlphaBeta) > 0) {
+            mostRecentAlphaBeta = tv.getVersion();
+          }
+        } else if (tv.getAwsZipFileName().toLowerCase().contains("beta")) {
+          result.setTerminology("BETA"); 
+          if (tv.getVersion().compareTo(mostRecentAlphaBeta) > 0) {
+            mostRecentAlphaBeta = tv.getVersion();
           }
         } else {
-          throw new Exception(" list S3 files for terminology= "
-              + mapProject.getDestinationTerminology());
+          result.setTerminology("FINAL");
         }
-        List<S3ObjectSummary> summaries = listing.getObjectSummaries();
 
-        int i = 1;
-        for (S3ObjectSummary sum : summaries) {
-          String fileName = sum.getKey();
-          Matcher m = Pattern.compile("[0-9T]{15}").matcher(fileName);
-          String fileYear = "";
-          String fileDate = "";
-          String fullFileDate = "";
-          while (m.find()) {
-            fullFileDate = m.group();
-            fileDate = fullFileDate.substring(0, 8);
-            fileYear = fileDate.substring(0, 4);
-          }
-          if (fileYear.compareTo(lastYear) < 0) {
-            continue;
-          }
-          if ((fileName.contains("ICPC2ExtendedMap")
-              || fileName.contains("GMDNMapSimpleMap")
-              || fileName.contains("ICNPSimpleMap"))
-              && !fileName.contains("Full") && !fileName.contains("backup")
-              && !fileName.contains("Delta")) {
-            Logger.getLogger(MappingServiceRestImpl.class)
-                .info(mapProject.getDestinationTerminology() + " Summary #"
-                    + i++ + " with: " + sum.getKey());
-            SearchResult result = new SearchResultJpa();
-            String shortName = fileName.substring(fileName.lastIndexOf('/'));
-            result.setTerminology("FINAL");
-            result.setTerminologyVersion(fileDate);
-            result.setValue(shortName);
-            result.setValue2(fileName);
+        result.setTerminologyVersion(tv.getVersion());
+        result = constructAwsFileFromZipInfo(mapProject, result, tv, "Snapshot", 
+            nationalPrefix, fullKeyList, filterTerminology);
+        // confirm file exists on aws before adding to result list
+        for (S3ObjectSummary obj : fullKeyList) {
+          if (obj.getKey().equals(result.getValue2())) {
             searchResults.addSearchResult(result);
           }
         }
-      } else {
-
-        // List All Files on Bucket "release-ihtsdo-prod-published"
-        ObjectListing listing =
-            s3Client.listObjects(bucketName, nationalPrefix + "/");
-        List<S3ObjectSummary> summaries = listing.getObjectSummaries();
-        int j = 0;
-        int i = 1;
-        Logger.getLogger(MappingServiceRestImpl.class)
-            .info("Destination terminology *" + destinationTerminology + "*");
-        while (listing.isTruncated()) {
-          listing = s3Client.listNextBatchOfObjects(listing);
-          summaries = listing.getObjectSummaries();
-
-          Logger.getLogger(MappingServiceRestImpl.class)
-              .info("CCC start with " + j++ + ": " + summaries.size());
-          for (S3ObjectSummary sum : summaries) {
-            String fileName = sum.getKey();
-            Matcher m = Pattern.compile("[0-9T]{15}").matcher(fileName);
-            String fileYear = "";
-            String fileDate = "";
-            String fullFileDate = "";
-            while (m.find()) {
-              fullFileDate = m.group();
-              fileDate = fullFileDate.substring(0, 8);
-              fileYear = fileDate.substring(0, 4);
-            }
-            // last year okay, but not before that
-            if (fileYear.compareTo(lastYear) < 0) {
-              continue;
-            }
-            if (((mapProject.getName().contains("ICD10")
-                && fileName.contains("ExtendedMap"))
-                || (mapProject.getName().contains("ICDO")
-                    && fileName.contains("SimpleMap")))
-                && !fileName.contains("Full") && !fileName.contains("backup")
-                && !fileName.contains("LOINC") && !fileName.contains("MRCM")
-                && !fileName.contains("Starter")
-                && !fileName.contains("Nursing")
-                && !fileName.contains("Odontogram")
-                && !fileName.contains("WithoutRT")
-                && !fileName.contains("ButOld") && !fileName.contains("UPDATED")
-                && !fileName.contains("ICNP")
-                && !fileName.contains("SnomedCT_RF2Release")) {
-              Logger.getLogger(MappingServiceRestImpl.class)
-                  .info("Summary #" + i++ + " with: " + sum.getKey());
-              SearchResult result = new SearchResultJpa();
-              String shortName = fileName.substring(fileName.lastIndexOf('/'));
-              if (shortNameToFullDateMap.containsKey(shortName)) {
-                String savedFullFileDate =
-                    shortNameToFullDateMap.get(shortName);
-                // if current one is later, save this one into the map
-                if (savedFullFileDate.compareTo(fullFileDate) < 0) {
-                  shortNameToFullDateMap.put(shortName, fullFileDate);
-                }
-              } else {
-                shortNameToFullDateMap.put(shortName, fullFileDate);
-              }
-              if (fileName.toLowerCase().contains("alpha")) {
-                result.setTerminology("ALPHA");
-                if (fileDate.compareTo(mostRecentAlphaBeta) > 0) {
-                  mostRecentAlphaBeta = fileDate;
-                }
-              } else if (fileName.toLowerCase().contains("beta")) {
-                result.setTerminology("BETA");
-                if (fileDate.compareTo(mostRecentAlphaBeta) > 0) {
-                  mostRecentAlphaBeta = fileDate;
-                }
-              } else {
-                result.setTerminology("FINAL");
-              }
-
-              result.setTerminologyVersion(fileDate);
-              result.setValue(shortName);
-              result.setValue2(fileName);
-              searchResults.addSearchResult(result);
+        
+        // add delta files if looking at international release
+        if (filterTerminology.equals("InternationalRF2")) {
+          SearchResult deltaResult = new SearchResultJpa();
+          deltaResult.setTerminology(result.getTerminology());
+          deltaResult.setTerminologyVersion(result.getTerminologyVersion());
+          deltaResult = constructAwsFileFromZipInfo(mapProject, deltaResult, tv, "Delta", 
+              nationalPrefix, fullKeyList, filterTerminology);
+          for (S3ObjectSummary obj : fullKeyList) {
+            if (obj.getKey().equals(deltaResult.getValue2())) {
+              searchResults.addSearchResult(deltaResult);
             }
           }
         }
       }
-
+ 
       // sort files by release date
       searchResults.sortBy(new Comparator<SearchResult>() {
         @Override
@@ -6268,28 +6226,19 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
         }
       });
 
-      // only keep most recent finals and most recent alpha/betas
+      // only keep most recent alpha/betas
       SearchResultList resultsToKeep = new SearchResultListJpa();
       for (SearchResult result : searchResults.getSearchResults()) {
-        // must be final or the most current release alpha/beta
         if (result.getTerminology().equals("FINAL")
-            || result.getTerminologyVersion().equals(mostRecentAlphaBeta)) {
-          // also must be the most recent version of the release file
-          if (shortNameToFullDateMap.containsKey(result.getValue())) {
-            if (result.getValue2()
-                .contains(shortNameToFullDateMap.get(result.getValue()))) {
-              resultsToKeep.addSearchResult(result);
-            }
-          } else {
-            resultsToKeep.addSearchResult(result);
-          }
+            || result.getTerminologyVersion().equals(mostRecentAlphaBeta)) {         
+          resultsToKeep.addSearchResult(result);
         }
       }
-
+      
       return resultsToKeep;
 
     } catch (Exception e) {
-      handleException(e, "trying to get files from amazon s3", user,
+      handleException(e, "trying to get file list from amazon s3", user,
           mapProjectId.toString(), "");
     } finally {
 
@@ -6299,6 +6248,57 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
 
     return null;
   }
+
+  // use the zip file to figure out full file path for access on aws
+  private SearchResult constructAwsFileFromZipInfo(MapProject mapProject,
+    SearchResult result, TerminologyVersion tv, String type,
+    String nationalPrefix, List<S3ObjectSummary> fullKeyList,
+    String filterTerminology) {
+
+    if (filterTerminology.equals("InternationalRF2")) {
+      if (mapProject.getMapRefsetPattern()
+          .equals(MapRefsetPattern.ExtendedMap)) {
+        result.setValue((result.getTerminology().equals("FINAL") ? "" : "x")
+            + "der2_iisssccRefset_ExtendedMap" + type + "_INT_"
+            + tv.getVersion() + ".txt");
+        result.setValue2(nationalPrefix + '/' + tv.getAwsZipFileName()
+            + (result.getTerminology().equals("FINAL")
+                ? '/' + tv.getAwsZipFileName() : "")
+            + "/" + type + "/Refset/Map/"
+            + (result.getTerminology().equals("FINAL") ? "" : "x")
+            + "der2_iisssccRefset_ExtendedMap" + type + "_INT_"
+            + tv.getVersion() + ".txt");
+      } else if (mapProject.getMapRefsetPattern()
+          .equals(MapRefsetPattern.SimpleMap)) {
+        result.setValue((result.getTerminology().equals("FINAL") ? "" : "x")
+            + "der2_sRefset_SimpleMap" + type + "_INT_" + tv.getVersion()
+            + ".txt");
+        result.setValue2(nationalPrefix + '/' + tv.getAwsZipFileName()
+            + (result.getTerminology().equals("FINAL")
+                ? '/' + tv.getAwsZipFileName() : "")
+            + "/" + type + "/Refset/Map/"
+            + (result.getTerminology().equals("FINAL") ? "" : "x")
+            + "der2_sRefset_SimpleMap" + type + "_INT_" + tv.getVersion()
+            + ".txt");
+      }
+      // special processing for other projects bc the zip file has a different
+      // version date
+      // from the file name
+    } else {
+      for (S3ObjectSummary obj : fullKeyList) {
+        if (obj.getKey()
+            .startsWith(nationalPrefix + '/' + tv.getAwsZipFileName() + '/'
+                + tv.getAwsZipFileName() + '/' + type + "/Refset/Map/")) {
+          result.setValue(
+              obj.getKey().substring(obj.getKey().lastIndexOf('/') + 1));
+          result.setValue2(obj.getKey());
+          return result;
+        }
+      }
+    }
+    return result;
+  }
+  
 
   /**
    * The Class SimpleLine.
