@@ -2673,7 +2673,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           mapProject.setLatestPublicationDate(new Date());
           //mapProject.setPublic(true);
           mappingService.updateMapProject(mapProject);
-          // mappingService.commit();
+          mappingService.commit();
         }
       }
 
@@ -2817,9 +2817,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           member.setMapRelationId(null);
         }
 
-        // regularly log at intervals
+        // regularly log and commit at intervals
         if (++objectCt % 5000 == 0) {
           logger.info("    count = " + objectCt);
+          contentService.commit();
+          contentService.clear();
+          contentService.beginTransaction();
         }
 
         if (concept != null) {

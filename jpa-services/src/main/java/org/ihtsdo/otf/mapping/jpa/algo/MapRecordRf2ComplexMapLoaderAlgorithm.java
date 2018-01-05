@@ -366,6 +366,8 @@ public class MapRecordRf2ComplexMapLoaderAlgorithm extends RootServiceJpa
       try {
         mappingService.close();
         contentService.close();
+        //remove load_maps logger configuration
+        LoggerUtility.getLogger("load_maps");
       } catch (Exception e) {
         // do nothing
       }

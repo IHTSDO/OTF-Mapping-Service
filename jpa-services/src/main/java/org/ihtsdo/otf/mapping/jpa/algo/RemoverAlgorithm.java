@@ -195,6 +195,7 @@ public class RemoverAlgorithm extends RootServiceJpa
             }
 			throw new Exception("Unexpected exception:", e);
 		} finally {
+	        //remove remove logger configuration
 			LoggerUtility.removeLogger("remove");
 		}
 
