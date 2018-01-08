@@ -4735,7 +4735,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     throws Exception {
     Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Mapping): /project/id/" + mapProjectId.toString()
-            + "/release/begin");
+            + "/release/finish");
 
     String user = null;
     String project = "";
@@ -4797,6 +4797,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       RootServiceJpa.unlockProcess();
       return "Success";
     } catch (Exception e) {
+      RootServiceJpa.unlockProcess();
       handleException(e, "trying to finish release", user, project, "");
       return "Failure";
     } finally {
