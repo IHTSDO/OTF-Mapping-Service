@@ -4991,10 +4991,10 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
             .info("Http Error : " + statusCode);
       }
 
-      System.out.println(response.readEntity(String.class));
-      Logger.getLogger(MappingServiceRestImpl.class)
+      //System.out.println(response.readEntity(String.class));
+      /*Logger.getLogger(MappingServiceRestImpl.class)
           .info(response.readEntity(String.class));
-
+*/
     } catch (MalformedURLException e) {
       e.printStackTrace();
     } catch (IOException e) {
