@@ -23,7 +23,7 @@ mapProjectAppControllers
     // specifically implemented for authorization failures.
     $rootScope.handleHttpError = function(data, status, headers, config) {
       // $rootScope.globalError = data.replace(/"/g, '');
-      utilService.handleError(data.replace(/"/g, ''));
+      utilService.handleError(data ? data.replace(/"/g, '') : '');
       if (status == '401') {
         $location.path('/');
       }
