@@ -2609,12 +2609,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             .getPublishedAndReadyForPublicationMapRecordsForMapProject(
                 mapProject.getId(), null);
         mapRecords = mapRecordList.getMapRecords();
-
-        /*
-         * if (!testModeFlag) {
-         * mappingService.setTransactionPerOperation(false);
-         * mappingService.beginTransaction(); }
-         */
+       
+        if (!testModeFlag) {
+          mappingService.setTransactionPerOperation(false);
+          mappingService.beginTransaction(); 
+        }         
 
         // Log recently edited records that won't be PUBLISHED
         for (Long recordId : recentlyEditedRecords) {
@@ -2674,6 +2673,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           //mapProject.setPublic(true);
           mappingService.updateMapProject(mapProject);
           mappingService.commit();
+          mappingService.clear();
         }
       }
 
