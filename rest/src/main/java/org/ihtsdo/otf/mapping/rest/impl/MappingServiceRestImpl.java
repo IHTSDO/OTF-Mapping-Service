@@ -840,7 +840,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
   @Override
   @POST
   @Path("/project/id/{projectId}/scopeConcept/remove")
-  @ApiOperation(value = "Removes a single scope concept from a map project", notes = "Removes a single scope concept from a map project.", response = Response.class)
+  @ApiOperation(value = "Removes a single scope concept from a map project", notes = "Removes a single scope concept from a map project.", response = ValidationResult.class)
   public ValidationResult removeScopeConceptFromMapProject(
     @ApiParam(value = "Concept to remove, e.g. 100075006", required = true) String terminologyId,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
@@ -900,7 +900,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
   @Override
   @POST
   @Path("/project/id/{projectId}/scopeConcepts/remove")
-  @ApiOperation(value = "Removes a list of scope concepts from a map project", notes = "Removes a list of scope concept from a map project.", response = Response.class)
+  @ApiOperation(value = "Removes a list of scope concepts from a map project", notes = "Removes a list of scope concept from a map project.", response = ValidationResult.class)
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
@@ -1011,7 +1011,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
   @Override
   @POST
   @Path("/project/id/{projectId}/scopeExcludedConcepts/add")
-  @ApiOperation(value = "Adds a list of scope excluded concepts to a map project", notes = "Adds a list of scope excluded concepts to a map project.", response = Response.class)
+  @ApiOperation(value = "Adds a list of scope excluded concepts to a map project", notes = "Adds a list of scope excluded concepts to a map project.", response = ValidationResult.class)
   public ValidationResult addScopeExcludedConceptsToMapProject(
     @ApiParam(value = "List of concepts to add, e.g. {'100073004', '100075006'", required = true) List<String> terminologyIds,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
@@ -1071,7 +1071,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
   @Override
   @POST
   @Path("/project/id/{projectId}/scopeExcludedConcept/remove")
-  @ApiOperation(value = "Removes a single scope excluded concept from a map project", notes = "Removes a single scope excluded concept from a map project.", response = Response.class)
+  @ApiOperation(value = "Removes a single scope excluded concept from a map project", notes = "Removes a single scope excluded concept from a map project.", response = ValidationResult.class)
   public ValidationResult removeScopeExcludedConceptFromMapProject(
     @ApiParam(value = "Concept to remove, e.g. 100075006", required = true) String terminologyId,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
@@ -1132,7 +1132,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
   @Override
   @POST
   @Path("/project/id/{projectId}/scopeExcludedConcepts/remove")
-  @ApiOperation(value = "Removes a list of scope excluded concepts from a map project", notes = "Removes a list of scope excluded concept from a map project.", response = Response.class)
+  @ApiOperation(value = "Removes a list of scope excluded concepts from a map project", notes = "Removes a list of scope excluded concept from a map project.", response = ValidationResult.class)
   public ValidationResult removeScopeExcludedConceptsFromMapProject(
     @ApiParam(value = "List of concepts to remove, e.g. {'100073004', '100075006'", required = true) List<String> terminologyIds,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long projectId,
@@ -2441,7 +2441,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
   @Consumes({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  @ApiOperation(value = "Remove a map record", notes = "Removes the specified map record.", response = MapRecordJpa.class)
+  @ApiOperation(value = "Remove a map record", notes = "Removes the specified map record.", response = Response.class)
   public Response removeMapRecord(
     @ApiParam(value = "Map record, in JSON or XML POST data", required = true) MapRecordJpa mapRecord,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
@@ -4098,7 +4098,10 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
   // Swagger does not support this
   @ApiOperation(value = "Upload a mapping handbook file for a project", notes = "Uploads a mapping handbook file for the specified project.")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
-  public Response uploadMappingHandbookFile(
+  @Produces({
+    MediaType.TEXT_PLAIN
+  })
+  public String uploadMappingHandbookFile(
     @FormDataParam("file") InputStream fileInputStream,
     @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
     @PathParam("mapProjectId") Long mapProjectId,
@@ -4154,8 +4157,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
           mapProjectId + "/" + fileName + extension);
       updateMapProject((MapProjectJpa) mapProject, authToken);
 
-      return Response.status(200).entity(mapProjectId + "/" + file.getName())
-          .build();
+      return mapProjectId + " " + file.getName();
     } catch (Exception e) {
       handleException(e, "trying to upload a file", user,
           mapProjectId.toString(), "");
@@ -4989,10 +4991,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
             .info("Http Error : " + statusCode);
       }
 
-      System.out.println(response.readEntity(String.class));
-      Logger.getLogger(MappingServiceRestImpl.class)
-          .info(response.readEntity(String.class));
-
+      
     } catch (MalformedURLException e) {
       e.printStackTrace();
     } catch (IOException e) {

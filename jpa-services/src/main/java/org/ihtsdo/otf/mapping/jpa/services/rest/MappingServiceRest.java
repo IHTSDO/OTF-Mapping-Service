@@ -760,7 +760,7 @@ public interface MappingServiceRest {
 	   * @return the response
 	   * @throws Exception the exception
 	   */
-	Response uploadMappingHandbookFile(InputStream fileInputStream, FormDataContentDisposition contentDispositionHeader,
+	String uploadMappingHandbookFile(InputStream fileInputStream, FormDataContentDisposition contentDispositionHeader,
 			Long mapProjectId, String authToken) throws Exception;
 
 	/**
