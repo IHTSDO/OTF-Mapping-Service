@@ -2589,13 +2589,14 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       clearLog(logger);
 
       logger.info(testModeFlag ? "Preview Finish Release" : "Finish Release");
+      logger.info("transactionPerOperation " + mappingService.getTransactionPerOperation());
 
       // instantiate required services
-      final MappingService mappingService = new MappingServiceJpa();
+      /*final MappingService mappingService = new MappingServiceJpa();
       if (!testModeFlag) {
         mappingService.setTransactionPerOperation(false);
         mappingService.beginTransaction();
-      }
+      }*/
       
       // compare file to current records
       Report report = compareInputFileToExistingMapRecords();
@@ -2674,8 +2675,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           mapProject.setLatestPublicationDate(new Date());
           //mapProject.setPublic(true);
           mappingService.updateMapProject(mapProject);
-          mappingService.commit();
-          mappingService.clear();
+          //mappingService.commit();
         }
       }
 
