@@ -2590,6 +2590,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       logger.info(testModeFlag ? "Preview Finish Release" : "Finish Release");
 
+      // instantiate required services
+      final MappingService mappingService = new MappingServiceJpa();
+      if (!testModeFlag) {
+        mappingService.setTransactionPerOperation(false);
+        mappingService.beginTransaction();
+      }
+      
       // compare file to current records
       Report report = compareInputFileToExistingMapRecords();
 
@@ -2608,12 +2615,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         MapRecordList mapRecordList = mappingService
             .getPublishedAndReadyForPublicationMapRecordsForMapProject(
                 mapProject.getId(), null);
-        mapRecords = mapRecordList.getMapRecords();
-       
-        if (!testModeFlag) {
-          mappingService.setTransactionPerOperation(false);
-          mappingService.beginTransaction(); 
-        }         
+        mapRecords = mapRecordList.getMapRecords();  
 
         // Log recently edited records that won't be PUBLISHED
         for (Long recordId : recentlyEditedRecords) {
@@ -2697,8 +2699,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       reportService.addReport(report);
       reportService.close();
 
+      mappingService.close();
+      
       logger.info("Finished " + (testModeFlag ? "test mode " : "")
           + "release successfully");
+      
     } catch (Exception e) {
       logger.info(e.getMessage());
       for (StackTraceElement element : e.getStackTrace()) {
