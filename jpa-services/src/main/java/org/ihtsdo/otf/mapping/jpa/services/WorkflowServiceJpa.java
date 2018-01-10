@@ -1766,11 +1766,22 @@ public class WorkflowServiceJpa extends MappingServiceJpa
             "select m from FeedbackConversationJpa m where mapRecordId=:mapRecordId")
         .setParameter("mapRecordId", mapRecordId);
 
-    List<FeedbackConversation> feedbackConversations = query.getResultList();
+    List<FeedbackConversation> feedbackConversations = query.getResultList();    
     for (final FeedbackConversation feedbackConversation : feedbackConversations) {
       handleFeedbackConversationLazyInitialization(feedbackConversation);
     }
 
+    //replace username with owned by
+    for (final FeedbackConversation fc : feedbackConversations) {
+        final MapRecord mrl = this.getLatestMapRecordForConcept(fc.getMapProjectId(), fc.getTerminologyId());
+        if (mrl != null && mrl.getLastModifiedBy() != null) {
+            fc.setUserName(mrl.getLastModifiedBy().getUserName());
+        }
+        else {
+            fc.setUserName(null);
+        }
+    }      
+    
     // set the total count
     FeedbackConversationListJpa feedbackConversationList =
         new FeedbackConversationListJpa();

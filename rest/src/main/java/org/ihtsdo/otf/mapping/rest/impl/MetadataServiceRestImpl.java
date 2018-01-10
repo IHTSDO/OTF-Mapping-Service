@@ -307,7 +307,7 @@ public class MetadataServiceRestImpl extends RootServiceRestImpl
           user, "", "");
       return null;
    } catch (Exception e) {
-      handleException(e, "trying to get downloaded versions of gmdn",
+      handleException(e, "get downloaded versions of gmdn",
           user, "", "");
       return null;
     } finally {
