@@ -527,7 +527,7 @@ public class MappingClientRest extends RootClientRest
   }
 
   @Override
-  public Response uploadMappingHandbookFile(InputStream fileInputStream,
+  public String uploadMappingHandbookFile(InputStream fileInputStream,
     FormDataContentDisposition contentDispositionHeader, Long mapProjectId,
     String authToken) throws Exception {
     // N/A
