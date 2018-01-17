@@ -433,7 +433,8 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
         break;
     }
 
-    // Read all results - no paging, filtering or sorting needed
+    // Read all results
+    pfs.setMaxResults(-1);
     final List<TrackingRecord> results =
         (List<TrackingRecord>) workflowService.getQueryResults(sb.toString(),
             TrackingRecordJpa.class, TrackingRecordJpa.class, pfs, new int[1]);
