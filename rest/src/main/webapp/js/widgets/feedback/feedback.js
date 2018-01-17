@@ -165,16 +165,15 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
         for (var i = 0; i < conversation.feedback.length; i++) {
           var alreadyViewedBy = conversation.feedback[i].viewedBy;
           var found = false;
-          if (conversation.feedback[i].sender.userName === $scope.currentUser.userName)
-      	  	found = true;
-          else {
+          
           for (var j = 0; j < alreadyViewedBy.length; j++) {
-        	  if (alreadyViewedBy[j].userName == $scope.currentUser.userName)
+        	  if (alreadyViewedBy[j].userName == $scope.currentUser.userName) {
               	found = true;
-          	}
+        	  }
           }
-          if (found == false)
+          if (found == false) {
             return false;
+          }
         }
         return true;
       };
