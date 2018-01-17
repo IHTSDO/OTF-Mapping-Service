@@ -405,6 +405,9 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
       throw new Exception("Specialist role or above required for QA Work");
     }
 
+    final PfsParameter pfs = new PfsParameterJpa(pfsParameter);
+    pfs.setQueryRestriction(null);
+    
     // add terms based on query restriction
     switch (type) {
       case "QA_NEW":
@@ -433,7 +436,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
     // Read all results - no paging, filtering or sorting needed
     final List<TrackingRecord> results =
         (List<TrackingRecord>) workflowService.getQueryResults(sb.toString(),
-            TrackingRecordJpa.class, TrackingRecordJpa.class, null, new int[1]);
+            TrackingRecordJpa.class, TrackingRecordJpa.class, pfs, new int[1]);
 
     // Iterate through results, keep records matching label
     for (final TrackingRecord tr : results) {
