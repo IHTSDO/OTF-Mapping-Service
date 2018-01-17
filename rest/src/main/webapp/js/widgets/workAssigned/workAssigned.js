@@ -204,10 +204,10 @@ angular
     	  } else if (table === 'review') {
     		  $scope.retrieveAssignedReviewWork(1, $scope.queryReviewWork);
     	  } else if (table === 'user') {
-    		  $scope.retrieveAssignedWorkForUser(1, parameters.assignUser.userName, 
+    		  $scope.retrieveAssignedWorkForUser(1, $scope.selected.mapUserViewed.userName, 
     				  $scope.queryAssignedForUser);
     	  } else if (table === 'qa') {
-    		  $scope.retrieveAssignedQAWork(1, $scope.assignedQAWorkQuery);
+    		  $scope.retrieveAssignedQAWork(1, $scope.queryQAWork);
     	  }
       };
       
