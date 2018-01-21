@@ -2107,9 +2107,14 @@ angular
               }
             },
             function(response) {
-              window.alert('Release QA report creation failed for ' + $scope.focusProject.name);
-              $rootScope.handleHttpError(response.data, response.status, response.headers,
-                response.config);
+              // if Gateway Timeout error, don't alert user - this is expected
+              if (response.status == '504') {
+              	  // do nothing
+              } else {
+                window.alert('Release QA report creation failed for ' + $scope.focusProject.name);
+                $rootScope.handleHttpError(response.data, response.status, response.headers,
+                  response.config);
+              }
             })
         };
 
@@ -2179,9 +2184,14 @@ angular
               }
             },
             function(response) {
-              window.alert('Release files creation failed for ' + $scope.focusProject.name);
-              $rootScope.handleHttpError(response.data, response.status, response.headers,
-                response.config);
+              // if Gateway Timeout error, don't alert user - this is expected
+              if (response.status == '504') {
+              	  // do nothing
+              } else {
+                window.alert('Release files creation failed for ' + $scope.focusProject.name);
+                $rootScope.handleHttpError(response.data, response.status, response.headers,
+                  response.config);
+              }
             })
         }
 
@@ -2218,14 +2228,19 @@ angular
               }
             },
             function(response) {
-              if (testMode) {
-                window.alert('Release Finalization QA report creation failed for '
-                  + $scope.focusProject.name);
+              // if Gateway Timeout error, don't alert user - this is expected
+              if (response.status == '504') {
+            	  // do nothing
               } else {
-                window.alert('Error finishing release for ' + $scope.focusProject.name);
+                if (testMode) {
+                  window.alert('Release Finalization QA report creation failed for '
+                  + $scope.focusProject.name);
+                } else {
+                  window.alert('Error finishing release for ' + $scope.focusProject.name);
+                }
+                $rootScope.handleHttpError(response.data, response.status, response.headers,
+                  response.config);
               }
-              $rootScope.handleHttpError(response.data, response.status, response.headers,
-                response.config);
             });
         }
 
