@@ -1001,7 +1001,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       final String bucketName = "release-ihtsdo-prod-published";
       S3Object s3object = s3Client.getObject(bucketName, awsZipFileName);
 
-      // Unzip awsFile to temp directory
+      // Download awsFile to temp directory
       File tempDir = FileUtils.getTempDirectory();
       placementDir = new File(tempDir.getAbsolutePath() + File.separator
           + "TerminologyLoad_" + startTimeOrig);
@@ -1358,7 +1358,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         final String bucketName = "release-ihtsdo-prod-published";
         S3Object s3object = s3Client.getObject(bucketName, awsZipFileName);
 
-        // Unzip awsFile to temp directory
+        // Download awsFile to temp directory
         File tempDir = FileUtils.getTempDirectory();
         placementDir = new File(tempDir.getAbsolutePath() + File.separator
             + "TerminologyLoad_" + startTimeOrig);
