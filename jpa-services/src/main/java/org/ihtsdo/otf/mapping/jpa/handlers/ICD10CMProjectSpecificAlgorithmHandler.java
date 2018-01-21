@@ -301,7 +301,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       boolean found = false;
       for (MapEntry entry : mapRecord.getMapEntries()) {
     	 if (entry.getMapGroup() == 2 &&
-    			 entry.getTargetId().matches("(V..|W..|X..|Y..).*")) {
+    			 entry.getTargetId() != null && entry.getTargetId().matches("(V..|W..|X..|Y..).*")) {
     		 found = true;
     		 break;
     	 }
