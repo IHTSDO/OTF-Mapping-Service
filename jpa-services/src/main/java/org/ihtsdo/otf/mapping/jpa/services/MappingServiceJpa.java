@@ -1899,17 +1899,17 @@ public class MappingServiceJpa extends RootServiceJpa
 
         // Skip concept exclusion rules
         if (refSetMember.getMapRule() != null
-            && refSetMember.getMapRule().matches("IFA\\s\\d*\\s\\|.*\\s\\|")) {
+            && refSetMember.getMapRule().matches("IFA.*")) {
           if (refSetMember.getMapAdvice()
               .contains("MAP IS CONTEXT DEPENDENT FOR GENDER")
-              && !refSetMember.getMapRule().matches("AND IFA")) {
+              && !refSetMember.getMapRule().contains("AND IFA")) {
             // unless simple gender rule, then keep
           } else if (refSetMember.getMapRule().matches(
-              "IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*AND IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>]")) {
+              "IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*AND IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*")) {
             // unless 2-part age rule, then keep
           } else if (refSetMember.getMapRule()
-              .matches("IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>]")
-              && !refSetMember.getMapRule().matches("AND IFA")) {
+              .matches("IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*")
+              && !refSetMember.getMapRule().contains("AND IFA")) {
             // unless simple age rule without compund clause, then keep
           } else {
             // else skip
@@ -1918,6 +1918,11 @@ public class MappingServiceJpa extends RootServiceJpa
                     + refSetMember.getTerminologyId());
             continue;
           }
+        }
+        
+        // Skip no-target mappings for mapGroups > 1
+        if(refSetMember.getMapGroup() > 1 && refSetMember.getMapTarget().isEmpty()){
+          continue;
         }
 
         // retrieve the concept
