@@ -87,6 +87,7 @@ angular
         $scope.page = 'project';
 
         $scope.currentRole = localStorageService.get('currentRole');
+        $scope.applicationRole = localStorageService.get('applicationRole');
         $scope.currentUser = localStorageService.get('currentUser');
         $scope.focusProject = localStorageService.get('focusProject');
         $scope.mapProjects = localStorageService.get('mapProjects');

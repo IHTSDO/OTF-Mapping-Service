@@ -846,4 +846,13 @@ public interface MappingService extends RootService {
    */
   public String getReleaseFileNames(MapProject mapProject) throws Exception;
 
+  /**
+   * Returns the map user role for application.
+   *
+   * @param userName the user name
+   * @return the map user role for application
+   * @throws Exception the exception
+   */
+  public MapUserRole getMapUserRoleForApplication(String userName) throws Exception;
+
 }

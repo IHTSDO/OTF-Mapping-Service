@@ -21,6 +21,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
     $scope.goGuest = function(autologinLocation, refSetId) {
       $scope.userName = 'guest';
       $scope.role = 'Viewer';
+      $scope.applicationRole = 'Viewer';
       $scope.password = 'guest';
       $scope.go(autologinLocation, refSetId);
     };
@@ -204,8 +205,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
 
                         $http(
                           {
-                            url : root_mapping + 'userRole/user/id/' + $scope.userName
-                              + '/project/id/' + $scope.focusProject.id,
+                            url : root_mapping + 'userRole/user/id/' + $scope.userName,
                             dataType : 'json',
                             method : 'GET',
                             headers : {
@@ -213,63 +213,91 @@ mapProjectAppControllers.controller('LoginCtrl', [
                             }
                           }).success(function(data) {
 
-                          $scope.role = data.replace(/"/g, '');
-                          if ($scope.role === 'VIEWER')
-                            $scope.role = 'Viewer';
-                          else if ($scope.role === 'SPECIALIST')
-                            $scope.role = 'Specialist';
-                          else if ($scope.role === 'LEAD')
-                            $scope.role = 'Lead';
-                          else if ($scope.role === 'ADMINISTRATOR')
-                            $scope.role = 'Administrator';
+                          $scope.applicationRole = data.replace(/"/g, '');
+                          if ($scope.applicationRole === 'VIEWER')
+                            $scope.applicationRole = 'Viewer';
+                          else if ($scope.applicationRole === 'ADMINISTRATOR')
+                            $scope.applicationRole = 'Administrator';
                           else
                             $scope.role = 'Viewer';
-
-                          if (autologinLocation) {
-                            path = autologinLocation;
-                          } else if ($scope.role.toLowerCase() == 'specialist') {
-                            path = '/specialist/dash';
-                            $scope.role = 'Specialist';
-                          } else if ($scope.role.toLowerCase() == 'lead') {
-                            path = '/lead/dash';
-                            $scope.role = 'Lead';
-                          } else if ($scope.role.toLowerCase() == 'administrator') {
-                            path = '/admin/dash';
-                            $scope.role = 'Administrator';
-                          } else {
-                            path = '/viewer/dash';
-                            $scope.role = 'Viewer';
-                          }
 
                           // / / add the
                           // / / user
                           // / / information
                           // / / to local
                           // / / storage
-                          localStorageService.add('currentRole', $scope.role);
-
-                          // / / broadcast
-                          // / / the user
-                          // / / information
-                          // / / to
-                          // / / rest of
-                          // / / app
-                          $rootScope.$broadcast('localStorageModule.notification.setRole', {
-                            key : 'currentRole',
-                            currentRole : $scope.role
-                          });
-
-                          $rootScope.glassPane--;
-
-                          // / / redirect
-                          // / / page
-                          $location.path(path);
+                          localStorageService.add('applicationRole', $scope.applicationRole);
 
                         }).error(function(data, status, headers, config) {
                           $rootScope.glassPane--;
                           $rootScope.handleHttpError(data, status, headers, config);
-                        });
+                        }).then(
+                          function(data) {
 
+                            $http(
+                              {
+                                url : root_mapping + 'userRole/user/id/' + $scope.userName
+                                  + '/project/id/' + $scope.focusProject.id,
+                                dataType : 'json',
+                                method : 'GET',
+                                headers : {
+                                  'Content-Type' : 'application/json'
+                                }
+                              }).success(function(data) {
+
+                              $scope.role = data.replace(/"/g, '');
+                              if ($scope.role === 'VIEWER')
+                                $scope.role = 'Viewer';
+                              else if ($scope.role === 'SPECIALIST')
+                                $scope.role = 'Specialist';
+                              else if ($scope.role === 'LEAD')
+                                $scope.role = 'Lead';
+                              else if ($scope.role === 'ADMINISTRATOR')
+                                $scope.role = 'Administrator';
+                              else
+                                $scope.role = 'Viewer';
+
+                              if (autologinLocation) {
+                                path = autologinLocation;
+                              } else if ($scope.role.toLowerCase() == 'specialist') {
+                                path = '/specialist/dash';
+                                $scope.role = 'Specialist';
+                              } else if ($scope.role.toLowerCase() == 'lead') {
+                                path = '/lead/dash';
+                                $scope.role = 'Lead';
+                              } else if ($scope.role.toLowerCase() == 'administrator') {
+                                path = '/admin/dash';
+                                $scope.role = 'Administrator';
+                              } else {
+                                path = '/viewer/dash';
+                                $scope.role = 'Viewer';
+                              }
+
+                              // / / add the
+                              // / / user
+                              // / / information
+                              // / / to local
+                              // / / storage
+                              localStorageService.add('currentRole', $scope.role);
+
+                              // / / broadcast
+                              // / / the user
+                              // / / information
+                              // / / to
+                              // / / rest of
+                              // / / app
+                              $rootScope.$broadcast('localStorageModule.notification.setRole', {
+                                key : 'currentRole',
+                                currentRole : $scope.role
+                              });
+
+                              $rootScope.glassPane--;
+
+                              // / / redirect
+                              // / / page
+                              $location.path(path);
+
+                            });
                       });
                   });
               });

@@ -1269,7 +1269,7 @@
 </div>
 
 </uib-accordion-group> <!--  Release Handling --> <uib-accordion-group
-  ng-show="currentRole == 'Administrator' || currentRole == 'Lead'">
+  ng-show="applicationRole == 'Administrator' || currentRole == 'Lead'">
 <uib-accordion-heading>
 <h5>Release Handling</h5>
 </uib-accordion-heading>
@@ -1296,7 +1296,7 @@
         <td>Checks that all in-scope records are ready for publication.<br>
             If 'Check Completion' runs clean, ready for WCI to clone to release server.  Details available in Reports accordion, 'Project Dashboard' report.</td>
       </tr>
-      <tr ng-show="currentRole == 'Administrator'">
+      <tr ng-show="applicationRole == 'Administrator'">
         <td>
           <button class="btn btn-primary btn-xs"
             ng-click="startEditingCycle()">Start Editing Cycle</button>
@@ -1306,7 +1306,7 @@
           {{focusProject.editingCycleBeginDate | date:'short'}}</td>
       </tr> 
     </table>
-    <table class="table" ng-show="currentRole == 'Administrator'">  
+    <table class="table" ng-show="applicationRole == 'Administrator'">  
       <tr style="border-bottom:3px solid black"><td colspan="100%"><b>Release processing steps</b> - executed on release server after clone</td></tr>      
       <tr>
         <td colspan="100%">
@@ -1391,7 +1391,7 @@
           </td>          
       </tr>
     </table>
-    <table class="table" ng-show="currentRole == 'Administrator'"> 
+    <table class="table" ng-show="applicationRole == 'Administrator'"> 
       <tr style="border-bottom:3px solid black"><td colspan="100%"><b>Finalize release steps</b> -  executed on prod mapping after release file is transfered by WCI</td></tr>            
       <tr>
         <td>
@@ -1434,9 +1434,9 @@
 
   </div>
 
-  <div class="col-md-6"  ng-show="currentRole == 'Administrator'">
+  <div class="col-md-6"  ng-show="applicationRole == 'Administrator'">
     <a target="_blank" href="https://confluence.ihtsdotools.org/display/MT/Release+Process" title="Release Handling Documentation"> 
-      <span style="float:right" ng-show="currentRole == 'Administrator'" class="glyphicon glyphicon-question-sign">
+      <span style="float:right" ng-show="applicationRole == 'Administrator'" class="glyphicon glyphicon-question-sign">
       </span>
     </a>  
              
@@ -1488,7 +1488,7 @@
 
 
 </uib-accordion-group> <!--  Release Reports --> <uib-accordion-group
-  ng-show="currentRole == 'Administrator'">
+  ng-show="applicationRole == 'Administrator'">
 <uib-accordion-heading>
 <h5>Release Reports</h5>
 </uib-accordion-heading> 
