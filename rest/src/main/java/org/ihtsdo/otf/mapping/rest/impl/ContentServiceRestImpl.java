@@ -1325,6 +1325,35 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
 
+    // get log directory so old logs can be removed
+    String rootPath = ConfigUtility.getConfigProperties()
+        .getProperty("map.principle.source.document.dir");
+    if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
+      rootPath += "/";
+    }
+    rootPath += "logs";
+    File logDirectory = new File(rootPath);
+    if (!logDirectory.exists()) {
+      logDirectory.mkdir();
+    }
+
+    // this process uses two log files. need to reset both to empty
+    // before the process begins.
+    File logFile;
+    FileOutputStream fileStream;
+
+    // remove_maps - file name must match RefsetmemberRemoverAlgorithm
+    logFile = new File(logDirectory, "remove_" + terminology + ".log");
+    fileStream = new FileOutputStream(logFile, false);
+    fileStream.write("".getBytes());
+    fileStream.close();
+
+    // load_maps - file name must match MapRecordRf2ComplexMapLoaderAlgorithm
+    logFile = new File(logDirectory, "load_" + terminology + ".log");
+    fileStream = new FileOutputStream(logFile, false);
+    fileStream.write("".getBytes());
+    fileStream.close();
+    
     try (final RemoverAlgorithm removeAlgo =
         new RemoverAlgorithm(terminology, removeVersion);) {
 
@@ -1702,8 +1731,41 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     Logger.getLogger(getClass()).info("Removing refset members");
 
     try {
+      String rootPath = ConfigUtility.getConfigProperties()
+          .getProperty("map.principle.source.document.dir");
+      if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
+        rootPath += "/";
+      }
+      rootPath += "logs";
+      File logDirectory = new File(rootPath);
+      if (!logDirectory.exists()) {
+        logDirectory.mkdir();
+      }
+      
       for (MapProject mapProject : mapProjectsForSourceTerminology) {
         final String refsetId = mapProject.getRefSetId();
+        
+        // this process uses two log files. need to reset both to empty
+        // before the process begins.
+        File logFile;
+        FileOutputStream fileStream;
+        
+        // remove_maps - file name must match RefsetmemberRemoverAlgorithm
+        logFile = new File(logDirectory, "remove_maps_" + refsetId + ".log");
+        fileStream = new FileOutputStream(logFile, false);
+        fileStream.write("".getBytes());
+        fileStream.close();
+
+        // load_maps - file name must match MapRecordRf2ComplexMapLoaderAlgorithm
+        logFile = new File(logDirectory, "load_maps_" + refsetId + ".log");
+        fileStream = new FileOutputStream(logFile, false);
+        fileStream.write("".getBytes());
+        fileStream.close();
+      }
+      
+      for (MapProject mapProject : mapProjectsForSourceTerminology) {
+        final String refsetId = mapProject.getRefSetId();
+                 
         Logger.getLogger(getClass())
             .info("Removing refset members for refsetId = " + refsetId);
 
