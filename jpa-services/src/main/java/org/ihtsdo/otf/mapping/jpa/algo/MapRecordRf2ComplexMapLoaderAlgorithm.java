@@ -356,7 +356,6 @@ public class MapRecordRf2ComplexMapLoaderAlgorithm extends RootServiceJpa
       mappingService.close();
       // outputFile.delete();
       log.info("Done loading complex map data");
-      throw new Exception("new test exception");
       
     } catch (Exception e) {
       e.printStackTrace();
