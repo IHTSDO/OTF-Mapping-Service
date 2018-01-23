@@ -118,7 +118,7 @@ public class TerminologyRf2SnapshotLoaderMojo
 			throw new MojoFailureException("Unexpected exception:", e);
 		} finally {
 			getLog().info("      elapsed time = " + getTotalElapsedTimeStr());
-			getLog().info("done ...");
+			getLog().info("Done loading RF2 data");
 		}
 	}
 }

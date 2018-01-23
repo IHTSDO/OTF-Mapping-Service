@@ -311,9 +311,9 @@ public class GmdnLoaderAlgorithm extends RootServiceJpa implements Algorithm {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			log.info(e.getMessage());
+			log.error(e.getMessage());
             for (StackTraceElement element : e.getStackTrace()) {
-              log.info(element.toString());
+              log.error(element.toString());
             }
 			throw new Exception("Conversion of GMDN to RF2 objects failed", e);
 		} finally {
