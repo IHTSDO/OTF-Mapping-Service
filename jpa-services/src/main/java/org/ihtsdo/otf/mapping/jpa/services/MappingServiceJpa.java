@@ -2357,6 +2357,25 @@ public class MappingServiceJpa extends RootServiceJpa
 
   /* see superclass */
   @Override
+  public MapUserRole getMapUserRoleForApplication(String userName) throws Exception {
+
+    Logger.getLogger(MappingServiceJpa.class)
+        .debug("Finding user's application role " + userName);
+
+    // get the user for parameters
+    MapUser mapUser = getMapUser(userName);
+
+    // check for application administrator
+    if (mapUser.getApplicationRole().equals(MapUserRole.ADMINISTRATOR)) {
+      return MapUserRole.ADMINISTRATOR;
+    }
+
+    // default role is Viewer
+    return MapUserRole.VIEWER;
+  }  
+  
+  /* see superclass */
+  @Override
   @XmlTransient
   public ProjectSpecificAlgorithmHandler getProjectSpecificAlgorithmHandler(
     MapProject mapProject) throws InstantiationException,
