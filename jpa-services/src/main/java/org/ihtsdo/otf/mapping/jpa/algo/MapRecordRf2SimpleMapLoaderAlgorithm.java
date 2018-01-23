@@ -253,12 +253,12 @@ public class MapRecordRf2SimpleMapLoaderAlgorithm extends RootServiceJpa
 	      }
 
 	      // clean-up
-	      log.info("Done ...");
+	      log.info("Done loading simple map data");
 	    } catch (Exception e) {
 	      e.printStackTrace();
-	      log.info(e.getMessage());
+	      log.error(e.getMessage());
           for (StackTraceElement element : e.getStackTrace()) {
-            log.info(element.toString());
+            log.error(element.toString());
           }
 	      throw new Exception(
 	          "Loading of Unpublished RF2 Complex Maps failed.", e);
