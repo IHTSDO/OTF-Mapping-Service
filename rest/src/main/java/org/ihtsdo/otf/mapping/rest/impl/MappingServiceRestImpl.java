@@ -20,6 +20,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -5058,7 +5059,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       final MapProject mapProject =
           mappingService.getMapProject(new Long(projectId).longValue());
 
-      // look for logs first in the project log dir, second in the
+      // look for logs either in the project log dir, second in the
       // remover/loader log dir
       String rootPath = ConfigUtility.getConfigProperties()
           .getProperty("map.principle.source.document.dir");
@@ -5073,13 +5074,45 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       } else {
         logDir = new File(rootPath + mapProject.getId() + "/logs");
       }
+      
+      ArrayList<String> modifiedLogTypes = new ArrayList<>();
+      
+      // get all of the previous members logs for the given source terminology
+      // if load/removePreviousMembers is called
+      for (String logType : logTypes) {
+        if (logTypes.get(0).toString().contains("PreviousMembers")) {
+          ArrayList<MapProject> mapProjectsForSourceTerminology =
+              new ArrayList<>();
+
+          // Also don't include retired or pilot projects
+          ArrayList<String> excludeProjects = new ArrayList<>(
+              Arrays.asList("SNOMED to ICD9CM", "SNOMED to ICD11 Pilot"));
+
+          // convert to log titles containing refset ids
+          for (MapProject project : mappingService.getMapProjects()
+              .getMapProjects()) {
+            if (project.getSourceTerminology()
+                .equals(mapProject.getSourceTerminology())
+                && !project.getRefSetId().startsWith("P")
+                && !excludeProjects.contains(project.getName())) {
+              mapProjectsForSourceTerminology.add(project);
+              modifiedLogTypes.add(logType.replace("PreviousMembers",
+                  "_maps_" + project.getRefSetId()));
+
+            }
+          }
+        }
+      }
+      // if there were renamed load/removePreviousMembers logs
+      if (modifiedLogTypes.size() > 0) {
+        logTypes = modifiedLogTypes;
+      }
+      
+      // for each logType, get the logFile and append to the log
       for (String logType : logTypes) {
         if (logType.contains("Terminology")) {
           logFile = new File(logDir, logType.replace("Terminology",
               "_" + mapProject.getSourceTerminology()) + ".log");
-        } else if (logTypes.get(0).toString().contains("PreviousMembers")) {
-          logFile = new File(logDir, logType.replace("PreviousMembers",
-              "_maps_" + mapProject.getRefSetId()) + ".log");
         } else {
           logFile = new File(logDir, logType + ".log");
         }
@@ -5117,6 +5150,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
             log.append(line).append("\n");
           }
         }
+        log.append("\n");
         logReader.close();
       }
 

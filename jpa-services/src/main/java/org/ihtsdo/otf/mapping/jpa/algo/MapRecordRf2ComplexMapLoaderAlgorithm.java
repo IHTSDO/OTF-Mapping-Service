@@ -153,6 +153,7 @@ public class MapRecordRf2ComplexMapLoaderAlgorithm extends RootServiceJpa
         loaderUser = mappingService.addMapUser(loaderUser);
       }
 
+      
       final Map<String, MapProject> mapProjectMap = new HashMap<>();
       for (MapProject project : mappingService.getMapProjects().getIterable()) {
         mapProjectMap.put(project.getRefSetId(), project);
@@ -354,12 +355,13 @@ public class MapRecordRf2ComplexMapLoaderAlgorithm extends RootServiceJpa
       // clean-up
       mappingService.close();
       // outputFile.delete();
-      log.info("Done ...");
+      log.info("Done loading complex map data");
+      
     } catch (Exception e) {
       e.printStackTrace();
-      log.info(e.getMessage());
+      log.error(e.getMessage());
       for (StackTraceElement element : e.getStackTrace()) {
-        log.info(element.toString());
+        log.error(element.toString());
       }
       throw new Exception("Loading of RF2 Complex Maps failed.", e);
     } finally {

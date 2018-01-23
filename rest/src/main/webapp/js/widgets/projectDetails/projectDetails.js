@@ -2350,7 +2350,7 @@ angular
         var LogModalCtrl = function($scope, $uibModalInstance, $q, logTypes, project) {
 
           $scope.logTypes = logTypes.split(',');
-          $scope.projectId = project.id
+          $scope.project = project
           $scope.edits = [];
           $scope.filter = '';
 
@@ -2360,7 +2360,7 @@ angular
 
             $rootScope.glassPane++;
             $http({
-              url : root_mapping + 'log/' + $scope.projectId + '?query=' + $scope.filter,
+              url : root_mapping + 'log/' + $scope.project.id + '?query=' + $scope.filter,
               dataType : 'json',
               data : $scope.logTypes,
               method : 'POST',
