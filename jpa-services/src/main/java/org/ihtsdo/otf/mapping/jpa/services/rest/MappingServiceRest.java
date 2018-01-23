@@ -948,4 +948,15 @@ public interface MappingServiceRest {
     InputStream downloadCurrentReleaseFile(String fileName, Long mapProjectId,
       String authToken) throws Exception;
 
+    /**
+     * Returns the map user role for application.
+     *
+     * @param username the username
+     * @param authToken the auth token
+     * @return the map user role for application
+     * @throws Exception the exception
+     */
+    MapUserRole getMapUserRoleForApplication(String username, String authToken)
+      throws Exception;
+
 }

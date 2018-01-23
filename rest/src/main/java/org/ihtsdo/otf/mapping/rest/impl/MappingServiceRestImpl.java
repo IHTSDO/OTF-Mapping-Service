@@ -3352,6 +3352,37 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
   }
+  
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/userRole/user/id/{username}")
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @ApiOperation(value = "Get the user's application role", notes = "Gets the application role for the specified user.", response = MapUserRole.class)
+  public MapUserRole getMapUserRoleForApplication(
+    @ApiParam(value = "Username (can be specialist, lead, or admin)", required = true) @PathParam("username") String username,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(MappingServiceRestImpl.class)
+        .info("RESTful call:  /userRole/user/id" + username);
+
+    final MappingService mappingService = new MappingServiceJpa();
+    try {
+      final MapUserRole mapUserRole =
+          mappingService.getMapUserRoleForApplication(username);
+      return mapUserRole;
+    } catch (Exception e) {
+      handleException(e, "trying to get the map user application role",
+          username, null, "");
+      return null;
+    } finally {
+      mappingService.close();
+      securityService.close();
+    }
+  }  
 
   // /////////////////////////
   // Descendant services
