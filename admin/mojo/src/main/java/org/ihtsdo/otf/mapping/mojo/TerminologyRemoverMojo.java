@@ -110,7 +110,7 @@ public class TerminologyRemoverMojo extends AbstractTerminologyLoaderMojo {
 			throw new MojoFailureException("Unexpected exception:", e);
 		} finally {
 			getLog().info("      elapsed time = " + getTotalElapsedTimeStr());
-			getLog().info("done ...");
+			getLog().info("Done removing terminology");
 		}
 	}
 }

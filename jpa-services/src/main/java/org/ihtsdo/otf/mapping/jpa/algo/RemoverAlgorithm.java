@@ -75,7 +75,7 @@ public class RemoverAlgorithm extends RootServiceJpa
       writer.print("");
       writer.close(); 
 	  
-		log.info("Remove terminology");
+		log.info("Start removing terminology");
 		log.info("  terminology  = " + terminology);
 		log.info("  version      = " + version);
 		
@@ -168,14 +168,15 @@ public class RemoverAlgorithm extends RootServiceJpa
 				ContentService contentService = new ContentServiceJpa();
 				log.info("Start removing tree positions from " + terminology);
 				contentService.clearTreePositions(terminology, version);
+				log.info("Done removing tree positions from " + terminology);
 				contentService.close();
-				log.info("Done ...");
+				log.info("Done removing terminology");
 
 			} catch (Exception e) {
 				tx.rollback();
-				log.info(e.getMessage());
+				log.error(e.getMessage());
 	            for (StackTraceElement element : e.getStackTrace()) {
-	                log.info(element.toString());
+	                log.error(element.toString());
 	            }
 				throw e;
 			} finally {
@@ -188,10 +189,10 @@ public class RemoverAlgorithm extends RootServiceJpa
 			}
 
 		} catch (Exception e) {
-			// e.printStackTrace();
-		    log.info(e.getMessage());
+			e.printStackTrace();
+		    log.error(e.getMessage());
             for (StackTraceElement element : e.getStackTrace()) {
-              log.info(element.toString());
+              log.error(element.toString());
             }
 			throw new Exception("Unexpected exception:", e);
 		} finally {

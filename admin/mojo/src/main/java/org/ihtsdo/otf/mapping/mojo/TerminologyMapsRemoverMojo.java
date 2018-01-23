@@ -62,7 +62,7 @@ public class TerminologyMapsRemoverMojo extends AbstractTerminologyLoaderMojo {
 	 */
 	@Override
 	public void execute() throws MojoFailureException {
-		getLog().info("Starting removing terminology");
+		getLog().info("Starting removing terminology maps");
 		getLog().info("  refsetId = " + refsetId);
 
 		try {
@@ -94,7 +94,7 @@ public class TerminologyMapsRemoverMojo extends AbstractTerminologyLoaderMojo {
 			throw new MojoFailureException("Unexpected exception:", e);
 		} finally {
 			getLog().info("      elapsed time = " + getTotalElapsedTimeStr());
-			getLog().info("done ...");
+			getLog().info("Done removing terminology maps");
 		}
 	}
 }

@@ -249,6 +249,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       // set the logger
       logger = processLog;
 
+      logger.info("  Starting processing the release");
+      
       // Keep track of all of the created files
       final List<String> createdFilenames = new ArrayList<>();
 
@@ -761,6 +763,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             "  " + terminologyId + ": " + conceptErrors.get(terminologyId));
       }
 
+
+      logger.info("  Done processing the release");
+      
       // /////////////////////////////////////////////////////
       // Clean up
       // /////////////////////////////////////////////////////
@@ -769,9 +774,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       contentService.close();
       mappingService.close();
     } catch (Exception e) {
-      logger.info(e.getMessage());
+      logger.error(e.getMessage());
       for (StackTraceElement element : e.getStackTrace()) {
-        logger.info(element.toString());
+        logger.error(element.toString());
       }
       throw new Exception(e);
     }
@@ -2157,6 +2162,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       logger = beginLog;
       clearLog(logger);
+      
+
+      logger.info("  Starting begin release");
 
       // instantiate required services
       final MappingService mappingService = new MappingServiceJpa();
@@ -2174,6 +2182,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               + " AND workflowStatus:PUBLISHED", null)
           .getSearchResults().size() > 0) {
         final ContentService contentService = new ContentServiceJpa();
+        
         try {
           if (contentService
               .getComplexMapRefSetMembersForRefSetId(mapProject.getRefSetId())
@@ -2182,7 +2191,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
                 "Map has published records but no refset member entries. "
                     + "Reload previous release version file into refset table");
           }
-
         } catch (Exception e) {
           throw e;
         } finally {
@@ -2515,14 +2523,14 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         }
       }
 
-      logger.info("Done.");
+      logger.info("  Done begin release");
 
       mappingService.close();
       reportService.close();
     } catch (Exception e) {
-      logger.info(e.getMessage());
+      logger.error(e.getMessage());
       for (StackTraceElement element : e.getStackTrace()) {
-        logger.info(element.toString());
+        logger.error(element.toString());
       }
       throw new Exception(e);
     }
@@ -2588,7 +2596,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       }
       clearLog(logger);
 
-      logger.info(testModeFlag ? "Preview Finish Release" : "Finish Release");
+      logger.info("Starting " + (testModeFlag ? "Preview Finish Release" : "Finish Release"));
       logger.info("transactionPerOperation " + mappingService.getTransactionPerOperation());
 
       // instantiate required services
@@ -2705,9 +2713,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           + "release successfully");
       
     } catch (Exception e) {
-      logger.info(e.getMessage());
+      logger.error(e.getMessage());
       for (StackTraceElement element : e.getStackTrace()) {
-        logger.info(element.toString());
+        logger.error(element.toString());
       }
       throw new Exception(e);
     }
@@ -3277,7 +3285,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       finishLog = LoggerUtility.getLogger("finishRelease");
 
     } catch (Exception e) {
-      logger.info(e.getStackTrace());
+      logger.error(e.getStackTrace());
     }
   }
   
