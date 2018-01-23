@@ -290,9 +290,9 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			log.info(e.getMessage());
+			log.error(e.getMessage());
             for (StackTraceElement element : e.getStackTrace()) {
-              log.info(element.toString());
+              log.error(element.toString());
             }
 			throw new Exception("Unexpected exception:", e);
 		}
