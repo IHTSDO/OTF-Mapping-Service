@@ -204,10 +204,7 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			log.error(e.getMessage());
-		      for (StackTraceElement element : e.getStackTrace()) {
-		        log.error(element.toString());
-		      }
+			log.error(e.getMessage(), e);
 			throw new Exception("Conversion of Claml to RF2 objects failed", e);
 		}
 	}
