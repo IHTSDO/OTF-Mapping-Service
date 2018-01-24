@@ -1189,6 +1189,11 @@ angular
             return;
           }
 
+          // have user confirm that an IMS account exists for new user
+          if (!confirm("The user submitted here must already have an IMS account.  Please confirm an IMS account exists for this user before proceeding.")) {
+        	return;
+          } 
+          
           // by default the application role is Viewer
           user.applicationRole = 'VIEWER';
 
@@ -2308,7 +2313,7 @@ angular
                 window.alert('All work is completed');
               } else {
                 window.alert('There are ' + data.data.count
-                  + ' in-scope concepts that are not ready for publication.');
+                  + ' in-scope concepts that are not ready for publication.  Please see the Project Dashboard report in the Reports accordion for details.');
               }
             },
             function(response) {
