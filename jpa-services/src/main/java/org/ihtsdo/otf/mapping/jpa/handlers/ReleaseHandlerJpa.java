@@ -774,10 +774,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       contentService.close();
       mappingService.close();
     } catch (Exception e) {
-      logger.error(e.getMessage());
-      for (StackTraceElement element : e.getStackTrace()) {
-        logger.error(element.toString());
-      }
+      logger.error(e.getMessage(), e);
       throw new Exception(e);
     }
   }
@@ -2528,10 +2525,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       mappingService.close();
       reportService.close();
     } catch (Exception e) {
-      logger.error(e.getMessage());
-      for (StackTraceElement element : e.getStackTrace()) {
-        logger.error(element.toString());
-      }
+      logger.error(e.getMessage(), e);
       throw new Exception(e);
     }
   }
@@ -2713,10 +2707,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           + "release successfully");
       
     } catch (Exception e) {
-      logger.error(e.getMessage());
-      for (StackTraceElement element : e.getStackTrace()) {
-        logger.error(element.toString());
-      }
+      logger.error(e.getMessage(), e);
       throw new Exception(e);
     }
   }
