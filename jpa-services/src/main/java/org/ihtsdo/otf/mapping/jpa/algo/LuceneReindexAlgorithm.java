@@ -186,10 +186,7 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
     // Cleanup
     Logger.getLogger(getClass()).info("done ...");
     } catch(Exception e) {
-      log.error(e.getMessage());
-      for (StackTraceElement element : e.getStackTrace()) {
-        log.error(element.toString());
-      }
+      log.error(e.getMessage(), e);
       throw new Exception(e);
     }
   }
