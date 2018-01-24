@@ -88,7 +88,7 @@ public class MapRecordUpdaterMojo extends AbstractMojo {
       // Update names
       int ct = 0;
       for (final MapProject mapProject : mapProjects) {
-        getLog().debug("    Remove map records for " + mapProject.getName());
+        getLog().debug("    Update map records for " + mapProject.getName());
         for (final MapRecord record : mappingService
             .getMapRecordsForMapProject(mapProject.getId()).getMapRecords()) {
 
@@ -114,7 +114,7 @@ public class MapRecordUpdaterMojo extends AbstractMojo {
                       mapProject.getDestinationTerminology(),
                       mapProject.getDestinationTerminologyVersion());
               if (concept2 != null
-                  && !entry.getTargetName().equals(
+                  && entry.getTargetName() != null && !entry.getTargetName().equals(
                       concept2.getDefaultPreferredName())) {
                 entry.setTargetName(concept2.getDefaultPreferredName());
                 changed = true;
