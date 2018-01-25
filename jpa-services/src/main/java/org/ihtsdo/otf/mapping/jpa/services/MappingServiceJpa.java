@@ -1905,7 +1905,8 @@ public class MappingServiceJpa extends RootServiceJpa
               && !refSetMember.getMapRule().contains("AND IFA")) {
             // unless simple gender rule, then keep
           } else if (refSetMember.getMapRule().matches(
-              "IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*AND IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*") && !refSetMember.getMapRule().matches(".*AND IFA.*AND IFA.*")) {
+              "IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*AND IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*")
+              && !refSetMember.getMapRule().matches(".*AND IFA.*AND IFA.*")) {
             // unless 2-part age rule, then keep
           } else if (refSetMember.getMapRule()
               .matches("IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*")
@@ -1919,9 +1920,10 @@ public class MappingServiceJpa extends RootServiceJpa
             continue;
           }
         }
-        
-        // Skip no-target mappings for mapGroups > 1
-        if(refSetMember.getMapGroup() > 1 && refSetMember.getMapTarget().isEmpty()){
+
+        // Skip no-target mappings for first mapPriority entry on mapGroups > 1
+        if (refSetMember.getMapGroup() > 1 && mapPriorityCt == 0
+            && refSetMember.getMapTarget().isEmpty()) {
           continue;
         }
 
@@ -2183,6 +2185,7 @@ public class MappingServiceJpa extends RootServiceJpa
       // set a default project to 1st project found
       m.setLastMapProjectId(
           mapProjects.getIterable().iterator().next().getId());
+
       m.setLastAssignedTab("0");
 
       // add object
@@ -2306,6 +2309,8 @@ public class MappingServiceJpa extends RootServiceJpa
     // default role is Viewer
     return MapUserRole.VIEWER;
   }
+
+
 
   /* see superclass */
   @Override
@@ -2936,5 +2941,6 @@ public class MappingServiceJpa extends RootServiceJpa
 
     return searchResultList;
   }
+
 
 }
