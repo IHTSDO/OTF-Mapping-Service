@@ -1,7 +1,11 @@
 package org.ihtsdo.otf.mapping.helpers;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlElement;
 
@@ -67,29 +71,58 @@ public class TerminologyVersionList {
 
 	/**
 	 * Removes all duplicated Terminology Versions.
+	 * Currently, script is only programmatically excluding those with "_INT_" when others are found
+	 * Note: All other duplicates will be added to return list.
 	 */
-	public void removeDups() {
+	public Map<String, Set<TerminologyVersion>> removeDups() {
 		List<TerminologyVersion> tmpList = new ArrayList<>();
-		List<String> observedTriplets = new ArrayList<>();
-		List<TerminologyVersion> notAddedTriplets = new ArrayList<>();
+		Map<String, TerminologyVersion> singleMap = new HashMap<>();
+		Map<String, Set<TerminologyVersion>>  dupMap = new HashMap<>();
 
-		// TODO: Other restrictions required to define approach?
+		// Identify Dups
 		for (TerminologyVersion tv : terminologyVersionList) {
-			String triplet = tv.getTerminology().toLowerCase() + "-" + tv.getVersion().toLowerCase() + "-"
-					+ tv.getScope();
-
-			if (!observedTriplets.contains(triplet)) {
-				observedTriplets.add(triplet);
-				tmpList.add(new TerminologyVersion(tv.getTerminology(), tv.getVersion(), tv.getScope(),
-						tv.getAwsZipFileName()));
+			String triplet;
+			if (tv.getScope() != null && !tv.getScope().isEmpty()) {
+				triplet = tv.getTerminology().toLowerCase() + "-" + tv.getVersion().toLowerCase() + "-"
+						+ tv.getScope();
 			} else {
-				notAddedTriplets.add(new TerminologyVersion(tv.getTerminology(), tv.getVersion(), tv.getScope(),
-						tv.getAwsZipFileName()));
+				triplet = tv.getTerminology().toLowerCase() + "-" + tv.getVersion().toLowerCase();
+			}
+			
+			if (singleMap.containsKey(triplet)) {
+				// Add current triplet and triplet listed in singleList version to dupList
+				if (!dupMap.containsKey(triplet)) {
+					dupMap.put(triplet, new HashSet<TerminologyVersion>());
+				}
+				
+				dupMap.get(triplet).add(tv);
+				dupMap.get(triplet).add(singleMap.get(triplet));
+			} else {
+				singleMap.put(triplet, tv);
+			}
+		}
+			
+		// Add those not found to have dups
+		for (String triplet : singleMap.keySet()) {
+			if (!dupMap.containsKey(triplet)) {
+				tmpList.add(singleMap.get(triplet));
+			}
+		}
+
+		// Exclude those with "_INT_" and add remaining pairs/triplets to list
+		for (String triplet : dupMap.keySet()) {
+			for (TerminologyVersion tv : dupMap.get(triplet)) {
+				if (!tv.getAwsZipFileName().toLowerCase().contains("_int_")) {
+					tmpList.add(tv);
+					break;
+				}
 			}
 		}
 
 		terminologyVersionList.clear();
 		terminologyVersionList.addAll(tmpList);
+		
+		return dupMap;
 	}
 
 	/*
