@@ -1402,6 +1402,12 @@ angular
 
         $scope.submitNewMapUser = function(mapUserName, mapUserFullName, mapUserEmail,
           mapUserApplicationRole) {
+        	
+          // have user confirm that an IMS account exists for new user
+          if (!confirm("The user submitted here must already have an IMS account.  Please confirm an IMS account exists for this user before proceeding.")) {
+          	return;
+          } 	
+        	
           var obj = {
             'userName' : mapUserName,
             'name' : mapUserFullName,

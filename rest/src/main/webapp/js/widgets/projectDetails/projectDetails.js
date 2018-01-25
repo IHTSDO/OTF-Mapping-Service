@@ -2538,8 +2538,11 @@ angular
               window.alert(data);
             }
           }).error(function(data, status, headers, config) {
-            window.alert(terminology + ' reload failed.  Please view log for details.');
-            $rootScope.handleHttpError(data, status, headers, config);
+        	// don't report gateway time-out error
+        	if (status != '504') {
+              window.alert(terminology + ' reload failed.  Please view log for details.');
+              $rootScope.handleHttpError(data, status, headers, config);
+        	}
           });
 
         };
@@ -2571,9 +2574,12 @@ angular
               }
             }).error(
             function(data, status, headers, config) {
-              window.alert('Reloading ' + terminology
-                + ' Refset Members has failed.  Please view log for details.');
-              $rootScope.handleHttpError(data, status, headers, config);
+              // don't report gateway time-out error
+              if (status != '504') {
+                window.alert('Reloading ' + terminology
+                  + ' Refset Members has failed.  Please view log for details.');
+                $rootScope.handleHttpError(data, status, headers, config);
+              }
             });
 
         }
