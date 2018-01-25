@@ -51,7 +51,7 @@ public class TerminologyRemoverMojo extends AbstractTerminologyLoaderMojo {
 	 * @parameter
 	 * @required
 	 */
-	protected String version;
+	protected String terminologyVersion;
 
 	/**
 	 * Whether to send email notification of any errors. Default is false.
@@ -80,7 +80,7 @@ public class TerminologyRemoverMojo extends AbstractTerminologyLoaderMojo {
 
 		getLog().info("Starting removing terminology");
 		getLog().info("  terminology = " + terminology);
-		getLog().info("  version     = " + version);
+		getLog().info("  terminologyVersion     = " + terminologyVersion);
 
 		try {
 
@@ -95,14 +95,14 @@ public class TerminologyRemoverMojo extends AbstractTerminologyLoaderMojo {
 				getLog().info("Running directly");
 
 				ContentServiceRestImpl service = new ContentServiceRestImpl();
-				service.removeTerminology(terminology, version, getAuthToken());
+				service.removeTerminology(terminology, terminologyVersion, getAuthToken());
 
 			} else {
 				getLog().info("Running against server");
 
 				// invoke the client
 				ContentClientRest client = new ContentClientRest(properties);
-				client.removeTerminology(terminology, version, getAuthToken());
+				client.removeTerminology(terminology, terminologyVersion, getAuthToken());
 			}
 
 		} catch (Exception e) {
