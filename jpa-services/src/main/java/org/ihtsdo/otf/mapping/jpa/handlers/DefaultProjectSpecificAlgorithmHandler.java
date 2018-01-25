@@ -476,22 +476,29 @@ public class DefaultProjectSpecificAlgorithmHandler
       for (int j = i + 1; j < entries.size(); j++) {
 
         // if first entry target null
-        if (entries.get(i).getTargetId() == null) {
+        if (entries.get(i).getTargetId() == null
+            || entries.get(i).getTargetId() == "") {
 
           // if both null, check relations
-          if (entries.get(j).getTargetId() == null) {
+          if (entries.get(j).getTargetId() == null
+              || entries.get(j).getTargetId() == "") {
 
             if (entries.get(i).getMapRelation() != null
-                && entries.get(j).getMapRelation() != null && entries.get(i)
-                    .getMapRelation().equals(entries.get(j).getMapRelation())) {
+                && entries.get(j).getMapRelation() != null
+                && entries.get(i).getMapRelation()
+                    .equals(entries.get(j).getMapRelation())
+                && !entries.get(i).getMapRelation().getName().equals(
+                    "MAP SOURCE CONCEPT CANNOT BE CLASSIFIED WITH AVAILABLE DATA")) {
               validationResult.addError(
                   "Duplicate entries (null target code, same map relation) found: "
                       + "Group "
                       + Integer.toString(entries.get(i).getMapGroup())
-                      + ", priority " + entries.get(i).getMapPriority()
+                      + ", priority "
+                      + Integer.toString(entries.get(i).getMapPriority())
                       + " and " + "Group "
                       + Integer.toString(entries.get(j).getMapGroup())
-                      + ", priority " + entries.get(j).getMapPriority());
+                      + ", priority "
+                      + Integer.toString(entries.get(j).getMapPriority()));
             }
           }
 
@@ -504,9 +511,12 @@ public class DefaultProjectSpecificAlgorithmHandler
             validationResult.addError(
                 "Duplicate entries (same target code and rule) found: "
                     + "Group " + Integer.toString(entries.get(i).getMapGroup())
-                    + ", priority " + Integer.toString(i) + " and " + "Group "
+                    + ", priority "
+                    + Integer.toString(entries.get(i).getMapPriority())
+                    + " and " + "Group "
                     + Integer.toString(entries.get(j).getMapGroup())
-                    + ", priority " + Integer.toString(j));
+                    + ", priority "
+                    + Integer.toString(entries.get(j).getMapPriority()));
           }
 
         } else {
@@ -517,9 +527,12 @@ public class DefaultProjectSpecificAlgorithmHandler
             validationResult
                 .addError("Duplicate entries (same target code) found: "
                     + "Group " + Integer.toString(entries.get(i).getMapGroup())
-                    + ", priority " + Integer.toString(i) + " and " + "Group "
+                    + ", priority "
+                    + Integer.toString(entries.get(i).getMapPriority())
+                    + " and " + "Group "
                     + Integer.toString(entries.get(j).getMapGroup())
-                    + ", priority " + Integer.toString(j));
+                    + ", priority "
+                    + Integer.toString(entries.get(j).getMapPriority()));
           }
         }
 
@@ -950,7 +963,8 @@ public class DefaultProjectSpecificAlgorithmHandler
 
   /* see superclass */
   @Override
-  public boolean recordViolatesOneToOneConstraint(MapRecord record) throws Exception {
+  public boolean recordViolatesOneToOneConstraint(MapRecord record)
+    throws Exception {
     return false;
   }
 
