@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -2040,8 +2041,10 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         }
       }
 
-      // Remove all duplicates defined by term-version-scope
-      returnList.removeDups();
+      // Remove all duplicates defined by term-version-scope but send out
+      // notifications so people can address
+      Map<String, Set<TerminologyVersion>> dups = returnList.removeDups();
+      sendDuplicateVersionNotification(dups);
 
       return returnList;
     } catch (Exception e) {
@@ -2114,4 +2117,80 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     else
       return null;
   }
+
+	/**
+	 * If duplicate terminology-version pairs found on S3, send email
+	 * notification.
+	 *
+	 * @param dups
+	 *            Map of duplicate terminologies to each duplicate
+	 * @throws Exception
+	 *             the exception
+	 */
+	private void sendDuplicateVersionNotification(Map<String, Set<TerminologyVersion>> dups) throws Exception {
+		Properties config = ConfigUtility.getConfigProperties();
+
+		if (!dups.isEmpty()) {
+			// Define recipients
+			String notificationRecipients = config.getProperty("send.notification.recipients");
+
+			if (!notificationRecipients.isEmpty() && "true".equals(config.getProperty("mail.enabled"))) {
+				Logger.getLogger(ContentServiceRestImpl.class)
+						.info("Identified " + dups.size() + " sets of duplicate terminologies.  Sending email");
+
+				// Define sender
+				String sender;
+				if (config.containsKey("mail.smtp.from")) {
+					sender = config.getProperty("mail.smtp.from");
+				} else {
+					sender = config.getProperty("mail.smtp.user");
+				}
+
+				// Define email properties
+				Properties props = new Properties();
+				props.put("mail.smtp.user", config.getProperty("mail.smtp.user"));
+				props.put("mail.smtp.password", config.getProperty("mail.smtp.password"));
+				props.put("mail.smtp.host", config.getProperty("mail.smtp.host"));
+				props.put("mail.smtp.port", config.getProperty("mail.smtp.port"));
+				props.put("mail.smtp.starttls.enable", config.getProperty("mail.smtp.starttls.enable"));
+				props.put("mail.smtp.auth", config.getProperty("mail.smtp.auth"));
+
+				// Create Message Body
+				StringBuffer messageBody = new StringBuffer();
+				int counter = 1;
+				for (String triplet : dups.keySet()) {
+					Set<TerminologyVersion> termVers = dups.get(triplet);
+					TerminologyVersion tvForPrintout = termVers.iterator().next();
+
+					messageBody.append("Warning: Duplicate terminology-version pairs found on AWS");
+					messageBody.append(System.getProperty("line.separator"));
+					messageBody.append(System.getProperty("line.separator"));
+					messageBody.append("DUPLICATE #" + counter++);
+					messageBody.append(System.getProperty("line.separator"));
+					messageBody.append("TERMINOLOGY: " + tvForPrintout.getTerminology());
+					messageBody.append(System.getProperty("line.separator"));
+					messageBody.append("VERSION: " + tvForPrintout.getVersion());
+					messageBody.append(System.getProperty("line.separator"));
+					if (tvForPrintout.getScope() != null) {
+						messageBody.append("For Scope: " + tvForPrintout.getScope());
+						messageBody.append(System.getProperty("line.separator"));
+					}
+
+					messageBody.append(System.getProperty("line.separator"));
+
+					int fileCounter = 1;
+					for (TerminologyVersion tv : termVers) {
+						messageBody.append("\tAWS FILE #" + fileCounter++ + ": " + tv.getAwsZipFileName());
+						messageBody.append(System.getProperty("line.separator"));
+					}
+					messageBody.append(System.getProperty("line.separator"));
+					messageBody.append(System.getProperty("line.separator"));
+				}
+
+				ConfigUtility.sendEmail("IHTSDO Mapping Tool Duplicate Terminologies Warning", sender,
+						notificationRecipients, messageBody.toString(), props,
+						"true".equals(config.getProperty("mail.smtp.auth")));
+			}
+		}
+	}
 }
