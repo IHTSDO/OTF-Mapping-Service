@@ -2914,30 +2914,29 @@ angular
         $scope.loadTerminologyAws = function(terminology, version, scope) {
           $rootScope.glassPane++;
 
-          var errors = '';
+          var warnings = '';
           for (var i = 0; i < $scope.terminologyVersionPairs.length; i++) {
-            console.log("check", errors);
+            console.log("check", warnings);
             var loadVersion = version.replace(' ', '');
             var terminologyVersionPair = $scope.terminologyVersionPairs[i];
             if (terminology != 'SNOMED CT') {
               if(terminologyVersionPair == terminology.replace(' ', '') + ' ' + loadVersion){
-                errors += terminology + ' ' + loadVersion + ' is already loaded in the application.\n';
+                warnings += terminology + ' ' + loadVersion + ' is already loaded in the application.\nWould you like to reload the terminology?';
                 break;
               }
             } else {
               // For SNOMED & it's scope
               loadVersion = loadVersion + (scope == 'Alpha' || scope == 'Beta' ? '_' + scope : '');
               if(terminologyVersionPair == terminology.replace(' ', '') + ' ' + loadVersion){
-                errors += terminology + ' ' + loadVersion + ' is already loaded in the application.\n';
+                warnings += terminology + ' ' + loadVersion + ' is already loaded in the application.\nWould you like to reload the terminology?';
                 break;
               }
             }
           }
           
-          console.log("errors", errors);
+          console.log("warnings", warnings);
           
-          if (errors.length > 0) {
-            alert(errors);
+          if (warnings.length > 0  && !confirm(warnings)) {
             $rootScope.glassPane--;
             return;
           }
