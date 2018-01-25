@@ -1905,7 +1905,7 @@ public class MappingServiceJpa extends RootServiceJpa
               && !refSetMember.getMapRule().contains("AND IFA")) {
             // unless simple gender rule, then keep
           } else if (refSetMember.getMapRule().matches(
-              "IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*AND IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*")) {
+              "IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*AND IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*") && !refSetMember.getMapRule().matches(".*AND IFA.*AND IFA.*")) {
             // unless 2-part age rule, then keep
           } else if (refSetMember.getMapRule()
               .matches("IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*")
