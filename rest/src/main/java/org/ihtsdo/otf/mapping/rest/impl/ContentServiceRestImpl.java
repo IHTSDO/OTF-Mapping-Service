@@ -1439,7 +1439,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         return "Success";
       } catch (Exception e) {
         handleException(e,
-            "trying to load terminology snapshot from RF2 directory");
+            "trying to reload RF2 snapshot terminology from aws");
         return "Failure";
       } finally {
         // Remove directory
@@ -1447,7 +1447,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         algo.close();
       }
     } catch (Exception e) {
-      handleException(e, "trying to remove terminology");
+      handleException(e, "trying to reload RF2 snapshot terminology from aws");
       return "Failure";
     } finally {
       RootServiceJpa.unlockProcess();
