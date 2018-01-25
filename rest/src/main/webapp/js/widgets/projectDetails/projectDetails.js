@@ -2496,13 +2496,12 @@ angular
           var removeVersion = $scope.focusProject.sourceTerminologyVersion;
           var loadVersion = version.replace(' ', '') + (scope == 'Production' ? '' : '_' + scope);
           if (removeVersion == loadVersion) {
-            errors += terminology + ' ' + loadVersion + ' is already loaded in the application.\n';
+            errors += terminology + ' ' + loadVersion + ' is already loaded in the application.\nAre you sure you want to reload the terminology?';
           }
 
           console.log("errors", errors);
 
-          if (errors.length > 0) {
-            alert(errors);
+          if (errors.length > 0  && !confirm(errors)) {
             return;
           }
 
@@ -2526,14 +2525,7 @@ angular
             if (data == "Success") {
               // If successful, update all projects where the sourceTerminology was the one just reloaded
               window.alert(terminology + ' successfully reloaded.');
-              var mapProjects = $scope.mapProjects;
-
-              for (var i = 0; i < mapProjects.length; i++) {
-                if (mapProjects[i].sourceTerminologyVersion == removeVersion) {
-                  mapProjects[i].sourceTerminologyVersion = loadVersion;
-                  $scope.updateMapProject(mapProjects[i]);
-                }
-              }
+              
             } else {
               window.alert(data);
             }
