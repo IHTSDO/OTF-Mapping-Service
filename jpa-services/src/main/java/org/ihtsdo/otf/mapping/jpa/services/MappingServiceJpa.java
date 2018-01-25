@@ -1952,7 +1952,8 @@ public class MappingServiceJpa extends RootServiceJpa
               && !refSetMember.getMapRule().contains("AND IFA")) {
             // unless simple gender rule, then keep
           } else if (refSetMember.getMapRule().matches(
-              "IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*AND IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*") && !refSetMember.getMapRule().matches(".*AND IFA.*AND IFA.*")) {
+              "IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*AND IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*")
+              && !refSetMember.getMapRule().matches(".*AND IFA.*AND IFA.*")) {
             // unless 2-part age rule, then keep
           } else if (refSetMember.getMapRule()
               .matches("IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*")
@@ -1966,9 +1967,10 @@ public class MappingServiceJpa extends RootServiceJpa
             continue;
           }
         }
-        
-        // Skip no-target mappings for mapGroups > 1
-        if(refSetMember.getMapGroup() > 1 && refSetMember.getMapTarget().isEmpty()){
+
+        // Skip no-target mappings for first mapPriority entry on mapGroups > 1
+        if (refSetMember.getMapGroup() > 1 && mapPriorityCt == 0
+            && refSetMember.getMapTarget().isEmpty()) {
           continue;
         }
 
@@ -2230,7 +2232,7 @@ public class MappingServiceJpa extends RootServiceJpa
       // set a default project to 1st project found
       m.setLastMapProjectId(
           mapProjects.getIterable().iterator().next().getId());
-      
+
       m.setLastAssignedTab("0");
 
       // add object
@@ -2357,7 +2359,8 @@ public class MappingServiceJpa extends RootServiceJpa
 
   /* see superclass */
   @Override
-  public MapUserRole getMapUserRoleForApplication(String userName) throws Exception {
+  public MapUserRole getMapUserRoleForApplication(String userName)
+    throws Exception {
 
     Logger.getLogger(MappingServiceJpa.class)
         .debug("Finding user's application role " + userName);
@@ -2372,8 +2375,8 @@ public class MappingServiceJpa extends RootServiceJpa
 
     // default role is Viewer
     return MapUserRole.VIEWER;
-  }  
-  
+  }
+
   /* see superclass */
   @Override
   @XmlTransient
@@ -3057,7 +3060,6 @@ public class MappingServiceJpa extends RootServiceJpa
         relationshipIds.add(Long.valueOf(id));
       }
     }
-    
 
     if (relationshipValue != null && !relationshipValue.isEmpty()) {
       javax.persistence.Query query = manager.createQuery(
@@ -3069,7 +3071,7 @@ public class MappingServiceJpa extends RootServiceJpa
       for (Long id : list) {
         relationshipTargetConceptIds.add(id);
       }
-    }    
+    }
 
     // construct query for descendants
     String queryString = "from MapRecordJpa m ";
@@ -3077,12 +3079,12 @@ public class MappingServiceJpa extends RootServiceJpa
       queryString += ", ConceptJpa c, RelationshipJpa r ";
     }
     queryString += "where m.mapProjectId = :mapProjectId ";
-    //Only Relationship Name specified
+    // Only Relationship Name specified
     if (!relationshipIds.isEmpty() & relationshipTargetConceptIds.isEmpty()) {
       queryString +=
           "AND m.conceptId = c.terminologyId AND r.sourceConcept = c.id AND r.typeId IN :relationshipIds ";
     }
-    //Only Relationship Name and Relationship Target specified
+    // Only Relationship Name and Relationship Target specified
     if (!relationshipIds.isEmpty() & !relationshipTargetConceptIds.isEmpty()) {
       queryString +=
           "AND m.conceptId = c.terminologyId AND r.sourceConcept = c.id AND r.typeId IN :relationshipIds AND r.destinationConcept.id IN :relationshipTargetConceptIds ";
@@ -3116,7 +3118,8 @@ public class MappingServiceJpa extends RootServiceJpa
       query.setParameter("relationshipIds", relationshipIds);
     }
     if (!relationshipTargetConceptIds.isEmpty()) {
-      query.setParameter("relationshipTargetConceptIds", relationshipTargetConceptIds);
+      query.setParameter("relationshipTargetConceptIds",
+          relationshipTargetConceptIds);
     }
     query.setMaxResults(pfsParameter.getMaxResults());
     query.setFirstResult(
@@ -3141,9 +3144,10 @@ public class MappingServiceJpa extends RootServiceJpa
     if (!relationshipIds.isEmpty()) {
       query.setParameter("relationshipIds", relationshipIds);
     }
-    
+
     if (!relationshipTargetConceptIds.isEmpty()) {
-      query.setParameter("relationshipTargetConceptIds", relationshipTargetConceptIds);
+      query.setParameter("relationshipTargetConceptIds",
+          relationshipTargetConceptIds);
     }
 
     searchResultList.setTotalCount(((Long) query.getSingleResult()).intValue());
@@ -3160,48 +3164,47 @@ public class MappingServiceJpa extends RootServiceJpa
     // return the search result list
     return searchResultList;
   }
-   
-   /**
-    * Retrieve latest map record for a given terminology id.
-    * 
-    * @param terminologyId the concept id
-    * @return the list of map records
-    */
-   @SuppressWarnings("unchecked")
-   @Override
-   public MapRecord getLatestMapRecordForConcept(Long mapProjectId, String terminologyId) {
-     List<MapRecord> mapRecords = null;
-     MapRecord mapRecord = null;
-     
-     // construct query
-     javax.persistence.Query query = manager.createQuery(
-         "select m from MapRecordJpa m "
-         + "where timestamp = " + ""
-         		+ " (select max(m2.timestamp) " 
-         		+ " from MapRecordJpa m2 "
-        		+ " where m2.mapProjectId = :mapProjectId "
-        		+ " and conceptId = :conceptId) "
-        + "and mapProjectId = :mapProjectId "
-        + "and conceptId = :conceptId ");
 
-     // Try query
-     query.setParameter("mapProjectId", mapProjectId);
-     query.setParameter("conceptId", terminologyId);
-     
-     mapRecords = query.getResultList();
-     for (final MapRecord mr : mapRecords) {
-       handleMapRecordLazyInitialization(mr);
-     }
+  /**
+   * Retrieve latest map record for a given terminology id.
+   * 
+   * @param terminologyId the concept id
+   * @return the list of map records
+   */
+  @SuppressWarnings("unchecked")
+  @Override
+  public MapRecord getLatestMapRecordForConcept(Long mapProjectId,
+    String terminologyId) {
+    List<MapRecord> mapRecords = null;
+    MapRecord mapRecord = null;
 
-     MapRecordListJpa mapRecordList = new MapRecordListJpa();
-     mapRecordList.setMapRecords(mapRecords);
-     mapRecordList.setTotalCount(mapRecords.size());
-     
-     if (mapRecordList != null && mapRecordList.getMapRecords().size() > 0)
-    	 mapRecord = mapRecordList.getMapRecords().get(0);
-     
-     return mapRecord;
-   }
+    // construct query
+    javax.persistence.Query query = manager
+        .createQuery("select m from MapRecordJpa m " + "where timestamp = " + ""
+            + " (select max(m2.timestamp) " + " from MapRecordJpa m2 "
+            + " where m2.mapProjectId = :mapProjectId "
+            + " and conceptId = :conceptId) "
+            + "and mapProjectId = :mapProjectId "
+            + "and conceptId = :conceptId ");
+
+    // Try query
+    query.setParameter("mapProjectId", mapProjectId);
+    query.setParameter("conceptId", terminologyId);
+
+    mapRecords = query.getResultList();
+    for (final MapRecord mr : mapRecords) {
+      handleMapRecordLazyInitialization(mr);
+    }
+
+    MapRecordListJpa mapRecordList = new MapRecordListJpa();
+    mapRecordList.setMapRecords(mapRecords);
+    mapRecordList.setTotalCount(mapRecords.size());
+
+    if (mapRecordList != null && mapRecordList.getMapRecords().size() > 0)
+      mapRecord = mapRecordList.getMapRecords().get(0);
+
+    return mapRecord;
+  }
 
   /* Convert ISO 8601 date time string to milliseconds */
   private long convertDateString(String dateString) {
@@ -3237,10 +3240,10 @@ public class MappingServiceJpa extends RootServiceJpa
 
     // Get all effectiveTime subfolders within that location
     File file = new File(path);
-    if(!file.exists()){
+    if (!file.exists()) {
       throw new FileNotFoundException("Path not found: " + path);
     }
-    
+
     String[] effectiveTimes = file.list(new FilenameFilter() {
       @Override
       public boolean accept(File current, String name) {
@@ -3248,10 +3251,11 @@ public class MappingServiceJpa extends RootServiceJpa
       }
     });
 
-    if(effectiveTimes.length == 0){
-      throw new FileNotFoundException("No subfolders found at location: " + path);
-    }    
-    
+    if (effectiveTimes.length == 0) {
+      throw new FileNotFoundException(
+          "No subfolders found at location: " + path);
+    }
+
     String releaseFileNames = "";
 
     // Get all zipFiles within each effectiveTime subfolder
@@ -3279,5 +3283,5 @@ public class MappingServiceJpa extends RootServiceJpa
     }
     return releaseFileNames;
   }
-  
+
 }
