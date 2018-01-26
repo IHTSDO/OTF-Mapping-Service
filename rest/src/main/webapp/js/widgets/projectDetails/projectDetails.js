@@ -1189,6 +1189,11 @@ angular
             return;
           }
 
+          // have user confirm that an IMS account exists for new user
+          if (!confirm("The user submitted here must already have an IMS account.  Please confirm an IMS account exists for this user before proceeding.")) {
+        	return;
+          } 
+          
           // by default the application role is Viewer
           user.applicationRole = 'VIEWER';
 
@@ -2308,7 +2313,7 @@ angular
                 window.alert('All work is completed');
               } else {
                 window.alert('There are ' + data.data.count
-                  + ' in-scope concepts that are not ready for publication.');
+                  + ' in-scope concepts that are not ready for publication.  Please see the Project Dashboard report in the Reports accordion for details.');
               }
             },
             function(response) {
@@ -2491,13 +2496,12 @@ angular
           var removeVersion = $scope.focusProject.sourceTerminologyVersion;
           var loadVersion = version.replace(' ', '') + (scope == 'Production' ? '' : '_' + scope);
           if (removeVersion == loadVersion) {
-            errors += terminology + ' ' + loadVersion + ' is already loaded in the application.\n';
+            errors += terminology + ' ' + loadVersion + ' is already loaded in the application.\nAre you sure you want to reload the terminology?';
           }
 
           console.log("errors", errors);
 
-          if (errors.length > 0) {
-            alert(errors);
+          if (errors.length > 0  && !confirm(errors)) {
             return;
           }
 
@@ -2521,20 +2525,16 @@ angular
             if (data == "Success") {
               // If successful, update all projects where the sourceTerminology was the one just reloaded
               window.alert(terminology + ' successfully reloaded.');
-              var mapProjects = $scope.mapProjects;
-
-              for (var i = 0; i < mapProjects.length; i++) {
-                if (mapProjects[i].sourceTerminologyVersion == removeVersion) {
-                  mapProjects[i].sourceTerminologyVersion = loadVersion;
-                  $scope.updateMapProject(mapProjects[i]);
-                }
-              }
+              
             } else {
               window.alert(data);
             }
           }).error(function(data, status, headers, config) {
-            window.alert(terminology + ' reload failed.  Please view log for details.');
-            $rootScope.handleHttpError(data, status, headers, config);
+        	// don't report gateway time-out error
+        	if (status != '504') {
+              window.alert(terminology + ' reload failed.  Please view log for details.');
+              $rootScope.handleHttpError(data, status, headers, config);
+        	}
           });
 
         };
@@ -2566,9 +2566,12 @@ angular
               }
             }).error(
             function(data, status, headers, config) {
-              window.alert('Reloading ' + terminology
-                + ' Refset Members has failed.  Please view log for details.');
-              $rootScope.handleHttpError(data, status, headers, config);
+              // don't report gateway time-out error
+              if (status != '504') {
+                window.alert('Reloading ' + terminology
+                  + ' Refset Members has failed.  Please view log for details.');
+                $rootScope.handleHttpError(data, status, headers, config);
+              }
             });
 
         }
