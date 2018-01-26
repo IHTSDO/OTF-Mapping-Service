@@ -55,6 +55,7 @@ import org.ihtsdo.otf.mapping.jpa.algo.Rf2DeltaLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.Rf2SnapshotLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.SimpleLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.handlers.IndexViewerHandler;
+import org.ihtsdo.otf.mapping.jpa.helpers.LoggerUtility;
 import org.ihtsdo.otf.mapping.jpa.services.AmazonS3ServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
@@ -1708,7 +1709,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
         Logger.getLogger(getClass()).info(
             "Load Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
-
+        
       } catch (Exception e) {
         handleException(e, "trying to load refset members");
         return "Failure";
@@ -1764,7 +1765,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       securityService.close();
       return e.getMessage();
     }
-
+    
     // Get all non-published projects that have source terminology matching the
     // passed-in terminology
     final MappingService mappingService = new MappingServiceJpa();
@@ -1820,7 +1821,9 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         fileStream.close();
       }
       
-      for (MapProject mapProject : mapProjectsForSourceTerminology) {
+      for (int i=0; i < mapProjectsForSourceTerminology.size(); i++) {
+        MapProject mapProject = mapProjectsForSourceTerminology.get(i);
+        
         final String refsetId = mapProject.getRefSetId();
                  
         Logger.getLogger(getClass())
@@ -1828,6 +1831,12 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
         final RefsetmemberRemoverAlgorithm removeAlgo =
             new RefsetmemberRemoverAlgorithm(refsetId);
+
+        // only for first project, log initial message
+        if (i == 0) {
+          Logger log = LoggerUtility.getLogger("remove_maps");
+          log.info("Starting removal and loading of ALL refset members on projects with source terminology " + sourceTerminology + ".");
+        }
         removeAlgo.compute();
         removeAlgo.close();
 
@@ -1958,7 +1967,9 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
         Logger.getLogger(getClass()).info(
             "Load Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
-
+        Logger log = LoggerUtility.getLogger("load_maps");
+        log.info("Done removal and loading of ALL refset members on projects with source terminology " + sourceTerminology + ".");
+        
       }
 
     } catch (Exception e) {

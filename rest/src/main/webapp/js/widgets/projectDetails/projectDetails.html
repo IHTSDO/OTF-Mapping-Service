@@ -1442,17 +1442,22 @@
     <b>Parameters</b>
      
     <table class="table">
-
-      <tr>
-        <td>Effective Time:</td>
-        <td><input ng-model="release.effectiveTime"></td>
-
-      </tr>
-      <tr>
-        <td>Module Id</td>
-        <td><input ng-model="focusProject.moduleId"></td>
-        
-      </tr>
+      <thead>
+        <tr>
+          <th style="width: 40%;"></th>
+          <th style="width: 60%;"></th>
+        </tr>
+      </thead>
+	  <tbody>
+        <tr>
+          <td>Effective Time (YYYYMMDD):</td>
+          <td><input ng-model="release.effectiveTime"></td>
+        </tr>
+        <tr>
+          <td>Module Id</td>
+          <td><input ng-model="focusProject.moduleId"></td>      
+        </tr>
+      </tbody>
     </table>
 
     <b>Releases</b>

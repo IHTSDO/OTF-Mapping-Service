@@ -262,10 +262,9 @@ angular
           $rootScope.$broadcast('mapRecordWidget.notification.recordChanged', {
             record : angular.copy($scope.record),
             project : $scope.project
-
           });
         }
-
+        
         // initialize local variables
         var currentLocalId = 1; // used for addition
         // of new entries
@@ -1530,8 +1529,6 @@ angular
           $scope.selectMapEntry(newEntry);
 
           $scope.saveGroups();
-          //$scope.saveHistory( { 'type':'groupsTree', 'value': angular.copy($scope.groupsTree) });
-
         };
 
         $scope.deleteMapEntry = function(entry) {
@@ -1549,9 +1546,6 @@ angular
           if ($scope.record.mapEntry && $scope.record.mapEntry.length > 0) {
             $scope.selectMapEntry($scope.record.mapEntry[0]);
           }
-          
-      	  //$scope.saveHistory( { 'type':'groupsTree', 'value': angular.copy($scope.groupsTree) });
-
         };
 
         // Notification watcher for save/delete entry events
@@ -1607,8 +1601,6 @@ angular
 
           // save the groups
           $scope.saveGroups();
-          
-          //$scope.saveHistory( { 'type':'groupsTree', 'value': angular.copy($scope.groupsTree) });
         };
 
         // Removes a map group if it exists
@@ -1627,9 +1619,6 @@ angular
           if ($scope.record.mapEntry && $scope.record.mapEntry.length > 0) {
             $scope.selectMapEntry($scope.record.mapEntry[0]);
           }
-          
-          //$scope.saveHistory( { 'type':'groupsTree', 'value': angular.copy($scope.groupsTree) });
-
         };
 
         // /////////////////////
@@ -1866,8 +1855,9 @@ angular
         
         $scope.setValues = function(historyRecord) {
         	historyLock = true;
-        	console.debug('SET:', JSON.stringify(historyRecord))
+        	console.debug('SET:', JSON.stringify(historyRecord));
         	$scope.groupsTree = historyRecord['groupsTree']; 
+        	$scope.record.mapEntry = historyRecord['record']['mapEntry'];
         	$scope.record.mapNote = historyRecord['record']['mapNote'];
         	$scope.record.mapPrinciple = historyRecord['record']['mapPrinciple'];
         	$scope.record.flagForConsensusReview = historyRecord['record']['flagForConsensusReview'];
@@ -1892,7 +1882,7 @@ angular
         	historyIndex--;
         	console.debug('click undo to:', historyIndex);
         	var h = JSON.parse(JSON.stringify(history[historyIndex-1]));
-        	console.debug("undo to: ", JSON.stringify(h));
+        	console.debug("undo to: ", h);
         	$scope.setValues(h);
         	$scope.setButtons();
         	broadcastRecord();
@@ -1903,7 +1893,7 @@ angular
         	historyIndex++;
         	console.debug('click redo to:', historyIndex);
         	var h = JSON.parse(JSON.stringify(history[historyIndex-1]));
-        	console.debug("redo to: ", JSON.stringify(h));
+        	console.debug("redo to: ", h);
         	$scope.setValues(h);        	
         	$scope.setButtons();
         	broadcastRecord();
@@ -1916,6 +1906,10 @@ angular
         			? angular.copy($scope.groupsTree) 
         			: {};
         	historyRecord.record = {};
+        	historyRecord.record.mapEntry = 
+            (typeof $scope.record.mapEntry == 'object') 
+              ? angular.copy($scope.record.mapEntry) 
+              : {};
         	historyRecord.record.mapNote = 
         		(typeof $scope.record.mapNote == 'object') 
         			? angular.copy($scope.record.mapNote) 
