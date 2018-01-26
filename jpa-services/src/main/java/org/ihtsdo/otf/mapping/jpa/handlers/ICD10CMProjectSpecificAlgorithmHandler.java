@@ -771,8 +771,8 @@ public class ICD10CMProjectSpecificAlgorithmHandler
     // Verify refSetId and module id are valid
     // -- Verified by release mojo
 
-    // Verify moduleId ss RefSet file is moduleId of map file ...Wed Dec 17
-    if (!member.getModuleId().equals(Long.valueOf("449080006"))) {
+    // Verify moduleId ss RefSet file is moduleId of map file ...
+    if (!member.getModuleId().equals(Long.valueOf("5991000124107"))) {
       result.addError("Module id is wrong - " + member);
     }
 
