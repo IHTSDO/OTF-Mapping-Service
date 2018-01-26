@@ -657,5 +657,12 @@ public class MappingClientRest extends RootClientRest
     // TODO Auto-generated method stub
     return null;
   }
+
+  @Override
+  public MapUserRole getMapUserRoleForApplication(String username,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
   
 }

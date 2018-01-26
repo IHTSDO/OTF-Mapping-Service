@@ -182,6 +182,8 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
       writer.print("");
       writer.close(); 
       
+      log.info("Starting Rf2 Snapshot Load of " + terminology);
+      
 		Properties config = ConfigUtility.getConfigProperties();
 
 		// check that notifications can be sent if requested
@@ -407,13 +409,12 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 				contentService.close();
 
 			}
+			
+			log.info("Done Rf2 Snapshot Load of " + terminology);
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			log.error(e.getMessage());
-            for (StackTraceElement element : e.getStackTrace()) {
-              log.error(element.toString());
-            }
+			log.error(e.getMessage(), e);
 			throw e;
 		} finally {
 			LoggerUtility.removeLogger("load");
