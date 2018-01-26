@@ -66,7 +66,7 @@ public class RefsetmemberRemoverAlgorithm extends RootServiceJpa
 	@Override
 	public void compute() throws Exception {
       
-		log.info("Starting removing refset members");
+		log.info("Starting removing refset members for refsetId " + refsetId);
 		log.info("  refsetId = " + refsetId);
 		
 		try {
@@ -99,7 +99,7 @@ public class RefsetmemberRemoverAlgorithm extends RootServiceJpa
 								+ deleteRecords);
 
 				tx.commit();
-				log.info("Done removing refset members");
+				log.info("Done removing refset members for refsetId " + refsetId);
 
 			} catch (Exception e) {
 				tx.rollback();
