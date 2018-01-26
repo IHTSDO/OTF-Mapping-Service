@@ -2100,7 +2100,7 @@ public class MappingServiceJpa extends RootServiceJpa
             && !refSetMember.getMapAdvice().equals("")) {
           for (final MapAdvice ma : mapAdvices.getIterable()) {
             if (refSetMember.getMapAdvice().indexOf(ma.getName()) != -1
-                && !ma.getName().equals(relationName)) {
+                && !ma.getName().toUpperCase().equals(relationName.toUpperCase())) {
               mapEntry.addMapAdvice(ma);
               Logger.getLogger(getClass()).debug("    " + ma.getName());
             }
