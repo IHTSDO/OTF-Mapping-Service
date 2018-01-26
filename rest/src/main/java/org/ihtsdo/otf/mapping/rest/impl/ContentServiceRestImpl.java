@@ -15,6 +15,8 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -33,6 +35,7 @@ import javax.ws.rs.core.MediaType;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.ConceptList;
+import org.ihtsdo.otf.mapping.helpers.MapProjectList;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
@@ -1307,6 +1310,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
     // Track system level information
     long startTimeOrig = System.nanoTime();
+    boolean success = false;
 
     String userName = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
         "reload RF2 snapshot terminology from aws ", securityService);
@@ -1372,6 +1376,19 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       securityService.addLogEntry(userName, terminology, removeVersion, null,
           "REMOVER", "Remove terminology");
 
+      // update source terminology version on projects that will use
+      // version that will be loaded next
+      MappingService mappingService = new MappingServiceJpa();
+      MapProjectList mapProjects = mappingService.getMapProjects();
+      
+      for (MapProject mapProject : mapProjects.getMapProjects()) {
+        if (mapProject.getSourceTerminologyVersion().equals(removeVersion)) {
+          mapProject.setSourceTerminologyVersion(loadVersion);
+          mappingService.updateMapProject(mapProject);
+        }
+      }
+      mappingService.close();
+      
       // if no errors try to load from aws
 
       final String localTerminology = removeSpaces(terminology);
@@ -1433,11 +1450,14 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
         Logger.getLogger(getClass())
             .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+        
 
+        success = true;
         return "Success";
       } catch (Exception e) {
+        success = false;
         handleException(e,
-            "trying to load terminology snapshot from RF2 directory");
+            "trying to reload RF2 snapshot terminology from aws");
         return "Failure";
       } finally {
         // Remove directory
@@ -1445,9 +1465,46 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         algo.close();
       }
     } catch (Exception e) {
-      handleException(e, "trying to remove terminology");
+      success = false;
+      handleException(e, "trying to reload RF2 snapshot terminology from aws");
       return "Failure";
     } finally {
+      
+      // send the user a notice that the reload is complete
+      Properties config = ConfigUtility.getConfigProperties();
+      String from;
+      if (config.containsKey("mail.smtp.from")) {
+        from = config.getProperty("mail.smtp.from");
+      } else {
+        from = config.getProperty("mail.smtp.user");
+      }
+      Properties props = new Properties();
+      props.put("mail.smtp.user", config.getProperty("mail.smtp.user"));
+      props.put("mail.smtp.password",
+          config.getProperty("mail.smtp.password"));
+      props.put("mail.smtp.host", config.getProperty("mail.smtp.host"));
+      props.put("mail.smtp.port", config.getProperty("mail.smtp.port"));
+      props.put("mail.smtp.starttls.enable",
+          config.getProperty("mail.smtp.starttls.enable"));
+      props.put("mail.smtp.auth", config.getProperty("mail.smtp.auth"));
+      MappingService mappingService = new MappingServiceJpa();
+      String notificationRecipients = mappingService.getMapUser(userName).getEmail();
+      String notificationMessage = "";
+      if (success) {
+        notificationMessage = "Hello,\n\nReloading terminology " + terminology + " has been completed.  \n\n";
+      } else {
+        notificationMessage = "Hello,\n\nReloading terminology " + terminology + " failed. Please check the log available on the UI and report the problem to an administrator. \n\n";
+      }
+      try {
+        ConfigUtility.sendEmail("[OTF-Mapping-Tool] Reloading terminology results", from,
+            notificationRecipients, notificationMessage, props,
+            "true".equals(config.getProperty("mail.smtp.auth")));
+      } catch (Exception e) {
+        // Don't allow an error here to stop processing
+        e.printStackTrace();
+      }
+      mappingService.close();
+      
       RootServiceJpa.unlockProcess();
       securityService.close();
     }
@@ -1984,8 +2041,10 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         }
       }
 
-      // Remove all duplicates defined by term-version-scope
-      returnList.removeDups();
+      // Remove all duplicates defined by term-version-scope but send out
+      // notifications so people can address
+      Map<String, Set<TerminologyVersion>> dups = returnList.removeDups();
+      sendDuplicateVersionNotification(dups);
 
       return returnList;
     } catch (Exception e) {
@@ -2058,4 +2117,80 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     else
       return null;
   }
+
+	/**
+	 * If duplicate terminology-version pairs found on S3, send email
+	 * notification.
+	 *
+	 * @param dups
+	 *            Map of duplicate terminologies to each duplicate
+	 * @throws Exception
+	 *             the exception
+	 */
+	private void sendDuplicateVersionNotification(Map<String, Set<TerminologyVersion>> dups) throws Exception {
+		Properties config = ConfigUtility.getConfigProperties();
+
+		if (!dups.isEmpty()) {
+			// Define recipients
+			String notificationRecipients = config.getProperty("send.notification.recipients");
+
+			if (!notificationRecipients.isEmpty() && "true".equals(config.getProperty("mail.enabled"))) {
+				Logger.getLogger(ContentServiceRestImpl.class)
+						.info("Identified " + dups.size() + " sets of duplicate terminologies.  Sending email");
+
+				// Define sender
+				String sender;
+				if (config.containsKey("mail.smtp.from")) {
+					sender = config.getProperty("mail.smtp.from");
+				} else {
+					sender = config.getProperty("mail.smtp.user");
+				}
+
+				// Define email properties
+				Properties props = new Properties();
+				props.put("mail.smtp.user", config.getProperty("mail.smtp.user"));
+				props.put("mail.smtp.password", config.getProperty("mail.smtp.password"));
+				props.put("mail.smtp.host", config.getProperty("mail.smtp.host"));
+				props.put("mail.smtp.port", config.getProperty("mail.smtp.port"));
+				props.put("mail.smtp.starttls.enable", config.getProperty("mail.smtp.starttls.enable"));
+				props.put("mail.smtp.auth", config.getProperty("mail.smtp.auth"));
+
+				// Create Message Body
+				StringBuffer messageBody = new StringBuffer();
+				int counter = 1;
+				for (String triplet : dups.keySet()) {
+					Set<TerminologyVersion> termVers = dups.get(triplet);
+					TerminologyVersion tvForPrintout = termVers.iterator().next();
+
+					messageBody.append("Warning: Duplicate terminology-version pairs found on AWS");
+					messageBody.append(System.getProperty("line.separator"));
+					messageBody.append(System.getProperty("line.separator"));
+					messageBody.append("DUPLICATE #" + counter++);
+					messageBody.append(System.getProperty("line.separator"));
+					messageBody.append("TERMINOLOGY: " + tvForPrintout.getTerminology());
+					messageBody.append(System.getProperty("line.separator"));
+					messageBody.append("VERSION: " + tvForPrintout.getVersion());
+					messageBody.append(System.getProperty("line.separator"));
+					if (tvForPrintout.getScope() != null) {
+						messageBody.append("For Scope: " + tvForPrintout.getScope());
+						messageBody.append(System.getProperty("line.separator"));
+					}
+
+					messageBody.append(System.getProperty("line.separator"));
+
+					int fileCounter = 1;
+					for (TerminologyVersion tv : termVers) {
+						messageBody.append("\tAWS FILE #" + fileCounter++ + ": " + tv.getAwsZipFileName());
+						messageBody.append(System.getProperty("line.separator"));
+					}
+					messageBody.append(System.getProperty("line.separator"));
+					messageBody.append(System.getProperty("line.separator"));
+				}
+
+				ConfigUtility.sendEmail("IHTSDO Mapping Tool Duplicate Terminologies Warning", sender,
+						notificationRecipients, messageBody.toString(), props,
+						"true".equals(config.getProperty("mail.smtp.auth")));
+			}
+		}
+	}
 }
