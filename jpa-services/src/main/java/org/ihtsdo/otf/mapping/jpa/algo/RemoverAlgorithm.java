@@ -174,10 +174,7 @@ public class RemoverAlgorithm extends RootServiceJpa
 
 			} catch (Exception e) {
 				tx.rollback();
-				log.error(e.getMessage());
-	            for (StackTraceElement element : e.getStackTrace()) {
-	                log.error(element.toString());
-	            }
+				log.error(e.getMessage(), e);
 				throw e;
 			} finally {
 				// Clean-up
@@ -190,10 +187,7 @@ public class RemoverAlgorithm extends RootServiceJpa
 
 		} catch (Exception e) {
 			e.printStackTrace();
-		    log.error(e.getMessage());
-            for (StackTraceElement element : e.getStackTrace()) {
-              log.error(element.toString());
-            }
+		    log.error(e.getMessage(), e);
 			throw new Exception("Unexpected exception:", e);
 		} finally {
 	        //remove remove logger configuration
