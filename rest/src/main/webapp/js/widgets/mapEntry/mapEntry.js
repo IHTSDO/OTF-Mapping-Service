@@ -62,44 +62,6 @@ angular
 
           });
 
-        //
-        $scope.$on('mapRecordWidget.notification.recordChanged', 
-            function(event, parameters) {
-          console.debug(
-              '  => on mapRecordWidget.notification.recordChanged = ',
-              parameters);
-          if (parameters.record.mapEntry) {
-            //max parameters.record.mapEntry[].mapGroup
-            var maxMapGroup = getMax(parameters.record.mapEntry, 'mapGroup');
-            if (parameters.record.mapEntry[0].mapAdvice.length > 0) {
-              var temp = filterArray(parameters.record.mapEntry, 'mapGroup', maxMapGroup);
-              $scope.entry.mapAdvice = temp[temp.length-1].mapAdvice;            
-            } else {
-              $scope.entry.mapAdvice = [];
-            }
-          }
-        });
-        
-        function getMax(arr, prop) {
-          var max;
-          for (var i=0; i<arr.length; i++) {
-            if (!max || parseInt(arr[i][prop]) > parseInt(max[prop])) {
-              max = arr[i][prop];
-            }
-          }
-          return max;
-        };
-        
-        function filterArray(arr, prop, value) {
-          var ret = [];
-          for (var i=0; i<arr.length; i++) {
-            if (arr[i][prop] == value) {
-              ret.push(arr[i]);
-            }
-          }
-          return ret;
-        };
-
         // watch for entry deletion from map record page
         $scope
           .$on(
