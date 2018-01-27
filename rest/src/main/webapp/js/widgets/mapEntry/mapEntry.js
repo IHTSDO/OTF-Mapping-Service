@@ -58,7 +58,7 @@ angular
             // compute relation and advice IFF a target or entry has
             // been set attempt to autocompute the map relation, then update the
             // entry
-            $scope.computeParameters(false);
+            // $scope.computeParameters(false);
 
           });
 
