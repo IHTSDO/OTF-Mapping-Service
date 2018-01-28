@@ -1921,12 +1921,6 @@ public class MappingServiceJpa extends RootServiceJpa
           }
         }
 
-        // Skip no-target mappings for first mapPriority entry on mapGroups > 1
-        if (refSetMember.getMapGroup() > 1 && mapPriorityCt == 0
-            && refSetMember.getMapTarget().isEmpty()) {
-          continue;
-        }
-
         // retrieve the concept
         Logger.getLogger(MappingServiceJpa.class)
             .debug("    Get refset member concept");
@@ -2019,6 +2013,18 @@ public class MappingServiceJpa extends RootServiceJpa
               .debug("      Look up relation name = " + relationName);
         }
 
+
+        if (prevMapGroup != refSetMember.getMapGroup()) {
+          mapPriorityCt = 0;
+          prevMapGroup = refSetMember.getMapGroup();
+        }
+        // Skip no-target mappings for first mapPriority entry on mapGroups > 1
+        if (refSetMember.getMapGroup() > 1 && mapPriorityCt == 0
+            && refSetMember.getMapTarget().isEmpty()) {
+          continue;
+        }
+
+        
         Logger.getLogger(getClass()).debug("      Create map entry");
         MapEntry mapEntry = new MapEntryJpa();
         mapEntry.setTargetId(refSetMember.getMapTarget() == null ? ""
@@ -2033,10 +2039,7 @@ public class MappingServiceJpa extends RootServiceJpa
         mapEntry.setRule(rule);
         mapEntry.setMapBlock(refSetMember.getMapBlock());
         mapEntry.setMapGroup(refSetMember.getMapGroup());
-        if (prevMapGroup != refSetMember.getMapGroup()) {
-          mapPriorityCt = 0;
-          prevMapGroup = refSetMember.getMapGroup();
-        }
+
         // Increment map priority as we go through records
         mapEntry.setMapPriority(++mapPriorityCt);
 
