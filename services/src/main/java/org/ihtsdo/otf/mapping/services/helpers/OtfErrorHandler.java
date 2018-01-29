@@ -78,6 +78,7 @@ public class OtfErrorHandler {
     String userName, String project, String objectId)
     throws WebApplicationException {
 
+    Logger.getLogger(OtfErrorHandler.class).error(e);
     e.printStackTrace();
 
     // if a local exception, throw as web application exception
