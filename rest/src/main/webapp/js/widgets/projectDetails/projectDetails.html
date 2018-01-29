@@ -1312,8 +1312,9 @@
     <table class="table" ng-show="applicationRole == 'Administrator'">  
       <tr style="border-bottom:3px solid black"><td colspan="100%"><b>Release processing steps</b> - executed on release server after clone</td></tr>      
       <tr>
-        <td colspan="100%">
-        Current source = {{focusProject.sourceTerminology}}, {{focusProject.sourceTerminologyVersion}}
+        <td colspan="100%"> 
+        Current source = {{focusProject.sourceTerminology}}, {{focusProject.sourceTerminologyVersion}} 
+          <span ng-show="focusProject.sourceTerminologyVersion == 'latest' && latestCloneDate != ''" >(clone date: {{latestCloneDate}})</span>
         <br>
         Current destination = {{focusProject.destinationTerminology}}, {{focusProject.destinationTerminologyVersion}}        
         </td>
