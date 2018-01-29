@@ -369,4 +369,13 @@ public interface ContentServiceRest {
   String reloadRefsetMembersForTerminologyAwsSnapshot(String sourceTerminology,
     String authToken) throws Exception;
 
+  /**
+   * Gets the latest clone date.
+   *
+   * @param authToken the auth token
+   * @return the latest clone date
+   * @throws Exception the exception
+   */
+  String getLatestCloneDate(String authToken) throws Exception;
+
 }
