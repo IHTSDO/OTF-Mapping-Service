@@ -290,6 +290,19 @@ angular
             $rootScope.handleHttpError(data, status, headers, config);
           });
 
+          $http({
+              url : root_content + 'latest/clone',
+              dataType : 'json',
+              method : 'GET',
+              headers : {
+                'Content-Type' : 'application/json'
+              }
+            }).success(function(data) {
+              $scope.latestCloneDate = data;
+            }).error(function(data, status, headers, config) {
+              $rootScope.handleHttpError(data, status, headers, config);
+            });
+          
           if ($scope.currentRole == 'Administrator') {
             $scope.handleTerminologySelection($scope.focusProject.sourceTerminology);
             $scope.loadProjectReleaseFiles();

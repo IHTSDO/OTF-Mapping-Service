@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -2052,6 +2054,62 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     }
   }
 
+  @Override
+  @GET
+  @Path("/latest/clone")
+  @ApiOperation(value = "Gets the latest date that the db was cloned.", notes = "Gets the latest date that a db was cloned from a backup sqldump.", response = Concept.class)
+  @Produces({
+    MediaType.TEXT_PLAIN
+  })
+  public String getLatestCloneDate(
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(ContentServiceRestImpl.class)
+        .info("RESTful call (Content): /latest/date");
+
+    String cloneDate = "";
+    
+    try {
+      // authorize call
+      authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+          "find latest clone date", securityService);
+
+      String docPath = ConfigUtility.getConfigProperties()
+          .getProperty("map.principle.source.document.dir");
+      
+      // looking for clones directory in the mapping-data dir
+      File docDirectory = new File(docPath);
+      File dataDirectory = docDirectory.getParentFile();
+      File cloneDirectory = new File(dataDirectory, "clones");
+      if (!cloneDirectory.exists()) {
+        return "";
+      } else {
+        File[] files = cloneDirectory.listFiles();
+        for (File f : files) {
+          if (!f.getName().endsWith("mappingservicedb.sql")) {
+            continue;
+          }
+          Pattern datePattern = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
+          Matcher m = datePattern.matcher(f.getName());
+          if (m.find()) {
+            String date = m.group(0);
+            if (date.compareTo(cloneDate) > 0) {
+              cloneDate = date;
+            }
+          }
+        }
+      }
+      return cloneDate.replaceAll("-", "");
+      
+    } catch (Exception e) {
+      handleException(e, "trying to find latest clone date");
+      return null;
+    } finally {
+      securityService.close();
+    }
+  }
+  
   private void unzipToDirectory(File zippedFile, File placementDir)
     throws IOException {
     if (zippedFile == null) {
