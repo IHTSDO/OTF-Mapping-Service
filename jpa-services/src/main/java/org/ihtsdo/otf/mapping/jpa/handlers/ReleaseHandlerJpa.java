@@ -2204,6 +2204,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       }
 
       if (reportDefinition == null) {
+        mappingService.close();
+        reportService.close();
         throw new Exception(
             "Could not get report definition matching 'Release QA'");
       }
@@ -2259,6 +2261,32 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         if (list == null) {
           list = new ArrayList<>();
         }
+        
+        // Don't include up-propagated refset member entries
+        // Skip concept exclusion rules
+        if (member.getMapRule() != null
+            && member.getMapRule().matches("IFA.*")) {
+          if (member.getMapAdvice()
+              .contains("MAP IS CONTEXT DEPENDENT FOR GENDER")
+              && !member.getMapRule().contains("AND IFA")) {
+            // unless simple gender rule, then keep
+          } else if (member.getMapRule().matches(
+              "IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*AND IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*")
+              && !member.getMapRule().matches(".*AND IFA.*AND IFA.*")) {
+            // unless 2-part age rule, then keep
+          } else if (member.getMapRule()
+              .matches("IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*")
+              && !member.getMapRule().contains("AND IFA")) {
+            // unless simple age rule without compund clause, then keep
+          } else {
+            // else skip
+            Logger.getLogger(MappingServiceJpa.class)
+                .debug("    Skipping refset member exclusion rule "
+                    + member.getTerminologyId());
+            continue;
+          }
+        }
+        
         list.add(member);
         refsetMemberMap.put(member.getConcept().getId(), list);
       }
@@ -2514,6 +2542,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       if (!testModeFlag) {
         if (errorFlag) {
           mappingService.rollback();
+          mappingService.close();
+          reportService.close();
           throw new Exception("The validation had errors, please see the log");
         } else {
           mappingService.commit();
