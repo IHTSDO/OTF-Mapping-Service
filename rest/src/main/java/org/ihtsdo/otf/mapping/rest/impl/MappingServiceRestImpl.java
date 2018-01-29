@@ -4106,7 +4106,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       }
 
     } catch (Exception e) {
-      handleException(e, "trying to compare map records", user,
+      handleException(e, "trying to determine if target code is valid", user,
           mapProjectId.toString(), "");
       return null;
     } finally {
@@ -4532,6 +4532,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
 
     String user = null;
     String project = "";
+    boolean success = false;
 
     final MappingService mappingService = new MappingServiceJpa();
     try {
@@ -4560,12 +4561,23 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       handler.setMapProject(mapProject);
       handler.beginRelease();
       RootServiceJpa.unlockProcess();
+      success = true;
       return "Success";
     } catch (Exception e) {
       RootServiceJpa.unlockProcess();
       handleException(e, "trying to begin release", user, project, "");
+      success = false;
       return "Failure";
     } finally {
+      
+      String notificationMessage = "";
+      if (success) {
+        notificationMessage = "Hello,\n\nBegin release for the " + project + " project completed.  \n\n";
+      } else {
+        notificationMessage = "Hello,\n\nBegin release for the " + project + " project failed. Please check the log available on the UI and report the problem to an administrator. \n\n";
+      }
+      sendReleaseNotification(notificationMessage, user);
+      
       mappingService.close();
       securityService.close();
     }
@@ -4670,13 +4682,14 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
 
     String user = null;
     String project = "";
+    boolean success = false;
 
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
       user = authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
           "process release", securityService);
-
+      
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
 
       // If other processes are already running, return the currently running
@@ -4735,13 +4748,23 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       handler.processRelease();
 
       RootServiceJpa.unlockProcess();
+      success = true;
       return "Success";
     } catch (Exception e) {
       RootServiceJpa.unlockProcess();
       handleException(e, "trying to process release", user, project, "");
+      success = false;
       return "Failure";
     } finally {
 
+      String notificationMessage = "";
+      if (success) {
+        notificationMessage = "Hello,\n\nProcess release for the " + project + " project completed.  \n\n";
+      } else {
+        notificationMessage = "Hello,\n\nProcess release for the " + project + " project failed. Please check the log available on the UI and report the problem to an administrator. \n\n";
+      }
+      sendReleaseNotification(notificationMessage, user);
+      
       mappingService.close();
       securityService.close();
     }
@@ -4773,6 +4796,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
 
     String user = null;
     String project = "";
+    boolean success = false;
 
     final MappingService mappingService = new MappingServiceJpa();
     try {
@@ -4829,13 +4853,24 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       handler.finishRelease();
 
       RootServiceJpa.unlockProcess();
+      success = true;
       return "Success";
     } catch (Exception e) {
       RootServiceJpa.unlockProcess();
       handleException(e, "trying to finish release", user, project, "");
+      success = false;
       return "Failure";
     } finally {
 
+
+      String notificationMessage = "";
+      if (success) {
+        notificationMessage = "Hello,\n\n" + (testModeFlag ? "Preview f" : "F") + "inish release for the " + project + " project completed.  \n\n";
+      } else {
+        notificationMessage = "Hello,\n\n" + (testModeFlag ? "Preview f" : "F") + "inish release for the " + project + " project failed. Please check the log available on the UI and report the problem to an administrator. \n\n";
+      }
+      sendReleaseNotification(notificationMessage, user);
+      
       mappingService.close();
       securityService.close();
     }

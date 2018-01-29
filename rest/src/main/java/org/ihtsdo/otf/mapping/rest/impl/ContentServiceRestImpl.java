@@ -1470,41 +1470,14 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       handleException(e, "trying to reload RF2 snapshot terminology from aws");
       return "Failure";
     } finally {
-      
-      // send the user a notice that the reload is complete
-      Properties config = ConfigUtility.getConfigProperties();
-      String from;
-      if (config.containsKey("mail.smtp.from")) {
-        from = config.getProperty("mail.smtp.from");
-      } else {
-        from = config.getProperty("mail.smtp.user");
-      }
-      Properties props = new Properties();
-      props.put("mail.smtp.user", config.getProperty("mail.smtp.user"));
-      props.put("mail.smtp.password",
-          config.getProperty("mail.smtp.password"));
-      props.put("mail.smtp.host", config.getProperty("mail.smtp.host"));
-      props.put("mail.smtp.port", config.getProperty("mail.smtp.port"));
-      props.put("mail.smtp.starttls.enable",
-          config.getProperty("mail.smtp.starttls.enable"));
-      props.put("mail.smtp.auth", config.getProperty("mail.smtp.auth"));
-      MappingService mappingService = new MappingServiceJpa();
-      String notificationRecipients = mappingService.getMapUser(userName).getEmail();
+            
       String notificationMessage = "";
       if (success) {
         notificationMessage = "Hello,\n\nReloading terminology " + terminology + " has been completed.  \n\n";
       } else {
         notificationMessage = "Hello,\n\nReloading terminology " + terminology + " failed. Please check the log available on the UI and report the problem to an administrator. \n\n";
       }
-      try {
-        ConfigUtility.sendEmail("[OTF-Mapping-Tool] Reloading terminology results", from,
-            notificationRecipients, notificationMessage, props,
-            "true".equals(config.getProperty("mail.smtp.auth")));
-      } catch (Exception e) {
-        // Don't allow an error here to stop processing
-        e.printStackTrace();
-      }
-      mappingService.close();
+      sendReleaseNotification(notificationMessage, userName);
       
       RootServiceJpa.unlockProcess();
       securityService.close();
@@ -1749,6 +1722,9 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
     // Track system level information
     long startTimeOrig = System.nanoTime();
+    
+    // Track if process finishes, to send email notification
+    boolean success = false;
 
     final String userName = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
         "reload refset members for source terminology " + sourceTerminology,
@@ -1971,11 +1947,21 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         log.info("Done removal and loading of ALL refset members on projects with source terminology " + sourceTerminology + ".");
         
       }
-
+      success = true;
+      
     } catch (Exception e) {
       handleException(e, "trying to load refset members");
+      success = false;
       return "Failure";
     } finally {
+      String notificationMessage = "";
+      if (success) {
+        notificationMessage = "Hello,\n\nReloading refset members completed.  \n\n";
+      } else {
+        notificationMessage = "Hello,\n\nReloading refset members failed. Please check the log available on the UI and report the problem to an administrator. \n\n";
+      }
+      sendReleaseNotification(notificationMessage, userName);
+      
       // Remove directory
       FileUtils.deleteDirectory(placementDir);
       RootServiceJpa.unlockProcess();
@@ -2128,6 +2114,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     else
       return null;
   }
+
 
 	/**
 	 * If duplicate terminology-version pairs found on S3, send email

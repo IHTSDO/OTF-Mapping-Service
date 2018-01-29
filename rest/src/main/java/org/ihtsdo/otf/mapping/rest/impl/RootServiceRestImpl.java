@@ -1,13 +1,18 @@
 package org.ihtsdo.otf.mapping.rest.impl;
 
+import java.util.Properties;
+
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
+import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.rest.RootServiceRest;
+import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.OtfErrorHandler;
 
 /**
@@ -115,4 +120,37 @@ public class RootServiceRestImpl implements RootServiceRest {
 		return exists;
 
 	}
+	
+	  // send an email notification to the user when a process completes or fails
+	  protected void sendReleaseNotification(String notificationMessage, String userName) throws Exception {
+	    // send the user a notice that the reload is complete
+	    Properties config = ConfigUtility.getConfigProperties();
+	    String from;
+	    if (config.containsKey("mail.smtp.from")) {
+	      from = config.getProperty("mail.smtp.from");
+	    } else {
+	      from = config.getProperty("mail.smtp.user");
+	    }
+	    Properties props = new Properties();
+	    props.put("mail.smtp.user", config.getProperty("mail.smtp.user"));
+	    props.put("mail.smtp.password",
+	        config.getProperty("mail.smtp.password"));
+	    props.put("mail.smtp.host", config.getProperty("mail.smtp.host"));
+	    props.put("mail.smtp.port", config.getProperty("mail.smtp.port"));
+	    props.put("mail.smtp.starttls.enable",
+	        config.getProperty("mail.smtp.starttls.enable"));
+	    props.put("mail.smtp.auth", config.getProperty("mail.smtp.auth"));
+	    MappingService mappingService = new MappingServiceJpa();
+	    String notificationRecipients = mappingService.getMapUser(userName).getEmail();
+	    
+	    try {
+	      ConfigUtility.sendEmail("[OTF-Mapping-Tool] Reloading terminology results", from,
+	          notificationRecipients, notificationMessage, props,
+	          "true".equals(config.getProperty("mail.smtp.auth")));
+	    } catch (Exception e) {
+	      // Don't allow an error here to stop processing
+	      e.printStackTrace();
+	    }
+	  }
+	  
 }
