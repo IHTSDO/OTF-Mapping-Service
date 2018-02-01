@@ -1899,17 +1899,18 @@ public class MappingServiceJpa extends RootServiceJpa
 
         // Skip concept exclusion rules
         if (refSetMember.getMapRule() != null
-            && refSetMember.getMapRule().matches("IFA\\s\\d*\\s\\|.*\\s\\|")) {
+            && refSetMember.getMapRule().matches("IFA.*")) {
           if (refSetMember.getMapAdvice()
               .contains("MAP IS CONTEXT DEPENDENT FOR GENDER")
-              && !refSetMember.getMapRule().matches("AND IFA")) {
+              && !refSetMember.getMapRule().contains("AND IFA")) {
             // unless simple gender rule, then keep
           } else if (refSetMember.getMapRule().matches(
-              "IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*AND IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>]")) {
+              "IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*AND IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*")
+              && !refSetMember.getMapRule().matches(".*AND IFA.*AND IFA.*")) {
             // unless 2-part age rule, then keep
           } else if (refSetMember.getMapRule()
-              .matches("IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>]")
-              && !refSetMember.getMapRule().matches("AND IFA")) {
+              .matches("IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*")
+              && !refSetMember.getMapRule().contains("AND IFA")) {
             // unless simple age rule without compund clause, then keep
           } else {
             // else skip
@@ -2012,6 +2013,18 @@ public class MappingServiceJpa extends RootServiceJpa
               .debug("      Look up relation name = " + relationName);
         }
 
+
+        if (prevMapGroup != refSetMember.getMapGroup()) {
+          mapPriorityCt = 0;
+          prevMapGroup = refSetMember.getMapGroup();
+        }
+        // Skip no-target mappings for first mapPriority entry on mapGroups > 1
+        if (refSetMember.getMapGroup() > 1 && mapPriorityCt == 0
+            && refSetMember.getMapTarget().isEmpty()) {
+          continue;
+        }
+
+        
         Logger.getLogger(getClass()).debug("      Create map entry");
         MapEntry mapEntry = new MapEntryJpa();
         mapEntry.setTargetId(refSetMember.getMapTarget() == null ? ""
@@ -2026,10 +2039,7 @@ public class MappingServiceJpa extends RootServiceJpa
         mapEntry.setRule(rule);
         mapEntry.setMapBlock(refSetMember.getMapBlock());
         mapEntry.setMapGroup(refSetMember.getMapGroup());
-        if (prevMapGroup != refSetMember.getMapGroup()) {
-          mapPriorityCt = 0;
-          prevMapGroup = refSetMember.getMapGroup();
-        }
+
         // Increment map priority as we go through records
         mapEntry.setMapPriority(++mapPriorityCt);
 
@@ -2046,7 +2056,7 @@ public class MappingServiceJpa extends RootServiceJpa
             && !refSetMember.getMapAdvice().equals("")) {
           for (final MapAdvice ma : mapAdvices.getIterable()) {
             if (refSetMember.getMapAdvice().indexOf(ma.getName()) != -1
-                && !ma.getName().equals(relationName)) {
+                && !ma.getName().toUpperCase().equals(relationName.toUpperCase())) {
               mapEntry.addMapAdvice(ma);
               Logger.getLogger(getClass()).debug("    " + ma.getName());
             }
@@ -2178,6 +2188,7 @@ public class MappingServiceJpa extends RootServiceJpa
       // set a default project to 1st project found
       m.setLastMapProjectId(
           mapProjects.getIterable().iterator().next().getId());
+
       m.setLastAssignedTab("0");
 
       // add object
@@ -2301,6 +2312,8 @@ public class MappingServiceJpa extends RootServiceJpa
     // default role is Viewer
     return MapUserRole.VIEWER;
   }
+
+
 
   /* see superclass */
   @Override
@@ -2931,5 +2944,6 @@ public class MappingServiceJpa extends RootServiceJpa
 
     return searchResultList;
   }
+
 
 }
