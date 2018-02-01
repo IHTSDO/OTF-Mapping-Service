@@ -45,7 +45,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
   // Ideally this would be encapsulated into a kind of parameter
   // object and passed locally rather than relying on class state.
   // these should NOT be used in the interactive application
-  // Test change
+  private int testInt = 0;
 
   /** The qa prev group. */
   private int qaPrevGroup = 0;
