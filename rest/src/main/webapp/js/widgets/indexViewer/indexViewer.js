@@ -40,6 +40,7 @@ angular
       $scope.searchResultIndex = 0;
       $scope.indexTrail = null;
       $scope.indexTrailHighlighted = null;
+      $scope.userSearch = null;
 
       // get the local storage variables
       $scope.currentUser = localStorageService.get('currentUser');
@@ -71,6 +72,7 @@ angular
         // reset index trails
         $scope.indexTrail = null;
         $scope.indexTrailHighlighted = null;
+        $scope.userSearch = null;
 
         // remove highlighting from current element
         if ($scope.currentResult) {
@@ -269,6 +271,7 @@ angular
 
       // search from link
       $scope.search = function(searchStr) {
+    	$scope.userSearch = searchStr;
         // attempt single term search
         $scope.performAggregatedSearch(searchStr, null, null, false, true).then(function() {
           // on success do nothing
@@ -280,6 +283,8 @@ angular
             $scope.performAggregatedSearch(splitStr[0], splitStr[1], null, false, false);
           } else if (splitStr.length === 3) {
             $scope.performAggregatedSearch(splitStr[0], splitStr[1], splitStr[2], false, false);
+          } else if (splitStr.length > 3) {
+        	$scope.performAggregatedSearch(splitStr[0], splitStr[1], splitStr[2], false, false);
           }
         });
       };

@@ -1784,8 +1784,9 @@ public class ContentServiceJpa extends RootServiceJpa
 
       // if the query is an exact match for the terminology id of this
       // tree position, attach children
+      // Need to remove '+' characters previously added to query
       if (queriedTreePosition.getTerminologyId().toUpperCase()
-          .equals(query.toUpperCase())) {
+          .equals(query.replace("+", "").trim().toUpperCase())) {
         queriedTreePosition.setChildren(
             getChildTreePositions(queriedTreePosition).getTreePositions());
 

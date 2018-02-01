@@ -186,9 +186,12 @@ angular
           $scope.entry.mapRelation = null;
           $scope.entry.mapAdvice = [];
 
-          // attempt to autocompute the map relation, then update the
+          // attempt to autocompute the map relation and map advices, then update the
           // entry
-          $scope.computeParameters(false);
+          //$scope.computeParameters(false);
+          // compute parameters will get called from setTarget()
+          // best to call setTarget first so that advices are computed based on correct targetId
+          $scope.setTarget($scope.entry.targetId);
 
           // get the allowable advices and relations
           $scope.allowableAdvices = getAllowableAdvices($scope.entry,

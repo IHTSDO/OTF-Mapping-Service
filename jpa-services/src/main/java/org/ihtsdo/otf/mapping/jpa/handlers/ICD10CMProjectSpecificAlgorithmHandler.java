@@ -302,7 +302,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       boolean found = false;
       for (MapEntry entry : mapRecord.getMapEntries()) {
     	 if (entry.getMapGroup() == 2 &&
-    			 entry.getTargetId().matches("(V..|W..|X..|Y..).*")) {
+    			 entry.getTargetId() != null && entry.getTargetId().matches("(V..|W..|X..|Y..).*")) {
     		 found = true;
     		 break;
     	 }
@@ -314,7 +314,9 @@ public class ICD10CMProjectSpecificAlgorithmHandler
         if (!TerminologyUtility.hasAdvice(mapEntry, adviceP01)) {
           advices.add(TerminologyUtility.getAdvice(mapProject, adviceP01));
         }
-      } 
+      } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP01)) {
+        advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP01));
+      }
 
  
       //
@@ -358,6 +360,8 @@ public class ICD10CMProjectSpecificAlgorithmHandler
     	  && (mapEntry.getTargetName().toLowerCase().indexOf("unspecified trimester") != -1)
           && !TerminologyUtility.hasAdvice(mapEntry, adviceP04)) {
         advices.add(TerminologyUtility.getAdvice(mapProject, adviceP04));
+      } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP04)) {
+        advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP04));
       }
 
       //
@@ -382,7 +386,9 @@ public class ICD10CMProjectSpecificAlgorithmHandler
     	  && mapEntry.getTargetId().matches("\\D\\d{2}.\\w{3}0$")
           && !TerminologyUtility.hasAdvice(mapEntry, adviceP05)) {
         advices.add(TerminologyUtility.getAdvice(mapProject, adviceP05));
-      }           
+      }   else if (TerminologyUtility.hasAdvice(mapEntry, adviceP05)) {
+        advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP05));
+      }        
       
       //
       // PREDICATE: All target codes in this chapter External causes of 
@@ -396,7 +402,9 @@ public class ICD10CMProjectSpecificAlgorithmHandler
           && mapEntry.getMapGroup() == 1 
           && !TerminologyUtility.hasAdvice(mapEntry, adviceP06)) {
         advices.add(TerminologyUtility.getAdvice(mapProject, adviceP06));
-      } 
+      } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP06)) {
+        advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP06));
+      }
 
       //
       // PREDICATE: Primary map target is T31 and does not have the
@@ -410,6 +418,8 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       if (mapEntry.getTargetId().startsWith("T31")
           && !TerminologyUtility.hasAdvice(mapEntry, adviceP07)) {
         advices.add(TerminologyUtility.getAdvice(mapProject, adviceP07));
+      } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP07)) {
+        advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP07));
       }
 
       //
@@ -424,6 +434,8 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       if (mapEntry.getTargetId().startsWith("T32")
           && !TerminologyUtility.hasAdvice(mapEntry, adviceP08)) {
         advices.add(TerminologyUtility.getAdvice(mapProject, adviceP08));
+      } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP08)) {
+        advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP08));
       }
       
       //
@@ -440,7 +452,9 @@ public class ICD10CMProjectSpecificAlgorithmHandler
     	   mapEntry.getTargetId().matches("(^H40.[3-6]).*")
           && !TerminologyUtility.hasAdvice(mapEntry, adviceP09)) {
         advices.add(TerminologyUtility.getAdvice(mapProject, adviceP09));
-      }      
+      } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP09)) {
+        advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP09));
+      }
       
       //
       // PREDICATE: All target codes with prefix M1A and does not have the
@@ -451,6 +465,8 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       if (mapEntry.getTargetId().startsWith("M1A")
           && !TerminologyUtility.hasAdvice(mapEntry, adviceP10)) {
         advices.add(TerminologyUtility.getAdvice(mapProject, adviceP10));
+      } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP10)) {
+        advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP10));
       }
 
       //
@@ -462,6 +478,8 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       if (mapEntry.getTargetId().startsWith("R40.2")
           && !TerminologyUtility.hasAdvice(mapEntry, adviceP11)) {
         advices.add(TerminologyUtility.getAdvice(mapProject, adviceP11));
+      } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP11)) {
+        advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP11));
       }
       
       //
@@ -754,8 +772,8 @@ public class ICD10CMProjectSpecificAlgorithmHandler
     // Verify refSetId and module id are valid
     // -- Verified by release mojo
 
-    // Verify moduleId ss RefSet file is moduleId of map file ...Wed Dec 17
-    if (!member.getModuleId().equals(Long.valueOf("449080006"))) {
+    // Verify moduleId ss RefSet file is moduleId of map file ...
+    if (!member.getModuleId().equals(Long.valueOf("5991000124107"))) {
       result.addError("Module id is wrong - " + member);
     }
 
