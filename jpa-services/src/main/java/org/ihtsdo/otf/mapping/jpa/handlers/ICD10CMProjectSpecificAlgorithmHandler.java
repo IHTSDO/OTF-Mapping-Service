@@ -65,19 +65,19 @@ public class ICD10CMProjectSpecificAlgorithmHandler
   private boolean qaTrueRuleInGroup = false;
 
   /** The dagger codes. */
-  private static Set<String> daggerCodes = new HashSet<>();
+  private static Set<String> daggerCodes = null;
 
   /** The asterisk codes. */
-  private static Set<String> asteriskCodes = new HashSet<>();
-
-  /** The valid3 digit codes. */
-  private static Set<String> valid3DigitCodes = new HashSet<>();
+  private static Set<String> asteriskCodes = null;
+//
+//  /** The valid3 digit codes. */
+//  private static Set<String> valid3DigitCodes = new HashSet<>();
 
   /** The laterality codes. */
-  private static Set<String> lateralityCodes = new HashSet<>();
+  private static Set<String> lateralityCodes = null;
 
   /** The additional advice codes. */
-  private static Set<String> additionalAdviceCodes = new HashSet<>();
+  private static Set<String> additionalAdviceCodes = null;;
 
   /** The asterisk ref set id. */
   private static String asteriskRefSetId;
@@ -284,6 +284,21 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       } else {
         return new MapAdviceListJpa();
       }
+      final Concept sourceConcept = contentService.getConcept(
+          mapRecord.getConceptId(), mapProject.getSourceTerminology(),
+          mapProject.getSourceTerminologyVersion());
+      final List<Concept> descendants =
+          TerminologyUtility.getActiveDescendants(sourceConcept);
+
+      // lazy initialize
+      if (sourceConcept != null) {
+        sourceConcept.getDescriptions().size();
+        sourceConcept.getRelationships().size();
+        sourceConcept.getInverseRelationships().size();
+        sourceConcept.getSimpleRefSetMembers().size();
+      } else {
+        return new MapAdviceListJpa();
+      }
 
       // Remove any advices that are purely computed and keep only
       // manually
@@ -318,7 +333,6 @@ public class ICD10CMProjectSpecificAlgorithmHandler
           "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE";
       if (!found && mapEntry.getTargetId().matches("(S[0-9].|T[0-8][0-8]).*")
           && !mapEntry.getTargetId().matches("(T[3-9][6-9].|T[6-9][0-5]).*")) {
-
         if (!TerminologyUtility.hasAdvice(mapEntry, adviceP01)) {
           advices.add(TerminologyUtility.getAdvice(mapProject, adviceP01));
         }
@@ -365,11 +379,11 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       // ACTION: add the advice
       //
       final String adviceP04 = "CONSIDER TRIMESTER SPECIFICATION";
-      if (mapEntry.getTargetId().startsWith("O")
-          && (mapEntry.getTargetName().toLowerCase()
-              .indexOf("unspecified trimester") != -1)
-          && !TerminologyUtility.hasAdvice(mapEntry, adviceP04)) {
-        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP04));
+      if (mapEntry.getTargetId().startsWith("O") && (mapEntry.getTargetName()
+          .toLowerCase().indexOf("unspecified trimester") != -1)) {
+        if (!TerminologyUtility.hasAdvice(mapEntry, adviceP04)) {
+          advices.add(TerminologyUtility.getAdvice(mapProject, adviceP04));
+        }
       } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP04)) {
         advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP04));
       }
@@ -395,9 +409,10 @@ public class ICD10CMProjectSpecificAlgorithmHandler
           || mapEntry.getTargetId().matches("(O60.[1-2]).*")
           || mapEntry.getTargetId().startsWith("O64")
           || mapEntry.getTargetId().startsWith("O69"))
-          && mapEntry.getTargetId().matches("\\D\\d{2}.\\w{3}0$")
-          && !TerminologyUtility.hasAdvice(mapEntry, adviceP05)) {
-        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP05));
+          && mapEntry.getTargetId().matches("\\D\\d{2}.\\w{3}0$")) {
+        if (!TerminologyUtility.hasAdvice(mapEntry, adviceP05)) {
+          advices.add(TerminologyUtility.getAdvice(mapProject, adviceP05));
+        }
       } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP05)) {
         advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP05));
       }
@@ -411,9 +426,10 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       final String adviceP06 =
           "THIS IS AN EXTERNAL CAUSE CODE FOR USE IN A SECONDARY POSITION";
       if (mapEntry.getTargetId().matches("^[VWXY].*")
-          && mapEntry.getMapGroup() == 1
-          && !TerminologyUtility.hasAdvice(mapEntry, adviceP06)) {
-        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP06));
+          && mapEntry.getMapGroup() == 1) {
+        if (!TerminologyUtility.hasAdvice(mapEntry, adviceP06)) {
+          advices.add(TerminologyUtility.getAdvice(mapProject, adviceP06));
+        }
       } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP06)) {
         advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP06));
       }
@@ -427,9 +443,10 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       //
       final String adviceP07 =
           "USE AS PRIMARY CODE ONLY IF SITE OF BURN UNSPECIFIED, OTHERWISE USE AS A SUPPLEMENTARY CODE WITH CATEGORIES T20-T25 (Burns)";
-      if (mapEntry.getTargetId().startsWith("T31")
-          && !TerminologyUtility.hasAdvice(mapEntry, adviceP07)) {
-        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP07));
+      if (mapEntry.getTargetId().startsWith("T31")) {
+        if (!TerminologyUtility.hasAdvice(mapEntry, adviceP07)) {
+          advices.add(TerminologyUtility.getAdvice(mapProject, adviceP07));
+        }
       } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP07)) {
         advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP07));
       }
@@ -444,9 +461,10 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       //
       final String adviceP08 =
           "USE AS PRIMARY CODE ONLY IF SITE OF CORROSION UNSPECIFIED, OTHERWISE USE AS A SUPPLEMENTARY CODE WITH CATEGORIES T20-T25 (Burns)";
-      if (mapEntry.getTargetId().startsWith("T32")
-          && !TerminologyUtility.hasAdvice(mapEntry, adviceP08)) {
-        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP08));
+      if (mapEntry.getTargetId().startsWith("T32")) {
+        if (!TerminologyUtility.hasAdvice(mapEntry, adviceP08)) {
+          advices.add(TerminologyUtility.getAdvice(mapProject, adviceP08));
+        }
       } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP08)) {
         advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP08));
       }
@@ -462,23 +480,27 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       if (mapEntry.getTargetId().startsWith("H40.20")
           || mapEntry.getTargetId().startsWith("H40.22")
           || mapEntry.getTargetId().matches("(^H40.1).*")
-          || mapEntry.getTargetId().matches("(^H40.[3-6]).*")
-              && !TerminologyUtility.hasAdvice(mapEntry, adviceP09)) {
-        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP09));
+          || mapEntry.getTargetId().matches("(^H40.[3-6]).*")) {
+        if (!TerminologyUtility.hasAdvice(mapEntry, adviceP09)) {
+          advices.add(TerminologyUtility.getAdvice(mapProject, adviceP09));
+        }
       } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP09)) {
         advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP09));
       }
 
+      // RAW: Removed 2/2/2018 based on client request
       //
       // PREDICATE: All target codes with prefix M1A and does not have the
       // advice "CONSIDER TOPHUS SPECIFICATION"
       // ACTION: add the advice
       //
       final String adviceP10 = "CONSIDER TOPHUS SPECIFICATION";
-      if (mapEntry.getTargetId().startsWith("M1A")
-          && !TerminologyUtility.hasAdvice(mapEntry, adviceP10)) {
-        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP10));
-      } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP10)) {
+//      if (mapEntry.getTargetId().startsWith("M1A")) {
+//        if (!TerminologyUtility.hasAdvice(mapEntry, adviceP10)) {
+//          advices.add(TerminologyUtility.getAdvice(mapProject, adviceP10));
+//        }
+//      } else 
+        if (TerminologyUtility.hasAdvice(mapEntry, adviceP10)) {
         advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP10));
       }
 
@@ -489,34 +511,49 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       // ACTION: add the advice
       //
       final String adviceP11 = "CONSIDER TIME OF COMA SCALE SPECIFICATION";
-      if (mapEntry.getTargetId().startsWith("R40.2")
-          && !TerminologyUtility.hasAdvice(mapEntry, adviceP11)) {
-        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP11));
+      if (mapEntry.getTargetId().startsWith("R40.2")) {
+        if (!TerminologyUtility.hasAdvice(mapEntry, adviceP11)) {
+          advices.add(TerminologyUtility.getAdvice(mapProject, adviceP11));
+        }
       } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP11)) {
         advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP11));
       }
 
       //
-      // PREDICATE: All codes with description notes starting with
-      // 'use_additional', 'code_first'
-      // 'code_also' or if any of their ancestors* have description notes
-      // starting with these
-      // phrases should be givene the advice "CONSIDER ADDITIONAL CODE TO
+      //
+      // PREDICATE: Map target code is in the annually updated (by NLM)
+      // list of
+      // additional advice codes and does not have the
+      // advice "CONSIDER ADDITIONAL CODE TO
       // IDENTIFY SPECIFIC CONDITION OR DISEASE"
-      // *ancestors: are only searched up till one layer above the 3
-      // character level (e.g. T36-T50)
       // ACTION: add the advice
       //
       final String adviceP12 =
           "CONSIDER ADDITIONAL CODE TO IDENTIFY SPECIFIC CONDITION OR DISEASE";
-      final Concept conceptP12 = contentService.getConcept(
-          mapEntry.getTargetId(), mapProject.getDestinationTerminology(),
-          mapProject.getDestinationTerminologyVersion());
-      boolean matchingNote = isMatchingDescriptionNote(conceptP12);
-      if (matchingNote && !TerminologyUtility.hasAdvice(mapEntry, adviceP12)) {
-        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP12));
-      } else if (!matchingNote) {
+      if (additionalAdviceCodes.contains(mapEntry.getTargetId())) {
+        if (!TerminologyUtility.hasAdvice(mapEntry, adviceP12)) {
+          advices.add(TerminologyUtility.getAdvice(mapProject, adviceP12));
+        }
+      } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP12)) {
         advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP12));
+      }
+
+      //
+      // PREDICATE: All SNOMEDCT_US concepts that have more than 10 distinct
+      // descendants should be give then advice
+      // "DESCENDANTS NOT EXHAUSTIVELY MAPPED
+      // ACTION: add the advice
+      //
+
+      final String descendantAdvice = "DESCENDANTS NOT EXHAUSTIVELY MAPPED";
+      if (descendants.size() > 10) {
+        if (!TerminologyUtility.hasAdvice(mapEntry, descendantAdvice)) {
+          advices
+              .add(TerminologyUtility.getAdvice(mapProject, descendantAdvice));
+        }
+      } else if (TerminologyUtility.hasAdvice(mapEntry, descendantAdvice)) {
+        advices
+            .remove(TerminologyUtility.getAdvice(mapProject, descendantAdvice));
       }
 
       MapAdviceList mapAdviceList = new MapAdviceListJpa();
@@ -899,9 +936,13 @@ public class ICD10CMProjectSpecificAlgorithmHandler
   private void cacheCodes() throws Exception {
 
     // lazy initialize
-    if (!asteriskCodes.isEmpty()) {
+    if (asteriskCodes != null) {
       return;
     }
+
+    asteriskCodes = new HashSet<>();
+    daggerCodes = new HashSet<>();
+
     final ContentServiceJpa contentService = new ContentServiceJpa();
     final MetadataService metadataService = new MetadataServiceJpa();
     final EntityManager manager = contentService.getEntityManager();
@@ -962,8 +1003,8 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       // Report to log
       Logger.getLogger(getClass()).info("  asterisk codes = " + asteriskCodes);
       Logger.getLogger(getClass()).info("  dagger codes = " + daggerCodes);
-      Logger.getLogger(getClass())
-          .info("  valid 3 digit codes* = " + valid3DigitCodes);
+//      Logger.getLogger(getClass())
+//          .info("  valid 3 digit codes* = " + );
     } catch (Exception e) {
       throw e;
     } finally {
@@ -981,6 +1022,12 @@ public class ICD10CMProjectSpecificAlgorithmHandler
 
   private void cacheLateralityCodes() throws Exception {
 
+    // Check if codes are already cached
+    if(lateralityCodes != null){
+      return;
+    }
+    lateralityCodes = new HashSet<>();
+    
     final Properties config = ConfigUtility.getConfigProperties();
     final String dataDir = config.getProperty("data.dir");
     if (dataDir == null) {
@@ -1014,6 +1061,12 @@ public class ICD10CMProjectSpecificAlgorithmHandler
 
   private void cacheAdditionalAdviceCodes() throws Exception {
 
+    // Check if codes are already cached
+    if(additionalAdviceCodes != null){
+      return;
+    }
+    additionalAdviceCodes = new HashSet<>();    
+    
     final Properties config = ConfigUtility.getConfigProperties();
     final String dataDir = config.getProperty("data.dir");
     if (dataDir == null) {

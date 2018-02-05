@@ -756,6 +756,14 @@ public interface MappingService extends RootService {
     throws Exception;
 
   /**
+   * Recalculate map advice for project.
+   *
+   * @param mapProject the map project
+   * @throws Exception the exception
+   */
+  void recalculateMapAdviceForProject(MapProject mapProject) throws Exception;
+  
+  /**
    * Gets the map project metadata.
    *
    * @return the map project metadata
