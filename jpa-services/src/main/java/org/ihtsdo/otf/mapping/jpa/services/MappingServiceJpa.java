@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -2013,7 +2014,6 @@ public class MappingServiceJpa extends RootServiceJpa
               .debug("      Look up relation name = " + relationName);
         }
 
-
         if (prevMapGroup != refSetMember.getMapGroup()) {
           mapPriorityCt = 0;
           prevMapGroup = refSetMember.getMapGroup();
@@ -2024,7 +2024,6 @@ public class MappingServiceJpa extends RootServiceJpa
           continue;
         }
 
-        
         Logger.getLogger(getClass()).debug("      Create map entry");
         MapEntry mapEntry = new MapEntryJpa();
         mapEntry.setTargetId(refSetMember.getMapTarget() == null ? ""
@@ -2055,8 +2054,8 @@ public class MappingServiceJpa extends RootServiceJpa
         if (refSetMember.getMapAdvice() != null
             && !refSetMember.getMapAdvice().equals("")) {
           for (final MapAdvice ma : mapAdvices.getIterable()) {
-            if (refSetMember.getMapAdvice().indexOf(ma.getName()) != -1
-                && !ma.getName().toUpperCase().equals(relationName.toUpperCase())) {
+            if (refSetMember.getMapAdvice().indexOf(ma.getName()) != -1 && !ma
+                .getName().toUpperCase().equals(relationName.toUpperCase())) {
               mapEntry.addMapAdvice(ma);
               Logger.getLogger(getClass()).debug("    " + ma.getName());
             }
@@ -2312,8 +2311,6 @@ public class MappingServiceJpa extends RootServiceJpa
     // default role is Viewer
     return MapUserRole.VIEWER;
   }
-
-
 
   /* see superclass */
   @Override
@@ -2782,6 +2779,101 @@ public class MappingServiceJpa extends RootServiceJpa
 
   /* see superclass */
   @Override
+  public void recalculateMapAdviceForProject(MapProject mapProject)
+    throws Exception {
+
+    // Initialize the handler
+    ProjectSpecificAlgorithmHandler algorithmHandler =
+        getProjectSpecificAlgorithmHandler(mapProject);
+
+    // commit changes after each object type
+    setTransactionPerOperation(false);
+
+    Logger.getLogger(MappingServiceJpa.class)
+        .info("Recalculating map advices for project " + mapProject.getName()
+            + "...");
+
+    // go through all READY_FOR_PUBLICATION and PUBLISHED map records, and
+    // recalculate map advice
+    beginTransaction();
+
+    ArrayList<WorkflowStatus> publishableStatusList =
+        new ArrayList<>(Arrays.asList(WorkflowStatus.PUBLISHED,
+            WorkflowStatus.READY_FOR_PUBLICATION));
+
+    Logger.getLogger(MappingServiceJpa.class)
+    .info("  loading publishable map records for the project.");    
+    
+    MapRecordList mapRecords = getMapRecordsForMapProject(mapProject.getId());
+    
+    // Only keep READY_FOR_PUBLICATION and PUBLSHED records
+    MapRecordList publishableMapRecords = new MapRecordListJpa();
+    for (final MapRecord mr : mapRecords.getIterable()) {
+
+      if (publishableStatusList.contains(mr.getWorkflowStatus())) {
+        publishableMapRecords.addMapRecord(mr);
+      }
+    }
+    
+    Logger.getLogger(MappingServiceJpa.class)
+    .info("  " + publishableMapRecords.getCount() +  " publishable map records retrieved.");    
+        
+    int recordCount = 0;
+    int updatedCount = 0;
+    
+    for (final MapRecord mr : mapRecords.getIterable()) {
+      recordCount++;
+
+      boolean mapRecordChanged = false;
+
+      // cycle over map entries
+      for (final MapEntry me : mr.getMapEntries()) {
+
+        // Recalculate the advices
+        MapAdviceList calculatedAdviceList =
+            algorithmHandler.computeMapAdvice(mr, me);
+        Set<MapAdvice> calculatedAdviceSet = new HashSet<>();
+        for (MapAdvice mapAdvice : calculatedAdviceList.getIterable()) {
+          calculatedAdviceSet.add(mapAdvice);
+        }
+
+        //Determine whether the advice has changed        
+        if(!calculatedAdviceSet.equals(me.getMapAdvices())){
+          // Set the map advice to the newly calculated list
+          me.setMapAdvices(calculatedAdviceSet);
+          updatedCount++;
+
+          mapRecordChanged = true;
+        }
+      }
+
+      if (mapRecordChanged) {
+        mr.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+        updateMapRecord(mr);
+      }
+      
+      // Commit every 2000 records
+      
+      if (recordCount % commitCt == 0) {
+        Logger.getLogger(MappingServiceJpa.class)
+        .info("  " + recordCount + " map records processed");
+        
+        commit();
+        //manager.clear();
+        beginTransaction();
+      }
+      
+    }
+
+    Logger.getLogger(MappingServiceJpa.class)
+        .info("  " + updatedCount + " map entries had their advices updated");
+    commit();
+    Logger.getLogger(MappingServiceJpa.class).info("  " + "Changes committed");
+
+  }
+
+  /* see superclass */
+  @Override
   public Map<String, Map<String, String>> getMapProjectMetadata()
     throws Exception {
     Map<String, Map<String, String>> idNameMapList = new HashMap<>();
@@ -2944,6 +3036,5 @@ public class MappingServiceJpa extends RootServiceJpa
 
     return searchResultList;
   }
-
 
 }
