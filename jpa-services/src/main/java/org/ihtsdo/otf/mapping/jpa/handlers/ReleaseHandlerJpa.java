@@ -2202,7 +2202,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         if (rd.getName().equals("Release QA"))
           reportDefinition = rd;
       }
-
       if (reportDefinition == null) {
         mappingService.close();
         reportService.close();
@@ -2549,6 +2548,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           mappingService.commit();
         }
       }
+    
 
       logger.info("  Done begin release");
 
