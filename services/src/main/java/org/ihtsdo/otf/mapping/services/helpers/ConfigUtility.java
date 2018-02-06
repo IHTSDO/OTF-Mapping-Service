@@ -312,6 +312,7 @@ public class ConfigUtility {
    * @param recipients the recipients
    * @param body the body
    * @param details the details
+   * @param filename the filename
    * @param authFlag the auth flag
    * @throws Exception the exception
    */
