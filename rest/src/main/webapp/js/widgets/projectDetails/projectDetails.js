@@ -106,6 +106,7 @@ angular
         $scope.fileArray = new Array();
         $scope.amazons3Files = new Array();
         $scope.amazons3FilesPlusCurrent = new Array();
+        $scope.S3Initialized = false;
 
         $scope.termLoadData = new Array();
         $scope.termLoadVersions = new Array();
@@ -302,16 +303,6 @@ angular
             }).error(function(data, status, headers, config) {
               $rootScope.handleHttpError(data, status, headers, config);
             });
-          
-          if ($scope.currentRole == 'Administrator') {
-            $scope.handleTerminologySelection($scope.focusProject.sourceTerminology);
-            $scope.loadProjectReleaseFiles();
-            $scope.fileArray = new Array();
-            $scope.amazons3FilesPlusCurrent = new Array();
-            $scope.getFilesFromAmazonS3();
-            $scope.getCurrentReleaseFile();
-            $scope.getPagedReleaseReports(1);
-          }
 
           // find selected elements from the allowable
           // lists
@@ -2588,5 +2579,19 @@ angular
             });
 
         }
-
+        
+        $scope.S3Initialize = function() {
+          $rootScope.glassPane++;
+          if (!$scope.S3Initialized) {
+            $scope.handleTerminologySelection($scope.focusProject.sourceTerminology);
+            $scope.loadProjectReleaseFiles();
+            $scope.fileArray = new Array();
+            $scope.amazons3FilesPlusCurrent = new Array();
+            $scope.getFilesFromAmazonS3();
+            $scope.getCurrentReleaseFile();
+            $scope.getPagedReleaseReports(1);
+            $scope.S3Initialized = true;
+          }
+          $rootScope.glassPane--;
+        }
       } ]);
