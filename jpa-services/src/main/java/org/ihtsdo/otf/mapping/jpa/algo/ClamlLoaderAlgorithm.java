@@ -65,9 +65,6 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 	/** Name of terminology to be loaded. */
 	private String terminology;
 
-	/** Terminology version */
-	private String version;
-
 	/** The effective time. */
 	private String effectiveTime;
 
@@ -1348,22 +1345,23 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
 
 		BufferedReader br = new BufferedReader(new FileReader(inputFile));
 		String line = null;
-		while ((line = br.readLine()) != null) {
+		if (terminologyVersion == null) {
+		  while ((line = br.readLine()) != null) {
 			if (line.contains("<Title")) {
 				int versionIndex = line.indexOf("version=");
 				if (line.contains("></Title>"))
-					terminologyVersion = line.substring(versionIndex + 9,
+				  terminologyVersion = line.substring(versionIndex + 9,
 							line.indexOf("></Title>") - 1);
 				else
-					terminologyVersion = line.substring(versionIndex + 9,
+				  terminologyVersion = line.substring(versionIndex + 9,
 							versionIndex + 13);
 				effectiveTime = terminologyVersion + "0101";
 				break;
 			}
+		  }
 		}
-		br.close();
-		// Override terminology version with parameter
-		terminologyVersion = version;
+		
+        br.close();
 		log.info("terminologyVersion: " + terminologyVersion);
 
 		try {

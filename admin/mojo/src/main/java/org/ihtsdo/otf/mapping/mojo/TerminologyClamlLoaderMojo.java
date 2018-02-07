@@ -22,12 +22,12 @@ public class TerminologyClamlLoaderMojo extends AbstractTerminologyLoaderMojo {
 	private boolean server = false;
 	
 	/**
-	 * The input directory
+	 * The input file
 	 * 
 	 * @parameter
 	 * @required
 	 */
-	protected String inputDir;
+	protected String inputFile;
 
 	/**
 	 * Name of terminology to be loaded.
@@ -68,8 +68,8 @@ public class TerminologyClamlLoaderMojo extends AbstractTerminologyLoaderMojo {
 	 */
 	@Override
 	public void execute() throws MojoFailureException {
-		getLog().info("Starting loading GMDN terminology");
-		getLog().info("  inputDir    = " + inputDir);
+		getLog().info("Starting loading terminology");
+		getLog().info("  inputFile    = " + inputFile);
 		getLog().info("  terminology = " + terminology);
 		getLog().info("  version     = " + version);
 
@@ -86,7 +86,7 @@ public class TerminologyClamlLoaderMojo extends AbstractTerminologyLoaderMojo {
 				getLog().info("Running directly");
 
 				ContentServiceRestImpl service = new ContentServiceRestImpl();
-				service.loadTerminologyClaml(terminology, version, inputDir,
+				service.loadTerminologyClaml(terminology, version, inputFile,
 						getAuthToken());
 
 			} else {
@@ -94,7 +94,7 @@ public class TerminologyClamlLoaderMojo extends AbstractTerminologyLoaderMojo {
 
 				// invoke the client
 				ContentClientRest client = new ContentClientRest(properties);
-				client.loadTerminologyClaml(terminology, version, inputDir,
+				client.loadTerminologyClaml(terminology, version, inputFile,
 						getAuthToken());
 			}
 
