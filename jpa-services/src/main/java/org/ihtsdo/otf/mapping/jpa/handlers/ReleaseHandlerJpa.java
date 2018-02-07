@@ -2415,6 +2415,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     Logger.getLogger(getClass())
         .info("    Log into the application to see the report results");
 
+    // Commit the new report either way
+    reportService.commit();     
+
       // way to override the errors if we want to proceed with a release anyway
       if (!testModeFlag) {
         if (errorFlag) {
