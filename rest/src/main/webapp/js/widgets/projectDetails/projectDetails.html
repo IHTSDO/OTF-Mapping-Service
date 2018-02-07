@@ -1269,7 +1269,7 @@
 </div>
 
 </uib-accordion-group> <!--  Release Handling --> <uib-accordion-group
-  ng-show="applicationRole == 'Administrator' || currentRole == 'Lead'">
+  ng-click="S3Initialize()" ng-show="applicationRole == 'Administrator' || currentRole == 'Lead'">
 <uib-accordion-heading>
 <h5>Release Handling</h5>
 </uib-accordion-heading>
@@ -1484,7 +1484,7 @@
 
 
 </uib-accordion-group> <!--  Release Reports --> <uib-accordion-group
-  ng-show="applicationRole == 'Administrator'">
+  ng-click="S3Initialize()" ng-show="applicationRole == 'Administrator'">
 <uib-accordion-heading>
 <h5>Release Reports</h5>
 </uib-accordion-heading> 
