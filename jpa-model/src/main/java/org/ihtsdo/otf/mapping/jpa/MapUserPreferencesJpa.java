@@ -54,7 +54,7 @@ public class MapUserPreferencesJpa implements MapUserPreferences {
   private Long mapProjectId;
   
   /** The last tab on the Assigned Work widget on which the user was working. */
-  @Column(nullable = false)
+  @Column(nullable = true)
   private String lastAssignedTab;
   
   /** The last radio button that was selected on the Assigned Work widget. */
