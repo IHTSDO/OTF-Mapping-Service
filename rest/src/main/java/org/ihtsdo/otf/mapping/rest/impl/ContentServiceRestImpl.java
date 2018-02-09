@@ -2072,7 +2072,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     
     try {
       // authorize call
-      authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+      authorizeApp(authToken, MapUserRole.VIEWER,
           "find latest clone date", securityService);
 
       String docPath = ConfigUtility.getConfigProperties()

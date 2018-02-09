@@ -364,8 +364,10 @@ angular
                     }
                   }).success(function(data) {
                     console.debug('  conversation = ', data);
-                    $scope.conversation = data;
-                    initializeReturnRecipients();
+                    if (data) {
+                      $scope.conversation = data;
+                      initializeReturnRecipients();
+                    }
                   }).error(function(data, status, headers, config) {
                     $rootScope.handleHttpError(data, status, headers, config);
                   });
@@ -1743,8 +1745,7 @@ angular
 
           // if no previous feedback conversations, return just
           // first map lead in list
-          if ($scope.conversation == null || $scope.conversation == '') {
-            $scope.returnRecipients.push($scope.project.mapLead[0]);
+          if ($scope.conversation == null || $scope.conversation == '' || $scope.conversation.feedback.length == 0) {
             return;
           }
 
