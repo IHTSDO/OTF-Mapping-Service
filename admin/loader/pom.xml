@@ -585,6 +585,27 @@
         </plugins>
       </build>
     </profile>
+    
+    <profile>
+      <id>Icd10CMSqlReport</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>icd10cm-sql-report</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>run-icd10cm-sql-report</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>    
 
   </profiles>
 </project>
