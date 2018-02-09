@@ -1192,7 +1192,6 @@ angular
             return;
           }
 
-          var localFeedback = $scope.conversation.feedback;
           var localTimestamp = new Date().getTime();
 
           // copy recipient list
@@ -1261,6 +1260,8 @@ angular
 
           } else { // already started a conversation
 
+            var localFeedback = $scope.conversation.feedback;
+            
             // create feedback msg to be added to the
             // conversation
             var feedback = {
