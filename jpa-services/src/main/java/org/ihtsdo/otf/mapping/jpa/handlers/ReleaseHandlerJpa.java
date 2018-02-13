@@ -6,8 +6,11 @@ package org.ihtsdo.otf.mapping.jpa.handlers;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -1288,7 +1291,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     humanReadableFileName = outputDir + "/tls_" + camelCaseName
         + "HumanReadableMap_INT_" + effectiveTime + ".tsv";
     humanReadableWriter =
-        new BufferedWriter(new FileWriter(humanReadableFileName));
+    //    new BufferedWriter(new FileWriter(humanReadableFileName));
+    new BufferedWriter(new OutputStreamWriter(new FileOutputStream(humanReadableFileName), StandardCharsets.UTF_8));
 
     // Write headers (subject to pattern)
     MapRefsetPattern pattern = mapProject.getMapRefsetPattern();
