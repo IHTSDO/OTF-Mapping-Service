@@ -1103,4 +1103,10 @@ public class ICD10CMProjectSpecificAlgorithmHandler
     codeListReader.close();
   }
 
+  @Override
+  public String getReleaseFile3rdElement() throws Exception {
+    // For the US release files, 3rd element is "US1000124".
+    return "US1000124";
+  }  
+  
 }
