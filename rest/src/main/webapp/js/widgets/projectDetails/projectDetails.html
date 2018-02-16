@@ -1503,7 +1503,7 @@
       <tr>
         <td style="padding: 5px;">
           <select style="width: 500px;" id="compareFile1"
-            ng-options='file as (file.terminologyVersion + "  " + file.terminology + "  " + file.value) for file in amazons3Files'
+            ng-options='file as (file.terminologyVersion + "  " + file.terminology + "  " + file.value) for file in amazons3FilesPlusCurrent'
             ng-change="setFiles(selectedFile1, null)"
             ng-model="selectedFile1"></select>
         </td>

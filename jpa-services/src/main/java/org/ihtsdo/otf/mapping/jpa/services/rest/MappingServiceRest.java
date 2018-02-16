@@ -919,10 +919,10 @@ public interface MappingServiceRest {
      *
      * @param mapProjectId the map project id
      * @param authToken the auth token
-     * @return the current release file
+     * @return the current release files
      * @throws Exception the exception
      */
-    SearchResult getCurrentReleaseFileName(Long mapProjectId, String authToken)
+    SearchResultList getCurrentReleaseFileName(Long mapProjectId, String authToken)
       throws Exception;
 
     /**

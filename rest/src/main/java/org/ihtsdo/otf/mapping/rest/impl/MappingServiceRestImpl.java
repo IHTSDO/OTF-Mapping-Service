@@ -32,6 +32,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.naming.AuthenticationException;
 import javax.ws.rs.Consumes;
@@ -4715,7 +4717,11 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
 
       // create release handler in test mode
       ReleaseHandler handler = new ReleaseHandlerJpa(true);
-      handler.setEffectiveTime(current ? "99999999" : effectiveTime);
+      if (current) {
+        final SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd");
+        effectiveTime = dt.format(new Date());
+      }
+      handler.setEffectiveTime(effectiveTime);
       handler.setMapProject(mapProject);
       handler.setModuleId(moduleId);
       handler.setWriteSnapshot(true);
@@ -4728,7 +4734,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       // if processing current/interim release for sake of file comparison,
       // put in a directory called current
       if (current) {
-        outputDir = this.getReleaseDirectoryPath(mapProject, "current");
+        outputDir = this.getReleaseDirectoryPath(mapProject, "current/" + effectiveTime);
       } else {
         outputDir = this.getReleaseDirectoryPath(mapProject, effectiveTime);
       }
@@ -5500,26 +5506,67 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       AmazonS3 s3Client = null;
       s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
 
-      // stream first file from aws
-      S3Object file1 = s3Client.getObject(new GetObjectRequest(
-          "release-ihtsdo-prod-published", olderInputFile1));
-      InputStream objectData1 = file1.getObjectContent();
-
+      // Process first file
+      // open first file either from aws or current release on file system
+      S3Object file1 = null;
+      InputStream objectData1 = null;  
+      
+      // first check if file1 is a 'current' file on local file system
+      // get date on file1
+      Pattern datePattern = Pattern.compile("\\d{8}");
+      Matcher m = datePattern.matcher(olderInputFile1);
+      String fileDate = "";
+      if (m.find()) {
+        fileDate = m.group(0);
+      }
+      File currentDir =
+          new File(this.getReleaseDirectoryPath(mapProject, "current/" + fileDate));
+      File currentReleaseFile =
+          new File(currentDir, olderInputFile1);
+      
+      // if it is a current local file, read it in
+      if (currentReleaseFile.exists()) {
+        objectData1 = new FileInputStream(currentReleaseFile);
+      
+      // if it is not a current local file, stream file1 from aws
+      } else  {    
+        file1 = s3Client.getObject(new GetObjectRequest(
+            "release-ihtsdo-prod-published", olderInputFile1));
+        objectData1 = file1.getObjectContent();
+      }
+     
+      // Process second file
       // open second file either from aws or current release on file system
       S3Object file2 = null;
       InputStream objectData2 = null;
-      // stream second/later file from aws
-      if (!newerInputFile2.contains("99999999")) {
+      List<String> notes = new ArrayList<>();     
+      
+      // first check if file2 is a 'current' file on local file system
+      // get date on file2
+      m = datePattern.matcher(newerInputFile2);
+      if (m.find()) {
+        fileDate = m.group(0);
+      }
+      currentDir =
+          new File(this.getReleaseDirectoryPath(mapProject, "current/" + fileDate));
+      currentReleaseFile =
+          new File(currentDir, newerInputFile2);
+      
+      // if it is a current local file, read it in
+      if (currentReleaseFile.exists()) {
+        objectData2 = new FileInputStream(currentReleaseFile);
+        
+        // handle special ICDO case
+        if (mapProject.getDestinationTerminology().equals("ICDO")) {
+          notes.add(
+              "NOTE: ICDO current release file only contains morphology records, so that should be taken into account when interpreting report results.");
+        }
+      
+      // if it is not a current local file, stream file2 from aws
+      } else  {    
         file2 = s3Client.getObject(new GetObjectRequest(
             "release-ihtsdo-prod-published", newerInputFile2));
         objectData2 = file2.getObjectContent();
-        // comparing to current release file saved on file system
-      } else {
-        final File projectDir =
-            new File(this.getReleaseDirectoryPath(mapProject, "current"));
-        String currentReleaseFile =
-            new File(projectDir, newerInputFile2).getAbsolutePath();
-        objectData2 = new FileInputStream(currentReleaseFile);
       }
 
       InputStream reportInputStream = null;
@@ -5528,13 +5575,6 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
           || newerInputFile2.contains("Full")) {
         throw new LocalException(
             "Full files cannot be compared with this tool.");
-      }
-
-      List<String> notes = new ArrayList<>();
-      if (mapProject.getDestinationTerminology().equals("ICDO")
-          && newerInputFile2.contains("99999999")) {
-        notes.add(
-            "NOTE: ICDO current release file only contains morphology records, so that should be taken into account when interpreting report results.");
       }
 
       // compare extended map files and compose report name
@@ -6011,7 +6051,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public SearchResult getCurrentReleaseFileName(
+  public SearchResultList getCurrentReleaseFileName(
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -6028,33 +6068,40 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       MapProject mapProject = mappingService.getMapProject(mapProjectId);
       final File projectDir =
           new File(this.getReleaseDirectoryPath(mapProject, "current"));
-      File[] releaseFiles = projectDir.listFiles();
+      File[] currentDirs = projectDir.listFiles();
 
-      SearchResult searchResult = new SearchResultJpa();
-      if (!projectDir.exists() && releaseFiles == null) {
+      if (!projectDir.exists() && currentDirs == null) {
         return null;
       }
-      for (File file : releaseFiles) {
-        // filter out human readable and any other release by-products
-        if (!file.getName().contains("SimpleMapSnapshot")
-            && !file.getName().contains("ExtendedMapSnapshot")) {
-          continue;
+      
+      SearchResultList searchResultList = new SearchResultListJpa();
+      for (File currentDir : currentDirs) {
+        SearchResult searchResult = new SearchResultJpa();
+        File[] releaseFiles = currentDir.listFiles();
+        
+        for (File file : releaseFiles) {
+          // filter out human readable and any other release by-products
+          if (!file.getName().contains("SimpleMapSnapshot")
+              && !file.getName().contains("ExtendedMapSnapshot")) {
+            continue;
+          }
+          BasicFileAttributes attributes = Files.readAttributes(file.toPath(),
+              BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+          FileTime lastModifiedTime = attributes.lastModifiedTime();
+          SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+          String lastModified = df.format(lastModifiedTime.toMillis());
+          // if this is the most recent, return this file
+          if (searchResult.getValue2() == null
+              || lastModified.compareTo(searchResult.getValue2()) > 0) {
+            searchResult.setValue(file.getName());
+            searchResult.setValue2(file.getName());
+            searchResult.setTerminologyVersion(lastModified);
+            searchResult.setTerminology("current");
+          }
         }
-        BasicFileAttributes attributes = Files.readAttributes(file.toPath(),
-            BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
-        FileTime lastModifiedTime = attributes.lastModifiedTime();
-        SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-        String lastModified = df.format(lastModifiedTime.toMillis());
-        // if this is the most recent, return this file
-        if (searchResult.getValue2() == null
-            || lastModified.compareTo(searchResult.getValue2()) > 0) {
-          searchResult.setValue(file.getName());
-          searchResult.setValue2(file.getName());
-          searchResult.setTerminologyVersion(lastModified);
-          searchResult.setTerminology("current");
-        }
+        searchResultList.addSearchResult(searchResult);
       }
-      return searchResult;
+      return searchResultList;
 
     } catch (Exception e) {
       handleException(e, "trying to get current release file", user, "", "");
