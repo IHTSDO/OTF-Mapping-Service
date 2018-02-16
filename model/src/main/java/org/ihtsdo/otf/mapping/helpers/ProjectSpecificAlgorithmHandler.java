@@ -210,4 +210,12 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    */
   public boolean recordViolatesOneToOneConstraint(MapRecord record) throws Exception;
 
+  /**
+   * Gets the release file 3rd element (e.g. INT, US1000124)
+   *
+   * @return the release file 3rd element
+   * @throws Exception the exception
+   */
+  public String getReleaseFile3rdElement() throws Exception;
+  
 }

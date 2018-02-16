@@ -2099,9 +2099,15 @@ angular
             return;
           }
 
-          $http.post(
-            root_mapping + 'project/id/' + $scope.focusProject.id + '/release/'
-              + $scope.release.effectiveTime + '/begin').then(
+        if (!$scope.release.effectiveTime || !$scope.focusProject.moduleId) {
+          window.alert('Must set effective time and module id to process release');
+        }
+
+        // @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/module/id/{moduleId}/process")
+        $http.post(
+          root_mapping + 'project/id/' + $scope.focusProject.id + '/release/'
+            + $scope.release.effectiveTime + '/module/id/' + $focusProject.moduleId + '/process')
+          .then(
 
             // Success
             function(response) {
