@@ -638,7 +638,7 @@ public class MappingClientRest extends RootClientRest
   }
 
   @Override
-  public SearchResult getCurrentReleaseFileName(Long mapProjectId,
+  public SearchResultList getCurrentReleaseFileName(Long mapProjectId,
           String authToken) throws Exception {
       // TODO Auto-generated method stub
       return null;
