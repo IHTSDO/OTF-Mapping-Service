@@ -967,6 +967,11 @@ public class DefaultProjectSpecificAlgorithmHandler
     throws Exception {
     return false;
   }
+  @Override
+  public String getReleaseFile3rdElement() throws Exception {
+    // Default is "INT", for international releases.
+    return "INT";
+  }
 
   @Override
   public boolean isMapRecordLineValid(String line) throws Exception {
