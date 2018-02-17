@@ -667,7 +667,12 @@ public class ExportReportHandler {
       cell = row.createCell((short) 0);
       cell.setCellValue("Initial File:");
       cell = row.createCell((short) 1);
-      cell.setCellValue(files.get(0).substring(files.get(0).lastIndexOf('/')));
+      // if current release file, no need to parse filename
+      if (files.get(0).lastIndexOf('/') != -1) {
+        cell.setCellValue(files.get(0).substring(files.get(0).lastIndexOf('/')));
+      } else {
+        cell.setCellValue(files.get(0));
+      }
       
       // Later file
       row = sheet.createRow((short) 2);

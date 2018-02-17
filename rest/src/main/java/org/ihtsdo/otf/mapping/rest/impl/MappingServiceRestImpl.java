@@ -4718,7 +4718,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       // create release handler in test mode
       ReleaseHandler handler = new ReleaseHandlerJpa(true);
       if (current) {
-        final SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd");
+        final SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd_hhmm");
         effectiveTime = dt.format(new Date());
       }
       handler.setEffectiveTime(effectiveTime);
@@ -5513,7 +5513,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       
       // first check if file1 is a 'current' file on local file system
       // get date on file1
-      Pattern datePattern = Pattern.compile("\\d{8}");
+      Pattern datePattern = Pattern.compile("\\d{8}_\\d{4}");
       Matcher m = datePattern.matcher(olderInputFile1);
       String fileDate = "";
       if (m.find()) {
@@ -6177,8 +6177,14 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
           "download current release file", securityService);
 
       MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      Pattern datePattern = Pattern.compile("\\d{8}_\\d{4}");
+      Matcher m = datePattern.matcher(fileName);
+      String fileDate = "";
+      if (m.find()) {
+        fileDate = m.group(0);
+      }
       final File projectDir =
-          new File(this.getReleaseDirectoryPath(mapProject, "current"));
+          new File(this.getReleaseDirectoryPath(mapProject, "current/" + fileDate));
       InputStream objectData1 = new FileInputStream(new File(projectDir, fileName));
 
       return objectData1;

@@ -1507,11 +1507,16 @@
             ng-change="setFiles(selectedFile1, null)"
             ng-model="selectedFile1"></select>
         </td>
-        <td> <i ng-show="fileArray[0].terminology"
+        <td><i ng-show="fileArray[0].terminology && fileArray[0].terminology != 'current'"
       		style="margin-left: 5px; margin-right: 10px;"
       		class="noul glyphicon glyphicon-download"
       		title="Download initial release file."
-      		ng-click="downloadFileFromAmazonS3(fileArray[0])"></i></td>
+      		ng-click="downloadFileFromAmazonS3(fileArray[0])"></i>
+      	   <i ng-show="fileArray[0].terminology == 'current'"
+      		style="margin-left: 5px; margin-right: 10px;"
+      		class="noul glyphicon glyphicon-download"
+      		title="Download initial release file."
+      		ng-click="downloadFileFromCurrentRelease(fileArray[0])"></i></td>
 
         <td style="padding: 5px;">
            <select style="width: 500px;" id="compareFile2"
