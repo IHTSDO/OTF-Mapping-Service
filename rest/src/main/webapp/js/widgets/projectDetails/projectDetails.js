@@ -975,12 +975,6 @@ angular
               .alert("The selected files must both be Delta Maps or must both be Snapshot Maps.");
             return false;
           }
-          if ($scope.fileArray[1].terminology.indexOf('current') != 0
-            && $scope.fileArray[0].terminologyVersion > $scope.fileArray[1].terminologyVersion) {
-            window
-              .alert("The file selected from the 'Later File' picklist must not be from a release earlier than the file selected from the 'Initial File' picklist.");
-            return false;
-          }
           if ($scope.fileArray[0].terminology.indexOf('ALPHA') == 0
             && $scope.fileArray[1].terminology.indexOf('ALPHA') == 0) {
             window
@@ -1151,8 +1145,10 @@ angular
             $scope.amazons3FilesPlusCurrent = JSON.parse(JSON.stringify($scope.amazons3Files));
             
             // add local current release file to list of aws retrieved files
-            for (var i = 0; i < data.searchResult.length; i++) {
-              $scope.amazons3FilesPlusCurrent.push(data.searchResult[i]);
+            if (data.searchResult) {
+              for (var i = 0; i < data.searchResult.length; i++) {
+                $scope.amazons3FilesPlusCurrent.push(data.searchResult[i]);
+              }
             }
             $rootScope.glassPane--;
           }).error(function(data, status, headers, config) {
