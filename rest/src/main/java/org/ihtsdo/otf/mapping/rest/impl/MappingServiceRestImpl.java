@@ -6079,6 +6079,10 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
         SearchResult searchResult = new SearchResultJpa();
         File[] releaseFiles = currentDir.listFiles();
         
+        if (releaseFiles == null) {
+          return null;
+        }
+        
         for (File file : releaseFiles) {
           // filter out human readable and any other release by-products
           if (!file.getName().contains("SimpleMapSnapshot")
