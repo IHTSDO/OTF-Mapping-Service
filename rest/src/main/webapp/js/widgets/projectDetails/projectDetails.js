@@ -2580,7 +2580,7 @@ angular
         
         $scope.S3Initialize = function() {
           $rootScope.glassPane++;
-          if (!$scope.S3Initialized) {
+          if (!$scope.S3Initialized && $scope.applicationRole == 'Administrator') {
             $scope.handleTerminologySelection($scope.focusProject.sourceTerminology);
             $scope.loadProjectReleaseFiles();
             $scope.fileArray = new Array();
