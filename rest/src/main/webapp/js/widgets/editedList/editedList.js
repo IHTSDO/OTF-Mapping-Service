@@ -16,23 +16,25 @@ angular
           });
     }).controller(
     'editedListCtrl',
-    function($scope, $rootScope, $http, $location, localStorageService) {
+    function($scope, $rootScope, $http, $location, localStorageService, utilService) {
 
       // initialize as empty to indicate still initializing database connection
       $scope.editedRecords = [];
       $scope.searchPerformed = false;
       $scope.user = localStorageService.get('currentUser');
       $scope.focusProject = localStorageService.get('focusProject');
-
+       
       // pagination variables
-      $scope.pageSize = 10;
-      $scope.editedRecordsPage = 1;
-
+      $scope.recordsPerPage = 10;
+      $scope.recordPage  = 1;
+      $scope.totalRecords = 0;
+      $scope.numRecordPages = 0;
+  		
       // watch for project change
       $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
         $scope.focusProject = parameters.focusProject;
       });
-
+      
       $scope.$on('availableWork.notification.editWork', function(event, parameters) {
         $scope.editWork(parameters.editedWork);
       });
@@ -44,21 +46,43 @@ angular
           $http.defaults.headers.common.Authorization = $scope.userToken;
         }
       });
-
+      
+      //sort direction
+      var sortAscending;
+      var sortField;
+      
+      $scope.getSortIndicator = function(field){
+		if (sortField !== field) return '';
+		if (sortField === field && sortAscending) return '▴';
+		if (sortField === field && !sortAscending) return '▾';
+      };
+      
+      //sort field
+      $scope.setSortField = function(field) {
+    	  sortAscending = !sortAscending;
+    	  sortField = field;
+    	  $scope.retrieveEditedWork($scope.recordPage, $scope.queryTerms);
+      };
+      
       // called by user-click, not automatically loaded
-      $scope.retrieveEditedWork = function(page, queryTerms) {
+      $scope.retrieveEditedWork = function(ppage, queryTerms) {
+    	console.log("query terms", queryTerms)
 
         // set the page
-        $scope.editedRecordsPage = page;
+    	var page = ppage;
+    	
+    	if (page == null)
+    		page = 1;
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
-          'startIndex' : (page - 1) * $scope.pageSize,
-          'maxResults' : $scope.pageSize,
-          'sortField' : 'lastModified',
-          'queryRestriction' : queryTerms ? queryTerms : ''
+          'startIndex' : (page - 1) * $scope.recordsPerPage,
+          'maxResults' : $scope.recordsPerPage,
+          'sortField' : sortField,
+          'ascending' : sortAscending,
+          'queryRestriction' : queryTerms ? JSON.stringify(queryTerms) : ''		  
         };
-
+        
         $rootScope.glassPane++;
 
         $http(
@@ -74,9 +98,9 @@ angular
           }).success(function(data) {
           $rootScope.glassPane--;
 
-          $scope.recordPage = page;
-          $scope.nRecords = data.totalCount;
-          $scope.numRecordPages = Math.ceil($scope.nRecords / $scope.pageSize);
+          //set pagination variables
+          $scope.totalRecords = data.totalCount;
+          $scope.numRecordPages = Math.ceil(data.totalCount / $scope.recordsPerPage);
 
           $scope.editedRecords = data.mapRecord;
 
@@ -91,7 +115,8 @@ angular
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
-
+      
+      
       // returns a short summary of the record based on number of entries
       $scope.getRecordSummary = function(record) {
 
@@ -191,6 +216,25 @@ angular
 
       $scope.gotoConcept = function(terminologyId) {
         $location.path('#/record/conceptId/' + terminologyId);
+      };
+      
+      //date format
+      $scope.dateFormat = 'MM/dd/yyyy';
+      
+      $scope.dateRangeStart = {
+    		  opened: false
+      };
+      
+      $scope.dateRangeEnd = {
+    		  opened: false
+      };
+      
+      $scope.openDateRangeStart = function() {
+    		  $scope.dateRangeStart.opened = true;
+      };
+      
+      $scope.openDateRangeEnd = function() {
+		  $scope.dateRangeEnd.opened = true;
       };
 
     });

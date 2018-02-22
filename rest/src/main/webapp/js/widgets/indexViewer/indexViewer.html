@@ -112,7 +112,16 @@
       </div>
       <div class="well" style="padding: 0px;" ng-show="indexTrail.length > 0"
         ng-bind-html="to_trusted(indexTrail)"></div>
+	  <hr>
 
+
+      <p style="margin-top: 15px;">User-selected Search</p>
+      <div class="well" style="padding: 0px;"
+        ng-show="!userSearch || userSearch.length == 0">
+        <em>No search performed.</em>
+      </div>
+      <div class="well" style="padding: 0px;" ng-show="userSearch.length > 0"
+        ng-bind-html="to_trusted(userSearch)"></div>
 
     </div>
   </div>

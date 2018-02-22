@@ -13,7 +13,7 @@ angular
   })
   .controller(
     'workAssignedCtrl',
-    function($scope, $rootScope, $http, $location, $uibModal, localStorageService) {
+    function($scope, $rootScope, $http, $location, $uibModal, $timeout, localStorageService) {
 
       // on initialization, explicitly assign to null and/or empty array
       $scope.currentUser = null;
@@ -21,15 +21,18 @@ angular
       $scope.focusProject = null;
       $scope.assignedTab = null;
       $scope.currentUserToken = null;
+      $scope.preferences = null;
       $scope.assignedRecords = [];
+      $scope.authorsList = [];
 
       // retrieve the necessary scope variables from local storage service
       $scope.currentUser = localStorageService.get('currentUser');
       $scope.currentRole = localStorageService.get('currentRole');
       $scope.focusProject = localStorageService.get('focusProject');
       $scope.currentUserToken = localStorageService.get('userToken');
+      $scope.preferences = localStorageService.get('preferences');
       $scope.assignedTab = localStorageService.get('assignedTab');
-
+      
       // tab variables
       $scope.tabs = [ {
         id : 0,
@@ -88,10 +91,80 @@ angular
         else
           $scope.ownTab = true;
 
-        // add the tab to the loocal storage service for the next visit
+        // add the tab to the local storage service for the next visit       
+        $scope.preferences.lastAssignedTab = tabNumber;
         localStorageService.add('assignedTab', tabNumber);
+        
+        $scope.getRadio();
       };
+      
+      $scope.getRadio = function() {
+    	// retrieve the user preferences
+        $http({
+            url : root_mapping + 'userPreferences/user/id/' + $scope.currentUser.userName,
+            dataType : 'json',
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+        }).success(function(data) {
+          $scope.preferences.lastAssignedRadio = localStorageService.get('assignedRadio');
+          
+          if ($scope.preferences.lastAssignedRadio.includes('NEW')) {
+            $scope.assignedTypes.work = 'NEW';
+            $scope.assignedTypes.conflict = 'CONFLICT_NEW';
+            $scope.assignedTypes.review = 'REVIEW_NEW';
+            $scope.assignedTypes.forUser = 'NEW';
+            $scope.assignedTypes.qa = 'QA_NEW';
+          } else if ($scope.preferences.lastAssignedRadio.includes('ALL')) {
+            $scope.assignedTypes.work = 'ALL';
+            $scope.assignedTypes.conflict = 'ALL';
+            $scope.assignedTypes.review = 'ALL';
+            $scope.assignedTypes.forUser = 'ALL';
+            $scope.assignedTypes.qa = 'ALL'
+          } else if ($scope.preferences.lastAssignedRadio.includes('IN_PROGRESS')) {
+            $scope.assignedTypes.work = 'EDITING_IN_PROGRESS';
+            $scope.assignedTypes.conflict = 'CONFLICT_IN_PROGRESS';
+            $scope.assignedTypes.review = 'REVIEW_IN_PROGRESS';
+            $scope.assignedTypes.forUser = 'EDITING_IN_PROGRESS';
+            $scope.assignedTypes.qa = 'QA_IN_PROGRESS';
+          } else if ($scope.preferences.lastAssignedRadio.includes('RESOLVED') ||
+          		$scope.preferences.lastAssignedRadio.includes('DONE')) {
+            $scope.assignedTypes.work = 'EDITING_DONE';
+            $scope.assignedTypes.conflict = 'CONFLICT_RESOLVED';
+            $scope.assignedTypes.review = 'REVIEW_RESOLVED';
+            $scope.assignedTypes.forUser = 'EDITING_DONE';
+            $scope.assignedTypes.qa = 'QA_RESOLVED';
+          }         
+        }); 
+      }
+      
+      $scope.setRadio = function(type) {
+          // add the radio button to the local storage service for the next visit       
+          $scope.preferences.lastAssignedRadio = type;
+          localStorageService.add('assignedRadio', type);
+          
+          // update the user preferences
+          $http({
+            url : root_mapping + 'userPreferences/update',
+            dataType : 'json',
+            data : $scope.preferences,
+            method : 'POST',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            // do nothing
 
+          }).error(function(data) {
+            if (response.indexOf('HTTP Status 401') != -1) {
+              $rootScope.globalError = 'Authorization failed.  Please log in again.';
+              $location.path('/');
+            }
+          });
+      }
+      
+      
       // pagination variables
       $scope.itemsPerPage = 10;
       $scope.assignedWorkPage = 1;
@@ -109,12 +182,35 @@ angular
 
       // work type filter variables
       $scope.assignedTypes = {};
-      $scope.assignedTypes.work = 'NEW';
-      $scope.assignedTypes.conflict = 'CONFLICT_NEW';
-      $scope.assignedTypes.review = 'REVIEW_NEW';
-      $scope.assignedTypes.forUser = 'ALL';
-      $scope.assignedTypes.qa = 'QA_NEW';
-
+     
+      //sort direction
+      var sortAscending = [];
+      var sortField = [];
+      
+      $scope.getSortIndicator = function(table, field){
+		if (sortField[table] !== field) return '';
+		if (sortField[table] === field && sortAscending[table]) return '▴';
+		if (sortField[table] === field && !sortAscending[table]) return '▾';
+      };
+      
+    //sort field and get data
+      $scope.setSortField = function(table, field) {
+    	  sortAscending[table] = !sortAscending[table];
+    	  sortField[table] = field;
+    	  if (table === 'concepts') {
+    		  $scope.retrieveAssignedWork(1, $scope.queryAssigned);
+    	  } else if (table === 'conflicts') {
+    		  $scope.retrieveAssignedConflicts(1, $scope.queryConflict);
+    	  } else if (table === 'review') {
+    		  $scope.retrieveAssignedReviewWork(1, $scope.queryReviewWork);
+    	  } else if (table === 'user') {
+    		  $scope.retrieveAssignedWorkForUser(1, $scope.selected.mapUserViewed.userName, 
+    				  $scope.queryAssignedForUser);
+    	  } else if (table === 'qa') {
+    		  $scope.retrieveAssignedQAWork(1, $scope.queryQAWork);
+    	  }
+      };
+      
       // watch for project change
       $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
         $scope.focusProject = parameters.focusProject;
@@ -234,15 +330,31 @@ angular
         if ($scope.focusProject != null && $scope.currentUser != null
           && $scope.currentUserToken != null && $scope.currentRole != null) {
           $http.defaults.headers.common.Authorization = $scope.currentUserToken;
-
+          
+          $scope.getRadio();
           $scope.mapUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
-          $scope.retrieveAssignedWork($scope.assignedWorkPage, null);
-          $scope.retrieveAssignedQAWork(1, null);
+          // add a wait, if getting reading in radio button setting isn't complete
+          if ($scope.assignedTypes.work == undefined) {
+            $timeout(function() {
+            	  $scope.retrieveAssignedWork($scope.assignedWorkPage, null);
+                  $scope.retrieveAssignedQAWork(1, null);
+              }, 1000);
+          } else {
+            $scope.retrieveAssignedWork($scope.assignedWorkPage, null);
+            $scope.retrieveAssignedQAWork(1, null);
+          }
           $scope.retrieveLabels();
           if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
             $scope.retrieveAssignedConflicts(1, null);
-            $scope.retrieveAssignedReviewWork(1, null);
-            $scope.retrieveAssignedWorkForUser(1, null, $scope.selected.mapUserViewed);
+            if ($scope.assignedTypes.review == undefined) {
+                $timeout(function() {
+                    $scope.retrieveAssignedReviewWork(1, null);
+                    $scope.retrieveAssignedWorkForUser(1, null, $scope.selected.mapUserViewed);
+                }, 1000);
+              } else {
+                  $scope.retrieveAssignedReviewWork(1, null);
+                  $scope.retrieveAssignedWorkForUser(1, null, $scope.selected.mapUserViewed);
+              }
           }
         }
       });
@@ -268,7 +380,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
           'maxResults' : page == -1 ? -1 : $scope.itemsPerPage,
-          'sortField' : 'sortKey',
+          'sortField' : (sortField['conflicts']) ? sortField['conflicts'] : 'sortKey',
+          'ascending' : sortAscending['conflicts'],
           'queryRestriction' : $scope.assignedTypes.conflict
         };
 
@@ -329,7 +442,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
           'maxResults' : page == -1 ? -1 : $scope.itemsPerPage,
-          'sortField' : 'sortKey',
+          'sortField' : (sortField['concepts']) ? sortField['concepts'] : 'sortKey',
+          'ascending' : sortAscending['concepts'],
           'queryRestriction' : $scope.assignedTypes.work
         };
 
@@ -363,6 +477,8 @@ angular
           $rootScope.glassPane--;
           $rootScope.handleHttpError(data, status, headers, config);
         });
+       
+
       };
 
       $scope.retrieveLabels = function() {
@@ -410,7 +526,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
           'maxResults' : page == -1 ? -1 : $scope.itemsPerPage,
-          'sortField' : 'sortKey',
+          'sortField' : (sortField['qa']) ? sortField['qa'] : 'sortKey',
+          'ascending' : sortAscending['qa'],
           'queryRestriction' : $scope.assignedTypes.qa
         };
 
@@ -472,12 +589,13 @@ angular
           $scope.searchPerformed = true;
 
         }
-
+        
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
           'startIndex' : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
           'maxResults' : page == -1 ? -1 : $scope.itemsPerPage,
-          'sortField' : 'sortKey',
+          'sortField' : (sortField['review']) ? sortField['review'] : 'sortKey',
+          'ascending' : sortAscending['review'],
           'queryRestriction' : $scope.assignedTypes.review
         };
 
@@ -506,6 +624,7 @@ angular
 
           // set title
           $scope.tabs[2].title = 'Review (' + $scope.nAssignedReviewWork + ')';
+
 
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
@@ -551,7 +670,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
           'maxResults' : page == -1 ? -1 : $scope.itemsPerPage,
-          'sortField' : 'sortKey',
+          'sortField' : (sortField['user']) ? sortField['user'] : 'sortKey',
+          'ascending' : sortAscending['user'],
           'queryRestriction' : $scope.assignedTypes.forUser
         };
 
@@ -578,6 +698,7 @@ angular
           $scope.nAssignedRecordsForUser = data.totalCount;
 
           $scope.tabs[3].title = 'By User (' + data.totalCount + ')';
+
 
         }).error(function(data, status, headers, config) {
           $rootScope.glassPane--;
@@ -801,6 +922,141 @@ angular
         // redirect page
         $location.path(path);
       };
+
+      // create JIRA issue ticket to send feedback to content author
+      $scope.createJiraTicket = function(record) {
+        // retrieve the list of authors
+        $rootScope.glassPane++;
+        $http({
+          url : root_mapping + 'authors/' + record.terminologyId,
+          method : 'GET',
+          headers : {
+            'Content-Type' : 'application/json'
+          }
+        }).success(
+          function(data) {
+            $rootScope.glassPane--;
+
+            // only put valid authors on list
+            var searchResults = data.searchResult;
+            $scope.authorsList = [];
+            for (var i = 0; i < data.totalCount; i++) {
+              if (searchResults[i].value != 'snowowl'
+                && $scope.authorsList.indexOf(searchResults[i].value) == -1) {
+                $scope.authorsList.push(searchResults[i].value);
+              }
+            }
+
+            // Open modal that allows user to select author/recipient and compose jira issue
+            $scope.openCreateJiraTicketModal(record);
+
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+      };
+      
+
+      $scope.openCreateJiraTicketModal = function(record) {
+
+        if (record == null) {
+          return;
+        }
+
+        var modalInstance = $uibModal.open({
+          templateUrl : 'js/widgets/workAssigned/createJiraTicket.html',
+          controller : CreateJiraTicketModalCtrl,
+          size : 'lg',
+          resolve : {
+            record : function() {
+              return record;
+            },
+            project : function() {
+              return $scope.focusProject;
+            },
+            user : function() {
+              return $scope.currentUser;
+            },
+            authors : function() {
+              return $scope.authorsList;
+            }
+          }
+        });
+
+        modalInstance.result.then(
+
+        // called on Done clicked by user
+        function() {
+        })
+
+      };
+        
+
+      var CreateJiraTicketModalCtrl = function($scope, $uibModalInstance, $q, user, project,
+        record, authors) {
+
+        $scope.user = user;
+        $scope.project = project;
+        $scope.record = record;
+        $scope.authors = authors;
+        $scope.selectedContentAuthor = $scope.authors[0];
+        $scope.content = {};
+        $scope.tinymceOptions = {
+          menubar : false,
+          statusbar : false,
+          plugins : 'autolink link image charmap searchreplace lists paste',
+          toolbar : 'undo redo | styleselect lists | bold italic underline strikethrough | charmap link image',
+        }
+
+        $scope.createJiraTicket = function() {
+          $http(
+            {
+              url : root_mapping + 'jira/' + $scope.currentRecord.conceptId + '/'
+                + $scope.selectedContentAuthor + '?messageText='
+                + encodeURIComponent($scope.content.text ? $scope.content.text : ''),
+              dataType : 'json',
+              data : $scope.currentRecord,
+              method : 'POST',
+              headers : {
+                'Content-Type' : 'application/json'
+              }
+            }).success(function(data) {
+            $uibModalInstance.close();
+
+          }).error(function(data, status, headers, config) {
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        }
+
+        // Load the current record
+        $scope.loadRecord = function() {
+
+          var deferred = $q.defer();
+
+          $rootScope.glassPane++;
+          // perform the retrieval call
+          $http({
+            url : root_mapping + 'record/id/' + $scope.record.id,
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            $rootScope.glassPane--;
+            // set scope record
+            $scope.currentRecord = data;
+
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $scope.error = 'Could not retrieve record';
+            deferred.reject('Could not retrieve record');
+          });
+
+          return deferred.promise;
+        };
+        // get the  record
+        $scope.loadRecord();
+      }
 
       /**
        * Helper function to open Finish Or Publish modal (record in form of
@@ -1104,6 +1360,11 @@ angular
               }
             }, function(response) {
               $scope.error('Unexpected error finishing record.');
+            }).then(function() {
+            	// publish resolves related feedback, so feedback needs to be refreshed
+            	if ($scope.action == 'publish') {
+            	  $rootScope.$broadcast('feedbackWidget.notification.retrieveFeedback', {});
+            	}
             });
           }
         };
@@ -1155,6 +1416,11 @@ angular
                 // flag current record as finished
                 $scope.currentRecord.isFinished = true;
 
+                // publish resolves related feedback, so feedback needs to be refreshed
+                if ($scope.action == 'publish') {
+                	  $rootScope.$broadcast('feedbackWidget.notification.retrieveFeedback', {});
+                }
+                	
                 // call the helper again if more records
                 if ($scope.index < $scope.records.length)
                   finishAllRecordsHelper();
@@ -1193,6 +1459,7 @@ angular
 
           // call the sequential finishAllRecords helper function
           finishAllRecordsHelper();
+          
         };
 
         $scope.done = function() {

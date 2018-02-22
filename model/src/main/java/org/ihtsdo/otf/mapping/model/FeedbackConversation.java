@@ -202,5 +202,12 @@ public interface FeedbackConversation {
    * @return the user name
    */
   public String getUserName();
+  
+  /**
+   * Removes Feedback.
+   *
+   * @return feedbackMessage
+   */
+  public void removeFeedback(Feedback feedbackMessage);
 
 }

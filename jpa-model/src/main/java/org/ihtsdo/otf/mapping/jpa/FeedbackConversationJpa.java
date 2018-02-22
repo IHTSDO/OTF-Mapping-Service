@@ -150,11 +150,16 @@ public class FeedbackConversationJpa implements FeedbackConversation {
    *
    * @param resolved the resolved flag
    */
+  
   @Override
   public void setResolved(boolean resolved) {
     this.isResolved = resolved;
   }
-
+  
+  @Override
+  public void removeFeedback(Feedback feedbackMessage) {
+    feedbacks.remove(feedbackMessage);
+  }
   /**
    * Indicates whether or not resolved is the case.
    *

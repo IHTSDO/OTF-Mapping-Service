@@ -67,4 +67,16 @@ public interface PfsParameter {
    * @return <code>true</code> if so, <code>false</code> otherwise
    */
   public boolean isIndexInRange(int i);
+  
+  /**
+   * Checks if is ascending.
+   * @return true, if is ascending
+   */
+  public boolean isAscending();
+
+  /**
+   * Sets the ascending.
+   * @param ascending the new ascending
+   */
+  public void setAscending(boolean ascending);
 }

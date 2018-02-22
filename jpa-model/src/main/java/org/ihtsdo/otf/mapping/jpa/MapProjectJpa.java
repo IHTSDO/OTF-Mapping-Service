@@ -97,6 +97,10 @@ public class MapProjectJpa implements MapProject {
 
   /** The ref set id. */
   private String refSetId;
+  
+  /** The module id. */
+  @Column(nullable = true)
+  private String moduleId;
 
   /** The ref set name. */
   private String refSetName;
@@ -251,6 +255,7 @@ public class MapProjectJpa implements MapProject {
     this.groupStructure = project.isGroupStructure();
     this.published = project.isPublished();
     this.refSetId = project.getRefSetId();
+    this.moduleId = project.getModuleId();
     this.refSetName = project.getRefSetName();
     this.sourceTerminology = project.getSourceTerminology();
     this.sourceTerminologyVersion = project.getSourceTerminologyVersion();
@@ -546,6 +551,15 @@ public class MapProjectJpa implements MapProject {
   public void setRefSetId(String refSetId) {
     this.refSetId = refSetId;
   }
+  public String getModuleId() {
+	    return moduleId;
+	  }
+
+	  /* see superclass */
+	  @Override
+	  public void setModuleId(String moduleId) {
+	    this.moduleId = moduleId;
+	  }
 
   /* see superclass */
   @Override
@@ -802,8 +816,8 @@ public class MapProjectJpa implements MapProject {
     return "MapProjectJpa [id=" + id + ", name=" + name + ", isPublic="
         + isPublic + ", groupStructure=" + groupStructure + ", published="
         + published + ", workflowType=" + workflowType + ", refSetId="
-        + refSetId + ", refSetName=" + refSetName + ", sourceTerminology="
-        + sourceTerminology + ", sourceTerminologyVersion="
+        + refSetId + ",moduleId=" + moduleId + ", refSetName=" + refSetName 
+        + ", sourceTerminology="+ sourceTerminology + ", sourceTerminologyVersion="
         + sourceTerminologyVersion + ", destinationTerminology="
         + destinationTerminology + ", destinationTerminologyVersion="
         + destinationTerminologyVersion + ", mapRefsetPattern="
@@ -843,6 +857,7 @@ public class MapProjectJpa implements MapProject {
                 : destinationTerminologyVersion.hashCode());
     result = prime * result + (isPublic ? 1231 : 1237);
     result = prime * result + ((refSetId == null) ? 0 : refSetId.hashCode());
+    result = prime * result + ((moduleId == null) ? 0: moduleId.hashCode());
     result =
         prime * result
             + ((scopeConcepts == null) ? 0 : scopeConcepts.hashCode());
@@ -892,6 +907,11 @@ public class MapProjectJpa implements MapProject {
         return false;
     } else if (!refSetId.equals(other.refSetId))
       return false;
+    if (moduleId == null) {
+        if (other.moduleId != null)
+          return false;
+      } else if (!moduleId.equals(other.moduleId))
+        return false;
     if (scopeConcepts == null) {
       if (other.scopeConcepts != null)
         return false;

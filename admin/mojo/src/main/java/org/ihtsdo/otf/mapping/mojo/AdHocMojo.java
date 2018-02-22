@@ -6,6 +6,8 @@ package org.ihtsdo.otf.mapping.mojo;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -80,12 +82,67 @@ public class AdHocMojo extends AbstractMojo {
             contentService, mappingService);
       }
 
+      if (mode != null && mode.equals("remove-bogus-map-records")) {
+        removeBogusMapRecords(workflowService, contentService, mappingService);
+      }
+      
+      if (mode != null && mode.equals("unassign-map-records")){
+        unassignMapRecords(workflowService, contentService, mappingService);
+      }
+
     } catch (Exception e) {
+      getLog().info("  could not run mojo.");
       e.printStackTrace();
       throw new MojoExecutionException("Ad-hoc mojo failed to complete", e);
     }
   }
 
+  private void removeBogusMapRecords(WorkflowService workflowService,
+    ContentService contentService, MappingService mappingService)
+    throws Exception {
+    ArrayList<Long> mapRecordIds =
+        new ArrayList<>(Arrays.asList(1885395L, 1885758L, 1884977L, 1885416L));
+
+    mappingService.setTransactionPerOperation(true);
+
+    for (final Long mapRecordId : mapRecordIds) {
+      MapRecord mapRecord = null;
+      try {
+        mapRecord = mappingService.getMapRecord(mapRecordId);
+      } catch (Exception e) {
+        // do nothing
+      }
+      if (mapRecord != null) {
+        mappingService.removeMapRecord(mapRecordId);
+      }
+    }
+  }
+ 
+  private void unassignMapRecords(WorkflowService workflowService,
+    ContentService contentService, MappingService mappingService)
+    throws Exception {
+    ArrayList<Long> mapRecordIds =
+        new ArrayList<>(Arrays.asList(1669005L, 1669006L));
+
+    mappingService.setTransactionPerOperation(true);
+
+    for (final Long mapRecordId : mapRecordIds) {
+      MapRecord mapRecord = null;
+      try {
+        mapRecord = mappingService.getMapRecord(mapRecordId);
+      } catch (Exception e) {
+        // do nothing
+      }
+      if (mapRecord != null) {
+        System.out.println("Unassigning map record: " + mapRecord.getId());
+        MapUser mapUser = mapRecord.getOwner();
+        MapProject mapProject = mappingService.getMapProject(mapRecord.getMapProjectId());
+        Concept concept = contentService.getConcept(mapRecord.getConceptId(), mapProject.getSourceTerminology(), mapProject.getSourceTerminologyVersion());
+        workflowService.processWorkflowAction(mapProject, concept, mapUser, mapRecord, WorkflowAction.UNASSIGN);
+      }
+    }
+  }  
+  
   /**
    * Handle icd 11.
    *

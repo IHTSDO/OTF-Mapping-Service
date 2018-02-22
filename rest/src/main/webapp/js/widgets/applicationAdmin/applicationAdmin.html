@@ -1,6 +1,6 @@
 
 <uib-accordion close-others="false"> <uib-accordion-group
-  is-open="true"> <uib-accordion-heading>
+  is-open="false"> <uib-accordion-heading>
 <h5>
   <span tooltip-placement="right" uib-tooltip="List of the map projects.">
     Map Projects </span>
@@ -25,21 +25,21 @@
       <td>
         <input tooltip-placement="top" uib-tooltip="Project Name"
           ng-model="project.name" ng-change="setEditingPerformed(project)"
-          style="margin-bottom: 5px; width: 100%;"></input> <select
-          tooltip-placement="top" uib-tooltip="Source Terminology and Version"
-          ng-init="project.sourceTerminologyAndVersion = getSourceVersion(project)"
+          style="margin-bottom: 5px; width: 100%;"></input> <span
+          tooltip-placement="top" uib-tooltip="Source Terminology and Version">
+          <select ng-init="project.sourceTerminologyAndVersion = getSourceVersion(project)"
           ng-model="project.sourceTerminologyAndVersion"
           ng-options="item for item in terminologyVersionPairs"
           ng-change="setEditingPerformed(project)"
           style="margin-bottom: 5px; width: 100%;">
-        </select> <select tooltip-placement="top"
-          uib-tooltip="Destination Terminology and Version"
-          ng-init="project.destinationTerminologyAndVersion = getDestinationVersion(project)"
+        </select></span> <span tooltip-placement="top"
+          uib-tooltip="Destination Terminology and Version" >
+          <select ng-init="project.destinationTerminologyAndVersion = getDestinationVersion(project)"
           ng-model="project.destinationTerminologyAndVersion"
           ng-options="item for item in terminologyVersionPairs"
           ng-change="setEditingPerformed(project)"
           style="margin-bottom: 5px; width: 100%;">
-        </select> Team Based: <input type="checkbox" ng-model="project.teamBased"
+        </select> </span> Team Based: <input type="checkbox" ng-model="project.teamBased"
           ng-change="setEditingPerformed(project)">
       </td>
       <td>
@@ -47,7 +47,12 @@
           ng-model="project.refSetId" ng-change="setEditingPerformed(project)"
           style="width: 100%;"></input>
         <div tooltip-placement="top" uib-tooltip="Ref Set Name">{{project.refSetName}}</div>
+        
+        <div>Module Id: <input tooltip-placement="top" uib-tooltip="Team Based"
+          ng-model="project.moduleId" ng-change="setEditingPerformed(project)"
+          style="width: 100%;"></input></div>
       </td>
+      
       <td>
         <table>
           <tbody>
@@ -133,25 +138,25 @@
         </table>
       </td>
       <td>
-        <select tooltip-placement="top" uib-tooltip="Map Type"
+        <span tooltip-placement="top" uib-tooltip="Map Type"> <select
           ng-init="project.mapRefsetPattern=getMapType(project)"
           ng-model="project.mapRefsetPattern"
-          ng-options="item for item in allowableMapTypes"
+          ng-options="mapRefsetPattern as mapRefsetPattern.value for mapRefsetPattern in allowableMapTypes"
           ng-change="setEditingPerformed(project)"
           style="margin-bottom: 5px; width: 100%;">
-        </select> <select tooltip-placement="top" uib-tooltip="Workflow Type"
+        </select> </span><span tooltip-placement="top" uib-tooltip="Workflow Type"><select
           ng-init="project.workflowType=getWorkflowType(project)"
           ng-model="project.workflowType"
-          ng-options="item for item in allowableWorkflowTypes"
+          ng-options="workflowType as workflowType.value for workflowType in allowableWorkflowTypes"
           ng-change="setEditingPerformed(project)"
           style="margin-bottom: 5px; width: 100%;">
-        </select> <select tooltip-placement="top" uib-tooltip="Map Relation Style"
+        </select> </span> <span tooltip-placement="top" uib-tooltip="Map Relation Style"><select 
           ng-init="project.mapRelationStyle=getMapRelationStyle(project)"
           ng-model="project.mapRelationStyle"
-          ng-options="item for item in allowableMapRelationStyles"
+          ng-options="mapRelationStyle as mapRelationStyle.value for mapRelationStyle in allowableMapRelationStyles"
           ng-change="setEditingPerformed(project)"
           style="margin-bottom: 5px; width: 100%;">
-        </select> <input tooltip-placement="top"
+        </select></span> <input tooltip-placement="top"
           uib-tooltip="Project Specific Algorithm Handler"
           ng-model="project.projectSpecificAlgorithmHandlerClass"
           ng-change="setEditingPerformed(project)"
@@ -164,7 +169,7 @@
       </td>
 
       <td>
-        <div tooltip-placement="top" title="Delete project">
+        <div tooltip-placement="top" title="Delete project from application">
           <i class="noul glyphicon glyphicon-remove"
             ng-click="deleteMapProject(project)"></i>
         </div>
@@ -218,6 +223,13 @@
           <input id="newMapProjectRefSetId" type="text"
             ng-model="newMapProjectRefSetId">
       <tr>
+      <tr>
+        <td>Module Id</td>
+        <td>
+          <input id="newMapProjectModuleId" type="text"
+            ng-model="newMapProjectModuleId">
+      <tr>
+      
         <td>Published</td>
         <td>
           <select ng-model="newMapProjectPublished"
@@ -287,7 +299,7 @@
         <td>Map Type</td>
         <td>
           <select ng-model="newMapProjectMapType"
-            ng-options="item for item in allowableMapTypes">
+            ng-options="mapRefsetPattern as mapRefsetPattern.value for mapRefsetPattern in allowableMapTypes">
           </select>
         </td>
       </tr>
@@ -295,7 +307,7 @@
         <td>Workflow Type</td>
         <td>
           <select ng-model="newWorkflowType"
-            ng-options="item for item in allowableWorkflowTypes">
+            ng-options="workflowType as workflowType.value for workflowType in allowableWorkflowTypes">
           </select>
         </td>
       </tr>
@@ -303,7 +315,7 @@
         <td>Map Relation Style</td>
         <td>
           <select ng-model="newMapRelationStyle"
-            ng-options="item for item in allowableMapRelationStyles">
+            ng-options="mapRelationStyle as mapRelationStyle.value for mapRelationStyle in allowableMapRelationStyles">
           </select>
         </td>
       </tr>
@@ -319,13 +331,14 @@
         <td>
           <button class="btn btn-xs btn-primary"
             ng-click="submitNewMapProject(newMapProjectName, newMapProjectSourceVersion, 
-        newMapProjectDestinationVersion, newMapProjectRefSetId, newMapProjectPublished, 
-        newMapProjectRuleBased, newMapProjectGroupStructure, newMapProjectPublic, 
+        newMapProjectDestinationVersion, newMapProjectRefSetId,newMapProjectModuleId,
+         newMapProjectPublished,newMapProjectRuleBased, newMapProjectGroupStructure, newMapProjectPublic, 
         newMapProjectScopeDescendantsFlag, newMapProjectScopeExcludedDescendantsFlag, 
         newMapProjectMapType, newWorkflowType, newMapRelationStyle, newHandler, 
         newMapProjectPropagationFlag,
         newMapProjectPropagationThreshold); 
           newMapProjectName = ''; newMapProjectRefSetId = ''; newHandler = '';
+          newMapProjectName = ''; newMapProjectModuleId = ''; newHandler = '';
           newMapProjectSourceVersion = ''; newMapProjectDestinationVersion = '';
           newMapProjectPropagationThreshold = '0'; newMapProjectPublished = false; 
           newMapProjectRuleBased = false; newMapProjectGroupStructure = false; 
@@ -350,7 +363,7 @@
 </uib-pagination> <span>
   <input id="userSearch" type="text" ng-model="userFilter"
     ng-change="getPagedUsers(1, userFilter)">
-  <button ng-click="resetUserFilter()" class="btn btn-xs btn-warning">Reset</button>
+  <button class="btn btn-xs btn-warning" ng-click="resetUserFilter(1, 'null', userFilter); userFilter=null;" >Reset</button>
 </span>
 
 <table class="table pure-table" style="width: 100%; margin-bottom: 5px;">
@@ -399,7 +412,7 @@
           ng-show="isComponentChanged(user) == true">Save</button>
       </td>
       <td>
-        <div tooltip-placement="top" title="Delete user">
+        <div tooltip-placement="top" title="Delete user from application">
           <i class="noul glyphicon glyphicon-remove" ng-click="deleteUser(user)"></i>
         </div>
       </td>
@@ -467,7 +480,7 @@
 <span>
   <input id="adviceSearch" type="text" ng-model="adviceFilter"
     ng-change="getPagedAdvices(1, adviceFilter)">
-  <button xs class="btn btn-xs btn-warning" ng-click="resetAdviceFilter()">Reset</button>
+  <button xs class="btn btn-xs btn-warning" ng-click="resetAdviceFilter(1, 'null', adviceFilter); adviceFilter=null;">Reset</button>
 </span>
 
 <table class="table pure-table" style="width: 100%; margin-bottom: 5px;">
@@ -515,8 +528,8 @@
           ng-show="isComponentChanged(advice) == true">Save</button>
       </td>
       <td>
-        <div tooltip-placement="top" title="Delete advice">
-          <i class="noul glyphicon glyphicon-remove" ng-click="deleteAdvice(advice)"></i>
+        <div tooltip-placement="top">
+          <i class="noul glyphicon glyphicon-remove" title="Delete advice from application" ng-click="deleteAdvice(advice)"></i>
         </div>
       </td>
     </tr>
@@ -591,7 +604,7 @@
 <div>
   <input type="text" ng-model="relationFilter"
     ng-change="getPagedRelations(1, relationFilter)">
-  <button class="btn btn-xs btn-warning" ng-click="resetRelationFilter()">Reset</button>
+  <button class="btn btn-xs btn-warning" ng-click="resetRelationFilter(1, 'null', relationFilter); relationFilter=null;">Reset</button>
 </div>
 
 <table class="table pure-table" style="width: 100%; margin-bottom: 5px;">
@@ -645,7 +658,7 @@
       </td>
 
       <td>
-        <div tooltip-placement="top" title="Delete relation">
+        <div tooltip-placement="top" title="Delete relation from application">
           <i class="noul glyphicon glyphicon-remove"
             ng-click="deleteRelation(relation)"></i>
         </div>
@@ -736,7 +749,7 @@
 <span>
   <input type="text" ng-model="principleFilter"
     ng-change="getPagedPrinciples(1, principleFilter)">
-  <button class="btn btn-xs btn-warning" ng-click="resetPrincipleFilter()">Reset</button>
+  <button class="btn btn-xs btn-warning" ng-click="resetPrincipleFilter(1, 'null',principleFilter); principleFilter= null;">Reset</button>
 </span>
 
 <table class="table pure-table" style="width: 100%; margin-bottom: 5px;">
@@ -772,7 +785,7 @@
       </td>
 
       <td>
-        <div tooltip-placement="top" title="Delete principle">
+        <div tooltip-placement="top" title="Delete principle from application">
           <i class="noul glyphicon glyphicon-remove"
             ng-click="deletePrinciple(principle)"></i>
         </div>
@@ -1206,7 +1219,7 @@
       </td>
 
       <td>
-        <div tooltip-placement="top" title="Delete report definition">
+        <div tooltip-placement="top" title="Delete report definition from application">
           <i class="noul glyphicon glyphicon-remove"
             ng-click="deleteReportDefinition(definition)"></i>
         </div>
@@ -1597,7 +1610,7 @@
       </td>
 
       <td>
-        <div tooltip-placement="top" title="Delete qa check definition">
+        <div tooltip-placement="top" title="Delete qa check definition from application">
           <i class="noul glyphicon glyphicon-remove"
             ng-click="deleteQaDefinition(definition)"></i>
         </div>
@@ -1779,4 +1792,105 @@
   </table>
 </div>
 
-</uib-accordion-group></uib-accordion>
+</uib-accordion-group><uib-accordion-group> <uib-accordion-heading>
+<h5>
+  <span tooltip-placement="right" uib-tooltip="List of loaded terminologies.">
+    Terminologies </span>
+</h5>
+</uib-accordion-heading> 
+
+<table class="table pure-table" style="width: 100%; margin-bottom: 5px;">
+  <thead>
+    <tr>
+      <th style="width: 100%;">Loaded Terminologies</th>
+    </tr>
+  </thead>
+  <tbody ng-repeat="terminology in terminologyVersionPairs"
+    style="border: 2px solid #ccc;">
+
+    <tr>
+      <td>
+        {{terminology}}
+      </td>
+      <td>
+        <div tooltip-placement="top" title="Remove {{terminology}} from application">
+          <i class="noul glyphicon glyphicon-remove" ng-click="deleteTerminology(terminology)"></i>
+        </div>
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+  <div>
+	<div style="margin-top: 15px;">
+		<b>Load New Terminology</b>
+	</div>
+	<table class="table pure-table">
+		<thead>
+			<tr>
+				<th style="width: 30%;"></th>
+				<th style="width: 70%;"></th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>Terminology to Load</td>
+				<td><select ng-model="termLoad.terminology"
+					ng-options="item for item in terminologyInputTypes"
+					ng-change="handleTerminologySelection(termLoad.terminology)">
+				</select></td>
+			</tr>
+
+			<!-- For Loading GMDN -->
+			<tr ng-show="termLoad.terminology == 'GMDN'">
+				<td>GMDN version to load <br>
+				<br>
+					<button class="btn btn-xs btn-primary"
+						ng-show="termLoad.terminology == 'GMDN'"
+						ng-click="downloadTerminologyGmdn()">Check for new GMDN
+						versions</button>
+				</td>
+				<td><select ng-model="gmdnVersion"
+					ng-options="item for item in downloadedGmdnVersions">
+				</select></td>
+			</tr>
+
+			<!-- Define Versions (For all other terminologies) -->
+			<tr ng-show="termLoad.terminology != 'GMDN' && (termLoad.terminology)">
+				<td>Select version of {{termLoad.terminology}} to load </td>
+				<td><select
+					ng-model="termLoad.version"
+					ng-options="item for item in termLoadVersions | orderBy:-'item'"
+					ng-change="handleVersionSelection(termLoad.terminology, termLoad.version)">
+				</select>
+				</td>
+			</tr>
+
+			<!-- Define Scope (For SNOMED CT Only) -->
+			<tr	ng-show="termLoad.terminology == 'SNOMED CT' && (termLoad.version)">
+				<td>Select scope of {{termLoad.version}} to load </td>
+				<td><select
+					ng-model="termLoad.scope"
+					ng-options="item for item in termLoadScopes"
+					ng-change="handleScopeSelection(termLoad.terminology, termLoad.version, termLoad.scope)">
+				</select>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<!--  Load GMDN (Special Script to do so) -->
+	<button class="btn btn-xs btn-primary"
+		ng-show="termLoad.terminology == 'GMDN' && gmdnVersion != null"
+		ng-click="loadTerminologyGmdn(gmdnVersion)">Load
+		{{termLoad.terminology}}</button>
+
+	<!--  Load Other Terminologies (Only display if have Version defined and (!SNOMED || (SNOMED & Scope defined)) -->
+	<button class="btn btn-xs btn-primary"
+		ng-show="termLoad.terminology != 'GMDN' && 
+	(termLoad.terminology != 'SNOMED CT' || (termLoad.terminology == 'SNOMED CT' && (termLoad.scope))) && 
+	(termLoad.version)"
+		ng-click="loadTerminologyAws(termLoad.terminology, termLoad.version, termLoad.scope)">Load
+		{{termLoad.terminology}}</button>
+</div>
+</uib-accordion-group> </uib-accordion>

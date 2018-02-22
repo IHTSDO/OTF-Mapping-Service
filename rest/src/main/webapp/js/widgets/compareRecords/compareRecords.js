@@ -18,7 +18,7 @@ angular
   .controller(
     'compareRecordsCtrl',
     function($scope, $rootScope, $http, $routeParams, $location, $timeout,
-      localStorageService, $sce) {
+      localStorageService, $sce, $window) {
 
       // ///////////////////////////////////
       // Map Record Controller Functions //
@@ -37,14 +37,17 @@ angular
       $scope.groups1 = null;
       $scope.entries1 = null;
       $scope.conversation1 = null;
+      $scope.newFeedbackMessages1 = new Array();
 
       $scope.record2 = null;
       $scope.groups2 = null;
       $scope.entries2 = null;
       $scope.conversation2 = null;
+      $scope.newFeedbackMessages2 = new Array();
 
       $scope.leadRecord = null;
       $scope.leadConversation = null;
+      $scope.newLeadFeedbackMessages = new Array();
 
       // initialize accordion variables
       $scope.isConceptOpen = true;
@@ -65,6 +68,13 @@ angular
       $scope.multiSelectCustomTexts = {
         buttonDefaultText : 'Select Users'
       };
+      
+      // start note edit mode in off mode
+            $scope.feedbackEditMode = false;
+            $scope.feedbackEditId = null;
+            $scope.content = {
+             text : ''
+            };
 
       $scope.errorMessages = $scope.project.errorMessages;
       $scope.errorMessages.sort();
@@ -79,9 +89,6 @@ angular
         $scope.project = parameters.focusProject;
         $scope.errorMessages = $scope.project.errorMessages;
         $scope.errorMessages.unshift('None');
-        $scope.allUsers = $scope.project.mapSpecialist
-          .concat($scope.project.mapLead);
-        organizeUsers($scope.allUsers);
       });
 
       // watch for change in focus project
@@ -93,11 +100,13 @@ angular
 
           // if first visit, retrieve the records to be compared
           if ($scope.leadRecord == null) {
-            $scope.getRecordsInConflict();
 
+        	// Set up "all users"
             $scope.allUsers = $scope.project.mapSpecialist
               .concat($scope.project.mapLead);
             organizeUsers($scope.allUsers);
+            
+            $scope.getRecordsInConflict();
 
             $rootScope.glassPane++;
             $http(
@@ -135,12 +144,130 @@ angular
           }
         }
       });
+      
+      $scope.isNewFeedback = function(feedback, conversationLocation) {
+    	  if(conversationLocation == '1'){
+    		  return $scope.newFeedbackMessages1.includes(feedback.message);
+    	  }
+    	  if(conversationLocation == '2'){
+    		  return $scope.newFeedbackMessages2.includes(feedback.message);
+    	  }
+    	  if(conversationLocation == 'lead'){
+    		  return $scope.newLeadFeedbackMessages.includes(feedback.message);
+    	  }
+    	  
+      }
+            
+      $scope.editFeedback = function(feedback) {
+        $scope.content.text = feedback.message;
+        $scope.content.text1 = feedback.message1;
+        $scope.content.text2 = feedback.message2;
+        $scope.selectedErrorMessage1 = feedback.mapError;
+        $scope.feedbackEditMode = true;
+        $scope.feedbackEditId = feedback.id ? feedback.id : feedback.localId;
+      };
+
+      $scope.cancelEditFeedback = function() {
+        $scope.content.text = '';
+        $scope.content.text1 = '';
+        $scope.content.text2 = '';
+        $scope.feedbackEditMode = false;
+        $scope.feedbackEditId = null;
+        $scope.tinymceContent = '';
+      };
+
+      $scope.saveEditFeedback = function(recordInError,feedback) {
+        
+        var currentConversation = $scope.getCurrentConversation(recordInError);
+        if ($scope.feedbackEditMode == true) {
+          var feedbackFound = false;
+          // find the existing feedback
+          for (var i = 0; i < currentConversation.feedback.length; i++) {
+            // if this feedback, overwrite it
+            if ($scope.feedbackEditId == currentConversation.feedback[i].localId ||
+                $scope.feedbackEditId == currentConversation.feedback[i].id) {
+              feedbackFound = true;
+              currentConversation.feedback[i].message = feedback;
+              //$scope.conversation.feedback[i].id = currentLocalId++;
+            }
+          }
+          $scope.feedbackEditMode = false;
+          $scope.tinymceContent = null;
+          
+          console.debug('update conversation', currentConversation);
+          $http({
+            url : root_workflow + 'conversation/update',
+            dataType : 'json',
+            data : currentConversation,
+            method : 'POST',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            console.debug('  conversation updated = ', data);
+            if (recordInError.id == $scope.record1.id) {
+              $http({
+                url : root_workflow + 'conversation/id/' + recordInError.id,
+                dataType : 'json',
+                method : 'GET',
+                headers : {
+                  'Content-Type' : 'application/json'
+                }
+              }).success(function(data) {
+            	$scope.newFeedbackMessages1.push(feedback);
+                $scope.conversation1 = data;
+
+              });
+            } 
+            if ($scope.record2 != null && recordInError.id == $scope.record2.id) {
+              
+              $http({
+                url : root_workflow + 'conversation/id/' + recordInError.id,
+                dataType : 'json',
+                method : 'GET',
+                headers : {
+                  'Content-Type' : 'application/json'
+                }
+              }).success(function(data) {
+              	$scope.newFeedbackMessages2.push(feedback);
+                $scope.conversation2 = data;
+
+              });
+              
+            }
+            else{
+              console.debug('  conversation updated = ', data);
+              $http(
+                {
+                  url : root_workflow + 'conversation/id/'
+                    + $scope.leadRecord.id,
+                  dataType : 'json',
+                  method : 'GET',
+                  headers : {
+                    'Content-Type' : 'application/json'
+                  }
+                }).success(function(data) {
+                $scope.newLeadFeedbackMessages.push(feedback);
+                $scope.leadConversation = data;
+              });
+              
+            }
+
+          }).error(function(data, status, headers, config) {
+            $rootScope.glassPane--;
+            $scope.recordError = 'Error updating feedback conversation.';
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        }
+      };
+
+      
 
       $scope.getRecordsInConflict = function() {
         // initialize local variables
         var leadRecordId = $routeParams.recordId;
 
-        // get the lead record
+        // get the lead record (do everything else inside the "then")
         $rootScope.glassPane++;
         $http({
           url : root_mapping + 'record/id/' + leadRecordId,
@@ -180,7 +307,6 @@ angular
               $rootScope.glassPane--;
               $rootScope.handleHttpError(data, status, headers, config);
             });
-          });
 
         // get the conflict records
         $rootScope.glassPane++;
@@ -204,7 +330,7 @@ angular
               // auto-populate if there is only one, no split-screen
               $timeout(function() {
                 $scope.populateMapRecord($scope.record1);
-              }, 200);
+              }, 400);
 
             } else if (data.totalCount == 2) {
 
@@ -290,8 +416,7 @@ angular
                   $scope.leadConversation = data;
 
                   // if no prior conversation, initialize with the specialists
-                  if ($scope.leadConversation == null
-                    || $scope.leadConversation == '') {
+                  if (!$scope.leadConversation) {
 
                     if ($scope.record1 != null)
                       $scope.returnRecipients.push($scope.record1.owner);
@@ -355,6 +480,7 @@ angular
             }
           });
 
+        });
       };
 
       // /////////////////////////////
@@ -562,7 +688,7 @@ angular
         if (!$scope.leadRecord.mapNote.length) {
           $scope.leadRecord.mapNote = angular.copy(record.mapNote);
         }
-        $scope.leadRecord.mapPrinciples = angular.copy(record.mapPrinciple);
+        $scope.leadRecord.mapPrinciple = angular.copy(record.mapPrinciple);
 
         // null the ids of the notes (for later creation as new jpa objects)
         for (var i = 0; i < $scope.leadRecord.mapNote.length; i++) {
@@ -576,7 +702,7 @@ angular
           $scope.leadRecord.mapEntry[i].localId = localId++;
           $scope.leadRecord.mapEntry[i].id = null;
         }
-
+        
         // broadcast to the map record widget
         console.debug(
           'broadcastcompareRecordsWidget.notification.selectRecord = ',
@@ -618,7 +744,8 @@ angular
       $scope.submitNewFeedback = function(recordInError, errorMessage,
         feedbackMessage) {
         var currentConversation = $scope.getCurrentConversation(recordInError);
-
+        var localTimestamp = new Date().getTime();
+        
         // determine if feedback is an error or not and remove 'None' text
         var mapError = '';
         var isError = false;
@@ -636,14 +763,14 @@ angular
           var feedback = {
             'message' : feedbackMessage,
             'mapError' : mapError,
-            'timestamp' : new Date(),
+            'timestamp' : localTimestamp,
             'sender' : $scope.user,
             'recipients' : receivingUsers,
             'isError' : isError,
             'feedbackConversation' : currentConversation,
             'viewedBy' : [ $scope.user ]
           };
-
+          
           var feedbacks = new Array();
           feedbacks.push(feedback);
 
@@ -663,7 +790,7 @@ angular
             'userName' : recordInError.owner.userName
           };
 
-          $rootScope.glassPane++;
+          console.debug('add conversation', feedbackConversation);
           $http({
             url : root_workflow + 'conversation/add',
             dataType : 'json',
@@ -673,11 +800,15 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-            $rootScope.glassPane--;
-            if (recordInError.id == $scope.record1.id)
+            console.debug('  feedback conversation = ', data);
+            if (recordInError.id == $scope.record1.id){
+              $scope.newFeedbackMessages1.push(feedbackMessage);
               $scope.conversation1 = data;
-            else
+            }
+            else{
+              $scope.newFeedbackMessages2.push(feedbackMessage);
               $scope.conversation2 = data;
+        }
           }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
             $scope.recordError = 'Error adding new feedback conversation.';
@@ -692,7 +823,7 @@ angular
           var feedback = {
             'message' : feedbackMessage,
             'mapError' : mapError,
-            'timestamp' : new Date(),
+            'timestamp' : localTimestamp,
             'sender' : $scope.user,
             'recipients' : receivingUsers,
             'isError' : isError,
@@ -704,7 +835,6 @@ angular
           currentConversation.feedback = localFeedback;
           currentConversation.title = $scope.getTitle(false, errorMessage);
 
-          $rootScope.glassPane++;
           $http({
             url : root_workflow + 'conversation/update',
             dataType : 'json',
@@ -714,7 +844,37 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-            $rootScope.glassPane--;
+            console.debug('  conversation updated = ', data);
+            if (recordInError.id == $scope.record1.id) {
+              $http({
+                url : root_workflow + 'conversation/id/' + recordInError.id,
+                dataType : 'json',
+                method : 'GET',
+                headers : {
+                  'Content-Type' : 'application/json'
+                }
+              }).success(function(data) {
+
+                $scope.newFeedbackMessages1.push(feedbackMessage);
+                $scope.conversation1 = data;
+
+              });
+            } else {
+              $http({
+                url : root_workflow + 'conversation/id/' + recordInError.id,
+                dataType : 'json',
+                method : 'GET',
+                headers : {
+                  'Content-Type' : 'application/json'
+                }
+              }).success(function(data) {
+
+                $scope.newFeedbackMessages2.push(feedbackMessage);
+                $scope.conversation2 = data;
+
+              });
+            }
+
           }).error(function(data, status, headers, config) {
             $rootScope.glassPane--;
             $scope.recordError = 'Error updating feedback conversation.';
@@ -734,6 +894,7 @@ angular
           .getCurrentConversation($scope.leadRecord);
 
         var localFeedback = currentConversation.feedback;
+        var localTimestamp = new Date().getTime();
 
         // copy recipient list
         var localRecipients = recipientList.slice(0);
@@ -752,12 +913,12 @@ angular
           var feedback = {
             'message' : groupFeedbackMessage,
             'mapError' : '',
-            'timestamp' : new Date(),
+            'timestamp' : localTimestamp,
             'sender' : $scope.user,
             'recipients' : newRecipients,
             'isError' : 'false',
             'feedbackConversation' : currentConversation,
-            'viewedBy' : []
+            'viewedBy' : [$scope.user]
           };
 
           var feedbacks = new Array();
@@ -778,7 +939,7 @@ angular
             'mapProjectId' : $scope.project.id,
             'userName' : $scope.leadRecord.owner.userName
           };
-          $rootScope.glassPane++;
+
           $http({
             url : root_workflow + 'conversation/add',
             dataType : 'json',
@@ -789,12 +950,12 @@ angular
             }
           })
             .success(function(data) {
-              $rootScope.glassPane--;
+              $scope.newLeadFeedbackMessages.push(groupFeedbackMessage);
               $scope.leadConversation = data;
             })
             .error(
               function(data, status, headers, config) {
-                $rootScope.glassPane--;
+
                 $scope.recordError = 'Error adding new feedback conversation for group feedback.';
                 $rootScope.handleHttpError(data, status, headers, config);
               });
@@ -805,7 +966,7 @@ angular
           var feedback = {
             'message' : groupFeedbackMessage,
             'mapError' : '',
-            'timestamp' : new Date(),
+            'timestamp' : localTimestamp,
             'sender' : $scope.user,
             'recipients' : newRecipients,
             'isError' : 'false',
@@ -818,7 +979,7 @@ angular
           currentConversation.discrepancyReview = $scope.indicateDiscrepancyReview;
           currentConversation.title = $scope.getTitle(true, '');
 
-          $rootScope.glassPane++;
+          console.debug('update conversation', $scope.conversation);
           $http({
             url : root_workflow + 'conversation/update',
             dataType : 'json',
@@ -828,9 +989,23 @@ angular
               'Content-Type' : 'application/json'
             }
           })
-            .success(function(data) {
-              $rootScope.glassPane--;
-            })
+            .success(
+              function(data) {
+                console.debug('  conversation updated = ', data);
+                $http(
+                  {
+                    url : root_workflow + 'conversation/id/'
+                      + $scope.leadRecord.id,
+                    dataType : 'json',
+                    method : 'GET',
+                    headers : {
+                      'Content-Type' : 'application/json'
+                    }
+                  }).success(function(data) {
+                  $scope.newLeadFeedbackMessages.push(groupFeedbackMessage);
+                  $scope.leadConversation = data;
+                });
+              })
             .error(
               function(data, status, headers, config) {
                 $rootScope.glassPane--;
@@ -840,6 +1015,65 @@ angular
         }
 
       };
+      
+   // Delete feedback conversation
+      $scope.removeFeedback = function(message,recordType) {
+        // confirm delete
+        if (confirm('Are you sure that you want to delete a feedback message?') == false)
+          return;
+
+        $http({
+          url : root_workflow + 'feedback/delete',
+          dataType : 'json',
+          data : message,
+          method : 'DELETE',
+          headers : {
+            'Content-Type' : 'application/json'
+          }
+        }).success(function(data) {
+          if(recordType == 'record1'){
+          $http({
+            url : root_workflow + 'conversation/id/'+ $scope.record1.id,
+            dataType : 'json',
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            $scope.conversation1 = data;
+          });
+          }
+          if(recordType == 'record2'){
+          $http({
+            url : root_workflow + 'conversation/id/'+ $scope.record2.id,
+            dataType : 'json',
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            $scope.conversation2 = data;
+          });
+          }
+          if(recordType == 'leadRecord'){
+            $http({
+              url : root_workflow + 'conversation/id/'+ $scope.leadRecord.id,
+              dataType : 'json',
+              method : 'GET',
+              headers : {
+                'Content-Type' : 'application/json'
+              }
+            }).success(function(data) {
+              $scope.leadConversation = data;
+            });
+            }
+      }).error(function(data, status, headers, config) {
+        $scope.recordError = 'Error deleting feedback conversation from application.';
+        $rootScope.handleHttpError(data, status, headers, config);
+      });
+    }
+      
+      
 
       function recordToText(record) {
 
@@ -1034,7 +1268,23 @@ angular
         toolbar : 'undo redo | styleselect | bold italic underline strikethrough | charmap link image',
         height : "150"
       };
+      
+      $scope.tinymceOptionsForGroupFeedback = {
+    	menubar : false,
+    	statusbar : false,
+    	plugins : 'autolink link image charmap searchreplace',
+    	toolbar : 'undo redo | styleselect | bold italic underline strikethrough | charmap link image',
+    	height : "300"
+      };
 
+      $scope.tinymceOptionsForGroupFeedback = {
+        menubar : false,
+        statusbar : false,
+        plugins : 'autolink link image charmap searchreplace',
+        toolbar : 'undo redo | styleselect | bold italic underline strikethrough | charmap link image',
+        height : "300"
+        };
+      
       // add current user to list of viewers who have seen the feedback
       // conversation
       $scope.markViewed = function() {
@@ -1077,8 +1327,7 @@ angular
 
         // if no previous feedback conversations, return just first map lead in
         // list
-        if (conversation == null || conversation == '') {
-          $scope.returnRecipients.push($scope.project.mapLead[0]);
+        if (conversation == null || conversation == '' || conversation.feedback.length == 0) {
           return;
         }
 

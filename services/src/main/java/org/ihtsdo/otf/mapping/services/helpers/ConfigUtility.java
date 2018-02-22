@@ -12,13 +12,26 @@ import java.util.Comparator;
 import java.util.Properties;
 import java.util.UUID;
 
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
 import javax.mail.Authenticator;
+import javax.mail.BodyPart;
 import javax.mail.Message;
+import javax.mail.Multipart;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.Configurable;
@@ -297,6 +310,70 @@ public class ConfigUtility {
     Transport.send(msg);
   }
 
+  /**
+   * Sends email with attachment.
+   *
+   * @param subject the subject
+   * @param from the from
+   * @param recipients the recipients
+   * @param body the body
+   * @param details the details
+   * @param filename the filename
+   * @param authFlag the auth flag
+   * @throws Exception the exception
+   */
+  public static void sendEmailWithAttachment(String subject, String from, String recipients,
+    String body, Properties details, String filename, boolean authFlag) throws Exception {
+    // avoid sending mail if disabled
+    if ("false".equals(details.getProperty("mail.enabled"))) {
+      // do nothing
+      return;
+    }
+    Session session = null;
+    if (authFlag) {
+      Authenticator auth = new SMTPAuthenticator();
+      session = Session.getInstance(details, auth);
+    } else {
+      session = Session.getInstance(details);
+    }
+
+    MimeMessage msg = new MimeMessage(session);
+    
+    // Create the message part
+    BodyPart messageBodyPart = new MimeBodyPart();
+
+    // Set text message part
+    if (body.contains("<html")) {
+      messageBodyPart.setContent(body.toString(), "text/html; charset=utf-8");
+    } else {
+      messageBodyPart.setText(body.toString());
+    }    
+    
+    // Create a multipart message
+    Multipart multipart = new MimeMultipart();
+    
+    multipart.addBodyPart(messageBodyPart);    
+    
+    // Set the attachment
+    messageBodyPart = new MimeBodyPart();
+    DataSource source = new FileDataSource(filename);
+    messageBodyPart.setDataHandler(new DataHandler(source));
+    messageBodyPart.setFileName(filename);
+    multipart.addBodyPart(messageBodyPart);
+
+    // Send the complete message parts
+    msg.setContent(multipart);    
+
+    msg.setSubject(subject);
+    msg.setFrom(new InternetAddress(from));
+    String[] recipientsArray = recipients.split(";");
+    for (String recipient : recipientsArray) {
+      msg.addRecipient(Message.RecipientType.TO,
+          new InternetAddress(recipient));
+    }
+    Transport.send(msg);
+  }  
+  
   /**
    * SMTPAuthenticator.
    */
@@ -602,4 +679,33 @@ public class ConfigUtility {
     return number
         .matches("^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$");
   }
+  
+	/**
+	 * Indicates whether or not the server is active.
+	 *
+	 * @return <code>true</code> if so, <code>false</code> otherwise
+	 * @throws Exception
+	 *             the exception
+	 */
+	public static boolean isServerActive() throws Exception {
+		if (config == null)
+			config = ConfigUtility.getConfigProperties();
+
+		try {
+			// Attempt to logout to verify service is up (this works like a
+			// "ping").
+			Client client = ClientBuilder.newClient();
+			WebTarget target = client.target(config.getProperty("base.url") 
+					+ "/security/logout/user/id/dummy");
+
+			Response response = target.request(MediaType.TEXT_PLAIN).post(null);			
+			if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+				return true;
+			} else {
+				return false;
+			}
+		} catch (Exception e) {
+			return false;
+		}
+	}
 }

@@ -3,7 +3,8 @@ package org.ihtsdo.otf.mapping.test.other;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapProjectList;
 import org.ihtsdo.otf.mapping.helpers.MapUserList;
-import org.ihtsdo.otf.mapping.rest.MappingServiceRest;
+import org.ihtsdo.otf.mapping.jpa.services.rest.MappingServiceRest;
+import org.ihtsdo.otf.mapping.rest.impl.MappingServiceRestImpl;
 import org.ihtsdo.otf.mapping.test.helpers.TestHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -27,7 +28,7 @@ public class MappingServiceRestTest {
    * @throws Exception the exception
    */
   public MappingServiceRestTest() throws Exception {
-    service = new MappingServiceRest();
+    service = new MappingServiceRestImpl();
   }
 
   /**

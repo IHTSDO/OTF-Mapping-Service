@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.5.33</version>
+    <version>1.6.0</version>
     <relativePath>../../parent</relativePath>
   </parent>
 
@@ -44,6 +44,7 @@
                 </goals>
                 <configuration>
                   <indexedObjects>${indexed.objects}</indexedObjects>
+                  <server>${server}</server>
                 </configuration>
               </execution>
             </executions>

@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.5.33</version>
+    <version>1.6.0</version>
     <relativePath>../../parent</relativePath>
   </parent>
 
@@ -316,6 +316,7 @@
                   <workflowStatus>${workflow.status}</workflowStatus>
                   <memberFlag>${member.flag}</memberFlag>
                   <recordFlag>${record.flag}</recordFlag>
+                  <refsetId>${refset.id}</refsetId>
                 </configuration>
               </execution>
             </executions>
@@ -395,6 +396,7 @@
                   <workflowStatus>PUBLISHED</workflowStatus>
                   <memberFlag>${member.flag}</memberFlag>
                   <recordFlag>${record.flag}</recordFlag>
+                  <refsetId>${refset.id}</refsetId>
                 </configuration>
               </execution>
             </executions>
@@ -583,6 +585,27 @@
         </plugins>
       </build>
     </profile>
+    
+    <profile>
+      <id>Icd10CMSqlReport</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>icd10cm-sql-report</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>run-icd10cm-sql-report</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>    
 
   </profiles>
 </project>

@@ -182,6 +182,35 @@ angular
         });
       };
 
+      //sort direction
+      var sortAscending = [];
+      var sortField = [];
+      
+      $scope.getSortIndicator = function(table, field){
+		if (sortField[table] !== field) return '';
+		if (sortField[table] === field && sortAscending[table]) return '▴';
+		if (sortField[table] === field && !sortAscending[table]) return '▾';
+      };
+      
+      //sort field and get data
+      $scope.setSortField = function(table, field) {
+    	  sortAscending[table] = !sortAscending[table];
+    	  sortField[table] = field;
+    	  if (table === 'concepts') {
+    		  $scope.retrieveAvailableWork(
+    				  1, $scope.queryAvailable, $scope.assignedMapUser);
+    	  } else if (table === 'conflicts') {
+    		  $scope.retrieveAvailableConflicts(
+    				  1, $scope.queryAvailableConflict, $scope.assignedMapUser);
+    	  } else if (table === 'review') {
+    		  $scope.retrieveAvailableReviewWork(
+    				  1, $scope.queryAvailableReview, $scope.assignedMapUser);
+    	  } else if (table === 'qa') {
+    		  $scope.retrieveAvailableQAWork(
+    				  1, $scope.selectedQaLabel, $scope.assignedMapUser);
+    	  }
+      };
+      
       $scope.retrieveAvailableConflicts = function(page, pquery, puser) {
         var query = pquery;
         var user = puser;
@@ -208,7 +237,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : (page - 1) * $scope.itemsPerPage,
           'maxResults' : $scope.itemsPerPage,
-          'sortField' : 'sortKey',
+          'sortField' : (sortField['conflicts']) ? sortField['conflicts'] : 'sortKey',
+          'ascending' : sortAscending['conflicts'],
           'queryRestriction' : null
         };
 
@@ -269,7 +299,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : (page - 1) * $scope.itemsPerPage,
           'maxResults' : $scope.itemsPerPage,
-          'sortField' : 'sortKey',
+          'sortField' : (sortField['concepts']) ? sortField['concepts'] : 'sortKey',
+          'ascending' : sortAscending['concepts'],
           'queryRestriction' : null
         };
 
@@ -324,7 +355,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : (page - 1) * $scope.itemsPerPage,
           'maxResults' : $scope.itemsPerPage,
-          'sortField' : 'sortKey',
+          'sortField' : (sortField['qa']) ? sortField['qa'] : 'sortKey',
+          'ascending' : sortAscending['qa'],
           'queryRestriction' : null
         };
 
@@ -498,7 +530,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : (page - 1) * $scope.itemsPerPage,
           'maxResults' : $scope.itemsPerPage,
-          'sortField' : 'sortKey',
+          'sortField' : (sortField['review']) ? sortField['review'] : 'sortKey',
+          'ascending' : sortAscending['review'],
           'queryRestriction' : null
         };
 
@@ -607,7 +640,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : ($scope.availableWorkPage - 1) * $scope.itemsPerPage,
           'maxResults' : batchSize,
-          'sortField' : 'sortKey',
+          'sortField' : (sortField['concepts']) ? sortField['concepts'] : 'sortKey',
+          'ascending' : sortAscending['concepts'],
           'queryRestriction' : null
         };
 
@@ -701,7 +735,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : ($scope.availableWorkPage - 1) * $scope.itemsPerPage,
           'maxResults' : batchSize,
-          'sortField' : 'sortKey',
+          'sortField' : (sortField['conflicts']) ? sortField['conflicts'] : 'sortKey',
+          'ascending' : sortAscending['conflicts'],
           'queryRestriction' : null
         };
 
@@ -796,7 +831,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : ($scope.availableWorkPage - 1) * $scope.itemsPerPage,
           'maxResults' : batchSize,
-          'sortField' : 'sortKey',
+          'sortField' : (sortField['review']) ? sortField['review'] : 'sortKey',
+          'ascending' : sortAscending['review'],
           'queryRestriction' : null
         };
 
@@ -893,7 +929,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : ($scope.availableQAWorkPage - 1) * $scope.itemsPerPage,
           'maxResults' : batchSize,
-          'sortField' : 'sortKey',
+          'sortField' : (sortField['qa']) ? sortField['qa'] : 'sortKey',
+          'ascending' : sortAscending['qa'],
           'queryRestriction' : null
         };
 

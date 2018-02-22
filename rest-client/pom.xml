@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<project
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+  xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <!-- Module Metadata -->
+  <parent>
+    <groupId>org.ihtsdo.otf.mapping</groupId>
+    <artifactId>mapping-parent</artifactId>
+    <version>1.6.0</version>
+    <relativePath>../parent</relativePath>
+  </parent>
+
+  <artifactId>mapping-rest-client</artifactId>
+  <name>OTF RF2 REST Services Client</name>
+  <description>Performs calls against a OTF server REST service.</description>
+
+  <!-- Declare Project Dependency Versions -->
+  <dependencies>
+
+    <!-- Model interfaces. -->
+    <dependency>
+      <groupId>org.ihtsdo.otf.mapping</groupId>
+      <artifactId>mapping-jpa-services</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.ihtsdo.otf.mapping</groupId>
+      <artifactId>mapping-services</artifactId>
+    </dependency>
+
+    <!-- Logger -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+    </dependency>
+
+    <!-- Websocket API -->
+<!--     <dependency> -->
+<!--       <groupId>javax.websocket</groupId> -->
+<!--       <artifactId>javax.websocket-api</artifactId> -->
+<!--     </dependency> -->
+
+    <!-- Required for Jersey and JSON -->
+<!--     <dependency> -->
+<!--       This needed to build clients -->
+<!--       <groupId>org.glassfish.jersey.core</groupId> -->
+<!--       <artifactId>jersey-client</artifactId> -->
+<!--     </dependency> -->
+    
+<!--     <dependency> -->
+<!--       <groupId>org.glassfish.jersey.media</groupId> -->
+<!--       <artifactId>jersey-media-json-jackson</artifactId> -->
+<!--     </dependency> -->
+    
+<!--     <dependency> -->
+<!--       <groupId>org.glassfish.jersey.media</groupId> -->
+<!--       <artifactId>jersey-media-multipart</artifactId> -->
+<!--     </dependency> -->
+  </dependencies>
+
+</project>
+
