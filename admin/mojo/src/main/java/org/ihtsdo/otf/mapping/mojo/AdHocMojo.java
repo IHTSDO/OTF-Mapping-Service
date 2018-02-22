@@ -4,18 +4,13 @@
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import org.apache.maven.plugin.AbstractMojo;
@@ -36,7 +31,6 @@ import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
-import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
  * Customizable mojo to run ad hoc code
@@ -91,9 +85,9 @@ public class AdHocMojo extends AbstractMojo {
       if (mode != null && mode.equals("remove-bogus-map-records")) {
         removeBogusMapRecords(workflowService, contentService, mappingService);
       }
-      if (mode != null && mode.equals("print-utf8-file")) {
-        getLog().info("  running print-utf8-file AdHoc mojo.");
-        printUTF8File(workflowService, contentService, mappingService);
+      
+      if (mode != null && mode.equals("unassign-map-records")){
+        unassignMapRecords(workflowService, contentService, mappingService);
       }
 
     } catch (Exception e) {
@@ -123,45 +117,32 @@ public class AdHocMojo extends AbstractMojo {
       }
     }
   }
-
-  private void printUTF8File(WorkflowService workflowService,
+ 
+  private void unassignMapRecords(WorkflowService workflowService,
     ContentService contentService, MappingService mappingService)
     throws Exception {
-    ArrayList<String> conceptIds =
-        new ArrayList<>(Arrays.asList("13445001", "40956001", "83901003"));
+    ArrayList<Long> mapRecordIds =
+        new ArrayList<>(Arrays.asList(1669005L, 1669006L));
 
-    getLog().info("Starting print-utf8-file AdHoc mojo");
+    mappingService.setTransactionPerOperation(true);
 
-    Properties properties = ConfigUtility.getConfigProperties();
-    String dataDir = properties.getProperty("data.dir");
-    getLog().info("dataDir=" + dataDir);
-    
-    // Open file and writer
-    String testFileName = properties.getProperty("data.dir") + "/TestFile.tsv";
-    getLog().info("fileName=" + testFileName);
-    
-    BufferedWriter humanReadableWriter =
-        new BufferedWriter(new OutputStreamWriter(
-            new FileOutputStream(testFileName), StandardCharsets.UTF_8));
-
-    for (final String conceptId : conceptIds) {
-      Concept concept = null;
+    for (final Long mapRecordId : mapRecordIds) {
+      MapRecord mapRecord = null;
       try {
-        concept = contentService.getConcept(conceptId, "SNOMEDCT_US", "latest");
+        mapRecord = mappingService.getMapRecord(mapRecordId);
       } catch (Exception e) {
-        getLog().info("could not find concept for terminologyId=" + conceptId);
+        // do nothing
       }
-      if (concept != null) {
-        getLog().info("Adding to file: " + concept.getDefaultPreferredName());        
-        humanReadableWriter.write(concept.getDefaultPreferredName());
-        humanReadableWriter.write("\r\n");
-        humanReadableWriter.flush();
+      if (mapRecord != null) {
+        System.out.println("Unassigning map record: " + mapRecord.getId());
+        MapUser mapUser = mapRecord.getOwner();
+        MapProject mapProject = mappingService.getMapProject(mapRecord.getMapProjectId());
+        Concept concept = contentService.getConcept(mapRecord.getConceptId(), mapProject.getSourceTerminology(), mapProject.getSourceTerminologyVersion());
+        workflowService.processWorkflowAction(mapProject, concept, mapUser, mapRecord, WorkflowAction.UNASSIGN);
       }
     }
-
-    humanReadableWriter.close();
-  }
-
+  }  
+  
   /**
    * Handle icd 11.
    *
