@@ -2,7 +2,8 @@ package org.ihtsdo.otf.mapping.test.rest;
 
 import javax.ws.rs.WebApplicationException;
 
-import org.ihtsdo.otf.mapping.rest.SecurityServiceRest;
+import org.ihtsdo.otf.mapping.jpa.services.rest.SecurityServiceRest;
+import org.ihtsdo.otf.mapping.rest.impl.SecurityServiceRestImpl;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -35,12 +36,12 @@ public class SecurityServiceDegenerateUseTest {
    */
   @Before
   public void setup() throws Exception {
-    service = new SecurityServiceRest();
+    service = new SecurityServiceRestImpl();
   }
 
   /**
    * Test degenerate use of the authenticate methods of
-   * {@link SecurityServiceRest}.
+   * {@link SecurityServiceRestImpl}.
    * 
    * @throws Exception the exception
    */
@@ -86,7 +87,7 @@ public class SecurityServiceDegenerateUseTest {
   }
 
   /**
-   * Test degenerate use of logout for {@link SecurityServiceRest}.
+   * Test degenerate use of logout for {@link SecurityServiceRestImpl}.
    *
    * @throws Exception the exception
    */

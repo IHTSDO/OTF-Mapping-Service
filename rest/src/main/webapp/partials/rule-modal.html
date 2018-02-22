@@ -32,8 +32,8 @@
             <td>
               <select ng-model="customAgeRange.lowerInclusive"
                 ng-change="constructRule(ruleCategory, customAgeRange)">
-                <option value=false selected="selected">>=</option>
-                <option value=true>></option>
+                <option value=true selected="selected">>=</option>
+                <option value=false>></option>
               </select>
             </td>
             <td>
@@ -53,8 +53,8 @@
             <td>
               <select ng-model="customAgeRange.upperInclusive"
                 ng-change="constructRule(ruleCategory, customAgeRange)">
-                <option value="false" selected="selected"></option>
-                <option value="true">=</option>
+                <option value="false" selected="selected">&lt;</option>
+                <option value="true">&lt;=</option>
               </select>
             </td>
             <td>

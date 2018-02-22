@@ -58,7 +58,7 @@ angular
             // compute relation and advice IFF a target or entry has
             // been set attempt to autocompute the map relation, then update the
             // entry
-            $scope.computeParameters(false);
+            // $scope.computeParameters(false);
 
           });
 
@@ -121,7 +121,7 @@ angular
           $http(
             {
               url : root_mapping + 'project/id/' + $scope.project.id
-                + '/concept/' + targetCode + '/isValid',
+                + '/concept/isValid' + '?terminologyId=' + encodeURIComponent(targetCode),
               method : 'GET',
               headers : {
                 'Content-Type' : 'application/json'
@@ -135,6 +135,17 @@ angular
                 $scope.entry.targetId = data.terminologyId;
                 $scope.entry.targetName = data.defaultPreferredName;
 
+                // make sure that the mapEntry is up to date before computing advice and relations
+                for (var i = 0; i < $scope.record.mapEntry.length; i++) {
+                    var entry = $scope.record.mapEntry[i];
+                    // Use the scoped entry if the local id matches or if the actual id
+                    // matches
+                    if (matchingEntry(entry, $scope.entry)) {
+                      $scope.record.mapEntry[i].targetId = $scope.entry.targetId;
+                      $scope.record.mapEntry[i].targetName = $scope.entry.targetName;
+                    } 
+                }
+                
                 // attempt to autocompute the map relation, then update the
                 // entry
                 $scope.computeParameters(false);
@@ -175,9 +186,12 @@ angular
           $scope.entry.mapRelation = null;
           $scope.entry.mapAdvice = [];
 
-          // attempt to autocompute the map relation, then update the
+          // attempt to autocompute the map relation and map advices, then update the
           // entry
-          $scope.computeParameters(false);
+          //$scope.computeParameters(false);
+          // compute parameters will get called from setTarget()
+          // best to call setTarget first so that advices are computed based on correct targetId
+          $scope.setTarget($scope.entry.targetId);
 
           // get the allowable advices and relations
           $scope.allowableAdvices = getAllowableAdvices($scope.entry,
@@ -349,6 +363,7 @@ angular
           // }
           // }
 
+          
           $http({
             url : root_mapping + 'advice/compute/' + index,
             dataType : 'json',
@@ -633,7 +648,7 @@ angular
 
               if (lowerValueValid) {
                 $scope.rule += ruleText + ' | '
-                  + (ageRange.lowerInclusive ? '>=' : '>') + ' '
+                  + (ageRange.lowerInclusive === "true" ? '>=' : '>') + ' '
                   + parseFloat(ageRange.lowerValue, 10).toFixed(1) + ' '
                   + ageRange.lowerUnits;
               }
@@ -644,7 +659,7 @@ angular
 
               if (upperValueValid) {
                 $scope.rule += ruleText + ' | '
-                  + (ageRange.upperInclusive ? '<=' : '<') + ' '
+                  + (ageRange.upperInclusive === "true" ? '<=' : '<') + ' '
                   + parseFloat(ageRange.upperValue, 10).toFixed(1) + ' '
                   + ageRange.upperUnits;
 

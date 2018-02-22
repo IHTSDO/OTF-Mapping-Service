@@ -5,51 +5,11 @@
 <web-app>
   <display-name>Mapping REST Services</display-name>
 
-  <!-- Jersey configuration -->
-  <servlet>
-    <servlet-name>Jersey</servlet-name>
-    <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
-    <init-param>
-      <param-name>com.sun.jersey.config.property.packages</param-name>
-      <param-value>com.fasterxml.jackson.jaxrs.json;org.ihtsdo.otf.mapping.rest;org.ihtsdo.otf.mapping.model;org.ihtsdo.otf.mapping.rf2;org.ihtsdo.otf.mapping.rf2.jpa;org.ihtsdo.otf.mapping.services;org.ihtsdo.otf.mapping.jpa.services;com.wordnik.swagger.jersey.listing</param-value>
-    </init-param>
-    <load-on-startup>1</load-on-startup>
-  </servlet>
-
-  <!-- Swagger configuration -->
-  <servlet>
-    <servlet-name>JerseyJaxrsConfig</servlet-name>
-    <servlet-class>com.wordnik.swagger.jersey.config.JerseyJaxrsConfig</servlet-class>
-    <init-param>
-      <param-name>api.version</param-name>
-      <param-value>1.0.0</param-value>
-    </init-param>
-    <init-param>
-      <!-- This URL is the path to the REST web service itself. In the index.html 
-        page is the path to the api-docs page -->
-      <param-name>swagger.api.basepath</param-name>
-      <param-value></param-value>
-    </init-param>
-    <load-on-startup>2</load-on-startup>
-  </servlet>
-
-  <!-- Declare default servlet to avoid Eclipse warnings -->
-  <servlet>
-    <servlet-name>default</servlet-name>
-    <servlet-class>
-      org.apache.catalina.servlets.DefaultServlet
-    </servlet-class>
-    <init-param>
-      <param-name>debug</param-name>
-      <param-value>0</param-value>
-    </init-param>
-    <init-param>
-      <param-name>listings</param-name>
-      <param-value>false</param-value>
-    </init-param>
-    <load-on-startup>1</load-on-startup>
-  </servlet>
-
+  <listener>
+    <listener-class>org.ihtsdo.otf.mapping.rest.impl.SessionFactoryShutdownListener</listener-class>
+  </listener>
+  
+  
   <!-- Redirect index/swagger pages -->
   <servlet-mapping>
     <servlet-name>default</servlet-name>
@@ -100,20 +60,17 @@
     <servlet-name>default</servlet-name>
     <url-pattern>/partials/*</url-pattern>
   </servlet-mapping>
+  <welcome-file-list>
+    <welcome-file>index.html</welcome-file>
+  </welcome-file-list>
 
-  <!-- Generally redirect to Jersey -->
-  <!-- Keep this part after the "default" section otherwise it overrides it -->
-  <servlet-mapping>
-    <servlet-name>Jersey</servlet-name>
-    <url-pattern>/*</url-pattern>
-  </servlet-mapping>
-
-  <filter>
+ <filter>
     <filter-name>ApiOriginFilter</filter-name>
-    <filter-class>org.ihtsdo.otf.mapping.rest.ApiOriginFilter</filter-class>
+    <filter-class>org.ihtsdo.otf.mapping.rest.impl.ApiOriginFilter</filter-class>
   </filter>
   <filter-mapping>
     <filter-name>ApiOriginFilter</filter-name>
     <url-pattern>/*</url-pattern>
-  </filter-mapping>
+  </filter-mapping> 
+
 </web-app>

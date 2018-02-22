@@ -1233,7 +1233,7 @@ public class ContentServiceJpa extends RootServiceJpa
   @Override
   public ValidationResult computeTreePositions(String terminology,
     String terminologyVersion, String typeId, String rootId) throws Exception {
-    Logger.getLogger(this.getClass()).info("Starting computeTreePositions - "
+    Logger.getLogger(this.getClass()).info("Starting computing tree positions - "
         + rootId + ", " + terminology + ", isaRelTypeId = " + typeId);
 
     // initialize global variables
@@ -1263,6 +1263,7 @@ public class ContentServiceJpa extends RootServiceJpa
     Logger.getLogger(this.getClass())
         .info("Final Tree Positions: " + computeTreePositionTotalCount
             + ", MEMORY USAGE: " + runtime.totalMemory());
+    Logger.getLogger(this.getClass()).info("Done computing tree positions");
 
     return computeTreePositionValidationResult;
 
@@ -1784,8 +1785,9 @@ public class ContentServiceJpa extends RootServiceJpa
 
       // if the query is an exact match for the terminology id of this
       // tree position, attach children
+      // Need to remove '+' characters previously added to query
       if (queriedTreePosition.getTerminologyId().toUpperCase()
-          .equals(query.toUpperCase())) {
+          .equals(query.replace("+", "").trim().toUpperCase())) {
         queriedTreePosition.setChildren(
             getChildTreePositions(queriedTreePosition).getTreePositions());
 

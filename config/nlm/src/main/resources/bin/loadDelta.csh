@@ -9,7 +9,7 @@
 set MAPPING_CODE=/opt/mapping-service-admin
 set MAPPING_CONFIG=/opt/mapping-service/conf/config.properties
 
-set relUrl=https://release.ihtsdotools.org/api/v1/centers/international/products/snomed_ct_ts_release/builds/
+set relUrl=https://release.ihtsdotools.org/api/v1/centers/us/products/snomed_ct_us_daily_build/builds/
 set outFile=/outputfiles
 set tempdir=/tmp/dripFeed
 
@@ -18,7 +18,6 @@ set dir=$tempdir/map/daily/dripFeed
 
 
 set buildStatus = "Progress Status"
-set buildOk = "completed,"
 set numrels = 50
 
 echo "------------------------------------------------"
@@ -72,7 +71,7 @@ wget "$buildreport" -O $tempdir/buildrep.$$.json
 set buildstat = `grep "$buildStatus" $tempdir/buildrep.$$.json | cut -d\: -f 2- | sed 's/ "//; s/"//'`
 
 echo "buildstat = "$buildstat
-if($buildstat == $buildOk) then
+if($buildstat =~ 'completed') then
 echo "buildOK"
 set buildOKbool = true
 echo "OK release = "$latestRelease

@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import javax.persistence.NoResultException;
 
@@ -45,6 +46,7 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
+import org.ihtsdo.otf.mapping.jpa.FeedbackJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.handlers.AbstractWorkflowPathHandler;
 import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowFixErrorPathHandler;
@@ -53,6 +55,7 @@ import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowQaPathHandler;
 import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowReviewProjectPathHandler;
 import org.ihtsdo.otf.mapping.model.Feedback;
 import org.ihtsdo.otf.mapping.model.FeedbackConversation;
+import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -116,7 +119,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       } else {
         manager.remove(manager.merge(ma));
       }
-      tx.commit();
+      tx.commit(); 
     } else {
       TrackingRecord ma =
           manager.find(TrackingRecordJpa.class, trackingRecordId);
@@ -125,6 +128,60 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       } else {
         manager.remove(manager.merge(ma));
       }
+    }
+
+  }
+  
+  /* see superclass */
+  @Override
+  public void removeFeedbackConversation(Long feedbackId) throws Exception {
+
+    if (getTransactionPerOperation()) {
+      tx = manager.getTransaction();
+      tx.begin();
+      FeedbackConversation fa =
+          manager.find(FeedbackConversationJpa.class, feedbackId);
+      if (manager.contains(fa)) {
+        manager.remove(fa);
+      } else {
+        manager.remove(manager.merge(fa));
+      }
+      tx.commit();
+    } else {
+    	FeedbackConversation fa =
+          manager.find(FeedbackConversationJpa.class, feedbackId);
+   if (manager.contains(fa)) {
+        manager.remove(fa);
+      } else {
+        manager.remove(manager.merge(fa));
+      }
+    }
+
+  }
+  
+  /* see superclass */
+  @Override
+  public void removeFeedback(Long feedbackId) throws Exception {
+
+    if (getTransactionPerOperation()) {
+      tx = manager.getTransaction();
+      tx.begin();
+      Feedback fa =
+          manager.find(FeedbackJpa.class, feedbackId);
+      
+      final FeedbackConversation conv = fa.getFeedbackConversation();
+      conv.removeFeedback(fa);
+      manager.merge(conv);
+      tx.commit();
+      
+    } else {
+      Feedback fa =
+          manager.find(FeedbackJpa.class, feedbackId);
+    	  
+      final FeedbackConversation conv = fa.getFeedbackConversation();
+      conv.removeFeedback(fa);
+      manager.merge(conv);
+     
     }
 
   }
@@ -741,6 +798,20 @@ public class WorkflowServiceJpa extends MappingServiceJpa
 
         if (!mr.isEquivalent(getMapRecordInSet(oldRecords, mr.getId()))) {
           Logger.getLogger(WorkflowServiceJpa.class).debug("    Update record");
+          
+          /*
+           * Special handling for MapNotes based on mapRecordsMapNotes
+           * N:M FK table. Without this, updates to an already persisted 
+           * map note will violate duplicate entry constraint on the table.
+           */
+          Set<MapNote> notesToUpdate = mr.getMapNotes();
+
+          // Persist with clearing out the notes
+          mr.setMapNotes(new HashSet<MapNote>());
+          updateMapRecord(mr);
+
+          // Persist with all notes including updated ones
+          mr.setMapNotes(notesToUpdate);
           updateMapRecord(mr);
         } else {
           Logger.getLogger(WorkflowServiceJpa.class)
@@ -1429,6 +1500,26 @@ public class WorkflowServiceJpa extends MappingServiceJpa
 
   }
 
+  /* see superclass */
+  @Override
+  public Feedback getFeedback(Long id)
+    throws Exception {
+
+    try {
+      // construct query
+      javax.persistence.Query query = manager.createQuery(
+          "select m from FeedbackJpa m where id = :id");
+
+      // Try query
+      query.setParameter("id", id);
+      final Feedback feedback =
+          (Feedback) query.getSingleResult();
+      return feedback;
+    } catch (NoSuchElementException e) {
+      return null;
+    }
+
+  }
   /**
    * Handle feedback conversation lazy initialization.
    *
@@ -1491,30 +1582,47 @@ public class WorkflowServiceJpa extends MappingServiceJpa
 
     MapProject mapProject = null;
     mapProject = getMapProject(mapProjectId);
+    Boolean ownedByMe = null; 
 
-    String modifiedQuery = "";
+    String modifiedQuery = new String(query);
     if (query.contains(" AND viewed:false"))
-      modifiedQuery = query.replace(" AND viewed:false", "");
+    	modifiedQuery = modifiedQuery.replace(" AND viewed:false", "");
     else if (query.contains(" AND viewed:true"))
-      modifiedQuery = query.replace(" AND viewed:true", "");
-    else
-      modifiedQuery = query;
+    	modifiedQuery = modifiedQuery.replace(" AND viewed:true", "");
+    
+    if (query.contains(" AND ownedByMe:true")) {
+    	ownedByMe = true;
+    	modifiedQuery = modifiedQuery.replace(" AND ownedByMe:true", "");
+    } else if (query.contains(" AND ownedByMe:false")) {
+    	ownedByMe = false;
+    	modifiedQuery = modifiedQuery.replace(" AND ownedByMe:false", "");
+    }
 
     final StringBuilder sb = new StringBuilder();
-    sb.append(modifiedQuery).append(" AND ");
-    sb.append("mapProjectId:" + mapProject.getId());
+    sb.append(modifiedQuery);
+    
+    if (!query.contains("mapProjectId")) {
+    	sb.append(" AND ")
+    		.append("mapProjectId:")
+    		.append(mapProject.getId());
+    }
 
     // remove from the query the viewed parameter, if it exists
     // viewed will be handled later because it is on the Feedback object,
     // not the FeedbackConversation object
-    sb.append(" AND terminology:" + mapProject.getSourceTerminology()
-        + " AND terminologyVersion:" + mapProject.getSourceTerminologyVersion()
-        + " AND " + "( feedbacks.sender.userName:" + userName + " OR "
-        + "feedbacks.recipients.userName:" + userName + ")");
+	sb.append(" AND terminology:")
+			.append(mapProject.getSourceTerminology());
+	sb.append(" AND terminologyVersion:")
+			.append(mapProject.getSourceTerminologyVersion());
+	sb.append(" AND " + "( feedbacks.sender.userName:").append(userName)
+			.append(" OR ").append("feedbacks.recipients.userName:")
+			.append(userName).append(")");
 
     Logger.getLogger(getClass()).info("  query = " + sb.toString());
 
     final PfsParameter pfs = new PfsParameterJpa(pfsParameter);
+    pfs.setMaxResults(-1);
+    
     if (pfs.getSortField() == null || pfs.getSortField().isEmpty()) {
       pfs.setSortField("lastModified");
     }
@@ -1529,6 +1637,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
             FeedbackConversationJpa.class, FeedbackConversationJpa.class, pfs,
             totalCt);
 
+    
     if (pfsParameter != null && query.contains("viewed")) {
 
       // Handle viewed flag
@@ -1566,25 +1675,70 @@ public class WorkflowServiceJpa extends MappingServiceJpa
             conversationsToKeep.add(fc);
         }
       }
-      totalCt[0] = conversationsToKeep.size();
-      feedbackConversations.clear();
-      if (pfsParameter.getStartIndex() != -1) {
-        for (int i =
-            pfsParameter.getStartIndex(); i < pfsParameter.getStartIndex()
-                + pfsParameter.getMaxResults()
-                && i < conversationsToKeep.size(); i++) {
-          feedbackConversations.add(conversationsToKeep.get(i));
-        }
-      } else {
-        feedbackConversations.addAll(conversationsToKeep);
-      }
 
+      feedbackConversations.clear();
+      feedbackConversations.addAll(conversationsToKeep);
+      conversationsToKeep.clear();
     }
+    
+    //replace username with owned by
+    for (final FeedbackConversation fc : feedbackConversations) {
+  	    final MapRecord mrl = this.getLatestMapRecordForConcept(fc.getMapProjectId(), fc.getTerminologyId());
+    	if (mrl != null && mrl.getLastModifiedBy() != null) {
+    		fc.setUserName(mrl.getLastModifiedBy().getUserName());
+    	}
+    	else {
+    		fc.setUserName(null);
+    	}
+    }
+    
+    //filter for owned by me or not owned by me
+	if (ownedByMe != null) {
+		Logger.getLogger(getClass()).debug("owned: " + ownedByMe );
+		final List<FeedbackConversation> conversationsToKeep = new ArrayList<>();		
+		
+		for (final FeedbackConversation fc : feedbackConversations) {
+			
+			Logger.getLogger(getClass()).debug("CHECK id: " + fc.getTerminologyId() + 
+					" userName:" + userName + " fc.getUserName:" + fc.getUserName());
+			
+			if (   ( (ownedByMe) &&  userName.equals(fc.getUserName()))
+				|| (!(ownedByMe) && !userName.equals(fc.getUserName()))) {
+				
+				Logger.getLogger(getClass()).debug("MATCH id: " + fc.getTerminologyId() + 
+						" userName:" + userName + " fc.getUserName:" + fc.getUserName());
+				
+				conversationsToKeep.add(fc);
+			}
+		}
+		feedbackConversations.clear();
+		feedbackConversations.addAll(conversationsToKeep);
+		conversationsToKeep.clear();
+	}
+	
+	final List<FeedbackConversation> recordsToKeep = new ArrayList<>();
+	//paging.
+	if (feedbackConversations != null && feedbackConversations.size() > 0
+		&& pfsParameter.getStartIndex() != -1
+		&& pfsParameter.getMaxResults() != -1 ) {
+	 			
+		int startIndex = (pfsParameter.getStartIndex() < 0) ? 0 : pfsParameter.getStartIndex();
+		int endIndex =  startIndex + 
+				(((startIndex + pfsParameter.getMaxResults()) < feedbackConversations.size()) 
+					? pfsParameter.getMaxResults() 
+					: feedbackConversations.size() - startIndex);
+    	recordsToKeep.addAll(feedbackConversations.subList(startIndex, endIndex));
+    }
+	
+	totalCt[0] = feedbackConversations.size();
+    feedbackConversations.clear();
+    feedbackConversations.addAll(recordsToKeep);
+    recordsToKeep.clear();
 
     Logger.getLogger(this.getClass())
         .debug(Integer.toString(feedbackConversations.size())
             + " feedbackConversations retrieved");
-
+    
     for (final FeedbackConversation feedbackConversation : feedbackConversations) {
       handleFeedbackConversationLazyInitialization(feedbackConversation);
     }
@@ -1612,11 +1766,22 @@ public class WorkflowServiceJpa extends MappingServiceJpa
             "select m from FeedbackConversationJpa m where mapRecordId=:mapRecordId")
         .setParameter("mapRecordId", mapRecordId);
 
-    List<FeedbackConversation> feedbackConversations = query.getResultList();
+    List<FeedbackConversation> feedbackConversations = query.getResultList();    
     for (final FeedbackConversation feedbackConversation : feedbackConversations) {
       handleFeedbackConversationLazyInitialization(feedbackConversation);
     }
 
+    //replace username with owned by
+    for (final FeedbackConversation fc : feedbackConversations) {
+        final MapRecord mrl = this.getLatestMapRecordForConcept(fc.getMapProjectId(), fc.getTerminologyId());
+        if (mrl != null && mrl.getLastModifiedBy() != null) {
+            fc.setUserName(mrl.getLastModifiedBy().getUserName());
+        }
+        else {
+            fc.setUserName(null);
+        }
+    }      
+    
     // set the total count
     FeedbackConversationListJpa feedbackConversationList =
         new FeedbackConversationListJpa();
@@ -1853,5 +2018,25 @@ public class WorkflowServiceJpa extends MappingServiceJpa
         return getWorkflowPathHandler(mapProject.getWorkflowType().toString());
 
     }
+  }
+  
+  //parse query restrictions
+  private Map<String, String> convertToMap(String tokenizedString, String firstToken, String secondToken) throws Exception {
+	  
+	  final Map<String, String> map = new HashMap<String, String>();
+	  final StringTokenizer st = new StringTokenizer(tokenizedString, firstToken);
+	  
+	  while(st.hasMoreTokens()) {
+		  final String first = st.nextToken();
+		  final String[] second = first.split(secondToken);
+		  
+		  if (second.length != 2) {
+			  throw new Exception("Unexpeted number of tokens received.");
+		  }
+		  else {
+			  map.put(second[0], second[1]);
+		  }
+	  }
+	  return map;
   }
 }
