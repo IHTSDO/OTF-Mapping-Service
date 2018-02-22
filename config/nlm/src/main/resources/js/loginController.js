@@ -332,6 +332,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
                               $rootScope.handleHttpError(data, status, headers, config);
                             });
                       });
+                      });
                   });
               });
           }).error(function(data, status, headers, config) {
