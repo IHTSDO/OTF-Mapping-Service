@@ -334,8 +334,7 @@ angular
           }).then(
           // Success
           function(response) {
-            // substring to eliminate quotation marks
-            deferred.resolve(response.data.substring(1, response.data.length - 2));
+            deferred.resolve(response.data);
 
           },
           // Error
