@@ -106,14 +106,13 @@ angular.module('mapProjectApp').controller(
     function onStorageEvent(storageEvent) {
       var targetCode = localStorage.getItem('targetCode');
 
-      // if target code is set, focus window, remove from storage, and set
+      // if target code is set, remove from storage, and set
       // target
       if (targetCode) {
         localStorage.removeItem('targetCode');
         $scope.query = targetCode;
         $scope.search();
         $timeout(function() {
-          window.alert('Target code selected in index viewer: ' + targetCode);
         }, 250);
 
       }
