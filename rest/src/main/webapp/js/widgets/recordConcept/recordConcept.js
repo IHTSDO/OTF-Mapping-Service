@@ -318,10 +318,10 @@ angular
           else
             $location.path('/record/recordId/' + record.id);
 
-          // otherwise, assign this record along the FIX_ERROR_PATH
+          // otherwise, assign this record along the QA_PATH
         } else {
 
-          // assign the record along the FIX_ERROR_PATH
+          // assign the record along the QA_PATH
           $rootScope.glassPane++;
 
           // remove advices if this is a RELATIONSHIP_STYLE project
@@ -334,7 +334,7 @@ angular
           }
 
           $http({
-            url : root_workflow + 'assignFromRecord/user/id/' + $scope.currentUser.userName,
+            url : root_workflow + 'createQARecord',
             method : 'POST',
             dataType : 'json',
             data : record,
@@ -346,20 +346,39 @@ angular
               function(data) {
                 $http(
                   {
-                    url : root_workflow + 'record/project/id/' + $scope.focusProject.id
+                    url : root_workflow + 'assign/project/id/' + $scope.focusProject.id
                       + '/concept/id/' + record.conceptId + '/user/id/'
                       + $scope.currentUser.userName,
-                    method : 'GET',
+                    method : 'POST',
                     dataType : 'json',
                     data : record,
                     headers : {
                       'Content-Type' : 'application/json'
                     }
-                  }).success(function(data) {
-                  $rootScope.glassPane--;
+                  }).success(
+                function(data) {
+                  $http(
+                    {
+                      url : root_workflow + 'record/project/id/' + $scope.focusProject.id
+                        + '/concept/id/' + record.conceptId + '/user/id/'
+                        + $scope.currentUser.userName,
+                      method : 'GET',
+                      dataType : 'json',
+                      data : record,
+                      headers : {
+                        'Content-Type' : 'application/json'
+                      }
+                    }).success(function(data) {
+                    $rootScope.glassPane--;
 
-                  // open the record edit view
-                  $location.path('/record/recordId/' + data.id);
+                    // open the record edit view
+                    $location.path('/record/review/' + data.id);
+                  }).error(function(data, status, headers, config) {
+                    $rootScope.glassPane--;
+
+                    $rootScope.handleHttpError(data, status, headers, config);
+                  });
+
                 }).error(function(data, status, headers, config) {
                   $rootScope.glassPane--;
 
