@@ -334,7 +334,7 @@ public class AmazonS3ServiceJpa extends RootServiceJpa
 
 		if (!dups.isEmpty()) {
 			// Define recipients
-			String notificationRecipients = config.getProperty("send.notification.recipients");
+			String notificationRecipients = config.getProperty("send.notification.recipients.devops");
 
 			if (!notificationRecipients.isEmpty() && "true".equals(config.getProperty("mail.enabled"))) {
 				Logger.getLogger(AmazonS3ServiceJpa.class)
