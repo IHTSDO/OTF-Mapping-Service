@@ -1122,12 +1122,13 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Terminology, e.g. UMLS", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Version, e.g. latest", required = true) @PathParam("version") String version,
     @ApiParam(value = "Full path to input file", required = true) String inputFile,
+    @ApiParam(value = "Full path to parent/child file", required = false) String parChdFile,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass())
         .info("RESTful call (Content): /terminology/load/simple/ " + terminology
-            + ", " + version + " from input file " + inputFile);
+            + ", " + version + " from input file " + inputFile + " and parent/child file");
 
     // Track system level information
     long startTimeOrig = System.nanoTime();
@@ -1145,7 +1146,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         "load simple terminology", securityService);
 
     try (final SimpleLoaderAlgorithm algo = new SimpleLoaderAlgorithm(
-        localTerminology, localVersion, inputFile, null);) {
+        localTerminology, localVersion, inputFile, parChdFile);) {
 
       algo.compute();
 
