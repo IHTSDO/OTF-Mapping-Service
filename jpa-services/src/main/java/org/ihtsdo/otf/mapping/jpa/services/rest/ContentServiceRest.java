@@ -272,12 +272,11 @@ public interface ContentServiceRest {
    * @param terminology The terminology.
    * @param version The terminology version.
    * @param inputDir The directory where the input files are located.
-   * @param parChdFile the par chd file
    * @param authToken The auth token
    * @throws Exception The execution exception
    */
   void loadTerminologySimple(String terminology, String version,
-    String inputDir, String parChdFile, String authToken) throws Exception;
+    String inputDir, String authToken) throws Exception;
 
   /**
    * Removes and loads an RF2 Snapshot of SNOMED CT data into a database.
