@@ -1122,7 +1122,6 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Terminology, e.g. UMLS", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Version, e.g. latest", required = true) @PathParam("version") String version,
     @ApiParam(value = "Full path to input file", required = true) String inputFile,
-    @ApiParam(value = "Full path to parent/child file", required = false) String parChdFile,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
@@ -1146,7 +1145,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         "load simple terminology", securityService);
 
     try (final SimpleLoaderAlgorithm algo = new SimpleLoaderAlgorithm(
-        localTerminology, localVersion, inputFile, parChdFile);) {
+        localTerminology, localVersion, inputFile);) {
 
       algo.compute();
 

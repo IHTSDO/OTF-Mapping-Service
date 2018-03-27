@@ -407,10 +407,9 @@ public class ContentClientRest extends RootClientRest
 	}
 	
 	/* see superclass */
-	//TODO - this breaks when the parChdFile is specified
 	@Override
 	public void loadTerminologySimple(String terminology, String version,
-			String inputFile, String parChdFile, String authToken) throws Exception {
+			String inputFile, String authToken) throws Exception {
 
 		Logger.getLogger(getClass())
 				.debug("Content Client - load terminology simple " + terminology

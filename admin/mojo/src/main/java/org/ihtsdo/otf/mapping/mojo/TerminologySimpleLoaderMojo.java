@@ -100,14 +100,14 @@ public class TerminologySimpleLoaderMojo extends AbstractTerminologyLoaderMojo {
 				getLog().info("Running directly");
 
 				ContentServiceRestImpl service = new ContentServiceRestImpl();
-				service.loadTerminologySimple(terminology, version, inputFile, parChdFile, getAuthToken());
+				service.loadTerminologySimple(terminology, version, inputFile, getAuthToken());
 
 			} else {
 				getLog().info("Running against server");
 
 				// invoke the client
 				ContentClientRest client = new ContentClientRest(properties);
-				client.loadTerminologySimple(terminology, version,inputFile, parChdFile, getAuthToken());
+				client.loadTerminologySimple(terminology, version,inputFile, getAuthToken());
 			}
 
 		} catch (Exception e) {
