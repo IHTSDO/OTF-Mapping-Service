@@ -1145,7 +1145,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         "load simple terminology", securityService);
 
     try (final SimpleLoaderAlgorithm algo = new SimpleLoaderAlgorithm(
-        localTerminology, localVersion, inputFile);) {
+        localTerminology, localVersion, inputFile, null);) {
 
       algo.compute();
 
