@@ -1127,7 +1127,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
     Logger.getLogger(getClass())
         .info("RESTful call (Content): /terminology/load/simple/ " + terminology
-            + ", " + version + " from input file " + inputFile);
+            + ", " + version + " from input file " + inputFile + " and parent/child file");
 
     // Track system level information
     long startTimeOrig = System.nanoTime();
