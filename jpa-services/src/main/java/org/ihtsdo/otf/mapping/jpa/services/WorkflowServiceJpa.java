@@ -3,9 +3,13 @@
  */
 package org.ihtsdo.otf.mapping.jpa.services;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -1614,6 +1618,17 @@ public class WorkflowServiceJpa extends MappingServiceJpa
 			.append(mapProject.getSourceTerminology());
 	sb.append(" AND terminologyVersion:")
 			.append(mapProject.getSourceTerminologyVersion());
+	
+	// if simplest query, just get most recent 12 months of results, to make expedient
+    if (!query.contains("AND")) {
+      Calendar calendar = Calendar.getInstance();
+      calendar.add(Calendar.YEAR, -1);
+      Date yearAgo = calendar.getTime();
+      DateFormat dateFormat = new SimpleDateFormat("YYYYMMDD");
+      String sinceDate = dateFormat.format(yearAgo);
+      sb.append(" AND lastModified:[" + sinceDate + " TO *]");
+    }
+    
 	sb.append(" AND " + "( feedbacks.sender.userName:").append(userName)
 			.append(" OR ").append("feedbacks.recipients.userName:")
 			.append(userName).append(")");
@@ -1755,6 +1770,9 @@ public class WorkflowServiceJpa extends MappingServiceJpa
 
   }
 
+  
+  
+  
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
