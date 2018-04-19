@@ -2950,7 +2950,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
 
       }
 
-      // otherwise, use default paging
+      // otherwise not ancestor or relationship flags, use default paging
       else {
 
         // perform lucene search
@@ -5022,7 +5022,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
        */
 
       // if test project, override author and user
-      if (jiraProject.equals("MTFP") || jiraProject.equals("MFTP")) {
+      if (!config.getProperty("deploy.title").equals("Mapping Tool")) {
         conceptAuthor = "dshapiro";
         authToken = "dshapiro";
         jiraProject = "MTFP";
