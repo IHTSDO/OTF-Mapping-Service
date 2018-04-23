@@ -6,6 +6,7 @@ package org.ihtsdo.otf.mapping.jpa.handlers;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -32,6 +33,7 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
 
@@ -363,8 +365,13 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
         sb.append(" AND userAndWorkflowStatusPairs:REVIEW_NEEDED_*");
 
         // And was not edited by this lead
-        sb.append(" AND NOT (userAndWorkflowStatusPairs:REVIEW_NEEDED_"
+        final Properties config = ConfigUtility.getConfigProperties();
+        final String deployTitle =
+            config.getProperty("deploy.title");
+        if (!deployTitle.contains("NLM")) {
+          sb.append(" AND NOT (userAndWorkflowStatusPairs:REVIEW_NEEDED_"
             + mapUser.getUserName() + ")");
+        }
 
         // there must not be an already claimed review record
         sb.append(" AND NOT (userAndWorkflowStatusPairs:REVIEW_NEW_*"
