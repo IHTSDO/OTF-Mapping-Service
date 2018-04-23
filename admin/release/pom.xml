@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.5.34-SNAPSHOT</version>
+    <version>1.5.35-US-SNAPSHOT</version>
     <relativePath>../../parent</relativePath>
   </parent>
 
@@ -130,6 +130,31 @@
                 <phase>package</phase>
                 <goals>
                   <goal>begin-editing-cycle</goal>
+                </goals>
+                <configuration>
+                  <refsetId>${refset.id}</refsetId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- Recalculate the map advice for projects that require it (e.g. SNOMEDCT_US to ICD10CM). -->
+    <profile>
+      <id>RecalculateMapAdvice</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>recalculate-map-advice</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>recalculate-map-advice</goal>
                 </goals>
                 <configuration>
                   <refsetId>${refset.id}</refsetId>

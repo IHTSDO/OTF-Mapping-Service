@@ -6,8 +6,11 @@ package org.ihtsdo.otf.mapping.jpa.handlers;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -914,7 +917,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Open file
     String filename = null;
     BufferedWriter writer = null;
-    filename = outputDir + "/der2_ssRefset_ModuleDependencyDelta_INT_"
+    filename = outputDir + "/der2_ssRefset_ModuleDependencyDelta_"+algorithmHandler.getReleaseFile3rdElement()+"_"
         + effectiveTime + ".txt";
     writer = new BufferedWriter(new FileWriter(filename));
 
@@ -953,7 +956,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     BufferedWriter writer = null;
     String pattern = getPatternForType(mapProject);
     filename = outputDir + "/der2_" + pattern + mapProject.getMapRefsetPattern()
-        + "Delta_INT_" + effectiveTime + ".txt";
+        + "Delta_"+algorithmHandler.getReleaseFile3rdElement()+"_" + effectiveTime + ".txt";
     Logger.getLogger(getClass()).info("  delta:  " + filename);
 
     // Write headers (subject to pattern)
@@ -1146,7 +1149,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     String filename = null;
     BufferedWriter writer = null;
     filename = outputDir + "/der2_" + pattern + mapProject.getMapRefsetPattern()
-        + "ActiveSnapshot_INT_" + effectiveTime + ".txt";
+        + "ActiveSnapshot_"+algorithmHandler.getReleaseFile3rdElement()+"_" + effectiveTime + ".txt";
 
     // write headers
     Logger.getLogger(getClass()).info("  active snapshot:  " + filename);
@@ -1202,7 +1205,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     String filename = null;
     BufferedWriter writer = null;
     filename = outputDir + "/der2_" + pattern + mapProject.getMapRefsetPattern()
-        + "Snapshot_INT_" + effectiveTime + ".txt";
+        + "Snapshot_"+algorithmHandler.getReleaseFile3rdElement()+"_" + effectiveTime + ".txt";
 
     // write headers
     Logger.getLogger(getClass()).info("  snapshot file:  " + filename);
@@ -1286,9 +1289,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         mapProject.getDestinationTerminology().substring(0, 1)
             + mapProject.getDestinationTerminology().substring(1).toLowerCase();
     humanReadableFileName = outputDir + "/tls_" + camelCaseName
-        + "HumanReadableMap_INT_" + effectiveTime + ".tsv";
+        + "HumanReadableMap_"+algorithmHandler.getReleaseFile3rdElement()+"_" + effectiveTime + ".tsv";
     humanReadableWriter =
-        new BufferedWriter(new FileWriter(humanReadableFileName));
+    //    new BufferedWriter(new FileWriter(humanReadableFileName));
+    new BufferedWriter(new OutputStreamWriter(new FileOutputStream(humanReadableFileName), StandardCharsets.UTF_8));
 
     // Write headers (subject to pattern)
     MapRefsetPattern pattern = mapProject.getMapRefsetPattern();
@@ -2414,6 +2418,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     Logger.getLogger(getClass()).info("  Adding Release QA Report");
     Logger.getLogger(getClass())
         .info("    Log into the application to see the report results");
+
+    // Commit the new report either way
+    reportService.commit();     
 
       // way to override the errors if we want to proceed with a release anyway
       if (!testModeFlag) {
