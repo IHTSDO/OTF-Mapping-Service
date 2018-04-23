@@ -4,11 +4,18 @@
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.maven.plugin.AbstractMojo;
@@ -29,6 +36,7 @@ import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
  * Customizable mojo to run ad hoc code
@@ -80,10 +88,78 @@ public class AdHocMojo extends AbstractMojo {
             contentService, mappingService);
       }
 
+      if (mode != null && mode.equals("remove-bogus-map-records")) {
+        removeBogusMapRecords(workflowService, contentService, mappingService);
+      }
+      if (mode != null && mode.equals("print-utf8-file")) {
+        getLog().info("  running print-utf8-file AdHoc mojo.");
+        printUTF8File(workflowService, contentService, mappingService);
+      }
+
     } catch (Exception e) {
+      getLog().info("  could not run mojo.");
       e.printStackTrace();
       throw new MojoExecutionException("Ad-hoc mojo failed to complete", e);
     }
+  }
+
+  private void removeBogusMapRecords(WorkflowService workflowService,
+    ContentService contentService, MappingService mappingService)
+    throws Exception {
+    ArrayList<Long> mapRecordIds =
+        new ArrayList<>(Arrays.asList(1885395L, 1885758L, 1884977L, 1885416L));
+
+    mappingService.setTransactionPerOperation(true);
+
+    for (final Long mapRecordId : mapRecordIds) {
+      MapRecord mapRecord = null;
+      try {
+        mapRecord = mappingService.getMapRecord(mapRecordId);
+      } catch (Exception e) {
+        // do nothing
+      }
+      if (mapRecord != null) {
+        mappingService.removeMapRecord(mapRecordId);
+      }
+    }
+  }
+
+  private void printUTF8File(WorkflowService workflowService,
+    ContentService contentService, MappingService mappingService)
+    throws Exception {
+    ArrayList<String> conceptIds =
+        new ArrayList<>(Arrays.asList("13445001", "40956001", "83901003"));
+
+    getLog().info("Starting print-utf8-file AdHoc mojo");
+
+    Properties properties = ConfigUtility.getConfigProperties();
+    String dataDir = properties.getProperty("data.dir");
+    getLog().info("dataDir=" + dataDir);
+    
+    // Open file and writer
+    String testFileName = properties.getProperty("data.dir") + "/TestFile.tsv";
+    getLog().info("fileName=" + testFileName);
+    
+    BufferedWriter humanReadableWriter =
+        new BufferedWriter(new OutputStreamWriter(
+            new FileOutputStream(testFileName), StandardCharsets.UTF_8));
+
+    for (final String conceptId : conceptIds) {
+      Concept concept = null;
+      try {
+        concept = contentService.getConcept(conceptId, "SNOMEDCT_US", "latest");
+      } catch (Exception e) {
+        getLog().info("could not find concept for terminologyId=" + conceptId);
+      }
+      if (concept != null) {
+        getLog().info("Adding to file: " + concept.getDefaultPreferredName());        
+        humanReadableWriter.write(concept.getDefaultPreferredName());
+        humanReadableWriter.write("\r\n");
+        humanReadableWriter.flush();
+      }
+    }
+
+    humanReadableWriter.close();
   }
 
   /**
