@@ -368,7 +368,7 @@ public class WorkflowFixErrorPathHandler extends AbstractWorkflowPathHandler {
         final Properties config = ConfigUtility.getConfigProperties();
         final String deployTitle =
             config.getProperty("deploy.title");
-        if (!deployTitle.contains("NLM")) {
+        if (!deployTitle.contains("NLM") && !deployTitle.contains("US")) {
           sb.append(" AND NOT (userAndWorkflowStatusPairs:REVIEW_NEEDED_"
             + mapUser.getUserName() + ")");
         }
