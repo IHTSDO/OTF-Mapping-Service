@@ -154,7 +154,7 @@ import io.swagger.annotations.ApiParam;
 public class MappingServiceRestImpl extends RootServiceRestImpl
     implements MappingServiceRest {
 
-  private static final int MAX_RESULTS = 10000;
+  private static final int MAX_RESULTS = 1000000;
 
   /** The security service. */
   private SecurityService securityService;

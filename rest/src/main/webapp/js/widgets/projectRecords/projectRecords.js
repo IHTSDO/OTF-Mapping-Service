@@ -589,11 +589,10 @@ angular
         ruleCategory : null,
         mapGroup : null,
         mapPriority : null,
-        descendantsOptions :
-    		  ['mapped', 'excludes'],
-    	        adviceOptions :
-    	    		  ['contains', 'does not contain', 'none'],
-    	ruleCategories : [ 'TRUE', 'Gender - Male', 'Gender - Female',
+        descendantsOptions :   [ 'mapped', 'excludes'],
+        descendants : 'mapped',
+    	    adviceOptions : 		  [ 'contains', 'does not contain', 'none'],
+    	    ruleCategories : [ 'TRUE', 'Gender - Male', 'Gender - Female',
     		                            'Age - Chronological', 'Age - At Onset' ],
 
         // search display data
@@ -601,13 +600,13 @@ angular
         advices : []
       // map advices
       };
-
+      
       // function to clear input box and return to initial view
       $scope.resetSearch = function() {
         $scope.searchParameters.query = '';
         $scope.searchParameters.page = 1;
         $scope.searchParameters.targetId = [];
-        $scope.searchParameters.descendants = null;
+        $scope.searchParameters.descendants =  'mapped';
         $scope.searchParameters.targetIdRangeStart = null;
         $scope.searchParameters.targetIdRangeEnd = null;
         $scope.searchParameters.targetIdRangeIncluded = true;

@@ -3103,7 +3103,7 @@ public class MappingServiceJpa extends RootServiceJpa
 
     return searchResultList;
   }
-
+  
   @SuppressWarnings("unchecked")
   public SearchResultList findMapRecords(Long mapProjectId, String ancestorId,
     boolean excludeDescendants, String relationshipName,
@@ -3117,29 +3117,19 @@ public class MappingServiceJpa extends RootServiceJpa
 
     final SearchResultList searchResultList = new SearchResultListJpa();
 
-    String ancestorPath = null;
+    Set<String> descendantIds = null;
+    Set<String> conceptIds = new HashSet<>();
 
     if (ancestorId != null && !ancestorId.isEmpty()) {
-      javax.persistence.Query query = manager.createQuery(
-          "select tp.ancestorPath from TreePositionJpa tp where terminologyVersion = :terminologyVersion and terminology = :terminology and terminologyId = :terminologyId");
-      query.setParameter("terminology", terminology);
-      query.setParameter("terminologyVersion", terminologyVersion);
-      query.setParameter("terminologyId", ancestorId);
-
-      // get the first tree position
-      query.setMaxResults(1);
-      final List<String> ancestorPaths = query.getResultList();
-
-      // skip construction if no ancestor path was found
-      if (ancestorPaths.size() != 0) {
-
-        ancestorPath = ancestorPaths.get(0);
-
-        // insert string to actually add this concept to the ancestor path
-        if (!ancestorPath.isEmpty()) {
-          ancestorPath += "~";
-        }
-        ancestorPath += ancestorId;
+      ContentService contentService = new ContentServiceJpa();
+      SearchResultList descendantSearchResults = contentService.findDescendantConcepts(ancestorId, terminology, terminologyVersion, null);
+      contentService.close();
+      
+      //Get descendant concept Ids
+      descendantIds = new HashSet<>();
+      descendantIds.add(ancestorId);
+      for(SearchResult searchResult : descendantSearchResults.getIterable()){
+        descendantIds.add(searchResult.getTerminologyId());
       }
     }
 
@@ -3186,30 +3176,47 @@ public class MappingServiceJpa extends RootServiceJpa
       queryString +=
           "AND m.conceptId = c.terminologyId AND r.sourceConcept = c.id AND r.typeId IN :relationshipIds AND r.destinationConcept.id IN :relationshipTargetConceptIds ";
     }
-    if (ancestorPath != null) {
-      queryString += "AND " + (excludeDescendants ? " NOT " : "")
-          + " EXISTS ( select tp.terminologyId from TreePositionJpa tp "
-          + "where tp.terminology = :terminology "
-          + " and m.conceptId  = tp.terminologyId "
-          + "and tp.terminologyVersion = :terminologyVersion "
-          + "and (tp.terminologyId = :terminologyId OR tp.ancestorPath like  :ancestorPath ))";
+    // ancestorId and query specified
+    if (descendantIds != null && !mapConcepts.isEmpty()) {
+      // If ancestorId is set to 'mapped', keep concept Ids that are in both lists
+      if(!excludeDescendants){
+        for(String conceptId : descendantIds){
+          if(mapConcepts.contains(conceptId)){
+            conceptIds.add(conceptId);
+          }
+        }
+      }
+      // If ancestorId is set to 'mapped', remove descendant Ids from mapConcepts list
+      else{
+        for(String conceptId : mapConcepts){
+          if(!descendantIds.contains(conceptId)){
+            conceptIds.add(conceptId);
+          }
+        }
+      }
+      // If there are no ids left, return an empty result list.
+      if(conceptIds.isEmpty()){
+        return searchResultList;
+      }
+      queryString += "AND m.conceptId in (:conceptIds) ";
     }
-
-    if (!mapConcepts.isEmpty()) {
-      queryString = queryString + "and m.conceptId IN (:mapConcepts)";
+    // only ancestorId specified
+    if (descendantIds != null && mapConcepts.isEmpty()) {
+      conceptIds.addAll(descendantIds);
+      queryString += "AND m.conceptId " + (excludeDescendants ? " NOT " : "")
+          + " in (:conceptIds) ";
+    }
+    // only query specified
+    if (!mapConcepts.isEmpty() && descendantIds == null) {
+      conceptIds.addAll(mapConcepts);
+      queryString = queryString + "and m.conceptId IN (:conceptIds)";
     }
 
     javax.persistence.Query query = manager.createQuery(
         "select distinct m " + queryString + " order by m.conceptId ");
     query.setParameter("mapProjectId", mapProjectId);
-    if (ancestorPath != null) {
-      query.setParameter("terminologyId", ancestorId);
-      query.setParameter("terminology", terminology);
-      query.setParameter("terminologyVersion", terminologyVersion);
-      query.setParameter("ancestorPath", ancestorPath + "%");
-    }
-    if (!mapConcepts.isEmpty()) {
-      query.setParameter("mapConcepts", mapConcepts);
+    if (!mapConcepts.isEmpty() || descendantIds != null) {
+      query.setParameter("conceptIds", conceptIds);
     }
     if (!relationshipIds.isEmpty()) {
       query.setParameter("relationshipIds", relationshipIds);
@@ -3228,14 +3235,8 @@ public class MappingServiceJpa extends RootServiceJpa
     query = manager.createQuery("select count(distinct m) " + queryString,
         Long.class);
     query.setParameter("mapProjectId", mapProjectId);
-    if (ancestorPath != null) {
-      query.setParameter("terminologyId", ancestorId);
-      query.setParameter("terminology", terminology);
-      query.setParameter("terminologyVersion", terminologyVersion);
-      query.setParameter("ancestorPath", ancestorPath + "%");
-    }
-    if (!mapConcepts.isEmpty()) {
-      query.setParameter("mapConcepts", mapConcepts);
+    if (!mapConcepts.isEmpty() || descendantIds != null) {
+      query.setParameter("conceptIds", conceptIds);
     }
 
     if (!relationshipIds.isEmpty()) {
