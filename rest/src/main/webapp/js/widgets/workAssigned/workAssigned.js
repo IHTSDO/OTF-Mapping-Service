@@ -317,7 +317,13 @@ angular
           }
           $scope.retrieveLabels();
           if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
-            $scope.retrieveAssignedConflicts(1, null);
+            if ($scope.assignedTypes.conflict == undefined) {
+                $timeout(function() {
+                    $scope.retrieveAssignedConflicts(1, null);
+                }, 1000);
+            } else {
+                  $scope.retrieveAssignedConflicts(1, null);
+            }
             if ($scope.assignedTypes.review == undefined) {
                 $timeout(function() {
                     $scope.retrieveAssignedReviewWork(1, null);
