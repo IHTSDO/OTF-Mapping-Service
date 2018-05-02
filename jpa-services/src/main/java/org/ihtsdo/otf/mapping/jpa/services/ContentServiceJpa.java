@@ -1172,6 +1172,58 @@ public class ContentServiceJpa extends RootServiceJpa
   }
 
   /* see superclass */
+  @SuppressWarnings("unchecked")
+  @Override
+  public Set<String> findDescendantConceptIds(String terminologyId,
+    String terminology, String terminologyVersion, PfsParameter pfsParameter)
+    throws Exception {
+
+    Logger.getLogger(ContentServiceJpa.class)
+        .info("findDescendantConceptIds called: " + terminologyId + ", "
+            + terminology + ", " + terminologyVersion);
+
+    final Set<String> conceptIds = new HashSet<>();
+
+    javax.persistence.Query query = manager.createQuery(
+        "select tp.ancestorPath from TreePositionJpa tp where terminologyVersion = :terminologyVersion and terminology = :terminology and terminologyId = :terminologyId");
+    query.setParameter("terminology", terminology);
+    query.setParameter("terminologyVersion", terminologyVersion);
+    query.setParameter("terminologyId", terminologyId);
+
+    // get the first tree position
+    query.setMaxResults(1);
+    final List<String> ancestorPaths = query.getResultList();
+
+    // skip construction if no ancestor path was found
+    if (ancestorPaths.size() != 0) {
+
+      String ancestorPath = ancestorPaths.get(0);
+
+      // insert string to actually add this concept to the ancestor path
+      if (!ancestorPath.isEmpty()) {
+        ancestorPath += "~";
+      }
+      ancestorPath += terminologyId;
+
+      // construct query for descendants
+      query = manager.createQuery("select distinct c.terminologyId "
+          + "from TreePositionJpa tp, ConceptJpa c "
+          + "where tp.terminologyId = c.terminologyId "
+          + "and tp.terminology = c.terminology "
+          + "and tp.terminologyVersion = c.terminologyVersion "
+          + "and tp.terminology = :terminology "
+          + "and tp.terminologyVersion = :terminologyVersion "
+          + "and tp.ancestorPath like '" + ancestorPath + "%'");
+      query.setParameter("terminology", terminology);
+      query.setParameter("terminologyVersion", terminologyVersion);
+
+      final List<String> conceptIdList = query.getResultList();
+      conceptIds.addAll(conceptIdList);
+    }
+    return conceptIds;
+  }
+
+  /* see superclass */
   @Override
   public int getDescendantConceptsCount(String terminologyId,
     String terminology, String terminologyVersion) throws Exception {
@@ -1233,8 +1285,9 @@ public class ContentServiceJpa extends RootServiceJpa
   @Override
   public ValidationResult computeTreePositions(String terminology,
     String terminologyVersion, String typeId, String rootId) throws Exception {
-    Logger.getLogger(this.getClass()).info("Starting computing tree positions - "
-        + rootId + ", " + terminology + ", isaRelTypeId = " + typeId);
+    Logger.getLogger(this.getClass())
+        .info("Starting computing tree positions - " + rootId + ", "
+            + terminology + ", isaRelTypeId = " + typeId);
 
     // initialize global variables
     final EntityTransaction computeTreePositionTransaction =

@@ -57,6 +57,7 @@ import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
+import org.ihtsdo.otf.mapping.helpers.SizeLimitedHashMapJpa;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowType;
@@ -97,6 +98,15 @@ public class MappingServiceJpa extends RootServiceJpa
     implements MappingService {
 
   private static final String MAP_ENTRIES_MAP_GROUP = "mapEntries.mapGroup:";
+
+  private static final SizeLimitedHashMapJpa<String, List<MapRecord>> mapRecordSearchCache =
+      new SizeLimitedHashMapJpa<>(5);
+
+  private static final SizeLimitedHashMapJpa<String, List<MapRecord>> mapRecordSubqueryCache =
+      new SizeLimitedHashMapJpa<>(5);
+
+  private static final SizeLimitedHashMapJpa<String, Set<String>> ancestorDescendantConceptsCache =
+      new SizeLimitedHashMapJpa<>(5);
 
   /**
    * Instantiates an empty {@link MappingServiceJpa}.
@@ -2869,10 +2879,10 @@ public class MappingServiceJpa extends RootServiceJpa
             WorkflowStatus.READY_FOR_PUBLICATION));
 
     Logger.getLogger(MappingServiceJpa.class)
-    .info("  loading publishable map records for the project.");    
-    
+        .info("  loading publishable map records for the project.");
+
     MapRecordList mapRecords = getMapRecordsForMapProject(mapProject.getId());
-    
+
     // Only keep READY_FOR_PUBLICATION and PUBLSHED records
     MapRecordList publishableMapRecords = new MapRecordListJpa();
     for (final MapRecord mr : mapRecords.getIterable()) {
@@ -2881,13 +2891,14 @@ public class MappingServiceJpa extends RootServiceJpa
         publishableMapRecords.addMapRecord(mr);
       }
     }
-    
+
     Logger.getLogger(MappingServiceJpa.class)
-    .info("  " + publishableMapRecords.getCount() +  " publishable map records retrieved.");    
-        
+        .info("  " + publishableMapRecords.getCount()
+            + " publishable map records retrieved.");
+
     int recordCount = 0;
     int updatedCount = 0;
-    
+
     for (final MapRecord mr : mapRecords.getIterable()) {
       recordCount++;
 
@@ -2904,8 +2915,8 @@ public class MappingServiceJpa extends RootServiceJpa
           calculatedAdviceSet.add(mapAdvice);
         }
 
-        //Determine whether the advice has changed        
-        if(!calculatedAdviceSet.equals(me.getMapAdvices())){
+        // Determine whether the advice has changed
+        if (!calculatedAdviceSet.equals(me.getMapAdvices())) {
           // Set the map advice to the newly calculated list
           me.setMapAdvices(calculatedAdviceSet);
           updatedCount++;
@@ -2918,18 +2929,18 @@ public class MappingServiceJpa extends RootServiceJpa
         mr.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
         updateMapRecord(mr);
       }
-      
+
       // Commit every 2000 records
-      
+
       if (recordCount % commitCt == 0) {
         Logger.getLogger(MappingServiceJpa.class)
-        .info("  " + recordCount + " map records processed");
-        
+            .info("  " + recordCount + " map records processed");
+
         commit();
-        //manager.clear();
+        // manager.clear();
         beginTransaction();
       }
-      
+
     }
 
     Logger.getLogger(MappingServiceJpa.class)
@@ -3103,7 +3114,7 @@ public class MappingServiceJpa extends RootServiceJpa
 
     return searchResultList;
   }
-  
+
   @SuppressWarnings("unchecked")
   public SearchResultList findMapRecords(Long mapProjectId, String ancestorId,
     boolean excludeDescendants, String relationshipName,
@@ -3116,147 +3127,164 @@ public class MappingServiceJpa extends RootServiceJpa
             + "," + terminology + ", " + terminologyVersion);
 
     final SearchResultList searchResultList = new SearchResultListJpa();
+    List<MapRecord> mapRecords = new ArrayList<>();
 
-    Set<String> descendantIds = null;
-    Set<String> conceptIds = new HashSet<>();
+    final String searchKey = mapProjectId.toString() + ancestorId
+        + (excludeDescendants ? "TRUE" : "FALSE") + relationshipName
+        + relationshipValue + terminology + terminologyVersion
+        + mapConcepts.toString();
+    // If this is one of the recent searches, use the cached results.
+    if (mapRecordSearchCache.containsKey(searchKey)) {
+      mapRecords = mapRecordSearchCache.get(searchKey);
+    }
+    // Otherwise, perform the search
+    else {
 
-    if (ancestorId != null && !ancestorId.isEmpty()) {
-      ContentService contentService = new ContentServiceJpa();
-      SearchResultList descendantSearchResults = contentService.findDescendantConcepts(ancestorId, terminology, terminologyVersion, null);
-      contentService.close();
-      
-      //Get descendant concept Ids
-      descendantIds = new HashSet<>();
-      descendantIds.add(ancestorId);
-      for(SearchResult searchResult : descendantSearchResults.getIterable()){
-        descendantIds.add(searchResult.getTerminologyId());
-      }
-    }
+      List<MapRecord> subQueryMapRecords = new ArrayList<>();
 
-    List<Long> relationshipIds = new ArrayList<Long>();
-    List<Long> relationshipTargetConceptIds = new ArrayList<Long>();
+      final String subQueryKey = mapProjectId.toString() + relationshipName
+          + relationshipValue + terminology + terminologyVersion;
 
-    if (relationshipName != null && !relationshipName.isEmpty()) {
-      javax.persistence.Query query = manager.createQuery(
-          "select c.terminologyId from ConceptJpa c where terminologyVersion = :terminologyVersion and terminology = :terminology and defaultPreferredName like :relationshipName");
-      query.setParameter("terminology", terminology);
-      query.setParameter("terminologyVersion", terminologyVersion);
-      query.setParameter("relationshipName", "%" + relationshipName + "%");
-      List<String> list = query.getResultList();
-      for (String id : list) {
-        relationshipIds.add(Long.valueOf(id));
-      }
-    }
+      // If this is one of the recent subqueries, use the cached results
+      if (mapRecordSubqueryCache.containsKey(subQueryKey)) {
+        subQueryMapRecords = mapRecordSubqueryCache.get(subQueryKey);
+      } else {
 
-    if (relationshipValue != null && !relationshipValue.isEmpty()) {
-      javax.persistence.Query query = manager.createQuery(
-          "select c.id from ConceptJpa c where terminologyVersion = :terminologyVersion and terminology = :terminology and defaultPreferredName like :relationshipValue");
-      query.setParameter("terminology", terminology);
-      query.setParameter("terminologyVersion", terminologyVersion);
-      query.setParameter("relationshipValue", "%" + relationshipValue + "%");
-      List<Long> list = query.getResultList();
-      for (Long id : list) {
-        relationshipTargetConceptIds.add(id);
-      }
-    }
+        List<Long> relationshipIds = new ArrayList<Long>();
+        List<Long> relationshipTargetConceptIds = new ArrayList<Long>();
 
-    // construct query for descendants
-    String queryString = "from MapRecordJpa m ";
-    if (!relationshipIds.isEmpty()) {
-      queryString += ", ConceptJpa c, RelationshipJpa r ";
-    }
-    queryString += "where m.mapProjectId = :mapProjectId ";
-    // Only Relationship Name specified
-    if (!relationshipIds.isEmpty() & relationshipTargetConceptIds.isEmpty()) {
-      queryString +=
-          "AND m.conceptId = c.terminologyId AND r.sourceConcept = c.id AND r.typeId IN :relationshipIds ";
-    }
-    // Only Relationship Name and Relationship Target specified
-    if (!relationshipIds.isEmpty() & !relationshipTargetConceptIds.isEmpty()) {
-      queryString +=
-          "AND m.conceptId = c.terminologyId AND r.sourceConcept = c.id AND r.typeId IN :relationshipIds AND r.destinationConcept.id IN :relationshipTargetConceptIds ";
-    }
-    // ancestorId and query specified
-    if (descendantIds != null && !mapConcepts.isEmpty()) {
-      // If ancestorId is set to 'mapped', keep concept Ids that are in both lists
-      if(!excludeDescendants){
-        for(String conceptId : descendantIds){
-          if(mapConcepts.contains(conceptId)){
-            conceptIds.add(conceptId);
+        if (relationshipName != null && !relationshipName.isEmpty()) {
+          javax.persistence.Query query = manager.createQuery(
+              "select c.terminologyId from ConceptJpa c where terminologyVersion = :terminologyVersion and terminology = :terminology and defaultPreferredName like :relationshipName");
+          query.setParameter("terminology", terminology);
+          query.setParameter("terminologyVersion", terminologyVersion);
+          query.setParameter("relationshipName", "%" + relationshipName + "%");
+          List<String> list = query.getResultList();
+          for (String id : list) {
+            relationshipIds.add(Long.valueOf(id));
           }
         }
-      }
-      // If ancestorId is set to 'mapped', remove descendant Ids from mapConcepts list
-      else{
-        for(String conceptId : mapConcepts){
-          if(!descendantIds.contains(conceptId)){
-            conceptIds.add(conceptId);
+
+        if (relationshipValue != null && !relationshipValue.isEmpty()) {
+          javax.persistence.Query query = manager.createQuery(
+              "select c.id from ConceptJpa c where terminologyVersion = :terminologyVersion and terminology = :terminology and defaultPreferredName like :relationshipValue");
+          query.setParameter("terminology", terminology);
+          query.setParameter("terminologyVersion", terminologyVersion);
+          query.setParameter("relationshipValue",
+              "%" + relationshipValue + "%");
+          List<Long> list = query.getResultList();
+          for (Long id : list) {
+            relationshipTargetConceptIds.add(id);
           }
         }
+
+        // construct query
+        String queryString = "from MapRecordJpa m ";
+        if (!relationshipIds.isEmpty()) {
+          queryString += ", ConceptJpa c, RelationshipJpa r ";
+        }
+        queryString += "where m.mapProjectId = :mapProjectId ";
+        // Only Relationship Name specified
+        if (!relationshipIds.isEmpty()
+            & relationshipTargetConceptIds.isEmpty()) {
+          queryString +=
+              "AND m.conceptId = c.terminologyId AND r.sourceConcept = c.id AND r.typeId IN :relationshipIds ";
+        }
+        // Only Relationship Name and Relationship Target specified
+        if (!relationshipIds.isEmpty()
+            & !relationshipTargetConceptIds.isEmpty()) {
+          queryString +=
+              "AND m.conceptId = c.terminologyId AND r.sourceConcept = c.id AND r.typeId IN :relationshipIds AND r.destinationConcept.id IN :relationshipTargetConceptIds ";
+        }
+
+        javax.persistence.Query query = manager.createQuery(
+            "select distinct m " + queryString + " order by m.conceptId ");
+        query.setParameter("mapProjectId", mapProjectId);
+        // if (!mapConcepts.isEmpty() || descendantIds != null) {
+        // query.setParameter("conceptIds", conceptIds);
+        // }
+        if (!relationshipIds.isEmpty()) {
+          query.setParameter("relationshipIds", relationshipIds);
+        }
+        if (!relationshipTargetConceptIds.isEmpty()) {
+          query.setParameter("relationshipTargetConceptIds",
+              relationshipTargetConceptIds);
+        }
+
+        Logger.getLogger(MappingServiceJpa.class).info("running query: "
+            + "select distinct m " + queryString + " order by m.conceptId ");
+
+        subQueryMapRecords = query.getResultList();
+        mapRecordSubqueryCache.put(subQueryKey, subQueryMapRecords);
+
+        Logger.getLogger(MappingServiceJpa.class).info("query finished: "
+            + subQueryMapRecords.size() + " results returned.");
       }
-      // If there are no ids left, return an empty result list.
-      if(conceptIds.isEmpty()){
-        return searchResultList;
+
+      // Handle ancestor Id and query restrictions
+      Set<String> descendantIds = null;
+      // Set<String> conceptIds = new HashSet<>();
+      if (ancestorId != null && !ancestorId.isEmpty()) {
+        Logger.getLogger(MappingServiceJpa.class)
+            .info("finding descendants for ancestor Id:" + ancestorId);
+
+        if (ancestorDescendantConceptsCache.containsKey(ancestorId)) {
+          descendantIds = ancestorDescendantConceptsCache.get(ancestorId);
+        } else {
+          ContentService contentService = new ContentServiceJpa();
+          descendantIds = contentService.findDescendantConceptIds(ancestorId,
+              terminology, terminologyVersion, null);
+          contentService.close();
+          ancestorDescendantConceptsCache.put(ancestorId, descendantIds);
+        }
+        Logger.getLogger(MappingServiceJpa.class)
+            .info(descendantIds.size() + " descendants identified");
       }
-      queryString += "AND m.conceptId in (:conceptIds) ";
-    }
-    // only ancestorId specified
-    if (descendantIds != null && mapConcepts.isEmpty()) {
-      conceptIds.addAll(descendantIds);
-      queryString += "AND m.conceptId " + (excludeDescendants ? " NOT " : "")
-          + " in (:conceptIds) ";
-    }
-    // only query specified
-    if (!mapConcepts.isEmpty() && descendantIds == null) {
-      conceptIds.addAll(mapConcepts);
-      queryString = queryString + "and m.conceptId IN (:conceptIds)";
+
+      for (final MapRecord mapRecord : subQueryMapRecords) {
+        if (descendantIds != null) {
+          if (excludeDescendants) {
+            if (descendantIds.contains(mapRecord.getConceptId())) {
+              continue;
+            }
+          } else {
+            if (!descendantIds.contains(mapRecord.getConceptId())) {
+              continue;
+            }
+          }
+        }
+        if (!mapConcepts.isEmpty()) {
+          if (!mapConcepts.contains(mapRecord.getConceptId())) {
+            continue;
+          }
+        }
+        mapRecords.add(mapRecord);
+      }
+      mapRecordSearchCache.put(searchKey, mapRecords);
     }
 
-    javax.persistence.Query query = manager.createQuery(
-        "select distinct m " + queryString + " order by m.conceptId ");
-    query.setParameter("mapProjectId", mapProjectId);
-    if (!mapConcepts.isEmpty() || descendantIds != null) {
-      query.setParameter("conceptIds", conceptIds);
-    }
-    if (!relationshipIds.isEmpty()) {
-      query.setParameter("relationshipIds", relationshipIds);
-    }
-    if (!relationshipTargetConceptIds.isEmpty()) {
-      query.setParameter("relationshipTargetConceptIds",
-          relationshipTargetConceptIds);
-    }
-    query.setMaxResults(pfsParameter.getMaxResults());
-    query.setFirstResult(
-        pfsParameter.getStartIndex() > 0 ? pfsParameter.getStartIndex() : 0);
+    searchResultList.setTotalCount(mapRecords.size());
 
-    final List<MapRecord> mapRecords = query.getResultList();
-
-    // set the total count of descendant concepts
-    query = manager.createQuery("select count(distinct m) " + queryString,
-        Long.class);
-    query.setParameter("mapProjectId", mapProjectId);
-    if (!mapConcepts.isEmpty() || descendantIds != null) {
-      query.setParameter("conceptIds", conceptIds);
-    }
-
-    if (!relationshipIds.isEmpty()) {
-      query.setParameter("relationshipIds", relationshipIds);
-    }
-
-    if (!relationshipTargetConceptIds.isEmpty()) {
-      query.setParameter("relationshipTargetConceptIds",
-          relationshipTargetConceptIds);
-    }
-
-    searchResultList.setTotalCount(((Long) query.getSingleResult()).intValue());
-
+    int resultCounter = 0;
+    int index = 0;
+    int start =
+        pfsParameter.getStartIndex() > 0 ? pfsParameter.getStartIndex() : 0;
     // construct the search results
     for (final MapRecord c : mapRecords) {
+      index++;
+      if (index <= start) {
+        continue;
+      }
       final SearchResult searchResult = new SearchResultJpa();
       searchResult.setId(c.getId());
       searchResult.setTerminologyId(c.getConceptId());
       searchResult.setValue(c.getConceptName());
       searchResultList.addSearchResult(searchResult);
+
+      resultCounter++;
+      if (resultCounter == pfsParameter.getMaxResults()) {
+        break;
+      }
     }
 
     // return the search result list
