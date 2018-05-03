@@ -115,7 +115,6 @@ angular
             $scope.assignedTypes.conflict = 'CONFLICT_NEW';
             $scope.assignedTypes.review = 'REVIEW_NEW';
             $scope.assignedTypes.forUser = 'NEW';
-            $scope.assignedTypes.qa = 'QA_NEW';
           } else if ($scope.preferences.lastAssignedRadio.includes('ALL')) {
             $scope.assignedTypes.work = 'ALL';
             $scope.assignedTypes.conflict = 'ALL';
@@ -136,6 +135,16 @@ angular
             $scope.assignedTypes.forUser = 'EDITING_DONE';
             $scope.assignedTypes.qa = 'QA_RESOLVED';
           }         
+          
+          // update lists based on radio button selected when tab changes
+          $scope.retrieveAssignedWork($scope.assignedWorkPage, null);
+          $scope.retrieveAssignedQAWork(1, null);
+
+          $scope.retrieveLabels();
+          if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') { 
+            $scope.retrieveAssignedReviewWork(1, null);
+            $scope.retrieveAssignedWorkForUser(1, null, $scope.selected.mapUserViewed);
+          }
         }); 
       }
       
@@ -333,29 +342,6 @@ angular
           
           $scope.getRadio();
           $scope.mapUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
-          // add a wait, if getting reading in radio button setting isn't complete
-          if ($scope.assignedTypes.work == undefined) {
-            $timeout(function() {
-            	  $scope.retrieveAssignedWork($scope.assignedWorkPage, null);
-                  $scope.retrieveAssignedQAWork(1, null);
-              }, 1000);
-          } else {
-            $scope.retrieveAssignedWork($scope.assignedWorkPage, null);
-            $scope.retrieveAssignedQAWork(1, null);
-          }
-          $scope.retrieveLabels();
-          if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
-            $scope.retrieveAssignedConflicts(1, null);
-            if ($scope.assignedTypes.review == undefined) {
-                $timeout(function() {
-                    $scope.retrieveAssignedReviewWork(1, null);
-                    $scope.retrieveAssignedWorkForUser(1, null, $scope.selected.mapUserViewed);
-                }, 1000);
-              } else {
-                  $scope.retrieveAssignedReviewWork(1, null);
-                  $scope.retrieveAssignedWorkForUser(1, null, $scope.selected.mapUserViewed);
-              }
-          }
         }
       });
 
