@@ -306,6 +306,11 @@ angular
           window.alert('The feedback field cannot be blank. ');
           return;
         }
+        if (recipientList.length == 0) {
+            window.alert('At least one recipient must be selected. ');
+            return;
+        }
+        
         // figure out the return recipients based on previous feedback
         // in
         // conversation
@@ -338,7 +343,8 @@ angular
         conversation.feedback = localFeedback;
 
         updateFeedbackConversation(conversation, true);
-        $scope.newFeedbackMessages.push(feedbackMessage);      
+        $scope.newFeedbackMessages.push(feedbackMessage);
+        $scope.content.text = '';
 
       };
 
