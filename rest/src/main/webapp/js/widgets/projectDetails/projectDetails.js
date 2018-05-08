@@ -2102,7 +2102,7 @@ angular
         // @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/module/id/{moduleId}/process")
         $http.post(
           root_mapping + 'project/id/' + $scope.focusProject.id + '/release/'
-            + $scope.release.effectiveTime + '/module/id/' + $focusProject.moduleId + '/process')
+            + $scope.release.effectiveTime + '/module/id/' + $scope.focusProject.moduleId + '/process')
           .then(
 
             // Success
