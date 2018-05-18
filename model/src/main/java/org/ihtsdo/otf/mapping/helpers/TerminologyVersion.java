@@ -149,7 +149,9 @@ public class TerminologyVersion {
 				scope = "Alpha";
 			} else if (awsZipFileName.toLowerCase().contains("beta")) {
 				scope = "Beta";
-			} else {
+			} else if (awsZipFileName.toLowerCase().contains("member")) {
+                scope = "Member";
+            } else {
 				scope = "Production";
 			}
 		}
