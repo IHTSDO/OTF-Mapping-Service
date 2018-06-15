@@ -3370,7 +3370,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     throws Exception {
 
     Logger.getLogger(MappingServiceRestImpl.class)
-        .info("RESTful call:  /userRole/user/id" + username);
+        .info("RESTful call:  /userRole/user/id/" + username);
 
     final MappingService mappingService = new MappingServiceJpa();
     try {
