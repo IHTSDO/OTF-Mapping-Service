@@ -140,6 +140,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   /** Records that will not be PUBLISHED because they've been edited during the release period */
   private Set<Long> recentlyEditedRecords = new HashSet<>();
 
+  /** Concept ids read in from previous release file **/
+  private Set<String> conceptsFromReleaseFile = new HashSet<>();
+  
   /**
    * The Enum for statistics reporting.
    */
@@ -2496,6 +2499,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     Logger.getLogger(getClass())
         .info(testModeFlag ? "Preview Finish Release" : "Finish Release");
+    Logger.getLogger(getClass())
+    .info("transactionPerOperation " + mappingService.getTransactionPerOperation());
 
     // compare file to current records
     Report report = compareInputFileToExistingMapRecords();
@@ -2529,7 +2534,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           .info("    Recently edited record will not be PUBLISHED " + recordId);
       }
       
-      
+      Logger.getLogger(getClass())
+      .info("transactionPerOperation2 " + mappingService.getTransactionPerOperation());
       for (final MapRecord record : mapRecords) {
 
         // Remove out of scope concepts if not in test mode
@@ -2551,7 +2557,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         // the publication date
         else if (record
                 .getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION &&
-                		recentlyEditedRecords.contains(record.getId()) ) {
+                		recentlyEditedRecords.contains(record.getId()) &&
+                		conceptsFromReleaseFile.contains(record.getConceptId())) {
               Logger.getLogger(getClass()).info("  Record not updated to PUBLISHED for "
                   + record.getConceptId() + " " + record.getConceptName());
               
@@ -2559,7 +2566,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         // Mark record as PUBLISHED if READY FOR PUBLICATION and in scope
         else if (record
             .getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION &&
-            !recentlyEditedRecords.contains(record.getId())) {
+            !recentlyEditedRecords.contains(record.getId())
+            && conceptsFromReleaseFile.contains(record.getConceptId())) {
           Logger.getLogger(getClass()).info("  Update record to PUBLISHED for "
               + record.getConceptId() + " " + record.getConceptName());
           pubCt++;
@@ -2721,6 +2729,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         // regularly log at intervals
         if (++objectCt % 5000 == 0) {
           Logger.getLogger(getClass()).info("    count = " + objectCt);
+          contentService.commit();
+          contentService.clear();
+          contentService.beginTransaction();
         }
 
         if (concept != null) {
@@ -2891,6 +2902,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         
         members.add(member);
         conceptRefSetMap.put(member.getConcept().getTerminologyId(), members);
+        conceptsFromReleaseFile.add(member.getConcept().getTerminologyId());
       }
     }
 
