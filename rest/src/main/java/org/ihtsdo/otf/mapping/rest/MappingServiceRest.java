@@ -4658,9 +4658,16 @@ public class MappingServiceRest extends RootServiceRest {
       // check for existence of file
       // TODO This computation should be moved into the ReleaseHandler and
       // made handler-specific
-      String relPath = "/der2_" + handler.getPatternForType(mapProject)
+      String relPath = "";
+      if (mapProject.getSourceTerminology().equals("SNOMEDCT_US")) {
+        relPath = "/der2_" + handler.getPatternForType(mapProject)
+          + mapProject.getMapRefsetPattern() + "ActiveSnapshot_US1000124_"
+          + effectiveTime + ".txt";
+      } else {
+        relPath = "/der2_" + handler.getPatternForType(mapProject)
           + mapProject.getMapRefsetPattern() + "ActiveSnapshot_INT_"
           + effectiveTime + ".txt";
+      }
       String mapFilePath = releaseDirPath + relPath;
 
       File file = new File(mapFilePath);
