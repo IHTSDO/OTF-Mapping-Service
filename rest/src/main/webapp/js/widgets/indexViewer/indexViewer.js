@@ -322,10 +322,12 @@ angular
 
         console
           .debug('testing details retrieval', $scope.focusProject, $scope.selectedDomain, link);
+        // Some indexes have number-signs, which need to be sanitized before sent as a URL
+        var cleanlink = link.replace("#","%23");        
         $http.get(
           root_content + 'index/' + $scope.focusProject.destinationTerminology + '/'
             + $scope.focusProject.destinationTerminologyVersion + '/' + $scope.selectedDomain.name
-            + '/details/' + link, {
+            + '/details/' + cleanlink, {
             transformResponse : [ function(data) {
               // Response is plain text at this point
               return data;
