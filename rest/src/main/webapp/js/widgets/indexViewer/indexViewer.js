@@ -210,6 +210,11 @@ angular
         // parse the new search result to determine page
         var page = result.value.charAt(0);
 
+        // ICD10CM-specific fix: if page is "#", change to "Num"
+        if (page == "#"){
+        	page = "Num";
+        }
+        
         // change the page
         $scope.changeTab(page);
 
