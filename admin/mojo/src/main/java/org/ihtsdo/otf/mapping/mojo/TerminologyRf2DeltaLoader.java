@@ -163,6 +163,9 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
   /** The existing language ref set member ids. */
   private Set<String> existingLanguageRefSetMemberIds = new HashSet<>();
+  
+  /** The delta module ids used to prevent retiring content from modules other than what is in the drip feed. */
+  private Set<Long> deltaModuleIds = new HashSet<>();
 
   /*
    * (non-Javadoc)
@@ -174,7 +177,7 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
     try {
       // Create and configure services and variables and open files
-      getLog().info("Run delta loader");
+      getLog().info("Run delta loader*");
       setup();
       getLog().info("    terminology = " + terminology);
       getLog().info("    version = " + version);
@@ -528,6 +531,9 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
 
         // Track all delta concept ids so we can properly remove concepts later.
         deltaConceptIds.add(fields[0]);
+        
+        // Track all delta module ids so we can avoid retiring concepts from other modules
+        deltaModuleIds.add(Long.valueOf(fields[3]));
 
         // Setup delta concept (either new or based on existing one)
         Concept newConcept = null;
@@ -1098,9 +1104,11 @@ public class TerminologyRf2DeltaLoader extends AbstractMojo {
     // the drip feed
     int ct = 0;
     getLog().info("    Retire removed concepts");
+    getLog().info("    Only retire from these moduleIds:" + deltaModuleIds.toString());
     for (Concept concept : existingConceptCache.values()) {
       if (concept.getEffectiveTime().after(rf2Version)
           && !deltaConceptIds.contains(concept.getTerminologyId())
+          && deltaModuleIds.contains(concept.getModuleId())
           && concept.isActive()) {
         concept = contentService.getConcept(concept.getId());
         // Because it's possible that a concept element changed and that
