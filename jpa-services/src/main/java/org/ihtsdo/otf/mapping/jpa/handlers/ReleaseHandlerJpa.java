@@ -2249,7 +2249,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         // specific validation checks
         ValidationResult result = algorithmHandler.validateRecord(mapRecord);
         if (!result.isValid()) {
-          Logger.getLogger(getClass()).debug("    FAILED");
+          for (String error : result.getErrors()) {
+            Logger.getLogger(getClass()).info("    FAILED validation: " + mapRecord.getId() + " " 
+              + mapRecord.getConceptId() + " " + error);
+          }
           errorFlag = true;
           resultMessages.add("Map record failed validation check");
         } else {
