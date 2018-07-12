@@ -2334,7 +2334,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           // preferred name
           this.addReportError(report, mapProject, concept.getTerminologyId(),
               str, mapProject.getDestinationTerminology()
-                  + " target code from previous release not used");
+                  + " target code from previous release changed");
         }
 
         // check: concept mapped to multiple codes (non-group-based only)
