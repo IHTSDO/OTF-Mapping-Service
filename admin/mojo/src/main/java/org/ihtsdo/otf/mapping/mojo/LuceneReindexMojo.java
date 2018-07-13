@@ -57,7 +57,7 @@ public class LuceneReindexMojo extends AbstractMojo {
    */
   @Override
   public void execute() throws MojoFailureException {
-    getLog().info("Starting lucene reindexing");
+    getLog().info("Starting lucene reindexing*");
     getLog().info("  indexedObjects = " + indexedObjects);
 
     // set of objects to be re-indexed
