@@ -99,7 +99,9 @@ public class MapRecordUpdaterMojo extends AbstractMojo {
 
           boolean changed = false;
           // Handle source name
+          // Don't update if dpn is TBD (which would be the case if concept becomes inactive)
           if (concept != null
+              && !concept.getDefaultPreferredName().equals("TBD")
               && !record.getConceptName().equals(
                   concept.getDefaultPreferredName())) {
 
