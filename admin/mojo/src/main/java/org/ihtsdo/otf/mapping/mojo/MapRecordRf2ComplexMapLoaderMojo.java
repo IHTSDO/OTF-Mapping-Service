@@ -2,7 +2,8 @@ package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -305,7 +306,10 @@ public class MapRecordRf2ComplexMapLoaderMojo extends AbstractMojo {
 
     // Open reader and service
     BufferedReader complexMapReader =
-        new BufferedReader(new FileReader(complexMapFile));
+        //new BufferedReader(new FileReader(complexMapFile));
+        new BufferedReader(new InputStreamReader(
+            new FileInputStream(complexMapFile), "UTF-8"));
+        
     ContentService contentService = new ContentServiceJpa();
 
     // Set up sets for any map records we encounter
