@@ -1015,10 +1015,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     tmpActiveMembers = new HashMap<>(prevActiveMembers);
 
     for (final String uuid : activeMembers.keySet()) {
-      if (tmpActiveMembers.containsKey(uuid)) {
+      if (tmpActiveMembers.containsKey(uuid) && activeMembers.get(uuid).equals(tmpActiveMembers.get(uuid))) {
         tmpActiveMembers.remove(uuid);
       }
-
     }
 
     // set active to false and write inactivated complex maps
