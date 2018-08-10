@@ -923,6 +923,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     filename = outputDir + "/der2_ssRefset_ModuleDependencyDelta_"+algorithmHandler.getReleaseFile3rdElement()+"_"
         + effectiveTime + ".txt";
     writer = new BufferedWriter(new FileWriter(filename));
+    
 
     // Write header
     writer.write(
@@ -963,7 +964,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     Logger.getLogger(getClass()).info("  delta:  " + filename);
 
     // Write headers (subject to pattern)
-    writer = new BufferedWriter(new FileWriter(filename));
+   // writer = new BufferedWriter(new FileWriter(filename));
+    writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename), StandardCharsets.UTF_8));
+    
     writer.write(getHeader(mapProject));
     writer.write("\r\n");
 
@@ -1127,6 +1130,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             + mapProject.getDestinationTerminology().substring(1).toLowerCase();
     BufferedWriter statsWriter = new BufferedWriter(
         new FileWriter(outputDir + "/" + camelCaseName + "stats.txt"));
+    
     List<String> statistics = new ArrayList<>(reportStatistics.keySet());
     Collections.sort(statistics);
     for (final String statistic : statistics) {
@@ -1157,7 +1161,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // write headers
     Logger.getLogger(getClass()).info("  active snapshot:  " + filename);
 
-    writer = new BufferedWriter(new FileWriter(filename));
+    //writer = new BufferedWriter(new FileWriter(filename));
+    writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename), StandardCharsets.UTF_8));
+    
     writer.write(getHeader(mapProject));
     writer.write("\r\n");
 
@@ -1213,7 +1219,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // write headers
     Logger.getLogger(getClass()).info("  snapshot file:  " + filename);
 
-    writer = new BufferedWriter(new FileWriter(filename));
+    //writer = new BufferedWriter(new FileWriter(filename));
+    writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename), StandardCharsets.UTF_8));
+    
     writer.write(getHeader(mapProject));
     writer.write("\r\n");
 
