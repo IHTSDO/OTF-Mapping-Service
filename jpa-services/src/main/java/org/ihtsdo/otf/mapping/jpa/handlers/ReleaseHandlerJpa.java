@@ -1015,11 +1015,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     tmpActiveMembers = new HashMap<>(prevActiveMembers);
 
     for (final String uuid : activeMembers.keySet()) {
-      if (tmpActiveMembers.containsKey(uuid)
-          && tmpActiveMembers.get(uuid).getMapRule()
-              .equals(activeMembers.get(uuid).getMapRule())
-          && tmpActiveMembers.get(uuid).getMapAdvice()
-              .equals(activeMembers.get(uuid).getMapAdvice())) {
+      if (tmpActiveMembers.containsKey(uuid) && activeMembers.get(uuid).equals(tmpActiveMembers.get(uuid))) {
         tmpActiveMembers.remove(uuid);
       }
     }
