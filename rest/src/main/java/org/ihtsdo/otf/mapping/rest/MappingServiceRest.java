@@ -3705,14 +3705,14 @@ public class MappingServiceRest extends RootServiceRest {
       boolean plusFlag = false;
       final StringBuilder qb = new StringBuilder();
       if (!query.contains("\"") && !query.contains("-") && !query.contains("+")
-          && !query.contains("*")) {
+          && !query.contains("*") && !query.matches(".[0-9].*[A-Z]")) {
         plusFlag = true;
         for (final String word : query.split("\\s")) {
           qb.append("+").append(word).append(" ");
         }
-      }
-
-      else {
+      }  else if (query.matches(".[0-9].*[A-Z]")) {
+        qb.append("\"").append(query).append("\"");
+      }  else {
         qb.append(query);
       }
 
@@ -3730,7 +3730,7 @@ public class MappingServiceRest extends RootServiceRest {
               mapProject.getDestinationTerminologyVersion(), qb.toString(),
               pfs);
       Logger.getLogger(getClass())
-          .info("  treepos count = " + treePositions.getTotalCount());
+          .info("  treepos count* = " + treePositions.getTotalCount());
       if (treePositions.getCount() == 0) {
         // Re-try search without +
         if (plusFlag) {

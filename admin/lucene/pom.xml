@@ -6,8 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.5.35-US_h</version>
-    <relativePath>../../parent</relativePath>
+    <version>1.5.36-US</version>    <relativePath>../../parent</relativePath>
   </parent>
 
   <artifactId>mapping-admin-lucene</artifactId>
@@ -342,7 +341,7 @@
                 <configuration>
                   <inputDir>${input.dir}</inputDir>
                   <inputFile>icd10cm_index_2018.xml</inputFile>
-                  <domain>Index</domain>
+                  <domain>Indexes</domain>
                   <terminology>ICD10CM</terminology>
                   <terminologyVersion>2018</terminologyVersion>
                 </configuration>
@@ -357,7 +356,7 @@
                 <configuration>
                   <inputDir>${input.dir}</inputDir>
                   <inputFile>icd10cm_eindex_2018.xml</inputFile>
-                  <domain>Eindex</domain>
+                  <domain>EIndex</domain>
                   <terminology>ICD10CM</terminology>
                   <terminologyVersion>2018</terminologyVersion>
                 </configuration>
