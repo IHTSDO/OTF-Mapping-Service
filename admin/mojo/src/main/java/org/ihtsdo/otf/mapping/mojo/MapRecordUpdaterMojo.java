@@ -88,7 +88,7 @@ public class MapRecordUpdaterMojo extends AbstractMojo {
       // Update names
       int ct = 0;
       for (final MapProject mapProject : mapProjects) {
-        getLog().debug("    Update map records for " + mapProject.getName());
+        getLog().info("    Update map records for " + mapProject.getName());
         for (final MapRecord record : mappingService
             .getMapRecordsForMapProject(mapProject.getId()).getMapRecords()) {
 
@@ -99,9 +99,15 @@ public class MapRecordUpdaterMojo extends AbstractMojo {
 
           boolean changed = false;
           // Handle source name
+          // Don't update if dpn is TBD (which would be the case if concept becomes inactive)
           if (concept != null
+              && !concept.getDefaultPreferredName().equals("TBD")
               && !record.getConceptName().equals(
                   concept.getDefaultPreferredName())) {
+
+            getLog().info("    Update map record " + record.getId() + " : "
+                + record.getConceptId() + " from *" + record.getConceptName()
+                + "* to *" + concept.getDefaultPreferredName() + "*");
             record.setConceptName(concept.getDefaultPreferredName());
             changed = true;
           }
@@ -116,6 +122,9 @@ public class MapRecordUpdaterMojo extends AbstractMojo {
               if (concept2 != null
                   && entry.getTargetName() != null && !entry.getTargetName().equals(
                       concept2.getDefaultPreferredName())) {
+                getLog().info("    Update map entry " + entry.getId() + " : "
+                    + record.getConceptId() + " from *" + entry.getTargetName()
+                    + "* to *" + concept2.getDefaultPreferredName() + "*");
                 entry.setTargetName(concept2.getDefaultPreferredName());
                 changed = true;
               }

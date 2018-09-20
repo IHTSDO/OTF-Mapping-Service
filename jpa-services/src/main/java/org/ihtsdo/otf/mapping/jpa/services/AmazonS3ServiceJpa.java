@@ -196,6 +196,11 @@ public class AmazonS3ServiceJpa extends RootServiceJpa
         if (tv.getVersion().compareTo(mostRecentAlphaBeta) > 0) {
           mostRecentAlphaBeta = tv.getVersion();
         }
+      } else if (tv.getAwsZipFileName().toLowerCase().contains("member")) {
+        result.setTerminology("MEMBER");
+        if (tv.getVersion().compareTo(mostRecentAlphaBeta) > 0) {
+          mostRecentAlphaBeta = tv.getVersion();
+        }
       } else {
         result.setTerminology("FINAL");
       }
@@ -280,26 +285,26 @@ public class AmazonS3ServiceJpa extends RootServiceJpa
     if (filterTerminology.equals("InternationalRF2")) {
       if (mapProject.getMapRefsetPattern()
           .equals(MapRefsetPattern.ExtendedMap)) {
-        result.setValue((result.getTerminology().equals("FINAL") ? "" : "x")
+        result.setValue(((result.getTerminology().equals("FINAL") || result.getTerminology().equals("MEMBER")) ? "" : "x")
             + "der2_iisssccRefset_ExtendedMap" + type + "_INT_"
             + tv.getVersion() + ".txt");
         result.setValue2(nationalPrefix + '/' + tv.getAwsZipFileName()
-            + (result.getTerminology().equals("FINAL")
+            + ((result.getTerminology().equals("FINAL") || result.getTerminology().equals("MEMBER"))
                 ? '/' + tv.getAwsZipFileName() : "")
             + "/" + type + "/Refset/Map/"
-            + (result.getTerminology().equals("FINAL") ? "" : "x")
+            + ((result.getTerminology().equals("FINAL") || result.getTerminology().equals("MEMBER")) ? "" : "x")
             + "der2_iisssccRefset_ExtendedMap" + type + "_INT_"
             + tv.getVersion() + ".txt");
       } else if (mapProject.getMapRefsetPattern()
           .equals(MapRefsetPattern.SimpleMap)) {
-        result.setValue((result.getTerminology().equals("FINAL") ? "" : "x")
+        result.setValue(((result.getTerminology().equals("FINAL") || result.getTerminology().equals("MEMBER")) ? "" : "x")
             + "der2_sRefset_SimpleMap" + type + "_INT_" + tv.getVersion()
             + ".txt");
         result.setValue2(nationalPrefix + '/' + tv.getAwsZipFileName()
-            + (result.getTerminology().equals("FINAL")
+            + ((result.getTerminology().equals("FINAL") || result.getTerminology().equals("MEMBER"))
                 ? '/' + tv.getAwsZipFileName() : "")
             + "/" + type + "/Refset/Map/"
-            + (result.getTerminology().equals("FINAL") ? "" : "x")
+            + ((result.getTerminology().equals("FINAL") || result.getTerminology().equals("MEMBER")) ? "" : "x")
             + "der2_sRefset_SimpleMap" + type + "_INT_" + tv.getVersion()
             + ".txt");
       }
@@ -334,7 +339,7 @@ public class AmazonS3ServiceJpa extends RootServiceJpa
 
 		if (!dups.isEmpty()) {
 			// Define recipients
-			String notificationRecipients = config.getProperty("send.notification.recipients");
+			String notificationRecipients = config.getProperty("send.notification.recipients.devops");
 
 			if (!notificationRecipients.isEmpty() && "true".equals(config.getProperty("mail.enabled"))) {
 				Logger.getLogger(AmazonS3ServiceJpa.class)

@@ -154,7 +154,7 @@ import io.swagger.annotations.ApiParam;
 public class MappingServiceRestImpl extends RootServiceRestImpl
     implements MappingServiceRest {
 
-  private static final int MAX_RESULTS = 10000;
+  private static final int MAX_RESULTS = 1000000;
 
   /** The security service. */
   private SecurityService securityService;
@@ -2950,7 +2950,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
 
       }
 
-      // otherwise, use default paging
+      // otherwise not ancestor or relationship flags, use default paging
       else {
 
         // perform lucene search
@@ -3370,7 +3370,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     throws Exception {
 
     Logger.getLogger(MappingServiceRestImpl.class)
-        .info("RESTful call:  /userRole/user/id" + username);
+        .info("RESTful call:  /userRole/user/id/" + username);
 
     final MappingService mappingService = new MappingServiceJpa();
     try {
@@ -5022,7 +5022,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
        */
 
       // if test project, override author and user
-      if (jiraProject.equals("MTFP") || jiraProject.equals("MFTP")) {
+      if (!config.getProperty("deploy.title").equals("Mapping Tool")) {
         conceptAuthor = "dshapiro";
         authToken = "dshapiro";
         jiraProject = "MTFP";

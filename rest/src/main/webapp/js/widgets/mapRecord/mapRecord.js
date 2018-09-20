@@ -1203,6 +1203,10 @@ angular
                 newRecipients.push($scope.project.mapLead[j]);
             }
           }
+          if (newRecipients.length == 0) {
+              window.alert('At least one recipient must be selected. ');
+              return;
+          }
 
           // if the conversation has not yet been started
           if ($scope.conversation == null || $scope.conversation == '') {
@@ -1253,6 +1257,7 @@ angular
               console.debug('  feedback conversation = ', data);
               $scope.conversation = data;
               $scope.tinymceContent = null;
+              $scope.feedbackContent.text = '';
             }).error(function(data, status, headers, config) {
               $scope.recordError = 'Error adding new feedback conversation.';
               $rootScope.handleHttpError(data, status, headers, config);
@@ -1300,6 +1305,7 @@ angular
               }).success(function(data) {
                 $scope.newFeedbackMessages.push(feedbackMessage);
                 $scope.conversation = data;
+                $scope.feedbackContent.text = '';
               });
             }).error(function(data, status, headers, config) {
               $scope.recordError = 'Error updating feedback conversation.';

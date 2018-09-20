@@ -27,6 +27,8 @@ import org.ihtsdo.otf.mapping.rf2.TreePosition;
 // TODO: Auto-generated Javadoc
 /**
  * Generically represents a service for accessing terminology content.
+ *
+ * @author ${author}
  */
 public interface ContentService extends RootService {
 
@@ -452,6 +454,20 @@ public interface ContentService extends RootService {
     throws Exception;
 
   /**
+   * Find descendant concept ids.
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param pfsParameter the pfs parameter
+   * @return the sets the
+   * @throws Exception the exception
+   */
+  public Set<String> findDescendantConceptIds(String terminologyId,
+    String terminology, String terminologyVersion, PfsParameter pfsParameter)
+    throws Exception;
+
+  /**
    * Returns the descendant concepts count.
    *
    * @param terminologyId the terminology id
@@ -613,8 +629,8 @@ public interface ContentService extends RootService {
    * @return the search result list
    * @throws Exception the exception
    */
-  public ConceptList getConceptsModifiedSinceDate(String terminology,
-    Date date, PfsParameter pfsParameter) throws Exception;
+  public ConceptList getConceptsModifiedSinceDate(String terminology, Date date,
+    PfsParameter pfsParameter) throws Exception;
 
   /**
    * Find descriptions modified since date.

@@ -370,11 +370,10 @@ angular
 
           $rootScope.glassPane++;
           console
-            .debug('Edit record clicked, assigning record along FIX_ERROR_PATH');
+            .debug('Edit record clicked, assigning record along QA_PATH');
           $http(
             {
-              url : root_workflow + 'assignFromRecord/user/id/'
-                + $scope.currentUser.userName,
+              url : root_workflow + 'createQARecord',
               method : 'POST',
               dataType : 'json',
               data : record,
@@ -382,6 +381,19 @@ angular
                 'Content-Type' : 'application/json'
               }
             }).success(
+              function(data) {
+                $http(
+                  {
+                    url : root_workflow + 'assign/project/id/' + $scope.focusProject.id
+                      + '/concept/id/' + record.conceptId + '/user/id/'
+                      + $scope.currentUser.userName,
+                    method : 'POST',
+                    dataType : 'json',
+                    data : record,
+                    headers : {
+                      'Content-Type' : 'application/json'
+                    }
+                  }).success(
             function(data) {
               console.debug('Assignment successful', data);
               $http(
@@ -401,8 +413,14 @@ angular
                 $rootScope.glassPane--;
 
                 // open the record edit view
-                $location.path('/record/recordId/' + data.id);
+                $location.path('/record/review/' + data.id);
               }).error(function(data, status, headers, config) {
+                $rootScope.glassPane--;
+
+                $rootScope.handleHttpError(data, status, headers, config);
+              });
+
+            }).error(function(data, status, headers, config) {
                 $rootScope.glassPane--;
 
                 $rootScope.handleHttpError(data, status, headers, config);
@@ -571,11 +589,10 @@ angular
         ruleCategory : null,
         mapGroup : null,
         mapPriority : null,
-        descendantsOptions :
-    		  ['mapped', 'excludes'],
-    	        adviceOptions :
-    	    		  ['contains', 'does not contain', 'none'],
-    	ruleCategories : [ 'TRUE', 'Gender - Male', 'Gender - Female',
+        descendantsOptions :   [ 'mapped', 'excludes'],
+        descendants : 'mapped',
+    	    adviceOptions : 		  [ 'contains', 'does not contain', 'none'],
+    	    ruleCategories : [ 'TRUE', 'Gender - Male', 'Gender - Female',
     		                            'Age - Chronological', 'Age - At Onset' ],
 
         // search display data
@@ -583,13 +600,13 @@ angular
         advices : []
       // map advices
       };
-
+      
       // function to clear input box and return to initial view
       $scope.resetSearch = function() {
         $scope.searchParameters.query = '';
         $scope.searchParameters.page = 1;
         $scope.searchParameters.targetId = [];
-        $scope.searchParameters.descendants = null;
+        $scope.searchParameters.descendants =  'mapped';
         $scope.searchParameters.targetIdRangeStart = null;
         $scope.searchParameters.targetIdRangeEnd = null;
         $scope.searchParameters.targetIdRangeIncluded = true;
