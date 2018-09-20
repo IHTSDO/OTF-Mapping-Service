@@ -304,7 +304,6 @@ angular
                 .handleError('Target code not received by any listeners. The Mapping Tool is either not open or not in editing view');
               localStorage.removeItem('targetCode');
             } else {
-              window.alert('Target code ' + targetCode + ' has been sent to the map record.\n\rSelect the Mapping Tool tab to view.');
               window.blur();
             }
           }, 500);
@@ -334,8 +333,7 @@ angular
           }).then(
           // Success
           function(response) {
-            // substring to eliminate quotation marks
-            deferred.resolve(response.data.substring(1, response.data.length - 2));
+            deferred.resolve(response.data);
 
           },
           // Error

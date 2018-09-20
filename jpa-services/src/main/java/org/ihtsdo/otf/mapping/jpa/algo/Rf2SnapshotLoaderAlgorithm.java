@@ -188,13 +188,13 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
 		// check that notifications can be sent if requested
 		String notificationRecipients = config
-				.getProperty("send.notification.recipients");
+				.getProperty("send.notification.recipients.devops");
 		if (!sendNotification) {
 			log.info(
 					"No notifications will be sent as a result of workflow computation.");
 		}
 		if (sendNotification
-				&& config.getProperty("send.notification.recipients") == null) {
+				&& config.getProperty("send.notification.recipients.devops") == null) {
 			throw new Exception(
 					"Email notification was requested, but no recipients were specified.");
 		} else {
@@ -396,7 +396,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 						terminology, version, isaRelType, rootId);
 				if (sendNotification && !result.isValid()) {
 					ConfigUtility.sendValidationResultEmail(
-							config.getProperty("notification.recipients"),
+							config.getProperty("send.notification.recipients.devops"),
 							"OTF-Mapping-Tool:  Errors in computing "
 									+ terminology + ", " + version
 									+ " hierarchical tree positions",

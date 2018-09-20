@@ -20,6 +20,7 @@ import org.apache.lucene.analysis.WhitespaceAnalyzer;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
@@ -164,8 +165,10 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   @Override
-  //@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
-  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @Fields({
+    @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+    @Field(name = "defaultPreferredNameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  })
   @Analyzer(definition = "noStopWord")
   public String getDefaultPreferredName() {
     return defaultPreferredName;

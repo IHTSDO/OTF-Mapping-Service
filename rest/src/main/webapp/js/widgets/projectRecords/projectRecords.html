@@ -198,7 +198,7 @@
       <div class="col-md-4" style="padding-right: 0px;">
         <input type="checkbox"
           ng-model="searchParameters.flagForConsensusReview">Flag for
-        Consensus Review"
+        Consensus Review
       </div>
     </div>
 
@@ -246,7 +246,7 @@
       ng-click="openViewerFeedbackModal(record, currentUser.userName)">
       <i class="glyphicon glyphicon glyphicon-comment"></i>
     </a>
-    <a title="Edit" ng-show="isEditable(record)" ng-click="editRecord(record)">
+    <a title="Edit" ng-show="isEditable(record) && (currentRole === 'Lead' || currentRole === 'Administrator')" ng-click="editRecord(record)">
       <i class="glyphicon glyphicon glyphicon-pencil"></i>
     </a>
   </div>
