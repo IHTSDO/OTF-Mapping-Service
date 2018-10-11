@@ -2099,10 +2099,9 @@ angular
           window.alert('Must set effective time and module id to process release');
         }
 
-        // @Path("/project/id/{id:[0-9][0-9]*}/release/{effectiveTime}/module/id/{moduleId}/process")
         $http.post(
           root_mapping + 'project/id/' + $scope.focusProject.id + '/release/'
-            + $scope.release.effectiveTime + '/module/id/' + $scope.focusProject.moduleId + '/process')
+            + $scope.release.effectiveTime + '/begin')
           .then(
 
             // Success
