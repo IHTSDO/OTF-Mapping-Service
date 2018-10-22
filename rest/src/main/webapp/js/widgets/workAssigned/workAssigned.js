@@ -115,6 +115,7 @@ angular
             $scope.assignedTypes.conflict = 'CONFLICT_NEW';
             $scope.assignedTypes.review = 'REVIEW_NEW';
             $scope.assignedTypes.forUser = 'NEW';
+            $scope.assignedTypes.qa = 'QA_NEW'
           } else if ($scope.preferences.lastAssignedRadio.includes('ALL')) {
             $scope.assignedTypes.work = 'ALL';
             $scope.assignedTypes.conflict = 'ALL';
