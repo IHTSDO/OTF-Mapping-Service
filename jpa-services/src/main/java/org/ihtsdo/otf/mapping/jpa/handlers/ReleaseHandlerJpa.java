@@ -2540,9 +2540,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       // Commit the new report either way
       reportService.commit();
 
-    // Commit the new report either way
-    reportService.commit();     
-
       // way to override the errors if we want to proceed with a release anyway
       if (!testModeFlag) {
         if (errorFlag) {
