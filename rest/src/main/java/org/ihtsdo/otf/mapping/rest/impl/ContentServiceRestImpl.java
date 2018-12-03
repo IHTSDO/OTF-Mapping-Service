@@ -1900,26 +1900,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         FileUtils.copyInputStreamToFile(inputStream, downloadedFile);
         inputStream.close();
 
-        // Remove any inactive rows
-        File filteredFile = new File(placementDir,
-            awsFileName.substring(awsFileName.lastIndexOf('/') + 1)
-                + "_ActiveOnly");
-        BufferedReader fileReader =
-            new BufferedReader(new FileReader(downloadedFile));
-        BufferedWriter fileWriter =
-            new BufferedWriter(new FileWriter(filteredFile));
-        String input;
-        while ((input = fileReader.readLine()) != null) {
-          String[] fields = input.split("\\t");
-          if (fields[2].equals("1")) {
-            fileWriter.write(input);
-            fileWriter.newLine();
-          }
-        }
-        fileReader.close();
-        fileWriter.close();
-
-        inputFile = filteredFile.getAbsolutePath();
+        inputFile = downloadedFile.getAbsolutePath();
 
         // Load extended or simple maps using downloaded AWS file
         if (awsFileName.contains("ExtendedMapSnapshot")) {
