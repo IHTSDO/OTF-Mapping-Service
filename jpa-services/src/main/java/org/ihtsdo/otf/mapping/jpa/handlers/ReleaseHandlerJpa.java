@@ -2503,7 +2503,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       for (ComplexMapRefSetMember member : members
           .getComplexMapRefSetMembers()) {
         Concept sourceConcept = member.getConcept();
-        if (sourceConcept != null && sourceConcept.isActive()
+        if (member.isActive() && sourceConcept != null && sourceConcept.isActive()
             && !conceptMapRecordCountMap
                 .containsKey(member.getConcept().getTerminologyId())) {
           this.addReportError(report, mapProject,
