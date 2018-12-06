@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -5670,13 +5669,13 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     List<String> notes) throws Exception {
 
     // map to list of records that have been updated (sorted by key)
-    TreeMap<String, String> updatedList = new TreeMap<>();
+    List<String> updatedList = new ArrayList<>();
     // map to list of records that are new in the second file
-    Map<String, String> newList = new LinkedHashMap<>();
+    Set<String> newList = new HashSet<>();
     // map to list of records that have been inactivated in the second file
-    Map<String, String> inactivatedList = new LinkedHashMap<>();
+    Set<String> inactivatedList = new HashSet<>();
     // map to list of records that have been removed in the second file
-    Map<String, String> removedList = new LinkedHashMap<>();
+    Set<String> removedList = new HashSet<>();
     String line1, line2;
 
     BufferedReader in1 =
@@ -5699,12 +5698,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       }
       i++;
       // if refCompId already in map, just add new effectiveTime/TargetId&Active
-      if (key1Map.containsKey(tokens1[5])) {
-        key1Map.get(tokens1[5]).add(new ExtendedLine(line1));
+      if (key1Map.containsKey(tokens1[5] + ":" + tokens1[6] + ":" + tokens1[7])) {
+        key1Map.get(tokens1[5] + ":" + tokens1[6] + ":" + tokens1[7]).add(new ExtendedLine(line1));
       } else {
         Set<ExtendedLine> setOfLines = new HashSet<>();
         setOfLines.add(new ExtendedLine(line1));
-        key1Map.put(tokens1[5], setOfLines);
+        key1Map.put(tokens1[5] + ":" + tokens1[6] + ":" + tokens1[7], setOfLines);
       }
     }
     Logger.getLogger(MappingServiceRestImpl.class)
@@ -5720,18 +5719,18 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       }
       i++;
       // populate key2Map with key2 and lineData (no UUID)
-      if (key2Map.containsKey(tokens2[5])) {
-        key2Map.get(tokens2[5]).add(new ExtendedLine(line2));
+      if (key2Map.containsKey(tokens2[5] + ":" + tokens2[6] + ":" + tokens2[7])) {
+        key2Map.get(tokens2[5] + ":" + tokens2[6] + ":" + tokens2[7]).add(new ExtendedLine(line2));
       } else {
         Set<ExtendedLine> setOfLines = new HashSet<>();
         setOfLines.add(new ExtendedLine(line2));
-        key2Map.put(tokens2[5], setOfLines);
+        key2Map.put(tokens2[5] + ":" + tokens2[6] + ":" + tokens2[7], setOfLines);
       }
 
       // if key1Map has key2, this record is not new - either it hasn't changed
       // or it has been updated
-      if (key1Map.containsKey(tokens2[5])) {
-        Set<ExtendedLine> entries = key1Map.get(tokens2[5]);
+      if (key1Map.containsKey(tokens2[5] + ":" + tokens2[6] + ":" + tokens2[7])) {
+        Set<ExtendedLine> entries = key1Map.get(tokens2[5] + ":" + tokens2[6] + ":" + tokens2[7]);
         // effectiveTime, target, and active all static?
         boolean noChange = false;
         boolean inactivated = false;
@@ -5766,7 +5765,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
                 && tokens2[9].equals(lineData.getMapAdvice())
                 && tokens2[11].equals(lineData.getCorrelationId())
             /* && lineData.getEffectiveTime().equals(tokens2[1]) */) {
-              inactivatedList.put(tokens2[5], line2);
+              inactivatedList.add(line2);
               inactivated = true;
               break;
             }
@@ -5788,7 +5787,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
                     + "\t" + lineData.getCorrelationId() + "\t"
                     + lineData.getMapCategoryId();
                 String line2Sub = line2.substring(line2.indexOf("\t"));
-                updatedList.put(tokens2[5], line1Sub + "\t" + line2Sub);
+                updatedList.add(line1Sub + "\t" + line2Sub);
                 continue;
               }
             }
@@ -5796,7 +5795,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
         }
         // key2 was not in first file, this is new
       } else {
-        newList.put(tokens2[5], line2);
+        newList.add(line2);
       }
     }
     Logger.getLogger(MappingServiceRestImpl.class)
@@ -5809,8 +5808,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       if (!tokens1[4].equals(mapProject.getRefSetId())) {
         continue;
       }
-      if (!key2Map.containsKey(tokens1[5])) {
-        removedList.put(tokens1[5], line1);
+      if (!key2Map.containsKey(tokens1[5] + ":" + tokens1[6] + ":" + tokens1[7])) {
+        removedList.add(line1);
       }
     }
 
@@ -5840,13 +5839,13 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     List<String> notes) throws Exception {
 
     // map to list of records that have been updated (sorted by key)
-    TreeMap<String, String> updatedList = new TreeMap<>();
+    List<String> updatedList = new ArrayList<>();
     // map to list of records that are new in the second file
-    Map<String, String> newList = new LinkedHashMap<>();
+    Set<String> newList = new HashSet<>();
     // map to list of records that have been inactivated in the second file
-    Map<String, String> inactivatedList = new LinkedHashMap<>();
+    Set<String> inactivatedList = new HashSet<>();
     // map to list of records that have been removed in the second file
-    Map<String, String> removedList = new LinkedHashMap<>();
+    Set<String> removedList = new HashSet<>();
     String line1, line2;
 
     BufferedReader in1 =
@@ -5921,7 +5920,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
             if (lineData.getTargetId().equals(tokens2[6])
                 && lineData.isActive() != new Boolean(tokens2[2])
             /* && lineData.getEffectiveTime().equals(tokens2[1]) */) {
-              inactivatedList.put(tokens2[5] + ":" + tokens2[6], line2);
+              inactivatedList.add(line2);
               inactivated = true;
               break;
             }
@@ -5939,8 +5938,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
                     + "\t" + lineData.getRefCompId() + "\t"
                     + lineData.getTargetId();
                 String line2Sub = line2.substring(line2.indexOf("\t"));
-                updatedList.put(tokens2[5] + ":" + tokens2[6],
-                    line1Sub + "\t" + line2Sub);
+                updatedList.add(line1Sub + "\t" + line2Sub);
                 continue;
               }
             }
@@ -5948,7 +5946,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
         }
         // key2 was not in first file, this is new
       } else {
-        newList.put(tokens2[5] + ":" + tokens2[6], line2);
+        newList.add(line2);
       }
     }
     Logger.getLogger(MappingServiceRestImpl.class)
@@ -5962,7 +5960,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
         continue;
       }
       if (!key2Map.containsKey(tokens1[5])) {
-        removedList.put(tokens1[5], line1);
+        removedList.add(line1);
       }
     }
 
