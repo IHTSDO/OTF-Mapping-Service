@@ -9,7 +9,8 @@
 
   <groupId>org.ihtsdo.otf.mapping</groupId>
   <artifactId>mapping-parent</artifactId>
-    <version>1.5.36-US</version>  <packaging>pom</packaging>
+  <version>1.5.37-US</version>
+  <packaging>pom</packaging>
   <name>IHTSDO Mapping Service Parent</name>
   <description>Parent project for mapping service</description>
 

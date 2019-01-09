@@ -315,7 +315,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       //
       // PREDICATE: All codes in range S00-T88, except T36-T65, unless
       // there is
-      // a second map group with codes in this chapter External causes of
+      // an additional map group with codes in this chapter External causes of
       // morbidity
       // (V00-Y99) and does not have the
       // advice "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE"
@@ -323,7 +323,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       //
       boolean found = false;
       for (MapEntry entry : mapRecord.getMapEntries()) {
-        if (entry.getMapGroup() == 2 && entry.getTargetId() != null
+        if (entry.getMapGroup() > 1 && entry.getTargetId() != null
             && entry.getTargetId().matches("(V..|W..|X..|Y..).*")) {
           found = true;
           break;
@@ -332,7 +332,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       final String adviceP01 =
           "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE";
       if (!found && mapEntry.getTargetId().matches("(S[0-9].|T[0-8][0-8]).*")
-          && !mapEntry.getTargetId().matches("(T[3-9][6-9].|T[6-9][0-5]).*")) {
+          && !mapEntry.getTargetId().matches("(T3[6-9].|T4[0-9].|T5[0-9].|T6[0-5]).*")) {
         if (!TerminologyUtility.hasAdvice(mapEntry, adviceP01)) {
           advices.add(TerminologyUtility.getAdvice(mapProject, adviceP01));
         }
