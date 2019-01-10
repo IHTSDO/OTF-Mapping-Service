@@ -7,7 +7,7 @@
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
     <version>1.5.37-US</version>
-    <relativePath>../../parent</relativePath>  </parent>
+    <relativePath>../parent</relativePath>  </parent>
 
   <artifactId>mapping-jpa-model</artifactId>
   <name>OTF RF2 Model JPA implementation</name>

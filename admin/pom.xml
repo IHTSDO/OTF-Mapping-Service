@@ -7,7 +7,7 @@
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
     <version>1.5.37-US</version>
-    <relativePath>../../parent</relativePath>  </parent>
+    <relativePath>../parent</relativePath>  </parent>
 
   <artifactId>mapping-admin</artifactId>
   <packaging>pom</packaging>
