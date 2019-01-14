@@ -4,9 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -208,8 +206,8 @@ public class ExportReportHandler {
      * @throws Exception
      *             the exception
      */
-    public InputStream exportExtendedFileComparisonReport(TreeMap<String, String> updatedList, Map<String, String> newList, Map<String, 
-      String> inactivatedList, Map<String, String> removedList, List<String> files, List<String> notes) throws Exception {
+    public InputStream exportExtendedFileComparisonReport(List<String> updatedList, Set<String> newList, 
+      Set<String> inactivatedList, Set<String> removedList, List<String> files, List<String> notes) throws Exception {
 
         // Create workbook
         Workbook wb = new HSSFWorkbook();
@@ -309,8 +307,8 @@ public class ExportReportHandler {
      *             the exception
      */
     @SuppressWarnings("static-method")
-    private void handleExportExtendedFileComparisonReport(TreeMap<String, String> updatedList, 
-      Map<String, String> newList, Map<String, String> inactivatedList, Map<String, String> removedList, List<String> files, List<String> notes, Workbook wb) throws Exception {
+    private void handleExportExtendedFileComparisonReport(List<String> updatedList, 
+      Set<String> newList, Set<String> inactivatedList, Set<String> removedList, List<String> files, List<String> notes, Workbook wb) throws Exception {
         Logger.getLogger(ReportServiceJpa.class).info("Exporting file comparison report " );
 
         try {
@@ -344,9 +342,9 @@ public class ExportReportHandler {
             }
 
             // Add new records to sheet1
-            for (Entry<String, String> entry : newList.entrySet()) {
+            for (String entry : newList) {
                 // Add data row
-                String[] tokens = entry.getValue().split("\t");
+                String[] tokens = entry.split("\t");
                 makeExtendedRowHelper(tokens, wb, sheet, rownum++, style);
             }
             
@@ -363,9 +361,9 @@ public class ExportReportHandler {
                 cell.setCellValue(createHelper.createRichTextString(header));
             }
             // Add updated records to sheet2
-            for (Entry<String, String> entry : updatedList.entrySet()) {
+            for (String entry : updatedList) {
               
-              String tokens[] = entry.getValue().split("\t");
+              String tokens[] = entry.split("\t");
               makeExtendedRowHelper(tokens, wb, sheet2, rownum, style);
               rownum++;
               
@@ -394,9 +392,9 @@ public class ExportReportHandler {
             }
 
             // Add inactivated records to sheet3
-            for (Entry<String, String> entry : inactivatedList.entrySet()) {
+            for (String entry : inactivatedList) {
                 // Add data row
-                String[] tokens = entry.getValue().split("\t");
+                String[] tokens = entry.split("\t");
                 makeExtendedRowHelper(tokens, wb, sheet3, rownum++, style);
             }
 
@@ -413,9 +411,9 @@ public class ExportReportHandler {
             }
 
             // Add removed records to sheet4
-            for (Entry<String, String> entry : removedList.entrySet()) {
+            for (String entry : removedList) {
                 // Add data row
-                String[] tokens = entry.getValue().split("\t");
+                String[] tokens = entry.split("\t");
                 makeExtendedRowHelper(tokens, wb, sheet4, rownum++, style);
             }
             for (int i = 0; i < 26; i++) {
@@ -439,8 +437,8 @@ public class ExportReportHandler {
 
     }
     
-    public InputStream exportSimpleFileComparisonReport(TreeMap<String, String> updatedList, Map<String, String> newList, 
-      Map<String, String> inactivatedList, Map<String, String> removedList, List<String> files, List<String> notes ) throws Exception {
+    public InputStream exportSimpleFileComparisonReport(List<String> updatedList, Set<String> newList, 
+      Set<String> inactivatedList, Set<String> removedList, List<String> files, List<String> notes ) throws Exception {
 
       // Create workbook
       Workbook wb = new HSSFWorkbook();
@@ -466,9 +464,9 @@ public class ExportReportHandler {
      *             the exception
      */
     @SuppressWarnings("static-method")
-    private void handleExportSimpleFileComparisonReport(TreeMap<String, String> updatedList, 
-      Map<String, String> newList, Map<String, String> inactivatedList, 
-      Map<String, String> removedList, List<String> files, List<String> notes, Workbook wb) throws Exception {
+    private void handleExportSimpleFileComparisonReport(List<String> updatedList, 
+      Set<String> newList, Set<String> inactivatedList, 
+      Set<String> removedList, List<String> files, List<String> notes, Workbook wb) throws Exception {
         Logger.getLogger(ReportServiceJpa.class).info("Exporting file comparison report " );
 
         try {
@@ -503,9 +501,9 @@ public class ExportReportHandler {
             }
 
             // Add new records to sheet1
-            for (Entry<String, String> entry : newList.entrySet()) {
+            for (String entry : newList) {
                 // Add data row
-                String[] tokens = entry.getValue().split("\t");
+                String[] tokens = entry.split("\t");
                 makeSimpleRowHelper(tokens, wb, sheet, rownum++, style);
             }
             
@@ -522,9 +520,9 @@ public class ExportReportHandler {
                 cell.setCellValue(createHelper.createRichTextString(header));
             }
             // Add updated records to sheet2
-            for (Entry<String, String> entry : updatedList.entrySet()) {
+            for (String entry : updatedList) {
               
-              String tokens[] = entry.getValue().split("\t");
+              String tokens[] = entry.split("\t");
               makeSimpleRowHelper(tokens, wb, sheet2, rownum, style);
               rownum++;
               
@@ -554,9 +552,9 @@ public class ExportReportHandler {
             }
 
             // Add inactivated records to sheet3
-            for (Entry<String, String> entry : inactivatedList.entrySet()) {
+            for (String entry : inactivatedList) {
                 // Add data row
-                String[] tokens = entry.getValue().split("\t");
+                String[] tokens = entry.split("\t");
                 makeSimpleRowHelper(tokens, wb, sheet3, rownum++, style);
             }
             
@@ -573,9 +571,9 @@ public class ExportReportHandler {
             }
 
             // Add removed records to sheet4
-            for (Entry<String, String> entry : removedList.entrySet()) {
+            for (String entry : removedList) {
                 // Add data row
-                String[] tokens = entry.getValue().split("\t");
+                String[] tokens = entry.split("\t");
                 makeSimpleRowHelper(tokens, wb, sheet4, rownum++, style);
             }
 

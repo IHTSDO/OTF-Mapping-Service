@@ -33,17 +33,14 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
 	/** The request cancel flag. */
 	private boolean requestCancel = false;
 
-	/** The input file */
-	private String inputFile;
-
 	/** Name of terminology to be loaded. */
 	private String terminology;
+	
+	/** The input directory */
+	private String inputDir;
 
 	/** Terminology version */
 	private String version;
-
-	/** The par/chd rels file. */
-	private String parChdFile;
 	
 	/** The date format. */
 	final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
@@ -54,19 +51,21 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
     /** The log file. */
     private File logFile;
     
+    final private String CONCEPT_FILE_NAME = "concepts.txt";
+    final private String PARENT_CHILD_FILE_NAME = "parent-child.txt";
+    
 	/**
 	 * Instantiates a {@link SimpleLoaderAlgorithm} from the
 	 * specified parameters.
 	 * 
 	 */
 	public SimpleLoaderAlgorithm(String terminology, String version,
-			String inputFile, String parChdFile) throws Exception {
+			String inputDir) throws Exception {
 
 		super();
 		this.terminology = terminology;
 		this.version = version;
-		this.inputFile = inputFile;
-		this.parChdFile = parChdFile;
+		this.inputDir = inputDir;
 		
         //initialize logger
         String rootPath = ConfigUtility.getConfigProperties()
@@ -91,16 +90,33 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
 	@Override
 	public void compute() throws Exception {
 	  
-	  // clear log before starting process
-      PrintWriter writer = new PrintWriter(logFile);
-      writer.print("");
-      writer.close(); 
+		// clear log before starting process
+		PrintWriter writer = new PrintWriter(logFile);
+		writer.print("");
+		writer.close();
+
+		boolean parChdFileExists = false;
+  
+		// Check the input directory
+		File inputDirFile = new File(this.inputDir);
+		if (!inputDirFile.exists()) {
+			throw new Exception("Specified input directory does not exist");
+		}
+		if (!new File(this.inputDir, CONCEPT_FILE_NAME).exists()) {
+			throw new Exception("The " + CONCEPT_FILE_NAME
+					+ " file of the input directory does not exist");
+		}
+		if (!new File(this.inputDir, PARENT_CHILD_FILE_NAME).exists()) {
+			throw new Exception("The " + PARENT_CHILD_FILE_NAME
+					+ " file of the input directory does not exist");
+		} else {
+			parChdFileExists = true;
+		}
       
 		log.info("Starting loading simple data");
 		log.info("  terminology = " + terminology);
 		log.info("  version     = " + version);
-		log.info("  inputFile   = " + inputFile);
-		log.info("  parChdFile  = " + parChdFile);
+		log.info("  inputDir    = " + inputDir);
 
 		try {
 			final ContentService contentService = new ContentServiceJpa();
@@ -113,12 +129,6 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
 					version, dateFormat.format(now), contentService);
 			log.info("  Create concept metadata");
 			Map<String, Concept> conceptMap = helper.createMetadata();
-
-			// Set the input directory
-			File coreInputDir = new File(inputFile);
-			if (!coreInputDir.exists()) {
-				throw new Exception("Specified input file missing");
-			}
 
 			// Create the root concept
 			log.info("  Create the root concept");
@@ -159,9 +169,10 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
 			// code\tpreferred\t[synonym\t,..]
 			log.info("  Load concepts");
 			String line;
-			final BufferedReader in = new BufferedReader(
-					new FileReader(new File(inputFile)));
-			while ((line = in.readLine()) != null) {
+			final BufferedReader concepts = new BufferedReader(
+					new FileReader(new File(inputDir, CONCEPT_FILE_NAME)));
+			
+			while ((line = concepts.readLine()) != null) {
 				line = line.replace("\r", "");
 				final String[] fields = line.indexOf('\t') != -1
 						? line.split("\t") : line.split("\\|");
@@ -233,7 +244,7 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
 				concept = contentService.getConcept(concept.getId());
 
 				// If no par/chd file, make isa relationships to the root
-				if (parChdFile == null) {
+				if (!parChdFileExists) {
 					helper.createIsaRelationship(rootConcept, concept,
 							++objCt + "", terminology, version,
 							dateFormat.format(now));
@@ -243,12 +254,13 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
 
 			// If there is a par/chd file, need to create all those
 			// relationships now
-			if (parChdFile != null) {
-				log
-						.info("  Load Parent/Child rels - " + parChdFile);
-				final BufferedReader in2 = new BufferedReader(
-						new FileReader(new File(parChdFile)));
-				while ((line = in2.readLine()) != null) {
+			if (parChdFileExists) {
+				log.info("  Load par/chd relationships");
+				final BufferedReader parentChild = new BufferedReader(
+						new FileReader(
+								new File(inputDir, PARENT_CHILD_FILE_NAME)));
+
+				while ((line = parentChild.readLine()) != null) {
 					line = line.replace("\r", "");
 					final String[] fields = line.indexOf('\t') != -1
 							? line.split("\t") : line.split("\\|");
@@ -271,10 +283,10 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
 							terminology, version, dateFormat.format(now));
 
 				}
-				in2.close();
+				parentChild.close();
 			}
 
-			in.close();
+			concepts.close();
 			contentService.commit();
 
 			// Tree position computation
@@ -319,4 +331,5 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
 	public void cancel() throws Exception {
 		requestCancel = true;
 	}
+	
 }

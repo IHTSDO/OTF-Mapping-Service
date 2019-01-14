@@ -431,9 +431,12 @@ public class SimpleMetadataHelper {
     relationship.setSourceConcept(childConcept);
     // default "isa" type
     relationship.setTypeId(new Long(conceptMap.get("isa").getTerminologyId()));
-    final Set<Relationship> rels = new HashSet<>();
-    rels.add(relationship);
-    childConcept.setRelationships(rels);
+    
+    if (childConcept.getRelationships() == null) {
+    	final Set<Relationship> rels = new HashSet<>();
+    	childConcept.setRelationships(rels);
+    }
+    childConcept.getRelationships().add(relationship);
   }
 
 }

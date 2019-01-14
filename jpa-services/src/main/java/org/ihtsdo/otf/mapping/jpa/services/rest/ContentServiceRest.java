@@ -271,7 +271,7 @@ public interface ContentServiceRest {
    *
    * @param terminology The terminology.
    * @param version The terminology version.
-   * @param inputDir The directory where the input files are located.
+   * @param inputDir The full path to the concept and parent-child files.
    * @param authToken The auth token
    * @throws Exception The execution exception
    */
