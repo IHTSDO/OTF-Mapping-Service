@@ -21,6 +21,7 @@ import java.nio.file.attribute.FileTime;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -3355,7 +3356,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
   }
-  
+
   /* see superclass */
   @Override
   @GET
@@ -3385,7 +3386,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       mappingService.close();
       securityService.close();
     }
-  }  
+  }
 
   // /////////////////////////
   // Descendant services
@@ -4133,7 +4134,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
   @ApiOperation(value = "Upload a mapping handbook file for a project", notes = "Uploads a mapping handbook file for the specified project.")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces({
-    MediaType.TEXT_PLAIN
+      MediaType.TEXT_PLAIN
   })
   public String uploadMappingHandbookFile(
     @FormDataParam("file") InputStream fileInputStream,
@@ -4571,15 +4572,17 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       success = false;
       return "Failure";
     } finally {
-      
+
       String notificationMessage = "";
       if (success) {
-        notificationMessage = "Hello,\n\nBegin release for the " + project + " project completed.  \n\n";
+        notificationMessage = "Hello,\n\nBegin release for the " + project
+            + " project completed.  \n\n";
       } else {
-        notificationMessage = "Hello,\n\nBegin release for the " + project + " project failed. Please check the log available on the UI and report the problem to an administrator. \n\n";
+        notificationMessage = "Hello,\n\nBegin release for the " + project
+            + " project failed. Please check the log available on the UI and report the problem to an administrator. \n\n";
       }
       sendReleaseNotification(notificationMessage, user);
-      
+
       mappingService.close();
       securityService.close();
     }
@@ -4691,7 +4694,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       // authorize call
       user = authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
           "process release", securityService);
-      
+
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
 
       // If other processes are already running, return the currently running
@@ -4734,7 +4737,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       // if processing current/interim release for sake of file comparison,
       // put in a directory called current
       if (current) {
-        outputDir = this.getReleaseDirectoryPath(mapProject, "current/" + effectiveTime);
+        outputDir = this.getReleaseDirectoryPath(mapProject,
+            "current/" + effectiveTime);
       } else {
         outputDir = this.getReleaseDirectoryPath(mapProject, effectiveTime);
       }
@@ -4765,12 +4769,14 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
 
       String notificationMessage = "";
       if (success) {
-        notificationMessage = "Hello,\n\nProcess release for the " + project + " project completed.  \n\n";
+        notificationMessage = "Hello,\n\nProcess release for the " + project
+            + " project completed.  \n\n";
       } else {
-        notificationMessage = "Hello,\n\nProcess release for the " + project + " project failed. Please check the log available on the UI and report the problem to an administrator. \n\n";
+        notificationMessage = "Hello,\n\nProcess release for the " + project
+            + " project failed. Please check the log available on the UI and report the problem to an administrator. \n\n";
       }
       sendReleaseNotification(notificationMessage, user);
-      
+
       mappingService.close();
       securityService.close();
     }
@@ -4868,15 +4874,17 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       return "Failure";
     } finally {
 
-
       String notificationMessage = "";
       if (success) {
-        notificationMessage = "Hello,\n\n" + (testModeFlag ? "Preview f" : "F") + "inish release for the " + project + " project completed.  \n\n";
+        notificationMessage = "Hello,\n\n" + (testModeFlag ? "Preview f" : "F")
+            + "inish release for the " + project + " project completed.  \n\n";
       } else {
-        notificationMessage = "Hello,\n\n" + (testModeFlag ? "Preview f" : "F") + "inish release for the " + project + " project failed. Please check the log available on the UI and report the problem to an administrator. \n\n";
+        notificationMessage = "Hello,\n\n" + (testModeFlag ? "Preview f" : "F")
+            + "inish release for the " + project
+            + " project failed. Please check the log available on the UI and report the problem to an administrator. \n\n";
       }
       sendReleaseNotification(notificationMessage, user);
-      
+
       mappingService.close();
       securityService.close();
     }
@@ -5064,7 +5072,6 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
             .info("Http Error : " + statusCode);
       }
 
-      
     } catch (MalformedURLException e) {
       e.printStackTrace();
     } catch (IOException e) {
@@ -5115,9 +5122,9 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       } else {
         logDir = new File(rootPath + mapProject.getId() + "/logs");
       }
-      
+
       ArrayList<String> modifiedLogTypes = new ArrayList<>();
-      
+
       // get all of the previous members logs for the given source terminology
       // if load/removePreviousMembers is called
       for (String logType : logTypes) {
@@ -5148,7 +5155,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       if (modifiedLogTypes.size() > 0) {
         logTypes = modifiedLogTypes;
       }
-      
+
       // for each logType, get the logFile and append to the log
       for (String logType : logTypes) {
         if (logType.contains("Terminology")) {
@@ -5420,9 +5427,13 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
         final SimpleDateFormat dt = new SimpleDateFormat("yyyy-MM-dd");
         Date commitDate = dt.parse(commitDateString);
 
-        // don't include entries that occurred before the editing cycle begin
-        // date
-        if (commitDate.before(editingCycleBeginDate)) {
+        // don't include entries that occurred prior to one month before
+        // the current editing cycle begin date
+        Calendar c = Calendar.getInstance();
+        c.setTime(editingCycleBeginDate);
+        c.add(Calendar.MONTH, -1);
+        Date historyWindow = c.getTime();
+        if (commitDate.before(historyWindow)) {
           continue;
         }
         JSONArray conceptChangesArray =
@@ -5509,8 +5520,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       // Process first file
       // open first file either from aws or current release on file system
       S3Object file1 = null;
-      InputStream objectData1 = null;  
-      
+      InputStream objectData1 = null;
+
       // first check if file1 is a 'current' file on local file system
       // get date on file1
       Pattern datePattern = Pattern.compile("\\d{8}_\\d{4}");
@@ -5519,51 +5530,49 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       if (m.find()) {
         fileDate = m.group(0);
       }
-      File currentDir =
-          new File(this.getReleaseDirectoryPath(mapProject, "current/" + fileDate));
-      File currentReleaseFile =
-          new File(currentDir, olderInputFile1);
-      
+      File currentDir = new File(
+          this.getReleaseDirectoryPath(mapProject, "current/" + fileDate));
+      File currentReleaseFile = new File(currentDir, olderInputFile1);
+
       // if it is a current local file, read it in
       if (currentReleaseFile.exists()) {
         objectData1 = new FileInputStream(currentReleaseFile);
-      
-      // if it is not a current local file, stream file1 from aws
-      } else  {    
+
+        // if it is not a current local file, stream file1 from aws
+      } else {
         file1 = s3Client.getObject(new GetObjectRequest(
             "release-ihtsdo-prod-published", olderInputFile1));
         objectData1 = file1.getObjectContent();
       }
-     
+
       // Process second file
       // open second file either from aws or current release on file system
       S3Object file2 = null;
       InputStream objectData2 = null;
-      List<String> notes = new ArrayList<>();     
-      
+      List<String> notes = new ArrayList<>();
+
       // first check if file2 is a 'current' file on local file system
       // get date on file2
       m = datePattern.matcher(newerInputFile2);
       if (m.find()) {
         fileDate = m.group(0);
       }
-      currentDir =
-          new File(this.getReleaseDirectoryPath(mapProject, "current/" + fileDate));
-      currentReleaseFile =
-          new File(currentDir, newerInputFile2);
-      
+      currentDir = new File(
+          this.getReleaseDirectoryPath(mapProject, "current/" + fileDate));
+      currentReleaseFile = new File(currentDir, newerInputFile2);
+
       // if it is a current local file, read it in
       if (currentReleaseFile.exists()) {
         objectData2 = new FileInputStream(currentReleaseFile);
-        
+
         // handle special ICDO case
         if (mapProject.getDestinationTerminology().equals("ICDO")) {
           notes.add(
               "NOTE: ICDO current release file only contains morphology records, so that should be taken into account when interpreting report results.");
         }
-      
-      // if it is not a current local file, stream file2 from aws
-      } else  {    
+
+        // if it is not a current local file, stream file2 from aws
+      } else {
         file2 = s3Client.getObject(new GetObjectRequest(
             "release-ihtsdo-prod-published", newerInputFile2));
         objectData2 = file2.getObjectContent();
@@ -6073,16 +6082,16 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       if (!projectDir.exists() && currentDirs == null) {
         return null;
       }
-      
+
       SearchResultList searchResultList = new SearchResultListJpa();
       for (File currentDir : currentDirs) {
         SearchResult searchResult = new SearchResultJpa();
         File[] releaseFiles = currentDir.listFiles();
-        
+
         if (releaseFiles == null) {
           return null;
         }
-        
+
         for (File file : releaseFiles) {
           // filter out human readable and any other release by-products
           if (!file.getName().contains("SimpleMapSnapshot")
@@ -6155,7 +6164,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
   }
-  
+
   @Override
   @POST
   @Path("/current/file/{id:[0-9][0-9]*}")
@@ -6187,21 +6196,23 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       if (m.find()) {
         fileDate = m.group(0);
       }
-      final File projectDir =
-          new File(this.getReleaseDirectoryPath(mapProject, "current/" + fileDate));
-      InputStream objectData1 = new FileInputStream(new File(projectDir, fileName));
+      final File projectDir = new File(
+          this.getReleaseDirectoryPath(mapProject, "current/" + fileDate));
+      InputStream objectData1 =
+          new FileInputStream(new File(projectDir, fileName));
 
       return objectData1;
 
     } catch (Exception e) {
-      handleException(e, "trying to download current release file", user, "", "");
+      handleException(e, "trying to download current release file", user, "",
+          "");
       return null;
     } finally {
       securityService.close();
       mappingService.close();
     }
   }
-  
+
   /**
    * 
    * @param string
@@ -6213,7 +6224,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     else
       return null;
   }
-  
+
   @Override
   @GET
   @Path("/amazons3/files/{id:[0-9][0-9]*}")
@@ -6233,7 +6244,6 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     final AmazonS3Service amazonS3Service = new AmazonS3ServiceJpa();
     String user = "";
 
-
     try {
       // authorize call
       user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
@@ -6242,7 +6252,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       final MapProject mapProject =
           mappingService.getMapProject(new Long(mapProjectId).longValue());
       return amazonS3Service.getFileListFromAmazonS3(mapProject);
-      
+
     } catch (Exception e) {
       handleException(e, "trying to get file list from amazon s3", user,
           mapProjectId.toString(), "");
