@@ -287,6 +287,33 @@
         </plugins>
       </build>
     </profile>
+    
+    <!-- Remove Feedback Conversations, specify -Drun.config... -->
+    <profile>
+      <id>Feedback</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>remove-feedback</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>remove-feedback</goal>
+                </goals>
+                <configuration>
+                  <refsetId>${refset.id}</refsetId>
+                  <inputFile>${input.file}</inputFile>                  
+                  <server>${server}</server>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
   </profiles>
 </project>
