@@ -107,7 +107,7 @@ public class ResetDemoDatabase {
     p.setProperty("version", "20140731");
     System.out.println("\n\n\n************ data.dir: " + config.getProperty("data.dir"));
     p.setProperty("input.dir",
-        config.getProperty("data.dir") + "/source/" + "snomedct-20140731-mini");
+        config.getProperty("data.dir") + "/snomedct-20140731-mini");
     request.setProperties(p);
     request.setDebug(false);
     invoker = new DefaultInvoker();
@@ -128,7 +128,7 @@ public class ResetDemoDatabase {
     p.setProperty("terminology", "MedDRA");
     p.setProperty("version", "latest");
     p.setProperty("input.dir",
-        config.getProperty("data.dir") + "/target/");
+        config.getProperty("data.dir") + "/meddra/");
     System.out.println("\n\n\n********* Yrdy inputDir: " + p.getProperty("inputDir"));
     request.setProperties(p);
     request.setDebug(true);
