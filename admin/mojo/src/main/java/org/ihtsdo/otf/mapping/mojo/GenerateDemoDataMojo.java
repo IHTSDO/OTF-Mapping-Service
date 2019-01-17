@@ -108,7 +108,7 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     //
     // Add lead users
     //
-    Logger.getLogger(getClass()).info("Add new lead users");
+/*    Logger.getLogger(getClass()).info("Add new lead users");
     MapUserJpa lead1 = (MapUserJpa) securityService.getMapUser("lead1");
     if (lead1 == null) {
       lead1 = makeMapUser("lead1", "Lead1");
@@ -124,11 +124,11 @@ public class GenerateDemoDataMojo extends AbstractMojo {
       lead3 = makeMapUser("lead3", "Lead3");
       lead3 = (MapUserJpa) securityService.addMapUser(lead3);
     }
-
+*/
     //
     // Add specialist users
     //
-    Logger.getLogger(getClass()).info("Add new specialist users");
+/*    Logger.getLogger(getClass()).info("Add new specialist users");
     MapUserJpa specialist1 =
         (MapUserJpa) securityService.getMapUser("specialist1");
     if (specialist1 == null) {
@@ -147,11 +147,11 @@ public class GenerateDemoDataMojo extends AbstractMojo {
       specialist3 = makeMapUser("specialist3", "Specialist3");
       specialist3 = (MapUserJpa) securityService.addMapUser(specialist3);
     }
-
+*/
     //
     // Mapping relationships
     //
-    final Set<MapRelation> mapRelations = new HashSet<>();
+/*    final Set<MapRelation> mapRelations = new HashSet<>();
     for (final String rel : new String[] {
         "exact", "partial", "narrower", "broader", "none"
     }) {
@@ -169,11 +169,11 @@ public class GenerateDemoDataMojo extends AbstractMojo {
       mappingService.addMapRelation(relation);
       mapRelations.add(relation);
     }
-
+*/
     //
     // Mapping Advice
     //
-    final Set<MapAdvice> mapAdvices = new HashSet<>();
+/*    final Set<MapAdvice> mapAdvices = new HashSet<>();
     for (final String adv : new String[] {
         "Test advice 1", "Test advice 2", "Test advice 3", "Null target advice"
     }) {
@@ -189,7 +189,7 @@ public class GenerateDemoDataMojo extends AbstractMojo {
       mappingService.addMapAdvice(advice);
       mapAdvices.add(advice);
     }
-
+*/
     //
     // Create project SNOMEDCT to MedDRA project
     //
@@ -213,13 +213,13 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     project1.setMapRelationStyle(RelationStyle.RELATIONSHIP_STYLE);
     project1.getScopeConcepts().add("404684003");
     project1.setScopeDescendantsFlag(true);
-    project1.setMapRelations(mapRelations);
+    /*    project1.setMapRelations(mapRelations);
     project1.getMapLeads().add(lead1);
     project1.getMapLeads().add(lead2);
     project1.getMapSpecialists().add(specialist1);
     project1.getMapSpecialists().add(specialist2);
     project1.getMapSpecialists().add(specialist3);
-
+*/
     // Add project
     Logger.getLogger(getClass()).info("  add " + project1);
     project1 = mappingService.addMapProject(project1);
@@ -249,13 +249,13 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     project2.setMapRelationStyle(RelationStyle.RELATIONSHIP_STYLE);
     project2.getScopeConcepts().add("ROOT");
     project2.setScopeDescendantsFlag(true);
-    project2.setMapRelations(mapRelations);
+/*    project2.setMapRelations(mapRelations);
     project2.getMapLeads().add(lead1);
     project2.getMapLeads().add(lead2);
     project2.getMapSpecialists().add(specialist1);
     project2.getMapSpecialists().add(specialist2);
     project2.getMapSpecialists().add(specialist3);
-
+*/
     // Add project
     Logger.getLogger(getClass()).info("  add " + project2);
     project2 = mappingService.addMapProject(project2);
@@ -274,7 +274,9 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     mappingService.updateMapProject(project2);
 
     // Reports
+    /*
     ReportDefinition def1 = new ReportDefinitionJpa();
+    
     def1.setDescription("Specialist productivity report.");
     def1.setDiffReport(false);
     def1.setFrequency(ReportFrequency.DAILY);
@@ -352,7 +354,9 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     def4.setTimePeriod(ReportTimePeriod.DAILY);
     def3.setDiffReportDefinitionName("Lead productivity");
     reportService.addReportDefinition(def4);
+*/
 
+/*    
     // specialist productivity, lead productivity
 
     // QA checks
@@ -380,10 +384,11 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     project1.getReportDefinitions().add(def3);
     project1.getReportDefinitions().add(def4);
     project1.getReportDefinitions().add(qa1);
+*/
     mappingService.updateMapProject(project1);
 
     // Generate the reports
-    reportService.generateDailyReports(project1, lead1);
+    /*reportService.generateDailyReports(project1, lead1);
 
     // Add report definitions to the project(s)
     project2.getReportDefinitions().add(def1);
@@ -391,11 +396,12 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     project2.getReportDefinitions().add(def3);
     project2.getReportDefinitions().add(def4);
     project2.getReportDefinitions().add(qa1);
+    */
     mappingService.updateMapProject(project2);
 
     // Generate the reports
-    reportService.generateDailyReports(project2, lead1);
-
+/*    reportService.generateDailyReports(project2, lead1);
+*/
     // TODO: add qa check for "invalid codes"
   }
 
