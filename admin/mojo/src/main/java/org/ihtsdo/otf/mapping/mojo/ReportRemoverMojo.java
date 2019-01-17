@@ -15,7 +15,7 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.ReportService;
 
 /**
- * Loads unpublished complex maps.
+ * 
  * 
  * See admin/loader/pom.xml for a sample execution.
  * 
@@ -23,7 +23,6 @@ import org.ihtsdo.otf.mapping.services.ReportService;
  * @phase package
  */
 public class ReportRemoverMojo extends AbstractMojo {
-
   /**
    * The refSet id
    * @parameter refsetId
