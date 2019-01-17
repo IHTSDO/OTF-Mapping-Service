@@ -58,20 +58,22 @@ public class ResetDemoDatabase {
     if (config.getProperty("data.dir") == null) {
       throw new Exception("Config file must specify a data.dir property");
     }
-
+    InvocationRequest request = new DefaultInvocationRequest();
+    Properties p = new Properties();
+    Invoker invoker = new DefaultInvoker();
+    InvocationResult result = null;
+// /*
+    
     // Create database
     Logger.getLogger(getClass()).info("Create database");
-    InvocationRequest request = new DefaultInvocationRequest();
     request.setPomFile(new File("../admin/updatedb/pom.xml"));
     request.setProfiles(Arrays.asList("Updatedb"));
     request.setGoals(Arrays.asList("clean", "install"));
-    Properties p = new Properties();
     p.setProperty("run.config", System.getProperty("run.config"));
     p.setProperty("hibernate.hbm2ddl.auto", "create");
     request.setProperties(p);
     request.setDebug(false);
-    Invoker invoker = new DefaultInvoker();
-    InvocationResult result = invoker.execute(request);
+    result = invoker.execute(request);
     if (result.getExitCode() != 0) {
       throw result.getExecutionException();
     }
@@ -92,6 +94,7 @@ public class ResetDemoDatabase {
       throw result.getExecutionException();
     }
 
+ 
     // Load RF2 snapshot
     Logger.getLogger(getClass()).info("Load SNOMED");
     request = new DefaultInvocationRequest();
@@ -102,118 +105,39 @@ public class ResetDemoDatabase {
     p.setProperty("run.config", System.getProperty("run.config"));
     p.setProperty("terminology", "SNOMEDCT");
     p.setProperty("version", "20140731");
+    System.out.println("\n\n\n************ data.dir: " + config.getProperty("data.dir"));
     p.setProperty("input.dir",
-        config.getProperty("data.dir") + "/" + "snomedct-20140731-mini");
+        config.getProperty("data.dir") + "/source/" + "snomedct-20140731-mini");
     request.setProperties(p);
     request.setDebug(false);
     invoker = new DefaultInvoker();
-    result = invoker.execute(request);
-    if (result.getExitCode() != 0) {
-      throw result.getExecutionException();
-    }
-
-    // Load ingredient-based RXNORM terminology
-    Logger.getLogger(getClass()).info("Load RXNORM");
-    request = new DefaultInvocationRequest();
-    request.setPomFile(new File("../admin/loader/pom.xml"));
-    request.setProfiles(Arrays.asList("Simple"));
-    request.setGoals(Arrays.asList("clean", "install"));
-    p = new Properties();
-    p.setProperty("run.config", System.getProperty("run.config"));
-    p.setProperty("terminology", "RXNORM");
-    p.setProperty("version", "2016AA");
-    p.setProperty("input.file",
-        config.getProperty("data.dir") + "/" + "rxnorm.txt");
-    p.setProperty("par.chd.file",
-        config.getProperty("data.dir") + "/" + "rxnormParChd.txt");
-    request.setProperties(p);
-    request.setDebug(false);
-    invoker = new DefaultInvoker();
-    result = invoker.execute(request);
-    if (result.getExitCode() != 0) {
-      throw result.getExecutionException();
-    }
-
-    // Load allergy terminology
-    Logger.getLogger(getClass()).info("Load allergy terminology");
-    request = new DefaultInvocationRequest();
-    request.setPomFile(new File("../admin/loader/pom.xml"));
-    request.setProfiles(Arrays.asList("Simple"));
-    request.setGoals(Arrays.asList("clean", "install"));
-    p = new Properties();
-    p.setProperty("run.config", System.getProperty("run.config"));
-    p.setProperty("terminology", "ALLERGY");
-    p.setProperty("version", "latest");
-    p.setProperty("input.file",
-        config.getProperty("data.dir") + "/" + "allergy.txt");
-    request.setProperties(p);
-    request.setDebug(false);
-    invoker = new DefaultInvoker();
-    result = invoker.execute(request);
-    if (result.getExitCode() != 0) {
-      throw result.getExecutionException();
-    }
-
-    // Load medication terminology
-    Logger.getLogger(getClass()).info("Load medication terminology");
-    request = new DefaultInvocationRequest();
-    request.setPomFile(new File("../admin/loader/pom.xml"));
-    request.setProfiles(Arrays.asList("Simple"));
-    request.setGoals(Arrays.asList("clean", "install"));
-    p = new Properties();
-    p.setProperty("run.config", System.getProperty("run.config"));
-    p.setProperty("terminology", "MEDICATION");
-    p.setProperty("version", "latest");
-    p.setProperty("input.file",
-        config.getProperty("data.dir") + "/" + "medication.txt");
-    request.setProperties(p);
-    request.setDebug(false);
-    invoker = new DefaultInvoker();
-    result = invoker.execute(request);
-    if (result.getExitCode() != 0) {
-      throw result.getExecutionException();
-    }
-
-    // Load ClaML
-    Logger.getLogger(getClass()).info("Load ICD10");
-    request = new DefaultInvocationRequest();
-    request.setPomFile(new File("../admin/loader/pom.xml"));
-    request.setProfiles(Arrays.asList("ClaML"));
-    request.setGoals(Arrays.asList("clean", "install"));
-    p = new Properties();
-    p.setProperty("run.config", System.getProperty("run.config"));
-    p.setProperty("terminology", "ICD10CM");
-    p.setProperty("version", "2016");
-    p.setProperty("input.file", config.getProperty("data.dir") + "/"
-        + "icd10cm-2016.xml");
-    request.setProperties(p);
-    request.setDebug(false);
-    invoker = new DefaultInvoker();
-    result = invoker.execute(request);
-    if (result.getExitCode() != 0) {
-      throw result.getExecutionException();
-    }
-
-    // Load ICD10 ClaML
-    Logger.getLogger(getClass()).info("Load ICD10");
-    request = new DefaultInvocationRequest();
-    request.setPomFile(new File("../admin/loader/pom.xml"));
-    request.setProfiles(Arrays.asList("ClaML"));
-    request.setGoals(Arrays.asList("clean", "install"));
-    p = new Properties();
-    p.setProperty("run.config", System.getProperty("run.config"));
-    p.setProperty("terminology", "ICD10");
-    p.setProperty("version", "2016");
-    p.setProperty("input.file", config.getProperty("data.dir") + "/"
-        + "icd10-2016.xml");
-    request.setProperties(p);
-    request.setDebug(false);
-    invoker = new DefaultInvoker();
+    
     result = invoker.execute(request);
     if (result.getExitCode() != 0) {
       throw result.getExecutionException();
     }
     
+    // Load MedDRA terminology
+    Logger.getLogger(getClass()).info("Load MedDRA terminology");
+    request = new DefaultInvocationRequest();
+    request.setPomFile(new File("../admin/loader/pom.xml"));
+    request.setProfiles(Arrays.asList("Simple"));
+    request.setGoals(Arrays.asList("clean", "install"));
+    p = new Properties();
+    p.setProperty("run.config", System.getProperty("run.config"));
+    p.setProperty("terminology", "MedDRA");
+    p.setProperty("version", "latest");
+    p.setProperty("input.dir",
+        config.getProperty("data.dir") + "/target/");
+    System.out.println("\n\n\n********* Yrdy inputDir: " + p.getProperty("inputDir"));
+    request.setProperties(p);
+    request.setDebug(true);
+    invoker = new DefaultInvoker();
+    result = invoker.execute(request);
+    if (result.getExitCode() != 0) {
+      throw result.getExecutionException();
+    }
+
     // Generate Demo Data
     Logger.getLogger(getClass()).info("Generate demo data");
     request = new DefaultInvocationRequest();
@@ -222,6 +146,7 @@ public class ResetDemoDatabase {
     request.setGoals(Arrays.asList("clean", "install"));
     p = new Properties();
     p.setProperty("run.config", System.getProperty("run.config"));
+    p.setProperty("inputDir", System.getProperty("run.config"));
     request.setProperties(p);
     invoker = new DefaultInvoker();
     result = invoker.execute(request);
@@ -246,7 +171,6 @@ public class ResetDemoDatabase {
     }
 
   }
-
   /**
    * Create test fixtures per test.
    *
