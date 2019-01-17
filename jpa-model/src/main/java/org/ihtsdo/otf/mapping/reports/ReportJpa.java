@@ -92,7 +92,7 @@ public class ReportJpa implements Report {
   private List<ReportResult> results = new ArrayList<>();
 
   /** The reportNotes. */
-  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity = ReportNoteJpa.class)
+  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, targetEntity = ReportNoteJpa.class)
   private List<ReportNote> notes = new ArrayList<>();
 
   /** The source reports for a comparison report. */
