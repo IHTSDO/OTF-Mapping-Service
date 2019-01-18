@@ -241,13 +241,13 @@ public class GenerateDemoDataMojo extends AbstractMojo {
         "org.ihtsdo.otf.mapping.jpa.handlers.MedDRAToSnomedProjectSpecificAlgorithmHandler");
     project2.setPropagatedFlag(false);
     project2.setPublic(true);
-    project2.setRefSetId("12345");
+    project2.setRefSetId("67890");
     project2.setRefSetName("MedDRA to SNOMEDCT Refset");
     project2.setSourceTerminology("MedDRA");
     project2.setSourceTerminologyVersion("latest");
     project2.setWorkflowType(WorkflowType.REVIEW_PROJECT);
     project2.setMapRelationStyle(RelationStyle.RELATIONSHIP_STYLE);
-    project2.getScopeConcepts().add("ROOT");
+    project2.getScopeConcepts().add("root");
     project2.setScopeDescendantsFlag(true);
 /*    project2.setMapRelations(mapRelations);
     project2.getMapLeads().add(lead1);
