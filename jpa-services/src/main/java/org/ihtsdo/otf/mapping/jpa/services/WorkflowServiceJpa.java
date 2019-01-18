@@ -1143,6 +1143,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
         .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
         .threadsToLoadObjects(4).threadsForSubsequentFetching(8).startAndWait();
 
+    fullTextEntityManager.detach(manager);
     Logger.getLogger(WorkflowServiceJpa.class).info("Done.");
   }
 
