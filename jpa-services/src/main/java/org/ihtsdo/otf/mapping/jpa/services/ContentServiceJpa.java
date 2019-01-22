@@ -1941,6 +1941,11 @@ public class ContentServiceJpa extends RootServiceJpa
     for (final Description desc : concept.getDescriptions()) {
       final String descType = desc.getTypeId().toString();
 
+      // May not want all descriptions listed. May only want non-description attributes. This is determined by the descTypes available
+      if (descTypes.get(descType) == null) {
+    	  continue;
+      }
+      
       // get or create the description group for this description type
       TreePositionDescriptionGroup descGroup = null;
       if (descGroups.containsKey(descType)) {

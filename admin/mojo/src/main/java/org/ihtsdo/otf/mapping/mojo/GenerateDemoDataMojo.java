@@ -196,7 +196,7 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     Logger.getLogger(getClass())
         .info("Create project SNOMEDCT to MedDRA with REVIEW");
     MapProject project1 = new MapProjectJpa();
-    project1.setDestinationTerminology("MedDRA");
+    project1.setDestinationTerminology("MEDDRA");
     project1.setDestinationTerminologyVersion("latest");
     project1.setGroupStructure(true);
     project1.setMapRefsetPattern(MapRefsetPattern.ComplexMap);
@@ -209,7 +209,7 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     project1.setRefSetName("SNOMED to MedDRA Refset");
     project1.setSourceTerminology("SNOMEDCT");
     project1.setSourceTerminologyVersion("latest");
-    project1.setWorkflowType(WorkflowType.REVIEW_PROJECT);
+    project1.setWorkflowType(WorkflowType.CONFLICT_PROJECT);
     project1.setMapRelationStyle(RelationStyle.RELATIONSHIP_STYLE);
     project1.getScopeConcepts().add("404684003");
     project1.setScopeDescendantsFlag(true);
@@ -243,9 +243,9 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     project2.setPublic(true);
     project2.setRefSetId("67890");
     project2.setRefSetName("MedDRA to SNOMEDCT Refset");
-    project2.setSourceTerminology("MedDRA");
+    project2.setSourceTerminology("MEDDRA");
     project2.setSourceTerminologyVersion("latest");
-    project2.setWorkflowType(WorkflowType.REVIEW_PROJECT);
+    project2.setWorkflowType(WorkflowType.CONFLICT_PROJECT);
     project2.setMapRelationStyle(RelationStyle.RELATIONSHIP_STYLE);
     project2.getScopeConcepts().add("root");
     project2.setScopeDescendantsFlag(true);
@@ -259,8 +259,12 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     // Add project
     Logger.getLogger(getClass()).info("  add " + project2);
     project2 = mappingService.addMapProject(project2);
+
+	// TODO: Figure out why hanging. Until then, commented out.
+	/* 
     Logger.getLogger(getClass()).info("  compute workflow");
     workflowService.computeWorkflow(project2);
+	*/
 
     //
     // Cross-project steps

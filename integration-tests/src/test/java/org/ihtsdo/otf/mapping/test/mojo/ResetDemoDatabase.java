@@ -125,7 +125,7 @@ public class ResetDemoDatabase {
     request.setGoals(Arrays.asList("clean", "install"));
     p = new Properties();
     p.setProperty("run.config", System.getProperty("run.config"));
-    p.setProperty("terminology", "MedDRA");
+    p.setProperty("terminology", "MEDDRA");
     p.setProperty("version", "latest");
     p.setProperty("input.dir",
         config.getProperty("data.dir") + "/meddra/");
