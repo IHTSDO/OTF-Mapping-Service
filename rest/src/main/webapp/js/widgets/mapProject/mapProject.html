@@ -8,11 +8,11 @@
     Details</button>
   <button class="btn btn-xs btn-primary" ng-click="goMapRecords()">Map
     Records</button>
-  <button ng-show="project.sourceTerminology === 'SNOMEDCT' || project.sourceTerminology === 'SNOMEDCT_US'"
+  <button ng-show="project.sourceTerminology === 'SNOMEDCT' || project.sourceTerminology === 'SNOMEDCT_US' || project.destinationTerminology === 'SNOMEDCT' || project.destinationTerminology === 'SNOMEDCT_US'"
     class="btn btn-xs btn-primary" ng-click="openConceptBrowser()">SNOMEDCT
     Browser</button>
     <button 
-    class="btn btn-xs btn-primary" ng-click="openTerminologyBrowser()">Terminology
+    class="btn btn-xs btn-primary" ng-click="openTerminologyBrowser()">{{(project.sourceTerminology === 'SNOMEDCT' || project.sourceTerminology === 'SNOMEDCT_US') ? project.destinationTerminology : project.sourceTerminology}}
     Browser</button>
   <button class="btn btn-xs btn-primary" ng-show="indexViewerExists == true"
     ng-click="openIndexViewer()">Index Viewer</button>
