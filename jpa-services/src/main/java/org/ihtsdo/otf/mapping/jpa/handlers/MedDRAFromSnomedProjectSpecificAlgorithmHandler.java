@@ -6,15 +6,12 @@ import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
-import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
-import org.ihtsdo.otf.mapping.services.ContentService;
 
 /**
- * Implementation for sample allergy mapping project. Require valid codes to be
- * allergies.
+ * Implementation for the SNOMED-to-MedDRA mapping project. 
  */
 public class MedDRAFromSnomedProjectSpecificAlgorithmHandler extends
 

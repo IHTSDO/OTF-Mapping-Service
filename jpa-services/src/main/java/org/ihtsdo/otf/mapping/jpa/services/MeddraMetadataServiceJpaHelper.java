@@ -15,7 +15,7 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 
 /**
- * Implementation of {@link MetadataService} for ClaML based terminologies.
+ * Implementation of {@link MetadataService} for MedDRA terminology.
  * 
  */
 public class MeddraMetadataServiceJpaHelper extends RootServiceJpa implements
