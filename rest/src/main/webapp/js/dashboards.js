@@ -250,7 +250,7 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($sc
     });
 
     // update the user preferences
-    $scope.preferences.lastMapProjectId = $scope.focusProject.id;
+    $scope.preferences.lastMapProjectId = $scope.focusProject.objectId;
     localStorageService.add('preferences', $scope.preferences);
     $rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {
       key : 'userPreferences',
@@ -493,7 +493,7 @@ mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', functio
     });
 
     // update the user preferences
-    $scope.preferences.lastMapProjectId = $scope.focusProject.id;
+    $scope.preferences.lastMapProjectId = $scope.focusProject.objectId;
     localStorageService.add('preferences', $scope.preferences);
     $rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {
       key : 'userPreferences',
@@ -1016,7 +1016,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
     });
 
     // update the user preferences
-    $scope.preferences.lastMapProjectId = $scope.focusProject.id;
+    $scope.preferences.lastMapProjectId = $scope.focusProject.objectId;
     localStorageService.add('preferences', $scope.preferences);
     $rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {
       key : 'userPreferences',
@@ -1088,7 +1088,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
 });
 
 mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $rootScope, $http,
-  $routeParams, $location, $window, localStorageService, appConfig) {
+  $routeParams, $location, $window, localStorageService, utilService, appConfig) {
 
   // Attach an onbeforeunload function
   window.onbeforeunload = function() {
@@ -1275,10 +1275,23 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $r
   });
 
   // watch for project change
-  $scope.$on('localStorageModule.notification.setFocusProject', function(event, name) {
+  $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
     console.debug('MainDashboardCtrl:  Detected change in map projects');
     utilService.initializeTerminologyNotes(parameters.focusProject.id);
     $scope.mapProjects = localStorageService.get('mapProjects');
+    
+    var path = '';
+
+    if ($scope.currentRole === 'Specialist') {
+      path = '/specialist/dash';
+    } else if ($scope.currentRole === 'Lead') {
+      path = '/lead/dash';
+    } else if ($scope.currentRole === 'Administrator') {
+      path = '/admin/dash';
+    } else if ($scope.currentRole === 'Viewer') {
+      path = '/viewer/dash';
+    }
+    $location.path(path);
   });
 
   $scope.logout = function() {
@@ -1313,7 +1326,7 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $r
     });
 
     // update the user preferences
-    $scope.preferences.lastMapProjectId = $scope.focusProject.id;
+    $scope.preferences.lastMapProjectId = $scope.focusProject.objectId;
     localStorageService.add('preferences', $scope.preferences);
     $rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {
       key : 'userPreferences',
@@ -1471,7 +1484,7 @@ mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function($root
     });
 
     // update the user preferences
-    $scope.preferences.lastMapProjectId = $scope.focusProject.id;
+    $scope.preferences.lastMapProjectId = $scope.focusProject.objectId;
     localStorageService.add('preferences', $scope.preferences);
     $rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {
       key : 'userPreferences',
@@ -1634,7 +1647,7 @@ mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl', function($root
     });
 
     // update the user preferences
-    $scope.preferences.lastMapProjectId = $scope.focusProject.id;
+    $scope.preferences.lastMapProjectId = $scope.focusProject.objectId;
     localStorageService.add('preferences', $scope.preferences);
     $rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {
       key : 'userPreferences',
@@ -1776,7 +1789,7 @@ mapProjectAppDashboards.controller('RecordConceptDashboardCtrl', function($rootS
     });
 
     // update the user preferences
-    $scope.preferences.lastMapProjectId = $scope.focusProject.id;
+    $scope.preferences.lastMapProjectId = $scope.focusProject.objectId;
     localStorageService.add('preferences', $scope.preferences);
     $rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {
       key : 'userPreferences',
@@ -1895,7 +1908,7 @@ mapProjectAppDashboards.controller('IndexViewerDashboardCtrl', function($rootSco
     });
 
     // update the user preferences
-    $scope.preferences.lastMapProjectId = $scope.focusProject.id;
+    $scope.preferences.lastMapProjectId = $scope.focusProject.objectId;
     localStorageService.add('preferences', $scope.preferences);
     $rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {
       key : 'userPreferences',
@@ -2018,7 +2031,7 @@ mapProjectAppDashboards.controller('terminologyBrowserDashboardCtrl', function($
     });
 
     // update the user preferences
-    $scope.preferences.lastMapProjectId = $scope.focusProject.id;
+    $scope.preferences.lastMapProjectId = $scope.focusProject.objectId;
     localStorageService.add('preferences', $scope.preferences);
     $rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {
       key : 'userPreferences',
