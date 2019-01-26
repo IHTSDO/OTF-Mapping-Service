@@ -69,6 +69,7 @@ import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapAgeRangeListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapPrincipleListJpa;
+import org.ihtsdo.otf.mapping.helpers.MapProjectList;
 import org.ihtsdo.otf.mapping.helpers.MapProjectListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapRecordListJpa;
@@ -3526,6 +3527,112 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
   }
+  
+  // /////////////////////////////////////////////////////
+  // Tree Position Routines for Terminology Browser
+  // /////////////////////////////////////////////////////
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * getTreePositionWithDescendantsForConceptAndMapProject(java.lang.String,
+   * java.lang.Long, java.lang.String)
+   */
+  @Override
+  @GET
+  @Path("/treePosition/project/id/{mapProjectId}/concept/id/{terminologyId}/source")
+  @ApiOperation(value = "Gets project-specific tree positions with desendants", notes = "Gets a list of tree positions and their descendants for the specified parameters. Sets flags for valid targets and assigns any terminology notes based on project.", response = TreePositionListJpa.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public TreePositionList getSourceTreePositionWithDescendantsForConceptAndMapProject(
+    @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("mapProjectId") Long mapProjectId,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken
+
+  ) throws Exception {
+
+    Logger.getLogger(MappingServiceRestImpl.class)
+        .info("RESTful call (Mapping): /treePosition/project/id/"
+            + mapProjectId.toString() + "/concept/id/" + terminologyId);
+
+    String user = null;
+    final MappingService mappingService = new MappingServiceJpa();
+    final ContentService contentService = new ContentServiceJpa();
+    final MetadataService metadataService = new MetadataServiceJpa();
+
+    try {
+      // authorize call
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.VIEWER,
+          "get tree positions with descendants for concept and project",
+          securityService);
+
+      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      
+      final MapProjectList allProjects = mappingService.getMapProjects();
+      MapProject assoicatedMapProject = null;
+      for(MapProject project : allProjects.getIterable()) {
+
+    	  if (mapProject.getSourceTerminology().equalsIgnoreCase(
+    			  project.getDestinationTerminology())
+    	   && mapProject.getSourceTerminologyVersion().equalsIgnoreCase(
+    			   project.getDestinationTerminologyVersion()) ) {
+    		  assoicatedMapProject = project;
+    		  break;
+    	  }
+      }
+      
+      if(assoicatedMapProject == null) {
+    	  throw new Exception("Project " + mapProject.getName() + " does not have a reversed project.");
+      }
+
+      // get the local tree positions from content service
+      final TreePositionList treePositions =
+          contentService.getTreePositionsWithChildren(terminologyId,
+              mapProject.getSourceTerminology(),
+              mapProject.getSourceTerminologyVersion());
+      Logger.getLogger(getClass())
+          .info("  treepos count = " + treePositions.getTotalCount());
+      if (treePositions.getCount() == 0) {
+        return new TreePositionListJpa();
+      }
+
+      final String terminology =
+          treePositions.getTreePositions().get(0).getTerminology();
+      final String terminologyVersion =
+          treePositions.getTreePositions().get(0).getTerminologyVersion();
+      final Map<String, String> descTypes =
+          metadataService.getDescriptionTypes(terminology, terminologyVersion);
+      final Map<String, String> relTypes =
+          metadataService.getRelationshipTypes(terminology, terminologyVersion);
+
+      // Calculate info for tree position information panel
+      contentService.computeTreePositionInformation(treePositions, descTypes,
+          relTypes);
+
+      // Determine whether code is valid (e.g. whether it should be a
+      // link)
+      final ProjectSpecificAlgorithmHandler handler =
+          mappingService.getProjectSpecificAlgorithmHandler(assoicatedMapProject);
+      mappingService.setTreePositionValidCodes(assoicatedMapProject, treePositions,
+          handler);
+      // Compute any additional project specific handler info
+      mappingService.setTreePositionTerminologyNotes(assoicatedMapProject, treePositions,
+          handler);
+
+      return treePositions;
+    } catch (Exception e) {
+      handleException(e, "trying to get the tree positions with descendants",
+          user, mapProjectId.toString(), terminologyId);
+      return null;
+    } finally {
+      metadataService.close();
+      contentService.close();
+      mappingService.close();
+      securityService.close();
+    }
+  }
 
   /*
    * (non-Javadoc)
@@ -3632,7 +3739,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     try {
       // authorize call
       user = authorizeProject(mapProjectId, authToken, MapUserRole.VIEWER,
-          "get destination root tree positions for project", securityService);
+          "get source root tree positions for project", securityService);
 
       // set the valid codes using mapping service
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
