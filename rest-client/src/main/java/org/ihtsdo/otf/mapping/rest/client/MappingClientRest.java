@@ -467,6 +467,14 @@ public class MappingClientRest extends RootClientRest
     // N/A
     return null;
   }
+  
+  @Override
+  public TreePositionList getSourceTreePositionWithDescendantsForConceptAndMapProject(
+    String terminologyId, Long mapProjectId, String authToken)
+    throws Exception {
+    // N/A
+    return null;
+  }
 
   @Override
   public TreePositionList getDestinationRootTreePositionsForMapProject(

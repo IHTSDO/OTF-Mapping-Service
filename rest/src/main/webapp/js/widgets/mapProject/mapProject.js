@@ -247,6 +247,14 @@ angular
         var currentUrl = window.location.href;
         var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
         var newUrl = baseUrl + '/terminology/browser';
+        
+        if ($scope.project.sourceTerminology === 'SNOMEDCT' || $scope.project.sourceTerminology === 'SNOMEDCT_US') {
+          $scope.browserRequest = 'destination';
+        } else {
+          $scope.browserRequest = 'source';
+        }
+        localStorageService.add('browserRequest', $scope.browserRequest);
+
         var myWindow = window.open(newUrl, 'terminologyBrowserWindow');
         myWindow.focus();
       }
