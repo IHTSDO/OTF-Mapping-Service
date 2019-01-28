@@ -114,8 +114,8 @@ public class MapRecordUpdaterMojo extends AbstractMojo {
                       mapProject.getDestinationTerminology(),
                       mapProject.getDestinationTerminologyVersion());
               if (concept2 != null
-                  && !entry.getTargetName().equals(
-                      concept2.getDefaultPreferredName())) {
+                  && !concept2.getDefaultPreferredName().equals(
+                      entry.getTargetName())) {
                 entry.setTargetName(concept2.getDefaultPreferredName());
                 changed = true;
               }
