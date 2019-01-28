@@ -128,10 +128,10 @@ angular.module('mapProjectApp').controller(
     });
 
     // REQUIRED WATCH VARIABLES: focusProject, userToken. None others needed.
-    $scope.$watch([ 'focusProject', 'userToken', 'browserRequest' ], function() {
+    $scope.$watch([ 'focusProject', 'userToken'], function() {
       if ($scope.focusProject != null && $scope.userToken != null) {
-
-        if ($scope.browserRequest === 'source') {
+        
+        if ($scope.browserRequest === 'source' && $location.path().includes('terminology/browser')) {
           $scope.terminology = $scope.focusProject.sourceTerminology;
           $scope.terminologyVersion = $scope.focusProject.sourceTerminologyVersion;  
           
@@ -277,7 +277,7 @@ angular.module('mapProjectApp').controller(
       var url = root_mapping
         + 'treePosition/project/id/'
         + $scope.focusProject.id + '/'
-        + (($scope.browserRequest == 'source') ? 'source' : 'destination');
+        + (($scope.browserRequest == 'source' && $location.path().includes('terminology/browser')) ? 'source' : 'destination');
       
       $rootScope.glassPane++;
       $http({

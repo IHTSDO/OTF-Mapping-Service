@@ -1954,15 +1954,11 @@ mapProjectAppDashboards.controller('terminologyBrowserDashboardCtrl', function($
   $scope.currentRole = localStorageService.get('currentRole');
   $scope.preferences = localStorageService.get('preferences');
   $scope.focusProject = localStorageService.get('focusProject');
-  $scope.browserRequest = localStorageService.get('browserRequest');
+  //$scope.browserRequest = localStorageService.get('browserRequest');
 
   $scope.page = 'terminologyBrowserDashboard';
   
-  if ($scope.browserRequest === 'source') {
-       $rootScope.title = $scope.focusProject.sourceTerminology + ' Terminology Browser';
-  } else {
-      $rootScope.title = $scope.focusProject.destinationTerminology + ' Terminology Browser';
-  }
+  $rootScope.title = $scope.focusProject.destinationTerminology + ' Terminology Browser';
   
   $scope.$on('localStorageModule.notification.setMapProjects', function(event, parameters) {
     $scope.mapProjects = parameters.mapProjects;
