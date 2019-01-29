@@ -64,10 +64,10 @@ DefaultProjectSpecificAlgorithmHandler {
     recordMinusEntry.removeAll(entryWords);
 
     // If there are entry words and none match, warning
-    if (entryWords.size() > 0 && recordWords.size() == recordMinusEntry.size()) {
-      result
-          .addWarning("From concept and target code names must share at least one word.");
-    }
+    //if (entryWords.size() > 0 && recordWords.size() == recordMinusEntry.size()) {
+    //  result
+    //      .addWarning("From concept and target code names must share at least one word.");
+    //}
 
     return result;
   }
