@@ -3555,7 +3555,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
 
     Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /treePosition/project/id/"
-            + mapProjectId.toString() + "/concept/id/" + terminologyId);
+            + mapProjectId.toString() + "/concept/id/" + terminologyId + "/source");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
@@ -3888,6 +3888,147 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       mappingService.setTreePositionValidCodes(mapProject, treePositions,
           handler);
       mappingService.setTreePositionTerminologyNotes(mapProject, treePositions,
+          handler);
+
+      // TODO: if there are too many tree positions, then chop the tree
+      // off (2
+      // levels?)
+      return treePositions;
+
+    } catch (
+
+    Exception e) {
+      handleException(e, "trying to get the tree position graphs for a query",
+          user, mapProjectId.toString(), "");
+      return null;
+    } finally {
+      metadataService.close();
+      mappingService.close();
+      contentService.close();
+      securityService.close();
+    }
+  }
+  
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * getTreePositionGraphsForQueryAndMapProject(java.lang.String,
+   * java.lang.Long, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa,
+   * java.lang.String)
+   */
+  @Override
+  @POST
+  @Path("/treePosition/project/id/{projectId}/source")
+  @ApiOperation(value = "Get tree positions for query", notes = "Gets a list of tree positions for the specified parameters.", response = TreePositionListJpa.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public TreePositionList getSourceTreePositionGraphsForQueryAndMapProject(
+    @ApiParam(value = "Terminology browser query, e.g. 'cholera'", required = true) @QueryParam("query") String query,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("projectId") Long mapProjectId,
+    @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data", required = false) PfsParameterJpa pfsParameter,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("RESTful call (Mapping): /treePosition/project/id/" + mapProjectId + "/source"
+            + " " + query);
+
+    String user = null;
+    final MappingService mappingService = new MappingServiceJpa();
+    final ContentService contentService = new ContentServiceJpa();
+    final MetadataService metadataService = new MetadataServiceJpa();
+    try {
+      // authorize call
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.VIEWER,
+          "get tree position graphs for query", securityService);
+
+      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      
+      final MapProjectList allProjects = mappingService.getMapProjects();
+      MapProject assoicatedMapProject = null;
+      for(MapProject project : allProjects.getIterable()) {
+
+    	  if (mapProject.getSourceTerminology().equalsIgnoreCase(
+    			  project.getDestinationTerminology())
+    	   && mapProject.getSourceTerminologyVersion().equalsIgnoreCase(
+    			   project.getDestinationTerminologyVersion()) ) {
+    		  assoicatedMapProject = project;
+    		  break;
+    	  }
+      }
+      
+      if(assoicatedMapProject == null) {
+    	  throw new Exception("Project " + mapProject.getName() + " does not have a reversed project.");
+      }
+
+      // formulate an "and" search from the query if it doesn't use
+      // special chars
+      boolean plusFlag = false;
+      final StringBuilder qb = new StringBuilder();
+      if (!query.contains("\"") && !query.contains("-") && !query.contains("+")
+          && !query.contains("*")) {
+        plusFlag = true;
+        for (final String word : query.split("\\s")) {
+          qb.append("+").append(word).append(" ");
+        }
+      }
+
+      else {
+        qb.append(query);
+      }
+
+      // TODO: need to figure out what "paging" means - it really has to
+      // do
+      // with the number of tree positions under the root node, I think.
+      final PfsParameter pfs =
+          pfsParameter != null ? pfsParameter : new PfsParameterJpa();
+      // pfs.setStartIndex(0);
+      // pfs.setMaxResults(10);
+
+      // get the tree positions from concept service
+      TreePositionList treePositions = contentService
+          .getTreePositionGraphForQuery(mapProject.getSourceTerminology(),
+              mapProject.getSourceTerminologyVersion(), qb.toString(),
+              pfs);
+      Logger.getLogger(getClass())
+          .info("  treepos count = " + treePositions.getTotalCount());
+      if (treePositions.getCount() == 0) {
+        // Re-try search without +
+        if (plusFlag) {
+          treePositions = contentService.getTreePositionGraphForQuery(
+              mapProject.getSourceTerminology(),
+              mapProject.getSourceTerminologyVersion(), query, pfs);
+        }
+        if (treePositions.getCount() == 0) {
+          return new TreePositionListJpa();
+        }
+      }
+
+      final String terminology =
+          treePositions.getTreePositions().get(0).getTerminology();
+      final String terminologyVersion =
+          treePositions.getTreePositions().get(0).getTerminologyVersion();
+      final Map<String, String> descTypes =
+          metadataService.getDescriptionTypes(terminology, terminologyVersion);
+      final Map<String, String> relTypes =
+          metadataService.getRelationshipTypes(terminology, terminologyVersion);
+
+      // set the valid codes using mapping service
+      final ProjectSpecificAlgorithmHandler handler =
+          mappingService.getProjectSpecificAlgorithmHandler(assoicatedMapProject);
+
+      // Limit tree positions
+      treePositions.setTreePositions(
+          handler.limitTreePositions(treePositions.getTreePositions()));
+
+      contentService.computeTreePositionInformation(treePositions, descTypes,
+          relTypes);
+
+      mappingService.setTreePositionValidCodes(assoicatedMapProject, treePositions,
+          handler);
+      mappingService.setTreePositionTerminologyNotes(assoicatedMapProject, treePositions,
           handler);
 
       // TODO: if there are too many tree positions, then chop the tree

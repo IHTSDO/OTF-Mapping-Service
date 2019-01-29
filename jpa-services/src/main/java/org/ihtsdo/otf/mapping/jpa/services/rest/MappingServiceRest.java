@@ -711,6 +711,19 @@ public interface MappingServiceRest {
 	   */
 	TreePositionList getTreePositionGraphsForQueryAndMapProject(String query, Long mapProjectId,
 			PfsParameterJpa pfsParameter, String authToken) throws Exception;
+	
+	/**
+	   * Gets tree positions for source concept query.
+	   *
+	   * @param query the query
+	   * @param mapProjectId the map project id
+	   * @param pfsParameter the pfs parameter
+	   * @param authToken the auth token
+	   * @return the root-level trees corresponding to the query
+	   * @throws Exception the exception
+	   */
+	TreePositionList getSourceTreePositionGraphsForQueryAndMapProject(String query, Long mapProjectId,
+			PfsParameterJpa pfsParameter, String authToken) throws Exception;
 
 	/**
 	   * Returns records recently edited for a project and user. Used by editedList

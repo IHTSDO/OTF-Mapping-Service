@@ -497,6 +497,13 @@ public class MappingClientRest extends RootClientRest
     // N/A
     return null;
   }
+  
+  public TreePositionList getSourceTreePositionGraphsForQueryAndMapProject(
+	String query, Long mapProjectId, PfsParameterJpa pfsParameter,
+	String authToken) throws Exception {
+	// N/A
+	return null;
+  }
 
   @Override
   public MapRecordListJpa getMapRecordsEditedByMapUser(Long mapProjectId,

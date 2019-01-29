@@ -276,8 +276,8 @@ angular.module('mapProjectApp').controller(
      
       var url = root_mapping
         + 'treePosition/project/id/'
-        + $scope.focusProject.id + '/'
-        + (($scope.browserRequest == 'source' && $location.path().includes('terminology/browser')) ? 'source' : 'destination');
+        + $scope.focusProject.id
+        + (($scope.browserRequest == 'source' && $location.path().includes('terminology/browser')) ? '/source' : '/destination');
       
       $rootScope.glassPane++;
       $http({
@@ -316,11 +316,20 @@ angular.module('mapProjectApp').controller(
         'sortField' : 'ancestorPath',
         'queryRestriction' : $scope.query
       };
+         
+      var url = root_mapping
+        + 'treePosition/project/id/' 
+        + $scope.focusProject.id
+        + (($scope.browserRequest == 'source' && $location.path().includes('terminology/browser')) ? '/source' : '')
+        + '?query='
+        + encodeURIComponent($scope.treeQuery);
       
       $http.post(
           
-        root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '?query='
-          + encodeURIComponent($scope.treeQuery), pfs).success(function(response) {
+        //root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '?query='
+        //  + encodeURIComponent($scope.treeQuery)
+          url , pfs).success(function(response) {
+        
         $scope.searchStatus = '';
         $rootScope.glassPane--;
 
@@ -429,8 +438,7 @@ angular.module('mapProjectApp').controller(
         + $scope.focusProject.id
         + '/concept/id/'
         + terminologyId
-        + (($scope.browserRequest == 'source') ? "/source" : "")
-        ;
+        + (($scope.browserRequest == 'source' && $location.path().includes('terminology/browser')) ? '/source' : '');
       
       $rootScope.glassPane++;
       $http(
