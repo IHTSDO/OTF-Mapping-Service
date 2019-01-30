@@ -467,6 +467,14 @@ public class MappingClientRest extends RootClientRest
     // N/A
     return null;
   }
+  
+  @Override
+  public TreePositionList getSourceTreePositionWithDescendantsForConceptAndMapProject(
+    String terminologyId, Long mapProjectId, String authToken)
+    throws Exception {
+    // N/A
+    return null;
+  }
 
   @Override
   public TreePositionList getDestinationRootTreePositionsForMapProject(
@@ -488,6 +496,13 @@ public class MappingClientRest extends RootClientRest
     String authToken) throws Exception {
     // N/A
     return null;
+  }
+  
+  public TreePositionList getSourceTreePositionGraphsForQueryAndMapProject(
+	String query, Long mapProjectId, PfsParameterJpa pfsParameter,
+	String authToken) throws Exception {
+	// N/A
+	return null;
   }
 
   @Override

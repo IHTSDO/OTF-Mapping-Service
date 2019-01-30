@@ -26,6 +26,7 @@ angular.module('mapProjectApp').controller(
     $scope.listMode = false;
     $scope.focusProject = localStorageService.get('focusProject');
     $scope.userToken = localStorageService.get('userToken');
+    $scope.browserRequest = localStorageService.get('browserRequest');
     $scope.terminology = null;
     $scope.terminologyVersion = null;
 
@@ -127,13 +128,19 @@ angular.module('mapProjectApp').controller(
     });
 
     // REQUIRED WATCH VARIABLES: focusProject, userToken. None others needed.
-    $scope.$watch([ 'focusProject', 'userToken' ], function() {
+    $scope.$watch([ 'focusProject', 'userToken'], function() {
       if ($scope.focusProject != null && $scope.userToken != null) {
-
-        $scope.terminology = $scope.focusProject.destinationTerminology;
-        $scope.terminologyVersion = $scope.focusProject.destinationTerminologyVersion;
+        
+        if ($scope.browserRequest === 'source' && $location.path().includes('terminology/browser')) {
+          $scope.terminology = $scope.focusProject.sourceTerminology;
+          $scope.terminologyVersion = $scope.focusProject.sourceTerminologyVersion;  
+          
+        } else {
+          $scope.terminology = $scope.focusProject.destinationTerminology;
+          $scope.terminologyVersion = $scope.focusProject.destinationTerminologyVersion;
+        }
+        
         $scope.model.title = $scope.terminology + ' Terminology Browser';
-
         $http.defaults.headers.common.Authorization = $scope.userToken;
 
         // get the root trees
@@ -266,10 +273,15 @@ angular.module('mapProjectApp').controller(
 
     // function to get the root nodes
     $scope.getRootTree = function() {
-
+     
+      var url = root_mapping
+        + 'treePosition/project/id/'
+        + $scope.focusProject.id
+        + (($scope.browserRequest == 'source' && $location.path().includes('terminology/browser')) ? '/source' : '/destination');
+      
       $rootScope.glassPane++;
       $http({
-        url : root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '/destination',
+        url : url,
         method : 'GET',
         headers : {
           'Content-Type' : 'application/json'
@@ -304,10 +316,20 @@ angular.module('mapProjectApp').controller(
         'sortField' : 'ancestorPath',
         'queryRestriction' : $scope.query
       };
+         
+      var url = root_mapping
+        + 'treePosition/project/id/' 
+        + $scope.focusProject.id
+        + (($scope.browserRequest == 'source' && $location.path().includes('terminology/browser')) ? '/source' : '')
+        + '?query='
+        + encodeURIComponent($scope.treeQuery);
+      
       $http.post(
-
-        root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '?query='
-          + encodeURIComponent($scope.treeQuery), pfs).success(function(response) {
+          
+        //root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '?query='
+        //  + encodeURIComponent($scope.treeQuery)
+          url , pfs).success(function(response) {
+        
         $scope.searchStatus = '';
         $rootScope.glassPane--;
 
@@ -408,12 +430,20 @@ angular.module('mapProjectApp').controller(
 
     $scope.getLocalTree = function(terminologyId) {
       var deferred = $q.defer();
-
+      
+      //existing API call did not specify destination or source.  Not changing
+      //the existing method for destination but adding one for source.
+      var url = root_mapping
+        + 'treePosition/project/id/'
+        + $scope.focusProject.id
+        + '/concept/id/'
+        + terminologyId
+        + (($scope.browserRequest == 'source' && $location.path().includes('terminology/browser')) ? '/source' : '');
+      
       $rootScope.glassPane++;
       $http(
         {
-          url : root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '/concept/id/'
-            + terminologyId,
+          url: url,
           method : 'GET',
           headers : {
             'Content-Type' : 'application/json'

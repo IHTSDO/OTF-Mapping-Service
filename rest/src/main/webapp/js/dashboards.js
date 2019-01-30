@@ -412,7 +412,7 @@ mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', functio
   $scope.$on('adfDashboardChanged', function(event, name, model) {
     console.debug('Dashboard change detected by mainDashboard', model);
     localStorageService.set(name, model);
-
+    
     $scope.preferences.dashboardModels[$scope.page] = JSON.stringify($scope.model);
     localStorageService.add('preferences', $scope.preferences);
 
@@ -958,7 +958,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
   $scope.$on('adfDashboardChanged', function(event, name, model) {
     console.debug('Dashboard change detected by mainDashboard', model);
     localStorageService.set(name, model);
-
+    
     $scope.preferences.dashboardModels[$scope.page] = JSON.stringify($scope.model);
     localStorageService.add('preferences', $scope.preferences);
 
@@ -1249,7 +1249,7 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $r
   $scope.$on('adfDashboardChanged', function(event, name, model) {
     console.debug('Dashboard change detected by mapRecordDashboard', model);
     localStorageService.set(name, model);
-
+    
     $scope.preferences.dashboardModels[$scope.page] = JSON.stringify($scope.model);
     localStorageService.add('preferences', $scope.preferences);
 
@@ -1954,10 +1954,12 @@ mapProjectAppDashboards.controller('terminologyBrowserDashboardCtrl', function($
   $scope.currentRole = localStorageService.get('currentRole');
   $scope.preferences = localStorageService.get('preferences');
   $scope.focusProject = localStorageService.get('focusProject');
+  //$scope.browserRequest = localStorageService.get('browserRequest');
 
   $scope.page = 'terminologyBrowserDashboard';
+  
   $rootScope.title = $scope.focusProject.destinationTerminology + ' Terminology Browser';
-
+  
   $scope.$on('localStorageModule.notification.setMapProjects', function(event, parameters) {
     $scope.mapProjects = parameters.mapProjects;
   });
