@@ -1046,7 +1046,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
     $http(
       {
         url : root_mapping + 'userRole/user/id/' + $scope.currentUser.userName + '/project/id/'
-          + $scope.focusProject.id,
+          + $scope.focusProject.objectId,
         method : 'GET',
         headers : {
           'Content-Type' : 'application/json'

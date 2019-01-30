@@ -493,7 +493,7 @@ angular
       // record
       $scope.changeFocusProjectByRecord = function(record) {
         for (var i = 0; i < $scope.mapProjects.length; i++) {
-          if ($scope.mapProjects[i].id = record.mapProjectId) {
+          if ($scope.mapProjects[i].id == record.mapProjectId) {
 
             $scope.changeFocusProject($scope.mapProjects[i]);
             break;
