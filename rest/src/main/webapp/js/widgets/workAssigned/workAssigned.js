@@ -110,32 +110,35 @@ angular
         }).success(function(data) {
           $scope.preferences.lastAssignedRadio = localStorageService.get('assignedRadio');
           
-          if ($scope.preferences.lastAssignedRadio.includes('NEW')) {
+          if ($scope.preferences.lastAssignedRadio != null &&
+              $scope.preferences.lastAssignedRadio.includes('NEW')) {
             $scope.assignedTypes.work = 'NEW';
             $scope.assignedTypes.conflict = 'CONFLICT_NEW';
             $scope.assignedTypes.review = 'REVIEW_NEW';
             $scope.assignedTypes.forUser = 'NEW';
             $scope.assignedTypes.qa = 'QA_NEW'
-          } else if ($scope.preferences.lastAssignedRadio.includes('ALL')) {
-            $scope.assignedTypes.work = 'ALL';
-            $scope.assignedTypes.conflict = 'ALL';
-            $scope.assignedTypes.review = 'ALL';
-            $scope.assignedTypes.forUser = 'ALL';
-            $scope.assignedTypes.qa = 'ALL'
-          } else if ($scope.preferences.lastAssignedRadio.includes('IN_PROGRESS')) {
+          } else if ($scope.preferences.lastAssignedRadio != null &&
+              $scope.preferences.lastAssignedRadio.includes('IN_PROGRESS')) {
             $scope.assignedTypes.work = 'EDITING_IN_PROGRESS';
             $scope.assignedTypes.conflict = 'CONFLICT_IN_PROGRESS';
             $scope.assignedTypes.review = 'REVIEW_IN_PROGRESS';
             $scope.assignedTypes.forUser = 'EDITING_IN_PROGRESS';
             $scope.assignedTypes.qa = 'QA_IN_PROGRESS';
-          } else if ($scope.preferences.lastAssignedRadio.includes('RESOLVED') ||
-          		$scope.preferences.lastAssignedRadio.includes('DONE')) {
+          } else if ($scope.preferences.lastAssignedRadio != null &&
+              ($scope.preferences.lastAssignedRadio.includes('RESOLVED') ||
+                  $scope.preferences.lastAssignedRadio.includes('DONE')) ) {
             $scope.assignedTypes.work = 'EDITING_DONE';
             $scope.assignedTypes.conflict = 'CONFLICT_RESOLVED';
             $scope.assignedTypes.review = 'REVIEW_RESOLVED';
             $scope.assignedTypes.forUser = 'EDITING_DONE';
             $scope.assignedTypes.qa = 'QA_RESOLVED';
-          }         
+          } else {
+            $scope.assignedTypes.work = 'ALL';
+            $scope.assignedTypes.conflict = 'ALL';
+            $scope.assignedTypes.review = 'ALL';
+            $scope.assignedTypes.forUser = 'ALL';
+            $scope.assignedTypes.qa = 'ALL'
+          }
           
           // update lists based on radio button selected when tab changes
           $scope.retrieveAssignedWork($scope.assignedWorkPage, null);
