@@ -202,17 +202,18 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     project1.setMapRefsetPattern(MapRefsetPattern.ComplexMap);
     project1.setName("SNOMEDCT to MedDRA with REVIEW");
     project1.setProjectSpecificAlgorithmHandlerClass(
-        "org.ihtsdo.otf.mapping.jpa.handlers.MedDRAFromSnomedProjectSpecificAlgorithmHandler");
+        "org.ihtsdo.otf.mapping.jpa.handlers.DefaultProjectSpecificAlgorithmHandler");
     project1.setPropagatedFlag(false);
-    project1.setPublic(true);
+    project1.setPublic(false);
+    project1.setTeamBased(true);
     project1.setRefSetId("12345");
     project1.setRefSetName("SNOMED to MedDRA Refset");
     project1.setSourceTerminology("SNOMEDCT");
     project1.setSourceTerminologyVersion("latest");
     project1.setWorkflowType(WorkflowType.CONFLICT_PROJECT);
-    project1.setMapRelationStyle(RelationStyle.RELATIONSHIP_STYLE);
+    project1.setMapRelationStyle(RelationStyle.NONE);
     project1.getScopeConcepts().add("404684003");
-    project1.setScopeDescendantsFlag(true);
+    project1.setScopeDescendantsFlag(false);
     /*    project1.setMapRelations(mapRelations);
     project1.getMapLeads().add(lead1);
     project1.getMapLeads().add(lead2);
@@ -238,17 +239,18 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     project2.setMapRefsetPattern(MapRefsetPattern.ComplexMap);
     project2.setName("MedDRA to SNOMEDCT with REVIEW");
     project2.setProjectSpecificAlgorithmHandlerClass(
-        "org.ihtsdo.otf.mapping.jpa.handlers.MedDRAToSnomedProjectSpecificAlgorithmHandler");
+        "org.ihtsdo.otf.mapping.jpa.handlers.DefaultProjectSpecificAlgorithmHandler");
     project2.setPropagatedFlag(false);
-    project2.setPublic(true);
+    project2.setPublic(false);
+    project2.setTeamBased(true);
     project2.setRefSetId("67890");
     project2.setRefSetName("MedDRA to SNOMEDCT Refset");
     project2.setSourceTerminology("MEDDRA");
     project2.setSourceTerminologyVersion("latest");
     project2.setWorkflowType(WorkflowType.CONFLICT_PROJECT);
-    project2.setMapRelationStyle(RelationStyle.RELATIONSHIP_STYLE);
-    project2.getScopeConcepts().add("root");
-    project2.setScopeDescendantsFlag(true);
+    project2.setMapRelationStyle(RelationStyle.NONE);
+    //project2.getScopeConcepts().add("root");
+    project2.setScopeDescendantsFlag(false);
 /*    project2.setMapRelations(mapRelations);
     project2.getMapLeads().add(lead1);
     project2.getMapLeads().add(lead2);
