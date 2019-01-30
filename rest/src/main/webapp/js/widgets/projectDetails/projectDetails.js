@@ -2015,7 +2015,7 @@ angular
 
             // update the cached project list
             for (var i = 0; i < $scope.mapProjects.length; i++) {
-              if ($scope.mapProjects[i].id = data.id) {
+              if ($scope.mapProjects[i].id == data.id) {
                 $scope.mapProjects[i] = data;
               }
             }
