@@ -250,7 +250,7 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($sc
     });
 
     // update the user preferences
-    $scope.preferences.lastMapProjectId = $scope.focusProject.objectId;
+    $scope.preferences.lastMapProjectId = $scope.focusProject.id;
     localStorageService.add('preferences', $scope.preferences);
     $rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {
       key : 'userPreferences',
@@ -493,7 +493,7 @@ mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', functio
     });
 
     // update the user preferences
-    $scope.preferences.lastMapProjectId = $scope.focusProject.objectId;
+    $scope.preferences.lastMapProjectId = $scope.focusProject.id;
     localStorageService.add('preferences', $scope.preferences);
     $rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {
       key : 'userPreferences',
@@ -1016,7 +1016,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
     });
 
     // update the user preferences
-    $scope.preferences.lastMapProjectId = $scope.focusProject.objectId;
+    $scope.preferences.lastMapProjectId = $scope.focusProject.id;
     localStorageService.add('preferences', $scope.preferences);
     $rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {
       key : 'userPreferences',
@@ -1326,7 +1326,7 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $r
     });
 
     // update the user preferences
-    $scope.preferences.lastMapProjectId = $scope.focusProject.objectId;
+    $scope.preferences.lastMapProjectId = $scope.focusProject.id;
     localStorageService.add('preferences', $scope.preferences);
     $rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {
       key : 'userPreferences',
@@ -1484,7 +1484,7 @@ mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function($root
     });
 
     // update the user preferences
-    $scope.preferences.lastMapProjectId = $scope.focusProject.objectId;
+    $scope.preferences.lastMapProjectId = $scope.focusProject.id;
     localStorageService.add('preferences', $scope.preferences);
     $rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {
       key : 'userPreferences',
@@ -1647,7 +1647,7 @@ mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl', function($root
     });
 
     // update the user preferences
-    $scope.preferences.lastMapProjectId = $scope.focusProject.objectId;
+    $scope.preferences.lastMapProjectId = $scope.focusProject.id;
     localStorageService.add('preferences', $scope.preferences);
     $rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {
       key : 'userPreferences',
@@ -1789,7 +1789,7 @@ mapProjectAppDashboards.controller('RecordConceptDashboardCtrl', function($rootS
     });
 
     // update the user preferences
-    $scope.preferences.lastMapProjectId = $scope.focusProject.objectId;
+    $scope.preferences.lastMapProjectId = $scope.focusProject.id;
     localStorageService.add('preferences', $scope.preferences);
     $rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {
       key : 'userPreferences',
@@ -1908,7 +1908,7 @@ mapProjectAppDashboards.controller('IndexViewerDashboardCtrl', function($rootSco
     });
 
     // update the user preferences
-    $scope.preferences.lastMapProjectId = $scope.focusProject.objectId;
+    $scope.preferences.lastMapProjectId = $scope.focusProject.id;
     localStorageService.add('preferences', $scope.preferences);
     $rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {
       key : 'userPreferences',
@@ -2033,7 +2033,7 @@ mapProjectAppDashboards.controller('terminologyBrowserDashboardCtrl', function($
     });
 
     // update the user preferences
-    $scope.preferences.lastMapProjectId = $scope.focusProject.objectId;
+    $scope.preferences.lastMapProjectId = $scope.focusProject.id;
     localStorageService.add('preferences', $scope.preferences);
     $rootScope.$broadcast('localStorageModule.notification.setUserPreferences', {
       key : 'userPreferences',
