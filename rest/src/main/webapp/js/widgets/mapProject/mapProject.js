@@ -12,8 +12,12 @@ angular
   })
   .controller(
     'MapProjectWidgetCtrl',
-    function($scope, $http, $rootScope, $location, $uibModal, localStorageService) {
+    function($scope, $http, $rootScope, $location, $uibModal, localStorageService, appConfig) {
 
+      $scope.appConfig = appConfig;
+      console.log("appConfig", appConfig['deploy.snomed.browser.force']);
+      console.log("appConfig", appConfig['deploy.snomed.browser.url']);
+      
       // get the local storage variables
       $scope.project = localStorageService.get('focusProject');
       $scope.currentUser = localStorageService.get('currentUser');
@@ -231,15 +235,17 @@ angular
       $scope.openConceptBrowser = function() {
         var myWindow = null;
 
-        if ($scope.currentUser.userName === 'guest')
-          myWindow = window.open('http://browser.ihtsdotools.org/index.html?perspective=full'
-            + '&acceptLicense=true');
-        else if ($scope.project.sourceTerminology === 'SNOMEDCT_US') 
-          myWindow = window.open('https://dailybuild.ihtsdotools.org/us.html?perspective=full'
-            + '&acceptLicense=true');
-        else
-          myWindow = window.open('http://dailybuild.ihtsdotools.org/index.html?perspective=full'
-            + '&acceptLicense=true');
+        if (appConfig['deploy.snomed.browser.force']) {
+         myWindow = window.open(appConfig['deploy.snomed.browser.url']); 
+        }
+        else {
+          if ($scope.currentUser.userName === 'guest')
+            myWindow = window.open(appConfig['deploy.snomed.browser.url.base']);
+          else if ($scope.project.sourceTerminology === 'SNOMEDCT_US') 
+            myWindow = window.open(appConfig['deploy.snomed.dailybuild.url']+appConfig['deploy.snomed.dailybuild.url.us']);
+          else
+            myWindow = window.open(appConfig['deploy.snomed.dailybuild.url']+appConfig['deploy.snomed.dailybuild.url.other']);
+        }
         myWindow.focus();
       };
     //TODO Opening a new window for Terminology browser  
