@@ -18,7 +18,7 @@ angular
   .controller(
     'feedbackConversationCtrl',
     function($scope, $rootScope, $routeParams, $http, $location, $uibModal,
-      $sce, localStorageService) {
+      $sce, localStorageService, appConfig) {
 
       $scope.currentUser = null;
       $scope.currentRole = null;
@@ -399,15 +399,25 @@ angular
 
       // opens SNOMED CT browser
       $scope.getBrowserUrl = function() {
-        if ($scope.currentUser.userName === 'guest') {
-          return 'http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1='
-            + $scope.conversation.terminologyId + '&acceptLicense=true';
-        } else if ($scope.focusProject.sourceTerminology === 'SNOMEDCT_US') {
-          return 'https://dailybuild.ihtsdotools.org/us.html?perspective=full&conceptId1='
-            + $scope.conversation.terminologyId + '&acceptLicense=true';
-        } else {
-          return 'http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1='
-            + $scope.conversation.terminologyId + '&acceptLicense=true';
+        if (appConfig['deploy.snomed.browser.force']) {
+          return appConfig['deploy.snomed.browser.url'] + "&conceptId1="
+            + $scope.conversation.terminologyId;  
+        }
+        else {
+          if ($scope.currentUser.userName === 'guest') {
+            return appConfig['deploy.snomed.browser.url'] + "&conceptId1="
+              + $scope.conversation.terminologyId;
+          } else if ($scope.focusProject.sourceTerminology === 'SNOMEDCT_US') {
+            return appConfig['deploy.snomed.dailybuild.url']
+              + appConfig['deploy.snomed.dailybuild.url.us'] 
+              + "&conceptId1="
+              + $scope.conversation.terminologyId;
+          } else {
+            return appConfig['deploy.snomed.dailybuild.url']
+              + appConfig['deploy.snomed.dailybuild.url.other']
+              + "&conceptId1="
+              + $scope.conversation.terminologyId;
+          }
         }
 
       };
