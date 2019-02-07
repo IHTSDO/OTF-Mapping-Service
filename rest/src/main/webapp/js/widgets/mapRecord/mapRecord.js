@@ -27,8 +27,9 @@ angular
       '$uibModal',
       'localStorageService',
       'utilService',
+      'appConfig',
       function($scope, $window, $rootScope, $http, $routeParams, $location, $sce, $uibModal,
-        localStorageService, utilService) {
+        localStorageService, utilService, appConfig) {
 
         // ///////////////////////////////////
         // Map Record Controller Functions //
@@ -82,7 +83,7 @@ angular
         $scope.isNotesOpen = false;
         $scope.isFlagsOpen = false;
         $scope.groupOpen = new Array(10);
-        var i = 0;
+
         for (var i = 0; i < $scope.groupOpen.length; i++) {
           $scope.groupOpen[i] = true;
         }
@@ -1671,16 +1672,26 @@ angular
           return $sce.trustAsHtml(html_code);
         };
 
+        // opens SNOMED CT browser
         $scope.getBrowserUrl = function() {
-          if ($scope.project.sourceTerminology === 'SNOMEDCT_US') {
-            return 'https://dailybuild.ihtsdotools.org/us.html?perspective=full&conceptId1='
-              + $scope.record.conceptId + '&acceptLicense=true';
-          } else {
-            return 'http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1='
-              + $scope.record.conceptId + '&acceptLicense=true';
-          }
+            if (appConfig['deploy.snomed.browser.force']) {
+              return appConfig['deploy.snomed.browser.url'];  
+            }
+            else {
+              if ($scope.project.sourceTerminology === 'SNOMEDCT_US') {
+                return appConfig['deploy.snomed.dailybuild.url']
+                  + appConfig['deploy.snomed.dailybuild.url.us'] 
+                  + "&conceptId1="
+                  + $scope.record.conceptId;
+              } else {
+                return appConfig['deploy.snomed.dailybuild.url']
+                  + appConfig['deploy.snomed.dailybuild.url.other']
+                  + "&conceptId1="
+                  + $scope.record.conceptId;
+              }
+            }
         };
-
+        
         $scope.openConceptBrowser = function() {
           var myWindow = window.open($scope.getBrowserUrl(), 'browserWindow');
           myWindow.focus();
@@ -1690,6 +1701,14 @@ angular
           var currentUrl = window.location.href;
           var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
           var newUrl = baseUrl + '/terminology/browser';
+          
+          if ($scope.project.sourceTerminology === 'SNOMEDCT' || $scope.project.sourceTerminology === 'SNOMEDCT_US') {
+            $scope.browserRequest = 'destination';
+          } else {
+            $scope.browserRequest = 'source';
+          }
+          localStorageService.add('browserRequest', $scope.browserRequest);
+          
           var myWindow = window.open(newUrl, 'terminologyBrowserWindow');
           myWindow.focus();
         }
