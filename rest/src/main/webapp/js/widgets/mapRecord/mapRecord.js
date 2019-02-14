@@ -52,6 +52,7 @@ angular
         $scope.conversation = null;
         $scope.mapLeads = $scope.project.mapLead;
         organizeUsers($scope.mapLeads);
+        $scope.enableAuthoringHistoryButton = (appConfig["deploy.show.authoring.history.button"] === 'true') ? true : false;
 
         $scope.returnRecipients = new Array();
         $scope.multiSelectSettings = {

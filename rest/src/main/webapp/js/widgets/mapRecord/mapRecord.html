@@ -20,7 +20,7 @@
       <a title='Open Index Viewer' ng-show="indexViewerExists == true">
         <i ng-click="openIndexViewer()" class="glyphicon glyphicon-book"></i>
       </a>
-      <a title="Open Authoring History">
+      <a title="Open Authoring History" ng-if="enableAuthoringHistoryButton == true">
         <i ng-click="openAuthoringHistory(concept)" class="glyphicon glyphicon-inbox"></i>
       </a>
     </td>
