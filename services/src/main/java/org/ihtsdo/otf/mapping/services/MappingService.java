@@ -863,4 +863,12 @@ public interface MappingService extends RootService {
    */
   public MapUserRole getMapUserRoleForApplication(String userName) throws Exception;
 
+  /**
+   * Return a list of map record ids which are Ready for Publication or Revised.
+   * 
+   * @param mapProjectId
+   * @return list of map record ids for the given map project
+   * @throws Exception the exception
+   */
+  public List<String> getTargetCodeForReadyForPublication (Long mapProjectId) throws Exception;
 }

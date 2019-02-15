@@ -51,6 +51,9 @@
     <member.flag>false</member.flag>
     <record.flag>false</record.flag>
     <workflow.status>PUBLISHED</workflow.status>
+    <!--  required for  -->
+    <source.map.project.name></source.map.project.name>
+    <target.map.project.name></target.map.project.name>
   </properties>
 
   <profiles>
@@ -560,7 +563,7 @@
         </plugins>
       </build>
     </profile>
-
+    
     <profile>
       <id>AdHoc</id>
       <build>
@@ -601,6 +604,31 @@
                 <goals>
                   <goal>run-icd10cm-sql-report</goal>
                 </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>TargetMappingToScopedConceptMojo</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>target-to-scope-concept</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>target-to-scope-concept</goal>
+                </goals>
+                <configuration>
+                	<sourceMapProjectName>${source.map.project.name}</sourceMapProjectName>
+                	<targetMapProjectName>${target.map.project.name}</targetMapProjectName>
+                </configuration>
               </execution>
             </executions>
           </plugin>
