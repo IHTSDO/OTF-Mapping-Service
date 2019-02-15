@@ -6,6 +6,7 @@ package org.ihtsdo.otf.mapping.jpa.services;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
+import java.math.BigInteger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.hibernate.SQLQuery;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
@@ -3408,6 +3410,32 @@ public class MappingServiceJpa extends RootServiceJpa
           releaseFileNames.substring(0, releaseFileNames.length() - 1);
     }
     return releaseFileNames;
+  }
+  
+  /* see superclass */
+  public List<String> getTargetCodeForReadyForPublication(Long mapProjectId) throws Exception {
+    
+    final String sql = ""
+        + " SELECT DISTINCT me.targetId "
+        + "   FROM map_entries me "
+        + "   JOIN map_records mr ON me.mapRecord_id = mr.id "
+        + "  WHERE mr.mapProjectId = :mapProjectId "
+        + "    AND mr.workflowStatus IN ('READY_FOR_PUBLICATION','REVISION'); ";
+    
+    List<String> list = new ArrayList<>();
+    
+    try {
+      javax.persistence.Query query = manager.createNativeQuery(sql);
+      query.setParameter("mapProjectId", mapProjectId);
+      list = query.getResultList();
+            
+    } catch(Exception e) {
+      Logger.getLogger(getClass()).error("ERROR IN getReadyForPublication " + e.getMessage() , e);
+      throw e;
+    }
+    
+    return list;
+    
   }
 
 }
