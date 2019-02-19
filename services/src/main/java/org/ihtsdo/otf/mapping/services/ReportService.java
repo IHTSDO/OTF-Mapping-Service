@@ -322,4 +322,12 @@ public interface ReportService extends RootService {
    */
   public SearchResultList getQALabels(Long mapProjectId) throws Exception;
 
+  /**
+   * Removes the reports for id range.
+   *
+   * @param startId the start id
+   * @param endId the end id
+   */
+  public void removeReportsForIdRange(Long startId, Long endId);
+
 }

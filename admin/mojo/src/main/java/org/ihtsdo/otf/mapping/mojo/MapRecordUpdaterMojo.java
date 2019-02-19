@@ -120,8 +120,8 @@ public class MapRecordUpdaterMojo extends AbstractMojo {
                       mapProject.getDestinationTerminology(),
                       mapProject.getDestinationTerminologyVersion());
               if (concept2 != null
-                  && entry.getTargetName() != null && !entry.getTargetName().equals(
-                      concept2.getDefaultPreferredName())) {
+                   && !concept2.getDefaultPreferredName().equals(
+                       entry.getTargetName())) {
                 getLog().info("    Update map entry " + entry.getId() + " : "
                     + record.getConceptId() + " from *" + entry.getTargetName()
                     + "* to *" + concept2.getDefaultPreferredName() + "*");

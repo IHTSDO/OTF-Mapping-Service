@@ -29,6 +29,9 @@ import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
+import org.ihtsdo.otf.mapping.jpa.FeedbackJpa;
+import org.ihtsdo.otf.mapping.model.Feedback;
+import org.ihtsdo.otf.mapping.model.FeedbackConversation;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.reports.Report;
@@ -44,6 +47,8 @@ import org.ihtsdo.otf.mapping.reports.ReportResultJpa;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.ReportService;
+import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
+import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
 
 /**
  * JPA enabled implementation of {@link ReportService}.
@@ -177,16 +182,27 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   @Override
   public void removeReport(Long reportId) {
 
-    Report report = manager.find(ReportJpa.class, reportId);
+    if (getTransactionPerOperation()) {
+      tx = manager.getTransaction();
+      tx.begin();
+      Report ma =
+          manager.find(ReportJpa.class, reportId);
 
-    // now remove the entry
-    tx.begin();
-    if (manager.contains(report)) {
-      manager.remove(report);
+      if (manager.contains(ma)) {
+        manager.remove(ma);
+      } else {
+        manager.remove(manager.merge(ma));
+      }
+      tx.commit(); 
     } else {
-      manager.remove(manager.merge(report));
+      Report ma =
+          manager.find(ReportJpa.class, reportId);
+      if (manager.contains(ma)) {
+        manager.remove(ma);
+      } else {
+        manager.remove(manager.merge(ma));
+      }
     }
-    tx.commit();
 
   }
 
@@ -1237,6 +1253,25 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
     return jpaQuery.getResultList();
   }
 
+  @Override
+  public void removeReportsForIdRange(Long startId, Long endId) {
+    Logger.getLogger(getClass()).info(
+        "Removing reports from id range " + startId + " to " + endId);
+    Long counter = startId;
+    while (counter <= endId) {
+      try {
+        if (getReport(counter) != null) {
+          Logger.getLogger(getClass()).info("  Remove report - " + counter);
+          removeReport(counter);
+        }
+      } catch (Exception e) {
+        // do nothing - attempt next
+      } finally {
+        counter++;
+      }
+    }
+  }
+  
   /* see superclass */
   @Override
   public void removeReportsForMapProject(MapProject mapProject, Date startDate,

@@ -1830,6 +1830,33 @@ public class WorkflowServiceJpa extends MappingServiceJpa
   }
 
   /* see superclass */
+  @SuppressWarnings("unchecked")
+  @Override
+  public FeedbackConversationList getFeedbackConversationsForMapProject(
+    Long mapProjectId) throws Exception {
+
+    javax.persistence.Query query = manager
+        .createQuery(
+            "select m from FeedbackConversationJpa m where mapProjectId=:mapProjectId")
+        .setParameter("mapProjectId", mapProjectId);
+
+    List<FeedbackConversation> feedbackConversations = query.getResultList();    
+    for (final FeedbackConversation feedbackConversation : feedbackConversations) {
+      handleFeedbackConversationLazyInitialization(feedbackConversation);
+    }     
+    
+    // set the total count
+    FeedbackConversationListJpa feedbackConversationList =
+        new FeedbackConversationListJpa();
+    feedbackConversationList.setTotalCount(feedbackConversations.size());
+
+    // extract the required sublist of feedback conversations
+    feedbackConversationList.setFeedbackConversations(feedbackConversations);
+
+    return feedbackConversationList;
+  }
+  
+  /* see superclass */
   @Override
   public FeedbackList getFeedbackErrorsForRecord(MapRecord mapRecord)
     throws Exception {
