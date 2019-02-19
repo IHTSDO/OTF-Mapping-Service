@@ -888,9 +888,11 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     //put into config - option to implement team based
     //key = ProjectId-ConceptId, value = team name
     final Map<String, String> teamAssignedConcepts = new HashMap<>();
-    
-    for (final TrackingRecord tr : getTrackingRecordsWithTeam().getIterable()) {
-      teamAssignedConcepts.put(tr.getMapProjectId() + "||" + tr.getTerminologyId(), tr.getAssignedTeamName());
+    TrackingRecordList trackingRecords = getTrackingRecordsWithTeam(mapProject);
+    if (trackingRecords != null) {
+      for (final TrackingRecord tr : trackingRecords.getIterable()) {
+        teamAssignedConcepts.put(tr.getMapProjectId() + "||" + tr.getTerminologyId(), tr.getAssignedTeamName());
+      }
     }
     
     // Clear the workflow for this project
@@ -2074,11 +2076,14 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     return map;
   }
 
-  private TrackingRecordList getTrackingRecordsWithTeam() {
+  private TrackingRecordList getTrackingRecordsWithTeam(MapProject mapProject) {
     try {
+      
       return (TrackingRecordList) manager
           .createQuery(
-              "select tr from TrackingRecordJpa tr where assignedTeamName is not null");
+              "select tr from TrackingRecordJpa tr where mapProjectId= :mapProjectId and assignedTeamName is not null")
+          .setParameter("mapProjectId", mapProject.getId());
+      
     } catch (Exception e) {
       return null;
     }
