@@ -841,7 +841,9 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
             }
           }
           sb.setLength(sb.length() - 2);
+          
           sb.append(")");
+
         } else {
           sb.append(" AND NOT assignedUserNames:" + mapUser.getUserName());
         }
@@ -860,6 +862,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
           // for myself
           sb.append(
               " AND ((assignedUserNames:" + mapUser.getTeam().toLowerCase()
+                  + "OR assignedTeamName:" + mapUser.getTeam().toLowerCase()
                   + ") OR (assignedUserCount:1 AND  (");
           for (final MapUser user : workflowService
               .getMapUsersForTeam(mapUser.getTeam()).getMapUsers()) {
