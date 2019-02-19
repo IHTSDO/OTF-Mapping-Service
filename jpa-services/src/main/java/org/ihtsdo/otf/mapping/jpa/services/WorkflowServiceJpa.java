@@ -75,6 +75,8 @@ import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
 import org.ihtsdo.otf.mapping.workflow.WorkflowException;
 import org.ihtsdo.otf.mapping.workflow.WorkflowExceptionJpa;
 
+import com.amazonaws.util.StringUtils;
+
 /**
  * Default workflow service implementation.
  */
@@ -882,7 +884,15 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     setTransactionPerOperation(false);
     int commitCt = 1000;
     int trackingRecordCt = 0;
-
+    
+    //put into config - option to implement team based
+    //key = ProjectId-ConceptId, value = team name
+    final Map<String, String> teamAssignedConcepts = new HashMap<>();
+    
+    for (final TrackingRecord tr : getTrackingRecordsWithTeam().getIterable()) {
+      teamAssignedConcepts.put(tr.getMapProjectId() + "||" + tr.getTerminologyId(), tr.getAssignedTeamName());
+    }
+    
     // Clear the workflow for this project
     Logger.getLogger(WorkflowServiceJpa.class).info("  Clear old workflow");
     clearWorkflowForMapProject(mapProject);
@@ -920,7 +930,8 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     for (final SearchResult sr : conceptsInScope.getIterable()) {
       conceptIds.add(sr.getTerminologyId());
     }
-
+    
+    
     Logger.getLogger(WorkflowServiceJpa.class)
         .info("  Concept ids put into hash set: " + conceptIds.size());
 
@@ -968,10 +979,6 @@ public class WorkflowServiceJpa extends MappingServiceJpa
             + unpublishedRecords.size());
 
     beginTransaction();
-
-    // if (workflowHandler.isEmptyWorkflowAllowed()) {
-    //
-    // }
 
     // construct the tracking records for unmapped concepts
     for (final String terminologyId : conceptIds) {
@@ -1031,6 +1038,13 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       trackingRecord.setTerminologyVersion(concept.getTerminologyVersion());
       trackingRecord.setDefaultPreferredName(concept.getDefaultPreferredName());
       trackingRecord.setSortKey(sortKey);
+      
+      if (!teamAssignedConcepts.isEmpty()) {
+        String team = teamAssignedConcepts.get(mapProject.getId() + "||"+ concept.getTerminologyId());
+        if (StringUtils.isNullOrEmpty(team)){
+          trackingRecord.setAssignedTeamName(team);
+        }
+      }
 
       // add any existing map records to this tracking record
       Set<MapRecord> mapRecordsForTrackingRecord = new HashSet<>();
@@ -2059,4 +2073,16 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     }
     return map;
   }
+
+  private TrackingRecordList getTrackingRecordsWithTeam() {
+    try {
+      return (TrackingRecordList) manager
+          .createQuery(
+              "select tr from TrackingRecordJpa tr where assignedTeamName is not null");
+    } catch (Exception e) {
+      return null;
+    }
+
+  }
+
 }
