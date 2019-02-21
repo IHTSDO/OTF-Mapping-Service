@@ -889,7 +889,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     //key = ProjectId-ConceptId, value = team name
     final Map<String, String> teamAssignedConcepts = new HashMap<>();
     TrackingRecordList trackingRecords = getTrackingRecordsWithTeam(mapProject);
-    if (trackingRecords != null) {
+    if(mapProject.isTeamBased() && trackingRecords != null){
       for (final TrackingRecord tr : trackingRecords.getIterable()) {
         teamAssignedConcepts.put(tr.getMapProjectId() + "||" + tr.getTerminologyId(), tr.getAssignedTeamName());
       }
