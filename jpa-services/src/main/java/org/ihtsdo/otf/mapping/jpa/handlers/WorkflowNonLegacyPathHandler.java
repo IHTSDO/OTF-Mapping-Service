@@ -831,22 +831,11 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
         // Handle "team" based assignment
         if (mapProject.isTeamBased() && mapUser.getTeam() != null
             && !mapUser.getTeam().isEmpty()) {
-          // Use "OR" clauses for all members matching my user's team, except
-          // for myself
-          sb.append(" AND (");
-          for (final MapUser user : workflowService
-              .getMapUsersForTeam(mapUser.getTeam()).getMapUsers()) {
-            if (!mapUser.getName().equals(user.getName())) {
-              sb.append(" assignedUserNames:" + user.getUserName() + " OR");
-            }
-          }
-          sb.setLength(sb.length() - 2);
-          
-          sb.append(")");
-
-        } else {
-          sb.append(" AND NOT assignedUserNames:" + mapUser.getUserName());
+          // Only include tracking records assigned to my team
+          sb.append(" AND assignedTeamName:" + mapUser.getTeam());
         }
+        
+        sb.append(" AND NOT assignedUserNames:" + mapUser.getUserName());
         sb.append(" AND userAndWorkflowStatusPairs:CONFLICT_DETECTED_*");
         sb.append(" AND NOT (" + "userAndWorkflowStatusPairs:CONFLICT_NEW_* OR "
             + "userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_* OR "
@@ -858,25 +847,13 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
         // Handle "team" based assignment
         if (mapProject.isTeamBased() && mapUser.getTeam() != null
             && !mapUser.getTeam().isEmpty()) {
-          // Use "OR" clauses for all members matching my user's team, except
-          // for myself
-          sb.append(
-              " AND ((assignedUserNames:" + mapUser.getTeam().toLowerCase()
-                  + "OR assignedTeamName:" + mapUser.getTeam().toLowerCase()
-                  + ") OR (assignedUserCount:1 AND  (");
-          for (final MapUser user : workflowService
-              .getMapUsersForTeam(mapUser.getTeam()).getMapUsers()) {
-            if (!mapUser.getName().equals(user.getName())) {
-              sb.append(" assignedUserNames:" + user.getUserName() + " OR");
-            }
-          }
-          sb.setLength(sb.length() - 2);
-          sb.append(") ) )");
-        } else {
-          sb.append(" AND (assignedUserCount:0 OR "
-              + "(assignedUserCount:1 AND NOT assignedUserNames:"
-              + mapUser.getUserName() + "))");
+          // Only include tracking records assigned to my team
+          sb.append(" AND assignedTeamName:" + mapUser.getTeam());
         }
+
+        sb.append(" AND (assignedUserCount:0 OR "
+            + "(assignedUserCount:1 AND NOT assignedUserNames:"
+            + mapUser.getUserName() + "))");
         break;
 
       default:
