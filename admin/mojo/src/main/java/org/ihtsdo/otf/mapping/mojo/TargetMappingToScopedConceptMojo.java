@@ -1,6 +1,8 @@
 package org.ihtsdo.otf.mapping.mojo;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
@@ -43,7 +45,7 @@ public class TargetMappingToScopedConceptMojo extends AbstractMojo {
   public void execute() throws MojoExecutionException, MojoFailureException {
 
     try {
-      doWork();
+      transfer();
     } catch (MojoExecutionException me) {
       throw me;
     } catch (Exception e) {
@@ -51,7 +53,7 @@ public class TargetMappingToScopedConceptMojo extends AbstractMojo {
     }
   }
 
-  private void doWork() throws Exception {
+  private void transfer() throws Exception {
 
     MapProject sourceMapProject = new MapProjectJpa();
     MapProject targetMapProject = new MapProjectJpa();
@@ -90,10 +92,17 @@ public class TargetMappingToScopedConceptMojo extends AbstractMojo {
 
       if (newScopeConceptList != null && !newScopeConceptList.isEmpty()) {
         // upload code as scope concepts to other project
-        for (String oldScopedConcept : targetMapProject.getScopeConcepts()) {
+        final Set<String> oldScopedConceptList = new HashSet<>(
+            targetMapProject.getScopeConcepts());
+
+        for (String oldScopedConcept : oldScopedConceptList) {
+          Logger.getLogger(getClass()).info("Removing scoped concept "
+              + oldScopedConcept + " from target map project.");
           targetMapProject.removeScopeConcept(oldScopedConcept);
         }
         for (String newScopedConcept : newScopeConceptList) {
+          Logger.getLogger(getClass()).info("Adding scoped concept "
+              + newScopedConcept + " to target map project.");
           targetMapProject.addScopeConcept(newScopedConcept);
         }
 
