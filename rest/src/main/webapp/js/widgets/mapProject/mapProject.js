@@ -24,7 +24,7 @@ angular
       $scope.indexViewerExists = false;
       
       //must be disabled in config file, otherwise enabled even if key not in config
-      $scope.showDeltaIsDisabled = (appConfig['deploy.mapproject.showdelta.button.disabled'] === 'true') ? true : false; 
+      $scope.showDeltaIsEnabled = (appConfig['deploy.mapproject.showdelta.button.enabled'] === 'true') ? true : false; 
 
       // watch for project change
       $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
