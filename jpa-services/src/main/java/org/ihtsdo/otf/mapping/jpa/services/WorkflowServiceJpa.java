@@ -1043,7 +1043,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       
       if (!teamAssignedConcepts.isEmpty()) {
         String team = teamAssignedConcepts.get(mapProject.getId() + "||"+ concept.getTerminologyId());
-        if (StringUtils.isNullOrEmpty(team)){
+        if (!StringUtils.isNullOrEmpty(team)){
           trackingRecord.setAssignedTeamName(team);
         }
       }
