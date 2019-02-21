@@ -19,11 +19,12 @@
 	<button class="btn btn-xs btn-primary"
 		ng-show="indexViewerExists == true" ng-click="openIndexViewer()">Index
 		Viewer</button>
-	<span
-		ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
+	<span 
+		ng-show="!showDeltaIsDisabled && (currentRole === 'Lead' || currentRole === 'Administrator')">
 		<button class="btn btn-xs btn-primary" ng-click="showDelta()">Show
 			Delta</button>
-	</span> <span ng-show="currentRole=='Administrator'">
+	</span>
+    <span ng-show="currentRole=='Administrator'">
 		<button class="btn btn-xs btn-primary" ng-click="computeWorkflow()">Compute
 			Workflow</button>
 		<button class="btn btn-xs btn-primary" ng-click="computeNames()">Compute

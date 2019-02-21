@@ -13,10 +13,6 @@ angular
   .controller(
     'MapProjectWidgetCtrl',
     function($scope, $http, $rootScope, $location, $uibModal, localStorageService, appConfig) {
-
-      $scope.appConfig = appConfig;
-      console.log("appConfig", appConfig['deploy.snomed.browser.force']);
-      console.log("appConfig", appConfig['deploy.snomed.browser.url']);
       
       // get the local storage variables
       $scope.project = localStorageService.get('focusProject');
@@ -26,6 +22,9 @@ angular
 
       // flag indicating if index viewer is available for dest terminology
       $scope.indexViewerExists = false;
+      
+      //must be disabled in config file, otherwise enabled even if key not in config
+      $scope.showDeltaIsDisabled = (appConfig['deploy.mapproject.showdelta.button.disabled'] === 'true') ? true : false; 
 
       // watch for project change
       $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
