@@ -3423,7 +3423,7 @@ public class MappingServiceJpa extends RootServiceJpa
         + "     where targetId IS NOT NULL "
         + "     and targetId != '' "
         + "     group by targetId, mapRecord_id) fme on mea.targetId = fme.targetId and mea.REV = fme.min_rev "
-        + "   join map_records      mr on mea.mapRecord_id = mr.id and mr.workflowStatus IN ('READY_FOR_PUBLICATION') "
+        + "   join map_records      mr on mea.mapRecord_id = mr.id and mr.workflowStatus IN ('READY_FOR_PUBLICATION','REVISION') "
         + "   join map_users        mu on mr.owner_id = mu.id "
         + "   where mr.mapProjectId = :mapProjectId "
         + " order by 1; ";
