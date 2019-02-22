@@ -2110,18 +2110,4 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     }
     return map;
   }
-
-//  private TrackingRecordList getTrackingRecordsWithTeam(MapProject mapProject) throws Exception{
-//    
-//    TrackingRecordListJpa trackingRecordList = new TrackingRecordListJpa();
-//    javax.persistence.Query query = manager
-//        .createQuery(
-//            "select tr from TrackingRecordJpa tr where mapProjectId = :mapProjectId")
-//        .setParameter("mapProjectId", mapProject.getId());
-//
-//    trackingRecordList.setTrackingRecords(query.getResultList());
-//
-//    return trackingRecordList;
-//  }
-
 }
