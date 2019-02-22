@@ -3413,24 +3413,35 @@ public class MappingServiceJpa extends RootServiceJpa
   }
   
   /* see superclass */
-  public List<String> getTargetCodeForReadyForPublication(Long mapProjectId) throws Exception {
+  public Map<String, String> getTargetCodeForReadyForPublication(Long mapProjectId) throws Exception {
     
     final String sql = ""
-        + " SELECT DISTINCT me.targetId "
-        + "   FROM map_entries me "
-        + "   JOIN map_records mr ON me.mapRecord_id = mr.id "
-        + "  WHERE mr.mapProjectId = :mapProjectId "
-        + "    AND mr.workflowStatus IN ('READY_FOR_PUBLICATION','REVISION'); ";
+        + "   select DISTINCT mea.targetId, mu.team "
+        + "   from map_entries_AUD mea "
+        + "   join (select targetId, mapRecord_id, MIN(REV) as min_rev "
+        + "     from map_entries_AUD "
+        + "     where targetId IS NOT NULL "
+        + "     and targetId != '' "
+        + "     group by targetId, mapRecord_id) fme on mea.targetId = fme.targetId and mea.REV = fme.min_rev "
+        + "   join map_records      mr on mea.mapRecord_id = mr.id and mr.workflowStatus IN ('READY_FOR_PUBLICATION') "
+        + "   join map_users        mu on mr.owner_id = mu.id "
+        + "   where mr.mapProjectId = :mapProjectId "
+        + " order by 1; ";
     
-    List<String> list = new ArrayList<>();
+    Map<String, String> list = new HashMap<>();
     
     try {
       javax.persistence.Query query = manager.createNativeQuery(sql);
       query.setParameter("mapProjectId", mapProjectId);
-      list = query.getResultList();
+      
+      List<Object[]> objects = query.getResultList();
+      
+      for(Object[] array : objects) {
+        list.put((String) array[0], (String) array[1]);
+      }
             
     } catch(Exception e) {
-      Logger.getLogger(getClass()).error("ERROR IN getReadyForPublication " + e.getMessage() , e);
+      Logger.getLogger(getClass()).error("ERROR IN getTargetCodeForReadyForPublication " + e.getMessage() , e);
       throw e;
     }
     

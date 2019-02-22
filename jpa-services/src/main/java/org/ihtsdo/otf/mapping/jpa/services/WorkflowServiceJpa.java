@@ -884,14 +884,19 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     setTransactionPerOperation(false);
     int commitCt = 1000;
     int trackingRecordCt = 0;
-    
-    //put into config - option to implement team based
-    //key = ProjectId-ConceptId, value = team name
+
     final Map<String, String> teamAssignedConcepts = new HashMap<>();
-    TrackingRecordList trackingRecords = getTrackingRecordsWithTeam(mapProject);
-    if(mapProject.isTeamBased() && trackingRecords != null){
-      for (final TrackingRecord tr : trackingRecords.getIterable()) {
-        teamAssignedConcepts.put(tr.getMapProjectId() + "||" + tr.getTerminologyId(), tr.getAssignedTeamName());
+    if (mapProject.isTeamBased()) {
+      //put into config - option to implement team based
+      //key = ProjectId-ConceptId, value = team name
+      TrackingRecordList trackingRecords = getTrackingRecordsForMapProject(mapProject);    
+      
+      if(trackingRecords != null){
+        Logger.getLogger(getClass()).info("Total number of tracking records: " + trackingRecords.getCount());
+        for (final TrackingRecord tr : trackingRecords.getIterable()) {
+          Logger.getLogger(getClass()).info("Workflow: build list of key:" + tr.getMapProjectId() + "||" + tr.getTerminologyId() + " teamName:" + tr.getAssignedTeamName());
+          teamAssignedConcepts.put(tr.getMapProjectId() + "||" + tr.getTerminologyId(), tr.getAssignedTeamName());
+        }
       }
     }
     
@@ -926,7 +931,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     // get the concepts in scope
     SearchResultList conceptsInScope =
         findConceptsInScope(mapProject.getId(), null);
-
+    
     // construct a hashset of concepts in scope
     Set<String> conceptIds = new HashSet<>();
     for (final SearchResult sr : conceptsInScope.getIterable()) {
@@ -1041,9 +1046,12 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       trackingRecord.setDefaultPreferredName(concept.getDefaultPreferredName());
       trackingRecord.setSortKey(sortKey);
       
-      if (!teamAssignedConcepts.isEmpty()) {
+      if (mapProject.isTeamBased() && !teamAssignedConcepts.isEmpty()) {
         String team = teamAssignedConcepts.get(mapProject.getId() + "||"+ concept.getTerminologyId());
         if (!StringUtils.isNullOrEmpty(team)){
+          
+          Logger.getLogger(getClass()).info("Tracking record set team name:" + team + " for: " + trackingRecord.getTerminologyId());
+          
           trackingRecord.setAssignedTeamName(team);
         }
       }
@@ -2103,18 +2111,17 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     return map;
   }
 
-  private TrackingRecordList getTrackingRecordsWithTeam(MapProject mapProject) {
-    try {
-      
-      return (TrackingRecordList) manager
-          .createQuery(
-              "select tr from TrackingRecordJpa tr where mapProjectId= :mapProjectId and assignedTeamName is not null")
-          .setParameter("mapProjectId", mapProject.getId());
-      
-    } catch (Exception e) {
-      return null;
-    }
-
-  }
+//  private TrackingRecordList getTrackingRecordsWithTeam(MapProject mapProject) throws Exception{
+//    
+//    TrackingRecordListJpa trackingRecordList = new TrackingRecordListJpa();
+//    javax.persistence.Query query = manager
+//        .createQuery(
+//            "select tr from TrackingRecordJpa tr where mapProjectId = :mapProjectId")
+//        .setParameter("mapProjectId", mapProject.getId());
+//
+//    trackingRecordList.setTrackingRecords(query.getResultList());
+//
+//    return trackingRecordList;
+//  }
 
 }
