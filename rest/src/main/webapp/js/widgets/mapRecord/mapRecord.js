@@ -314,6 +314,8 @@ angular
                 $scope.record.conceptId = data.conceptId;
                 $scope.record.owner = {};
                 $scope.record.owner.userName = data.owner.userName;
+                $scope.record.mapProjectId = data.mapProjectId;
+                $scope.record.id = data.id;
               }
 
             }).error(function(data, status, headers, config) {
