@@ -4319,6 +4319,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
           mappingService.getProjectSpecificAlgorithmHandler(mapProject);
       boolean isValid = algorithmHandler.isTargetCodeValid(terminologyId);
 
+      //not all algorithmHandler return true or false.  some default to true
       if (isValid) {
         Concept c = contentService.getConcept(terminologyId,
             mapProject.getDestinationTerminology(),
@@ -4348,16 +4349,22 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
           c.setId(result.getId());
         }
         // Empty descriptions/relationships
-        c.setDescriptions(new HashSet<Description>());
-        c.setRelationships(new HashSet<Relationship>());
-        return c;
+        if (c != null) {
+          c.setDescriptions(new HashSet<Description>());
+          c.setRelationships(new HashSet<Relationship>());
+          return c;
+        }
+        else {
+          // if c is null, the concept was not found
+          return null;
+        }
       } else {
         return null;
       }
 
     } catch (Exception e) {
       handleException(e, "trying to determine if target code is valid", user,
-          mapProjectId.toString(), "");
+          mapProjectId.toString(), terminologyId);
       return null;
     } finally {
       contentService.close();
