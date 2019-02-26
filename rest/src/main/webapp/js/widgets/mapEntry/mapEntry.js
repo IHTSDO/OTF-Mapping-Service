@@ -107,6 +107,7 @@ angular
         }
 
         $scope.setTarget = function(targetCode) {
+          
           $scope.getValidTargetError = '';
 
           // if target code is empty, compute parameters and return
@@ -132,9 +133,10 @@ angular
               console.debug('  valid target = ', data)
               // if target found and valid
               if (data) {
+
                 $scope.entry.targetId = data.terminologyId;
                 $scope.entry.targetName = data.defaultPreferredName;
-
+                
                 // make sure that the mapEntry is up to date before computing advice and relations
                 for (var i = 0; i < $scope.record.mapEntry.length; i++) {
                     var entry = $scope.record.mapEntry[i];
@@ -149,13 +151,14 @@ angular
                 // attempt to autocompute the map relation, then update the
                 // entry
                 $scope.computeParameters(false);
+                
+                $scope.allowableMapRelations = getAllowableRelations($scope.entry,
+                    $scope.project.mapRelation);
 
               } else {
-
                 $scope.getValidTargetError = targetCode
                   + ' is not a valid target';
                 $scope.entry.targetName = null;
-
               }
 
             }).error(function(data, status, headers, config) {
@@ -163,7 +166,7 @@ angular
 
             $rootScope.handleHttpError(data, status, headers, config);
           });
-        };
+        }; // end scope.setTarget
 
         // watch for concept selection from terminology browser
         $scope.$on('terminologyBrowser.selectConcept', function(event,
@@ -197,8 +200,7 @@ angular
           $scope.allowableAdvices = getAllowableAdvices($scope.entry,
             $scope.project.mapAdvice);
           sortByKey($scope.allowableAdvices, 'detail');
-          $scope.allowableMapRelations = getAllowableRelations($scope.entry,
-            $scope.project.mapRelation);
+          
         });
 
         $scope.clearTargetConcept = function(entry) {
