@@ -312,10 +312,11 @@ angular
                 // used by selectRecord
                 $scope.record.workflowStatus = data.workflowStatus;
                 $scope.record.conceptId = data.conceptId;
-                $scope.record.owner = {};
-                $scope.record.owner.userName = data.owner.userName;
+                $scope.record.conceptName = data.conceptName;
+                $scope.record.owner = data.owner;
                 $scope.record.mapProjectId = data.mapProjectId;
                 $scope.record.id = data.id;
+                $scope.record.originIds = data.originIds;
               }
 
             }).error(function(data, status, headers, config) {
@@ -945,7 +946,7 @@ angular
             }
 
           }
-
+          
           // assign the current user to the lastModifiedBy field
           $scope.record.lastModifiedBy = $scope.user;
 
@@ -953,7 +954,7 @@ angular
           // if ($rootScope.currentPageDirty == false &&
           // !returnBack)
           // return;
-
+          
           $rootScope.glassPane++;
           console.debug('save record', $scope.record);
           $http({
