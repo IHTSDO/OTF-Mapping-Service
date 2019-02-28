@@ -314,7 +314,7 @@ angular.module('mapProjectApp').controller(
         'startIndex' : ($scope.paging.tree.page - 1) * $scope.paging.tree.pageSize,
         'maxResults' : $scope.paging.tree.pageSize,
         'sortField' : 'ancestorPath',
-        'queryRestriction' : $scope.query
+        'queryRestriction' : $scope.query.replace(/:/g,' ')
       };
          
       var url = root_mapping
