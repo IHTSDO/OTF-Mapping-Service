@@ -320,14 +320,12 @@ angular.module('mapProjectApp').controller(
       var url = root_mapping
         + 'treePosition/project/id/' 
         + $scope.focusProject.id
-        + (($scope.browserRequest == 'source' && $location.path().includes('terminology/browser')) ? '/source' : '')
+        + (($scope.browserRequest === 'source' && $location.path().includes('terminology/browser')) ? '/source' : '')
         + '?query='
-        + encodeURIComponent($scope.treeQuery);
+        + encodeURIComponent($scope.treeQuery.replace(/:/g,' '));
       
       $http.post(
-          
-        //root_mapping + 'treePosition/project/id/' + $scope.focusProject.id + '?query='
-        //  + encodeURIComponent($scope.treeQuery)
+
           url , pfs).success(function(response) {
         
         $scope.searchStatus = '';
