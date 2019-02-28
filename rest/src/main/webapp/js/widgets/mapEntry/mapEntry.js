@@ -231,6 +231,9 @@ angular
 
           // update the entry
           updateEntry($scope.entry);
+          
+          $scope.getValidTargetError = '';
+          $scope.mapRelationInput = '';
         };
 
         function computeRelation(entry) {
