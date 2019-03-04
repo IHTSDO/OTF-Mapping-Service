@@ -673,10 +673,10 @@ public class TerminologyRf2SnapshotLoaderMojo extends AbstractMojo {
 
     // Association reference file
     for (File f : coreContentInputDir.listFiles()) {
-      if (f.getName().contains("AssociationReference")) {
+      if (f.getName().contains("Association")) {
         if (coreAssociationReferenceInputFile != null)
           throw new MojoFailureException(
-              "Multiple Association Reference Files!");
+              "Multiple Association Files!");
         coreAssociationReferenceInputFile = f;
       }
     }

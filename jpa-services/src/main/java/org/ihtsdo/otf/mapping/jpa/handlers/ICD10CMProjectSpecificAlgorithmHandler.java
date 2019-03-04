@@ -331,7 +331,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       }
       final String adviceP01 =
           "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE";
-      if (!found && mapEntry.getTargetId().matches("(S[0-9].|T[0-8][0-8]).*")
+      if (!found && mapEntry.getTargetId().matches("(S[0-9].|T[0-7][0-9].|T[8][0-8]).*")
           && !mapEntry.getTargetId().matches("(T3[6-9].|T4[0-9].|T5[0-9].|T6[0-5]).*")) {
         if (!TerminologyUtility.hasAdvice(mapEntry, adviceP01)) {
           advices.add(TerminologyUtility.getAdvice(mapProject, adviceP01));
@@ -390,7 +390,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
 
       //
       // PREDICATE: All target codes with these prefixes: O31, O32,
-      // O33.3-O33.6, O35,
+      // O33.3-O33.7, O35,
       // O36, O40, O41, O60.1-O60.2, O64, O69; and ending with the 7th
       // character= 0 (‘fetus unspecified’)
       // and does not have the advice
@@ -401,7 +401,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
           "CONSIDER WHICH FETUS IS AFFECTED BY THE MATERNAL CONDITION";
       if ((mapEntry.getTargetId().startsWith("O31")
           || mapEntry.getTargetId().startsWith("O32")
-          || mapEntry.getTargetId().matches("(O33.[3-6]).*")
+          || mapEntry.getTargetId().matches("(O33.[3-7]).*")
           || mapEntry.getTargetId().startsWith("O35")
           || mapEntry.getTargetId().startsWith("O36")
           || mapEntry.getTargetId().startsWith("O40")
