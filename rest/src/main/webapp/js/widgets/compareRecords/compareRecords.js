@@ -108,7 +108,7 @@ angular
             
             $scope.getRecordsInConflict();
 
-            $rootScope.glassPane++;
+            gpService.increment();
             $http(
               {
                 url : root_workflow + 'record/id/' + $routeParams.recordId
@@ -119,10 +119,10 @@ angular
                   'Content-Type' : 'application/json'
                 }
               }).success(function(data) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $scope.isFalseConflict = data === 'true' ? true : false;
             }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
             });
 
@@ -254,7 +254,7 @@ angular
             }
 
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $scope.recordError = 'Error updating feedback conversation.';
             $rootScope.handleHttpError(data, status, headers, config);
           });
@@ -268,7 +268,7 @@ angular
         var leadRecordId = $routeParams.recordId;
 
         // get the lead record (do everything else inside the "then")
-        $rootScope.glassPane++;
+        gpService.increment();
         $http({
           url : root_mapping + 'record/id/' + leadRecordId,
           dataType : 'json',
@@ -277,15 +277,15 @@ angular
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $scope.leadRecord = data;
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
           // obtain the record concept - id from leadRecord
         }).then(
           function(data) {
-            $rootScope.glassPane++;
+            gpService.increment();
             $http(
               {
                 url : root_content + 'concept/id/'
@@ -299,17 +299,17 @@ angular
                 }
               }).success(
               function(data) {
-                $rootScope.glassPane--;
+                gpService.decrement();
                 $scope.concept = data;
                 setAccordianTitle($scope.concept.terminologyId,
                   $scope.concept.defaultPreferredName);
               }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
             });
 
         // get the conflict records
-        $rootScope.glassPane++;
+        gpService.increment();
         $http(
           {
             url : root_mapping + 'record/id/' + $routeParams.recordId
@@ -321,7 +321,7 @@ angular
             }
           }).success(
           function(data) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             if (data.totalCount == 1) {
               $scope.record1 = data.mapRecord[0];
               $scope.record1.displayName = data.mapRecord[0].owner.name;
@@ -364,7 +364,7 @@ angular
             }
 
             if ($scope.record1 != null) {
-              $rootScope.glassPane++;
+              gpService.increment();
               $http({
                 url : root_workflow + 'conversation/id/' + $scope.record1.id,
                 dataType : 'json',
@@ -373,16 +373,16 @@ angular
                   'Content-Type' : 'application/json'
                 }
               }).success(function(data) {
-                $rootScope.glassPane--;
+                gpService.decrement();
                 $scope.conversation1 = data;
               }).error(function(data, status, headers, config) {
-                $rootScope.glassPane--;
+                gpService.decrement();
                 $rootScope.handleHttpError(data, status, headers, config);
               });
             }
 
             if ($scope.record2 != null) {
-              $rootScope.glassPane++;
+              gpService.increment();
               $http({
                 url : root_workflow + 'conversation/id/' + $scope.record2.id,
                 dataType : 'json',
@@ -391,16 +391,16 @@ angular
                   'Content-Type' : 'application/json'
                 }
               }).success(function(data) {
-                $rootScope.glassPane--;
+                gpService.decrement();
                 $scope.conversation2 = data;
               }).error(function(data, status, headers, config) {
-                $rootScope.glassPane--;
+                gpService.decrement();
                 $rootScope.handleHttpError(data, status, headers, config);
               });
             }
 
             if ($scope.leadRecord != null) {
-              $rootScope.glassPane++;
+              gpService.increment();
               $http(
                 {
                   url : root_workflow + 'conversation/id/'
@@ -412,7 +412,7 @@ angular
                   }
                 }).success(
                 function(data) {
-                  $rootScope.glassPane--;
+                  gpService.decrement();
                   $scope.leadConversation = data;
 
                   // if no prior conversation, initialize with the specialists
@@ -429,13 +429,13 @@ angular
                     initializeReturnRecipients($scope.leadConversation);
                   }
                 }).error(function(data, status, headers, config) {
-                $rootScope.glassPane--;
+                gpService.decrement();
                 $rootScope.handleHttpError(data, status, headers, config);
               });
             }
 
           }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         }).then(
           function(data) {
@@ -449,7 +449,7 @@ angular
 
             // obtain the validationResults from compareRecords
             if ($scope.record2 != null) {
-              $rootScope.glassPane++;
+              gpService.increment();
               $http(
                 {
                   url : root_mapping + 'validation/record/id/'
@@ -462,7 +462,7 @@ angular
                   }
                 }).success(
                 function(data) {
-                  $rootScope.glassPane--;
+                  gpService.decrement();
                   for (var i = 0; i < data.errors.length; i++) {
                     if ($scope.record1 != null)
                       data.errors[i] = data.errors[i].replace('Specialist 1',
@@ -474,7 +474,7 @@ angular
                   }
                   $scope.validationResult = data;
                 }).error(function(data, status, headers, config) {
-                $rootScope.glassPane--;
+                gpService.decrement();
                 $rootScope.handleHttpError(data, status, headers, config);
               });
             }
@@ -810,7 +810,7 @@ angular
               $scope.conversation2 = data;
         }
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $scope.recordError = 'Error adding new feedback conversation.';
             $rootScope.handleHttpError(data, status, headers, config);
           });
@@ -876,7 +876,7 @@ angular
             }
 
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $scope.recordError = 'Error updating feedback conversation.';
             $rootScope.handleHttpError(data, status, headers, config);
           });
@@ -1008,7 +1008,7 @@ angular
               })
             .error(
               function(data, status, headers, config) {
-                $rootScope.glassPane--;
+                gpService.decrement();
                 $scope.recordError = 'Error updating feedback conversation for group feedback.';
                 $rootScope.handleHttpError(data, status, headers, config);
               });
@@ -1303,7 +1303,7 @@ angular
         }
 
         if (needToUpdate == true) {
-          $rootScope.glassPane++;
+          gpService.increment();
           $http({
             url : root_workflow + 'conversation/update',
             dataType : 'json',
@@ -1313,9 +1313,9 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-            $rootScope.glassPane--;
+            gpService.decrement();
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $scope.recordError = 'Error updating feedback conversation.';
             $rootScope.handleHttpError(data, status, headers, config);
           });

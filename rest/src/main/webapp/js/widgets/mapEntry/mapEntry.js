@@ -24,8 +24,9 @@ angular
       '$location',
       '$anchorScroll',
       'localStorageService',
+      'gpService',
       function($scope, $window, $rootScope, $q, $http, $routeParams, $uibModal,
-        $location, $anchorScroll, localStorageService) {
+        $location, $anchorScroll, localStorageService, gpService) {
 
         // for this widget, the only local storage service variable used is
         // user
@@ -118,7 +119,7 @@ angular
             return;
           }
 
-          $rootScope.glassPane++;
+          gpService.increment();
           $http(
             {
               url : root_mapping + 'project/id/' + $scope.project.id
@@ -129,7 +130,7 @@ angular
               }
             }).success(
             function(data) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               console.debug('  valid target = ', data)
               // if target found and valid
               if (data) {
@@ -162,7 +163,7 @@ angular
               }
 
             }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
 
             $rootScope.handleHttpError(data, status, headers, config);
           });
@@ -257,7 +258,7 @@ angular
             }
           }
 
-          $rootScope.glassPane++;
+          gpService.increment();
           $http({
             url : root_mapping + 'relation/compute',
             dataType : 'json',
@@ -291,16 +292,16 @@ angular
                     }
                   }
 
-                  $rootScope.glassPane--;
+                  gpService.decrement();
 
                   // return the promise
                   deferred.resolve(entry);
                 } else {
-                  $rootScope.glassPane--;
+                  gpService.decrement();
                   deferred.resolve(entry);
                 }
               }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
 
               // reject the promise
@@ -342,7 +343,7 @@ angular
             entry.mapAdvice = [];
           }
 
-          $rootScope.glassPane++;
+          gpService.increment();
 
           // var entryIsScopeEntry = matchingEntry(entry, $scope.entry);
 
@@ -391,11 +392,11 @@ angular
                     $scope.project.mapRelation);
                 }
               }
-              $rootScope.glassPane--;
+              gpService.decrement();
               deferred.resolve(entry);
 
             }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
             deferred.reject();
           });
@@ -785,12 +786,12 @@ angular
 
         $scope.setNullTarget = function() {
           // open glass pane (setNullTarget1)
-          $rootScope.glassPane++;
+          gpService.increment();
           $scope.entry.targetId = '';
           $scope.entry.targetName = 'No target';
           $scope.computeParameters(true);
           // close glass pane (setNullTarget1)
-          $rootScope.glassPane--;
+          gpService.decrement();
         };
 
         /**

@@ -18,7 +18,7 @@ angular
   .controller(
     'feedbackConversationCtrl',
     function($scope, $rootScope, $routeParams, $http, $location, $uibModal,
-      $sce, localStorageService, appConfig) {
+      $sce, localStorageService, appConfig, gpService) {
 
       $scope.currentUser = null;
       $scope.currentRole = null;
@@ -102,7 +102,7 @@ angular
 
       // function to retrieve the feedback conversation based on record id
       $scope.getFeedbackConversation = function() {
-        $rootScope.glassPane++;
+        gpService.increment();
         $http({
           url : root_workflow + 'conversation/id/' + $scope.recordId,
           dataType : 'json',
@@ -133,7 +133,7 @@ angular
               }).success(
               function(data) {
 
-                $rootScope.glassPane--;
+                gpService.decrement();
 
                 $scope.record = data;
 
@@ -143,7 +143,7 @@ angular
                 var originIds = $scope.record.originIds;
                 if (originIds != null && originIds.length > 0) {
 
-                  $rootScope.glassPane++;
+                  gpService.increment();
                   $http(
                     {
                       url : root_mapping + 'record/id/' + originIds[0]
@@ -157,12 +157,12 @@ angular
                     }).success(
                     function(data) {
 
-                      $rootScope.glassPane--;
+                      gpService.decrement();
 
                       $scope.record1 = data;
 
                       if (originIds != null && originIds.length == 2) {
-                        $rootScope.glassPane++;
+                        gpService.increment();
                         $http(
                           {
                             url : root_mapping + 'record/id/' + originIds[1]
@@ -174,28 +174,28 @@ angular
                               'Content-Type' : 'application/json'
                             }
                           }).success(function(data) {
-                          $rootScope.glassPane--;
+                          gpService.decrement();
                           $scope.record2 = data;
 
                           setDisplayRecords();
                         }).error(
                           function(data, status, headers, config) {
-                            $rootScope.glassPane--;
+                            gpService.decrement();
                             $rootScope.handleHttpError(data, status, headers,
                               config);
                           });
                       }
                     }).error(function(data, status, headers, config) {
-                    $rootScope.glassPane--;
+                    gpService.decrement();
                     $rootScope.handleHttpError(data, status, headers, config);
                   });
                 }
               }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
             });
           }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
@@ -504,7 +504,7 @@ angular
         updateFeedbackConversation(conversation, refreshFlag);
       }
       function updateFeedbackConversation(conversation, refreshFlag) {
-        $rootScope.glassPane++;
+        gpService.increment();
 
         $http({
           url : root_workflow + 'conversation/update',
@@ -518,9 +518,9 @@ angular
           if (refreshFlag) {
             $scope.getFeedbackConversation();
           }
-          $rootScope.glassPane--;
+          gpService.decrement();
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $scope.recordError = 'Error updating feedback conversation.';
           $rootScope.handleHttpError(data, status, headers, config);
         });

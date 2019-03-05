@@ -12,7 +12,7 @@ angular
   })
   .controller(
     'MapProjectWidgetCtrl',
-    function($scope, $http, $rootScope, $location, $uibModal, localStorageService, appConfig) {
+    function($scope, $http, $rootScope, $location, $uibModal, localStorageService, appConfig, gpService) {
       
       // get the local storage variables
       $scope.project = localStorageService.get('focusProject');
@@ -55,7 +55,7 @@ angular
         if ($scope.nConflicts == undefined || $scope.nConflicts == null) {
           alert('You must specify the number of conflicts to be generated.');
         } else {
-          $rootScope.glassPane++;
+          gpService.increment();
           var confirmGenerate = confirm('Are you sure you want to generate test data?');
           if (confirmGenerate == true) {
             // call the generate API
@@ -69,21 +69,21 @@ angular
                   'Content-Type' : 'application/json'
                 }
               }).success(function(data) {
-              $rootScope.glassPane--;
+              gpService.decrement();
             }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
             });
 
           } else {
-            $rootScope.glassPane--;
+            gpService.decrement();
 
           }
         }
       };
 
       $scope.generateTestingStateForKLININ = function() {
-        $rootScope.glassPane++;
+        gpService.increment();
 
         var confirmGenerate = confirm('Are you sure you want to generate the clean mapping user testing state?');
         if (confirmGenerate == true) {
@@ -98,16 +98,16 @@ angular
                 'Content-Type' : 'application/json'
               }
             }).success(function(data) {
-            $rootScope.glassPane--;
+            gpService.decrement();
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
           });
         }
       };
 
       $scope.generateTestingStateForBHEKRE = function() {
-        $rootScope.glassPane++;
+        gpService.increment();
         var confirmGenerate = confirm('Are you sure you want to generate the clean mapping user testing state?');
         if (confirmGenerate == true) {
           // call the generate API
@@ -121,9 +121,9 @@ angular
                 'Content-Type' : 'application/json'
               }
             }).success(function(data) {
-            $rootScope.glassPane--;
+            gpService.decrement();
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
           });
         }
@@ -152,7 +152,7 @@ angular
 
       // Compute Workflow
       $scope.computeWorkflow = function() {
-        $rootScope.glassPane++;
+        gpService.increment();
         $http({
           url : root_workflow + 'project/id/' + $scope.project.id + '/compute',
           dataType : 'json',
@@ -161,16 +161,16 @@ angular
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
 
       // Compute names
       $scope.computeNames = function() {
-        $rootScope.glassPane++;
+        gpService.increment();
         $http({
           url : root_mapping + 'project/id/' + $scope.project.id + '/names',
           dataType : 'json',
@@ -179,9 +179,9 @@ angular
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
@@ -198,7 +198,7 @@ angular
         };
 
         $scope.getConcepts = function(page, filter) {
-          $rootScope.glassPane++;
+          gpService.increment();
           var pfsParameterObj = {
             'startIndex' : page == -1 ? -1 : (page - 1) * $scope.pageSize,
             'maxResults' : page == -1 ? -1 : $scope.pageSize,
@@ -214,14 +214,14 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-            $rootScope.glassPane--;
+            gpService.decrement();
 
             $scope.concepts = data.searchResult;
             $scope.nConcepts = data.totalCount;
             $scope.numConceptPages = Math.ceil(data.totalCount / $scope.pageSize);
 
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $scope.concepts = [];
             // $rootScope.handleHttpError(data, status, headers,
             // config);

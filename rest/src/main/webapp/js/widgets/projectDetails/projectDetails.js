@@ -82,8 +82,9 @@ angular
       '$q',
       'Upload',
       'utilService',
+      'gpService',
       function($scope, $http, $sce, $rootScope, $location, $uibModal, localStorageService, $q,
-        Upload, utilService) {
+        Upload, utilService, gpService) {
         $scope.page = 'project';
 
         $scope.currentRole = localStorageService.get('currentRole');
@@ -437,7 +438,7 @@ angular
             'queryRestriction' : ''
           };
 
-          $rootScope.glassPane++;
+          gpService.increment();
 
           $http({
             url : root_mapping + 'project/id/' + $scope.focusProject.id + '/scopeConcepts',
@@ -450,14 +451,14 @@ angular
           }).success(
             function(data) {
               console.debug('  scope concepts = ', data);
-              $rootScope.glassPane--;
+              gpService.decrement();
               $scope.pagedScopeConcept = $scope.sortByKey(data.searchResult, 'terminologyId')
                 .filter(containsScopeConceptFilter);
               $scope.pagedScopeConceptCount = $scope.pagedScopeConcept.length;
               $scope.pagedScopeConcept = $scope.pagedScopeConcept.slice((page - 1)
                 * $scope.pageSize, page * $scope.pageSize);
             }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
 
             $rootScope.handleHttpError(data, status, headers, config);
           });
@@ -475,7 +476,7 @@ angular
             'queryRestriction' : ''
           };
 
-          $rootScope.glassPane++;
+          gpService.increment();
           $http({
             url : root_mapping + 'project/id/' + $scope.focusProject.id + '/scopeExcludedConcepts',
             dataType : 'json',
@@ -487,14 +488,14 @@ angular
           }).success(
             function(data) {
               console.debug('  scope excluded = ', data);
-              $rootScope.glassPane--;
+              gpService.decrement();
               $scope.pagedScopeExcludedConcept = $scope.sortByKey(data.searchResult,
                 'terminologyId').filter(containsScopeExcludedConceptFilter);
               $scope.pagedScopeExcludedConceptCount = $scope.pagedScopeExcludedConcept.length;
               $scope.pagedScopeExcludedConcept = $scope.pagedScopeExcludedConcept.slice((page - 1)
                 * $scope.pageSize, page * $scope.pageSize);
             }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
           });
         };
@@ -511,7 +512,7 @@ angular
             'queryRestriction' : ''
           };
 
-          $rootScope.glassPane++;
+          gpService.increment();
 
           $http({
             url : root_mapping + 'release/reports/' + $scope.focusProject.id,
@@ -523,14 +524,14 @@ angular
           }).success(
             function(data) {
               console.debug('  release reports = ', data);
-              $rootScope.glassPane--;
+              gpService.decrement();
               $scope.pagedReleaseReport = $scope.sortByKeyDesc(data.searchResult, 'value2').filter(
                 containsReleaseReportFilter);
               $scope.pagedReleaseReportCount = $scope.pagedReleaseReport.length;
               $scope.pagedReleaseReport = $scope.pagedReleaseReport.slice((page - 1)
                 * $scope.pageSize, page * $scope.pageSize);
             }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
 
             $rootScope.handleHttpError(data, status, headers, config);
           });
@@ -1017,7 +1018,7 @@ angular
             $scope.fileNameArray = [ $scope.fileArray[0].value2, $scope.fileArray[1].value2 ];
           }
 
-          $rootScope.glassPane++;
+          gpService.increment();
           $http({
             url : root_mapping + 'compare/files/' + $scope.focusProject.id,
             dataType : 'json',
@@ -1029,11 +1030,11 @@ angular
             responseType : 'arraybuffer'
           }).success(function(data) {
             $scope.definitionMsg = 'Successfully exported report';
-            $rootScope.glassPane--;
+            gpService.decrement();
             // update the release report list
             $scope.getPagedReleaseReports(1);
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
           });
         }
@@ -1041,7 +1042,7 @@ angular
         // call rest service to retrieve file from amazon s3
         $scope.downloadFileFromAmazonS3 = function(file) {
 
-          $rootScope.glassPane++;
+          gpService.increment();
           $http({
             url : root_mapping + 'amazons3/file',
             dataType : 'json',
@@ -1063,10 +1064,10 @@ angular
             a.target = '_blank';
             a.download = file.value;
             document.body.appendChild(a);
-            $rootScope.glassPane--;
+            gpService.decrement();
             a.click();
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
           });
         }
@@ -1076,7 +1077,7 @@ angular
         // would not work on dev-mapping server and .txt file would open in another tab
         $scope.downloadFileFromCurrentRelease = function(file) {
           
-          $rootScope.glassPane++;
+          gpService.increment();
           $http({
             url : root_mapping + 'current/file/' + $scope.focusProject.id,
             dataType : 'json',
@@ -1098,17 +1099,17 @@ angular
             a.target = '_blank';
             a.download = file.value;
             document.body.appendChild(a);
-            $rootScope.glassPane--;
+            gpService.decrement();
             a.click();
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
           });
         }
 
         $scope.getFilesFromAmazonS3 = function() {
 
-          $rootScope.glassPane++;
+          gpService.increment();
           $http({
             url : root_mapping + 'amazons3/files/' + $scope.focusProject.id,
             dataType : 'json',
@@ -1123,16 +1124,16 @@ angular
                 $scope.amazons3FilesPlusCurrent.push(data.searchResult[i]);
               }
             }
-            $rootScope.glassPane--;
+            gpService.decrement();
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
           });
         }
 
         $scope.getCurrentReleaseFile = function() {
 
-          $rootScope.glassPane++;
+          gpService.increment();
           $http({
             url : root_mapping + 'current/release/' + $scope.focusProject.id,
             dataType : 'json',
@@ -1150,9 +1151,9 @@ angular
                 $scope.amazons3FilesPlusCurrent.push(data.searchResult[i]);
               }
             }
-            $rootScope.glassPane--;
+            gpService.decrement();
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
           });
         }
@@ -1362,7 +1363,7 @@ angular
             window.alert("AdviceDetail cannot be empty");
             return;
           }
-          $rootScope.glassPane++;
+          gpService.increment();
           $http({
             url : root_mapping + 'advice/add',
             dataType : 'json',
@@ -1372,7 +1373,7 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             console.debug('  success', data);
 
             // add the new advice to the available list
@@ -1388,7 +1389,7 @@ angular
             });
 
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
           });
 
@@ -1427,7 +1428,7 @@ angular
         $scope.submitNewMapRelation = function(relation) {
           console.debug('submitNewMapRelation for application');
 
-          $rootScope.glassPane++;
+          gpService.increment();
           $http({
             url : root_mapping + 'relation/add',
             dataType : 'json',
@@ -1439,7 +1440,7 @@ angular
           })
 
           .success(function(data) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             console.debug('  success', data);
             // add new relations to the sets
             $scope.mapRelations.push(data);
@@ -1454,7 +1455,7 @@ angular
             });
 
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
           });
         };
@@ -1622,7 +1623,7 @@ angular
         $scope.submitNewMapPrinciple = function(principle) {
           console.debug('submitNewMapPrinciple', principle);
 
-          $rootScope.glassPane++;
+          gpService.increment();
           $http({
             url : root_mapping + 'principle/add',
             dataType : 'json',
@@ -1632,7 +1633,7 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             console.debug('  success', data);
 
             // add principle to the local sets
@@ -1648,7 +1649,7 @@ angular
             });
 
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
           });
         };
@@ -1683,7 +1684,7 @@ angular
 
         $scope.submitNewMapAgeRange = function(ageRange) {
           console.debug('submitNewMapAgeRange', ageRange);
-          $rootScope.glassPane++;
+          gpService.increment();
 
           $http({
             url : root_mapping + 'ageRange/add',
@@ -1694,7 +1695,7 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             console.debug('  success', data);
 
             // add principle to the local sets
@@ -1710,7 +1711,7 @@ angular
             });
 
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
           });
         };
@@ -1745,7 +1746,7 @@ angular
         // remove a single concept (using the [x] button)
         $scope.removeScopeIncludedConcept = function(scopeConcept, currentPage) {
           console.debug('removeScopeIncludedConcept', scopeConcept, currentPage);
-          $rootScope.glassPane++;
+          gpService.increment();
 
           $http({
             url : root_mapping + 'project/id/' + $scope.focusProject.id + '/scopeConcept/remove',
@@ -1756,13 +1757,13 @@ angular
             }
           }).success(function(data) {
             console.debug('  success', data);
-            $rootScope.glassPane--;
+            gpService.decrement();
 
             // re-page the scope concepts
             $scope.getPagedScopeConcepts(currentPage ? currentPage : 1);
           }).error(function(data, status, headers, config) {
 
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
           });
 
@@ -1771,7 +1772,7 @@ angular
         // remove a single/batch of excluded concepts
         $scope.removeScopeIncludedConcepts = function(scopeConceptsUnsplit) {
           console.debug('removeScopeIncludedConcepts', scopeConceptsUnsplit);
-          $rootScope.glassPane++;
+          gpService.increment();
           var scopeConcepts = scopeConceptsUnsplit.split(/,\s*|\s+/);
           $http({
             url : root_mapping + 'project/id/' + $scope.focusProject.id + '/scopeConcepts/remove',
@@ -1794,11 +1795,11 @@ angular
               $scope.scopeRemoveLog += '\n';
 
             }
-            $rootScope.glassPane--;
+            gpService.decrement();
             $scope.getPagedScopeConcepts(1);
 
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
 
             $rootScope.handleHttpError(data, status, headers, config);
           });
@@ -1808,7 +1809,7 @@ angular
         $scope.submitNewScopeIncludedConcepts = function(scopeConceptsUnsplit) {
           console.debug('submitNewScopeIncludedConcept', scopeConceptsUnsplit);
 
-          $rootScope.glassPane++;
+          gpService.increment();
 
           var scopeConcepts = scopeConceptsUnsplit.split(/,\s*|\s+/);
 
@@ -1821,7 +1822,7 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             console.debug('  success', data);
             data.messages.sort();
             data.warnings.sort();
@@ -1849,7 +1850,7 @@ angular
         // remove a single concept (using the [x] button)
         $scope.removeScopeExcludedConcept = function(scopeExcludedConcept, currentPage) {
           console.debug('removeScopeExcludedConcept', scopeExcludedConcept, currentPage);
-          $rootScope.glassPane++;
+          gpService.increment();
 
           $http(
             {
@@ -1865,7 +1866,7 @@ angular
             console.debug('  success', data);
             $scope.scopeExcludedMessages = data.messages;
             $scope.scopeExcludedWarnings = data.warnings;
-            $rootScope.glassPane--;
+            gpService.decrement();
 
             $scope.getPagedScopeExcludedConcepts(currentPage ? currentPage : 1);
 
@@ -1877,7 +1878,7 @@ angular
         // remove a single/batch of excluded concepts
         $scope.removeScopeExcludedConcepts = function(scopeExcludedConceptsUnsplit) {
           console.debug('removeScopeExcludedConcepts', scopeExcludedConceptsUnsplit);
-          $rootScope.glassPane++;
+          gpService.increment();
 
           var scopeExcludedConcepts = scopeExcludedConceptsUnsplit.split(/,\s*|\s+/);
           $http(
@@ -1891,7 +1892,7 @@ angular
                 'Content-Type' : 'application/json'
               }
             }).success(function(data) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             console.debug('  success', data);
             data.messages.sort();
             data.warnings.sort();
@@ -1907,7 +1908,7 @@ angular
             $scope.getPagedScopeExcludedConcepts(1);
 
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
 
             $rootScope.handleHttpError(data, status, headers, config);
           });
@@ -1917,7 +1918,7 @@ angular
         $scope.submitNewScopeExcludedConcepts = function(scopeExcludedConceptsUnsplit) {
           console.debug('submitNewScopeExcludedConcept', scopeExcludedConceptsUnsplit);
 
-          $rootScope.glassPane++;
+          gpService.increment();
           var scopeExcludedConcepts = scopeExcludedConceptsUnsplit.split(/,\s*|\s+/);
           $http(
             {
@@ -1931,7 +1932,7 @@ angular
               }
             }).success(function(data) {
             console.debug('  success', data);
-            $rootScope.glassPane--;
+            gpService.decrement();
             data.messages.sort();
             data.warnings.sort();
             for (var i = 0; i < data.messages.length; i++) {
@@ -1945,7 +1946,7 @@ angular
             }
             $scope.getPagedScopeExcludedConcepts(1);
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
 
             $rootScope.handleHttpError(data, status, headers, config);
           });
@@ -1999,7 +2000,7 @@ angular
 
           var deferred = $q.defer();
 
-          $rootScope.glassPane++;
+          gpService.increment();
 
           $http({
             url : root_mapping + 'project/update',
@@ -2011,7 +2012,7 @@ angular
             }
           }).success(function(data) {
             console.debug('  success', data);
-            $rootScope.glassPane--;
+            gpService.decrement();
 
             // update the cached project list
             for (var i = 0; i < $scope.mapProjects.length; i++) {
@@ -2024,7 +2025,7 @@ angular
             deferred.resolve();
 
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
             deferred.reject();
           });
@@ -2034,7 +2035,7 @@ angular
 
         $scope.uploadFile = function(file) {
 
-          $rootScope.glassPane++;
+          gpService.increment();
           Upload.upload({
             url : root_mapping + 'upload/' + $scope.focusProject.id,
             data : {
@@ -2051,11 +2052,11 @@ angular
                   'Content-Type' : 'application/json'
                 }
               }).success(function(data) {
-                $rootScope.glassPane--;
+                gpService.decrement();
                 $scope.focusProject = data;
 
               }).error(function(data, status, headers, config) {
-                $rootScope.glassPane--;
+                gpService.decrement();
                 $scope.errorMsg = 'Could not retrieve map project';
               });
             },
@@ -2063,7 +2064,7 @@ angular
             function(response) {
               $rootScope.handleHttpError(response.data, response.status, response.headers,
                 response.config);
-              $rootScope.glassPane--;
+              gpService.decrement();
             },
             // event
             function(evt) {
@@ -2126,7 +2127,7 @@ angular
         };
 
         $scope.prepareCurrentReleaseReport = function() {
-          $rootScope.glassPane++;
+          gpService.increment();
 
           if ($scope.focusProject.destinationTerminology.indexOf('ICD10') > 0) {
             window
@@ -2141,11 +2142,11 @@ angular
 
             // Success
             function(response) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $scope.getCurrentReleaseFile();
             },
             function(response) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(response.data, response.status, response.headers,
                 response.config);
             });
@@ -2253,7 +2254,7 @@ angular
 
         // Compute Workflow
         $scope.computeWorkflow = function() {
-          $rootScope.glassPane++;
+          gpService.increment();
           $http({
             url : root_workflow + 'project/id/' + $scope.focusProject.id + '/compute',
             dataType : 'json',
@@ -2263,10 +2264,10 @@ angular
             }
           }).success(
             function(data) {
-              $rootScope.glassPane--;
+              gpService.decrement();
             },
             function(response) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(response.data, response.status, response.headers,
                 response.config);
             })
@@ -2275,7 +2276,7 @@ angular
         // Start editing cycle
         // @Path("/project/id/{id:[0-9][0-9]*}/release/startEditing")
         $scope.startEditingCycle = function() {
-          $rootScope.glassPane++;
+          gpService.increment();
           $http({
             url : root_mapping + 'project/id/' + $scope.focusProject.id + '/release/startEditing',
             dataType : 'json',
@@ -2287,10 +2288,10 @@ angular
             function(data) {
               $scope.focusProject.editingCycleBeginDate = new Date();
               localStorageService.add('focusProject', $scope.focusProject);
-              $rootScope.glassPane--;
+              gpService.decrement();
             },
             function(response) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(response.data, response.status, response.headers,
                 response.config);
             });
@@ -2299,7 +2300,7 @@ angular
         // Check completion (i.e. no tracking records present for project)
         // @Path("/project/id/{id:[0-9][0-9]*}/trackingRecords")
         $scope.checkCompletion = function() {
-          $rootScope.glassPane++;
+          gpService.increment();
           $http({
             url : root_workflow + 'project/id/' + $scope.focusProject.id + '/trackingRecords',
             dataType : 'json',
@@ -2309,7 +2310,7 @@ angular
             }
           }).then(
             function(data) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               if (data.data.count == 0) {
                 window.alert('All work is completed');
               } else {
@@ -2318,7 +2319,7 @@ angular
               }
             },
             function(response) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(response.data, response.status, response.headers,
                 response.config);
             });
@@ -2364,7 +2365,7 @@ angular
           $scope.getLog = function() {
             console.debug('LogModalCtrl: retrieve log');
 
-            $rootScope.glassPane++;
+            gpService.increment();
             $http({
               url : root_mapping + 'log/' + $scope.project.id + '?query=' + $scope.filter,
               dataType : 'json',
@@ -2377,10 +2378,10 @@ angular
               console.debug('Success in getting log.', $scope.filter);
               $scope.log = data;
 
-              $rootScope.glassPane--;
+              gpService.decrement();
 
             }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
             });
           };
@@ -2422,7 +2423,7 @@ angular
 
         $scope.handleTerminologySelection = function(terminology) {
 
-          $rootScope.glassPane++;
+          gpService.increment();
 
           $http({
             url : root_content + 'terminology/versions/' + terminology,
@@ -2450,10 +2451,10 @@ angular
                   $scope.termLoadData.push(data.TerminologyVersion[i]);
 
               }
-              $rootScope.glassPane--;
+              gpService.decrement();
 
             }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
           });
         };
@@ -2578,7 +2579,7 @@ angular
         }
         
         $scope.S3Initialize = function() {
-          $rootScope.glassPane++;
+          gpService.increment();
           if (!$scope.S3Initialized && $scope.applicationRole == 'Administrator') {
             $scope.handleTerminologySelection($scope.focusProject.sourceTerminology);
             $scope.loadProjectReleaseFiles();
@@ -2589,6 +2590,6 @@ angular
             $scope.getPagedReleaseReports(1);
             $scope.S3Initialized = true;
           }
-          $rootScope.glassPane--;
+          gpService.decrement();
         }
       } ]);

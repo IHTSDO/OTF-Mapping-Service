@@ -15,7 +15,7 @@ angular
     })
   .controller(
     'recordAdminCtrl',
-    function($scope, $rootScope, $http, $location, localStorageService) {
+    function($scope, $rootScope, $http, $location, localStorageService, gpService) {
 
       $scope.currentUser = localStorageService.get('currentUser');
       $scope.focusProject = localStorageService.get('focusProject');
@@ -36,7 +36,7 @@ angular
 
       $scope.getRecord = function(id, createQA) {
 
-        $rootScope.glassPane++;
+        gpService.increment();
         $http({
           url : root_mapping + 'record/id/' + id,
           method : 'GET',
@@ -44,7 +44,7 @@ angular
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
 
           $scope.record = data;
           if (createQA == true) {
@@ -52,13 +52,13 @@ angular
           }
 
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
 
       $scope.createQARecord = function(id) {
-        $rootScope.glassPane++;
+        gpService.increment();
         $http({
           url : root_workflow + 'createQARecord',
           dataType : 'json',
@@ -69,12 +69,12 @@ angular
           }
         }).success(function(data) {
 
-          $rootScope.glassPane--;
+          gpService.decrement();
 
           $scope.record = data;
 
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
@@ -84,7 +84,7 @@ angular
         if (confirm('ARE YOU ABSOLUTELY SURE?\n\n  Deleting a record requires recomputing workflow and rerunning indexes, and may cause workflow problems for other records.') == false)
           return;
 
-        $rootScope.glassPane++;
+        gpService.increment();
         $http({
           url : root_mapping + 'record/delete',
           method : 'DELETE',
@@ -94,14 +94,14 @@ angular
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
 
           $scope.successMsg = 'Successfully deleted record ' + $scope.record.id;
 
           $scope.record = null;
 
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
@@ -111,7 +111,7 @@ angular
         if (confirm('ARE YOU ABSOLUTELY SURE?\n\n  Updating a record through this interface requires recomputing workflow and rerunning indexes, and may cause workflow problems for other records.') == false)
           return;
 
-        $rootScope.glassPane++;
+        gpService.increment();
         $http({
           url : root_mapping + 'record/update',
           method : 'POST',
@@ -121,14 +121,14 @@ angular
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
 
           $scope.successMsg = 'Successfully updated record ' + $scope.record.id;
 
           $scope.record = null;
 
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
@@ -140,7 +140,7 @@ angular
 
         var terminologyIds = terminologyIdsUnsplit.split(/,\s*|\s+/);
 
-        $rootScope.glassPane++;
+        gpService.increment();
         $http(
           {
             url : root_mapping + 'record/records/delete/project/id/' + $scope.focusProject.id
@@ -152,10 +152,10 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $scope.validationResult = data;
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
 
@@ -173,7 +173,7 @@ angular
 
         var terminologyIds = terminologyIdsUnsplit.split(/,\s*|\s+/);
 
-        $rootScope.glassPane++;
+        gpService.increment();
         $http(
           {
             url : root_workflow + 'assign/fixErrorPath/project/id/' + $scope.focusProject.id
@@ -185,10 +185,10 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $scope.validationResultAssign = data;
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
 
