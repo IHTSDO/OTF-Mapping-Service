@@ -12,7 +12,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
   })
   .controller(
     'feedbackCtrl',
-    function($scope, $rootScope, $http, $location, $uibModal, $sce, localStorageService) {
+    function($scope, $rootScope, $http, $location, $uibModal, $sce, localStorageService, gpServcie) {
       $scope.currentUser = null;
       $scope.currentRole = null;
       $scope.focusProject = null;
@@ -130,7 +130,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
         
         console.log("pfsParameterObj", pfsParameterObj);
               
-        $rootScope.glassPane++;
+        gpService.increment();
 
         $http(
           {
@@ -143,7 +143,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
 
           // set pagination variables
           $scope.nRecords = data.totalCount;
@@ -152,7 +152,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
           $scope.feedbackConversations = data.feedbackConversation;
 
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
 
@@ -198,7 +198,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
       };
       
       function updateFeedbackConversation(conversation) {
-        $rootScope.glassPane++;
+        gpService.increment();
 
         $http({
           url : root_workflow + 'conversation/update',
@@ -209,9 +209,9 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $scope.recordError = 'Error updating feedback conversation.';
           $rootScope.handleHttpError(data, status, headers, config);
         });

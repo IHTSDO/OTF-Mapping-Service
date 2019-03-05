@@ -28,8 +28,9 @@ angular
       'localStorageService',
       'utilService',
       'appConfig',
+      'gpService',
       function($scope, $window, $rootScope, $http, $routeParams, $location, $sce, $uibModal,
-        localStorageService, utilService, appConfig) {
+        localStorageService, utilService, appConfig, gpService) {
 
         // ///////////////////////////////////
         // Map Record Controller Functions //
@@ -219,7 +220,7 @@ angular
             // Validate the record immediately
             // this is good to show messages right away
             // if there are problems
-            $rootScope.glassPane++;
+            gpService.increment();
             console.debug('Validate record on select', $scope.record);
             $http({
               url : root_mapping + 'validation/record/validate',
@@ -231,10 +232,10 @@ angular
               }
             }).success(function(data) {
               console.debug('  validation data = ', data);
-              $rootScope.glassPane--;
+              gpService.decrement();
               $scope.validationResult = data;
             }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $scope.validationResult = null;
               $rootScope.handleHttpError(data, status, headers, config);
             });
@@ -563,7 +564,7 @@ angular
           }
 
           // validate the record
-          $rootScope.glassPane++;
+          gpService.increment();
           console.debug('Validate on finish', $scope.record);
           $http({
             url : root_mapping + 'validation/record/validate',
@@ -576,11 +577,11 @@ angular
           })
             .success(function(data) {
               console.debug('  validation result = ' + data);
-              $rootScope.glassPane--;
+              gpService.decrement();
               $scope.validationResult = data;
             })
             .error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $scope.validationResult = null;
               $scope.recordError = 'Unexpected error reported by server.  Contact an admin.';
               $rootScope.handleHttpError(data, status, headers, config);
@@ -619,7 +620,7 @@ angular
                     // assign the current user to the lastModifiedBy field
                     $scope.record.lastModifiedBy = $scope.user;
 
-                    $rootScope.glassPane++;
+                    gpService.increment();
                     console.debug('Finish record', $scope.record);
                     $http({
                       url : root_workflow + 'finish',
@@ -639,12 +640,12 @@ angular
                         // longer 'dirty'
                         $rootScope.currentPageDirty = false;
 
-                        $rootScope.glassPane--;
+                        gpService.decrement();
                         $location.path($scope.role + '/dash');
                       })
                       .error(
                         function(data, status, headers, config) {
-                          $rootScope.glassPane--;
+                          gpService.decrement();
                           $scope.recordError = 'Unexpected server error.  Try saving your work for later, and contact an admin.';
                           $rootScope.handleHttpError(data, status, headers, config);
                           $scope.recordSuccess = '';
@@ -710,7 +711,7 @@ angular
             };
 
             // get the assigned work list
-            $rootScope.glassPane++;
+            gpService.increment();
             console.debug('Get assigned concepts', $scope.project.id);
             $http(
               {
@@ -726,7 +727,7 @@ angular
               }).success(
               function(data) {
                 console.debug('  assignedWork = ', data);
-                $rootScope.glassPane--;
+                gpService.decrement();
 
                 var assignedWork = data.searchResult;
 
@@ -753,7 +754,7 @@ angular
                 }
 
               }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
             });
 
@@ -771,7 +772,7 @@ angular
             };
 
             // get the assigned conflicts
-            $rootScope.glassPane++;
+            gpService.increment();
             console.debug('get assigned conflicts', $scope.project.id);
             $http(
               {
@@ -787,7 +788,7 @@ angular
               }).success(
               function(data) {
                 console.debug('  assigned work = ', data);
-                $rootScope.glassPane--;
+                gpService.decrement();
 
                 var assignedWork = data.searchResult;
 
@@ -814,7 +815,7 @@ angular
                 }
 
               }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
             });
 
@@ -836,7 +837,7 @@ angular
               'queryRestriction' : 'REVIEW_NEW'
             };
             // get the assigned review work
-            $rootScope.glassPane++;
+            gpService.increment();
             console.debug('get assigned review work', $scope.project.id);
             $http(
               {
@@ -852,7 +853,7 @@ angular
               }).success(
               function(data) {
                 console.debug('  assigned work = ', data);
-                $rootScope.glassPane--;
+                gpService.decrement();
 
                 var assignedWork = data.searchResult;
                 if (tooltipOnly == true) {
@@ -877,7 +878,7 @@ angular
                   }
                 }
               }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
             });
           } else if ($scope.record.workflowStatus === 'QA_NEW'
@@ -891,7 +892,7 @@ angular
               'queryRestriction' : 'QA_NEW'
             };
             // get the assigned review work
-            $rootScope.glassPane++;
+            gpService.increment();
             console.debug('get assigned qa work', $scope.project.id);
             $http(
               {
@@ -907,7 +908,7 @@ angular
               }).success(
               function(data) {
                 console.debug('  assigned work = ', data);
-                $rootScope.glassPane--;
+                gpService.decrement();
 
                 var assignedWork = data.searchResult;
                 if (tooltipOnly == true) {
@@ -932,7 +933,7 @@ angular
                   }
                 }
               }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
             });
           }
@@ -955,7 +956,7 @@ angular
           // !returnBack)
           // return;
           
-          $rootScope.glassPane++;
+          gpService.increment();
           console.debug('save record', $scope.record);
           $http({
             url : root_workflow + 'save',
@@ -975,7 +976,7 @@ angular
             // $scope.record = data;
             $scope.recordSuccess = 'Record saved.';
             $scope.recordError = '';
-            $rootScope.glassPane--;
+            gpService.decrement();
             if (!returnBack) {
               $scope.resolveNextConcept(false);
 
@@ -983,7 +984,7 @@ angular
               $location.path($scope.role + '/dash');
             }
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $scope.recordError = 'Error saving record.';
             $rootScope.handleHttpError(data, status, headers, config);
             $scope.recordSuccess = '';
@@ -993,7 +994,7 @@ angular
         // discard changes
         $scope.cancelMapRecord = function() {
 
-          $rootScope.glassPane++;
+          gpService.increment();
           console.debug('cancel editing', $scope.record);
           $http({
             url : root_workflow + 'cancel',
@@ -1008,10 +1009,10 @@ angular
             // user has requested a cancel event, page is no
             // longer 'dirty'
             $rootScope.currentPageDirty = false;
-            $rootScope.glassPane--;
+            gpService.decrement();
             $location.path($scope.role + '/dash');
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
           });
 
@@ -2034,7 +2035,7 @@ angular
           $scope.retrieveAuthoringChanges = function(concept) {
             console.debug('AuthoringHistoryModalCtrl: retrieve Authoring Changes');
 
-            $rootScope.glassPane++;
+            gpService.increment();
             $http({
               url : root_mapping + 'changes/' + $scope.projectId + '/' + concept.terminologyId,
               dataType : 'json',
@@ -2071,10 +2072,10 @@ angular
                   $scope.edits.push(edit);
                 }
 
-                $rootScope.glassPane--;
+                gpService.decrement();
 
               }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
             });
           };

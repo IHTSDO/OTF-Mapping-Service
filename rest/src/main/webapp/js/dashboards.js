@@ -4,7 +4,7 @@ var mapProjectAppDashboards = angular.module('mapProjectAppDashboards', [ 'adf',
   'LocalStorageModule' ]);
 
 mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($scope, $routeParams,
-  $rootScope, $location, $window, $http, localStorageService, utilService, appConfig) {
+  $rootScope, $location, $window, $http, localStorageService, utilService, appConfig, gpService) {
 
   // Attach an onbeforeunload function
   window.onbeforeunload = function() {
@@ -220,7 +220,7 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($sc
 
   $scope.logout = function() {
 
-    $rootScope.glassPane++;
+    gpService.increment();
     $http({
       url : root_security + 'logout/user/id/' + $scope.currentUser.userName,
       method : 'POST',
@@ -229,10 +229,10 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($sc
       // save userToken from authentication
       }
     }).success(function(data) {
-      $rootScope.glassPane--;
+      gpService.decrement();
       $window.location.href = data;
     }).error(function(data, status, headers, config) {
-      $rootScope.glassPane--;
+      gpService.decrement();
       $location.path('/');
       $rootScope.handleHttpError(data, status, headers, config);
     });
@@ -462,7 +462,7 @@ mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', functio
 
   $scope.logout = function() {
 
-    $rootScope.glassPane++;
+    gpService.increment();
     $http({
       url : root_security + 'logout/user/id/' + $scope.currentUser.userName,
       method : 'POST',
@@ -471,10 +471,10 @@ mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', functio
       // save userToken from authentication
       }
     }).success(function(data) {
-      $rootScope.glassPane--;
+      gpService.decrement();
       $window.location.href = data;
     }).error(function(data, status, headers, config) {
-      $rootScope.glassPane--;
+      gpService.decrement();
       $location.path('/');
       $rootScope.handleHttpError(data, status, headers, config);
     });
@@ -605,7 +605,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
         utilService.initializeTerminologyNotes($scope.focusProject.id);
 
       }).error(function(data, status, headers, config) {
-        $rootScope.glassPane--;
+        gpService.decrement();
         $location.path('/');
         $rootScope.handleHttpError(data, status, headers, config);
       });
@@ -985,7 +985,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
 
   $scope.logout = function() {
 
-    $rootScope.glassPane++;
+    gpService.increment();
     $http({
       url : root_security + 'logout/user/id/' + $scope.currentUser.userName,
       method : 'POST',
@@ -994,10 +994,10 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
       // save userToken from authentication
       }
     }).success(function(data) {
-      $rootScope.glassPane--;
+      gpService.decrement();
       $window.location.href = data;
     }).error(function(data, status, headers, config) {
-      $rootScope.glassPane--;
+      gpService.decrement();
       $location.path('/');
       $rootScope.handleHttpError(data, status, headers, config);
     });
@@ -1296,7 +1296,7 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $r
 
   $scope.logout = function() {
 
-    $rootScope.glassPane++;
+    gpService.increment();
     $http({
       url : root_security + 'logout/user/id/' + $scope.currentUser.userName,
       method : 'POST',
@@ -1305,10 +1305,10 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $r
       // save userToken from authentication
       }
     }).success(function(data) {
-      $rootScope.glassPane--;
+      gpService.decrement();
       $window.location.href = data;
     }).error(function(data, status, headers, config) {
-      $rootScope.glassPane--;
+      gpService.decrement();
       $location.path('/');
       $rootScope.handleHttpError(data, status, headers, config);
     });
@@ -1454,7 +1454,7 @@ mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function($root
 
   $scope.logout = function() {
 
-    $rootScope.glassPane++;
+    gpService.increment();
     $http({
       url : root_security + 'logout/user/id/' + $scope.currentUser.userName,
       method : 'POST',
@@ -1463,10 +1463,10 @@ mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function($root
       // save userToken from authentication
       }
     }).success(function(data) {
-      $rootScope.glassPane--;
+      gpService.decrement();
       $window.location.href = data;
     }).error(function(data, status, headers, config) {
-      $rootScope.glassPane--;
+      gpService.decrement();
       $location.path('/');
       $rootScope.handleHttpError(data, status, headers, config);
     });
@@ -1613,7 +1613,7 @@ mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl', function($root
 
   $scope.logout = function() {
 
-    $rootScope.glassPane++;
+    gpService.increment();
     $http({
       url : root_security + 'logout/user/id/' + $scope.currentUser.userName,
       method : 'POST',
@@ -1622,10 +1622,10 @@ mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl', function($root
       // save userToken from authentication
       }
     }).success(function(data) {
-      $rootScope.glassPane--;
+      gpService.decrement();
       $window.location.href = data;
     }).error(function(data, status, headers, config) {
-      $rootScope.glassPane--;
+      gpService.decrement();
       $location.path('/');
       $rootScope.handleHttpError(data, status, headers, config);
     });
@@ -1758,7 +1758,7 @@ mapProjectAppDashboards.controller('RecordConceptDashboardCtrl', function($rootS
 
   $scope.logout = function() {
 
-    $rootScope.glassPane++;
+    gpService.increment();
     $http({
       url : root_security + 'logout/user/id/' + $scope.currentUser.userName,
       method : 'POST',
@@ -1767,10 +1767,10 @@ mapProjectAppDashboards.controller('RecordConceptDashboardCtrl', function($rootS
       // save userToken from authentication
       }
     }).success(function(data) {
-      $rootScope.glassPane--;
+      gpService.decrement();
       $window.location.href = data;
     }).error(function(data, status, headers, config) {
-      $rootScope.glassPane--;
+      gpService.decrement();
       $location.path('/');
       $rootScope.handleHttpError(data, status, headers, config);
     });

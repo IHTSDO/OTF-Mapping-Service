@@ -14,7 +14,7 @@ angular
   .controller(
     'recordConceptCtrl',
     function($scope, $rootScope, $http, $routeParams, $location, $uibModal, localStorageService, $sce,
-      appConfig, utilService) {
+      appConfig, utilService, gpService) {
 
       // scope variables
       $scope.appConfig = appConfig;
@@ -177,7 +177,7 @@ angular
 
       function validateRecord(record) {
 
-        $rootScope.glassPane++;
+        gpService.increment();
         $http({
           url : root_mapping + 'validation/record/validate',
           dataType : 'json',
@@ -187,11 +187,11 @@ angular
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           record.errors = data.errors;
           record.warnings = data.warnings;
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
 
@@ -322,7 +322,7 @@ angular
         } else {
 
           // assign the record along the QA_PATH
-          $rootScope.glassPane++;
+          gpService.increment();
 
           // remove advices if this is a RELATIONSHIP_STYLE project
           // (these
@@ -369,24 +369,24 @@ angular
                         'Content-Type' : 'application/json'
                       }
                     }).success(function(data) {
-                    $rootScope.glassPane--;
+                    gpService.decrement();
 
                     // open the record edit view
                     $location.path('/record/review/' + data.id);
                   }).error(function(data, status, headers, config) {
-                    $rootScope.glassPane--;
+                    gpService.decrement();
 
                     $rootScope.handleHttpError(data, status, headers, config);
                   });
 
                 }).error(function(data, status, headers, config) {
-                  $rootScope.glassPane--;
+                  gpService.decrement();
 
                   $rootScope.handleHttpError(data, status, headers, config);
                 });
 
               }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
 
               $rootScope.handleHttpError(data, status, headers, config);
             });
@@ -502,7 +502,7 @@ angular
       };
 
       $scope.logout = function() {
-        $rootScope.glassPane++;
+        gpService.increment();
         $http({
           url : root_security + 'logout/user/id/' + $scope.currentUser.userName,
           method : 'POST',
@@ -511,10 +511,10 @@ angular
           // save userToken from authentication
           }
         }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $location.path(data);
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $location.path('/');
           $rootScope.handleHttpError(data, status, headers, config);
         });
@@ -685,7 +685,7 @@ angular
           var sList = [ name, email, record.conceptId, record.conceptName, $scope.project.refSetId,
             feedbackMessage ];
 
-          $rootScope.glassPane++;
+          gpService.increment();
           $http({
             url : root_workflow + 'message',
             dataType : 'json',
@@ -696,12 +696,12 @@ angular
             }
 
           }).success(function(data) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $uibModalInstance.close();
           }).error(function(data, status, headers, config) {
             $uibModalInstance.close();
             $scope.recordError = 'Error sending feedback email.';
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
           });
 

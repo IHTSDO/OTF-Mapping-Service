@@ -279,7 +279,7 @@ angular.module('mapProjectApp').controller(
         + $scope.focusProject.id
         + (($scope.browserRequest == 'source' && $location.path().includes('terminology/browser')) ? '/source' : '/destination');
       
-      $rootScope.glassPane++;
+      gpService.increment();
       $http({
         url : url,
         method : 'GET',
@@ -287,11 +287,11 @@ angular.module('mapProjectApp').controller(
           'Content-Type' : 'application/json'
         }
       }).success(function(response) {
-        $rootScope.glassPane--;
+        gpService.decrement();
         
         $scope.terminologyTree = response.treePosition;
       }).error(function(data, status, headers, config) {
-        $rootScope.glassPane--;
+        gpService.decrement();
         $rootScope.handleHttpError(data, status, headers, config);
       });
     };
@@ -309,7 +309,7 @@ angular.module('mapProjectApp').controller(
       }
       $scope.searchStatus = 'Searching...';
       $scope.terminologyTree = [];
-      $rootScope.glassPane++;
+      gpService.increment();
       var pfs = {
         'startIndex' : ($scope.paging.tree.page - 1) * $scope.paging.tree.pageSize,
         'maxResults' : $scope.paging.tree.pageSize,
@@ -329,7 +329,7 @@ angular.module('mapProjectApp').controller(
           url , pfs).success(function(response) {
         
         $scope.searchStatus = '';
-        $rootScope.glassPane--;
+        gpService.decrement();
 
         $scope.terminologyTree = response.treePosition;
 
@@ -351,7 +351,7 @@ angular.module('mapProjectApp').controller(
         }
 
       }).error(function(data, status, headers, config) {
-        $rootScope.glassPane--;
+        gpService.decrement();
         $rootScope.handleHttpError(data, status, headers, config);
       });
     };
@@ -438,7 +438,7 @@ angular.module('mapProjectApp').controller(
         + terminologyId
         + (($scope.browserRequest == 'source' && $location.path().includes('terminology/browser')) ? '/source' : '');
       
-      $rootScope.glassPane++;
+      gpService.increment();
       $http(
         {
           url: url,
@@ -447,10 +447,10 @@ angular.module('mapProjectApp').controller(
             'Content-Type' : 'application/json'
           }
         }).success(function(response) {
-        $rootScope.glassPane--;
+        gpService.decrement();
         deferred.resolve(response);
       }).error(function(data, status, headers, config) {
-        $rootScope.glassPane--;
+        gpService.decrement();
         $rootScope.handleHttpError(data, status, headers, config);
       });
 
