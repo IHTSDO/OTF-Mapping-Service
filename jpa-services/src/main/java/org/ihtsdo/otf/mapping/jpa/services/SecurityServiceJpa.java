@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.persistence.NoResultException;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
@@ -173,13 +175,15 @@ public class SecurityServiceJpa extends RootServiceJpa implements
   public String getUsernameForToken(String authToken) throws Exception {
     // use guest user for null auth token
     if (authToken == null)
-      throw new LocalException(
-          "Attempt to access a service without an AuthToken, the user is likely not logged in.");
+      throw new WebApplicationException(
+          Response.status(Response.Status.UNAUTHORIZED)
+              .entity(
+                  "Attempt to access a service without an AuthToken, the user is likely not logged in.")
+              .build());
 
     // handle guest user unless
-    if (authToken.equals("guest")
-        && "false".equals(ConfigUtility.getConfigProperties().getProperty(
-            "security.guest.disabled"))) {
+    if (authToken.equals("guest") && "false".equals(ConfigUtility
+        .getConfigProperties().getProperty("security.guest.disabled"))) {
       return "guest";
     }
 
@@ -194,34 +198,42 @@ public class SecurityServiceJpa extends RootServiceJpa implements
       if (handler.timeoutUser(userName)) {
 
         if (tokenTimeoutMap.get(parsedToken) == null) {
-          throw new LocalException("No login timeout set for authToken.");
+          throw new WebApplicationException(
+              Response.status(Response.Status.UNAUTHORIZED)
+                  .entity("No login timeout set for authToken.").build());
         }
 
         if (tokenTimeoutMap.get(parsedToken).before(new Date())) {
-          throw new LocalException(
-              "AuthToken has expired. Please reload and log in again.");
+          throw new WebApplicationException(Response
+              .status(Response.Status.UNAUTHORIZED)
+              .entity("AuthToken has expired. Please reload and log in again.")
+              .build());
         }
-        tokenTimeoutMap.put(parsedToken, new Date(new Date().getTime()
-            + timeout));
+        tokenTimeoutMap.put(parsedToken,
+            new Date(new Date().getTime() + timeout));
       }
       return userName;
     } else {
-      throw new LocalException("AuthToken does not have a valid userName.");
+      throw new WebApplicationException(
+          Response.status(Response.Status.UNAUTHORIZED)
+              .entity("AuthToken does not have a valid userName.").build());
     }
   }
 
   /* see superclass */
   @Override
   public MapUserRole getApplicationRoleForToken(String authToken)
-    throws Exception {
+      throws Exception {
     if (authToken == null) {
-      throw new LocalException(
-          "Attempt to access a service without an AuthToken, the user is likely not logged in.");
+      throw new WebApplicationException(
+          Response.status(Response.Status.UNAUTHORIZED)
+              .entity(
+                  "Attempt to access a service without an AuthToken, the user is likely not logged in.")
+              .build());
     }
     // Handle "guest" user
-    if (authToken.equals("guest")
-        && "false".equals(ConfigUtility.getConfigProperties().getProperty(
-            "security.guest.disabled"))) {
+    if (authToken.equals("guest") && "false".equals(ConfigUtility
+        .getConfigProperties().getProperty("security.guest.disabled"))) {
       return MapUserRole.VIEWER;
     }
 
@@ -230,7 +242,9 @@ public class SecurityServiceJpa extends RootServiceJpa implements
 
     // check for null userName
     if (userName == null) {
-      throw new LocalException("Unable to find user for the AuthToken");
+      throw new WebApplicationException(
+          Response.status(Response.Status.UNAUTHORIZED)
+              .entity("Unable to find user for the AuthToken").build());
     }
     final MapUser user = getMapUser(userName.toLowerCase());
     if (user == null) {
@@ -247,8 +261,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
   public MapUserRole getMapProjectRoleForToken(String authToken, Long projectId)
     throws Exception {
     if (authToken == null) {
-      throw new LocalException(
-          "Attempt to access a service without an AuthToken, the user is likely not logged in.");
+      throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).entity("Attempt to access a service without an AuthToken, the user is likely not logged in.").build());
     }
     if (projectId == null) {
       throw new Exception("Unexpected null project id");
