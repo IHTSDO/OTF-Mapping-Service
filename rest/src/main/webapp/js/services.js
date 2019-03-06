@@ -409,7 +409,6 @@ mapProjectApp.service('gpService', [ '$rootScope', function($rootScope) {
   // Increments glass pane counter
   this.increment = function() {
     $rootScope.glassPane++;
-    console.debug("glass pane increment", $rootScope.glassPane);
   };
 
   // Decrements glass pane counter
@@ -417,9 +416,34 @@ mapProjectApp.service('gpService', [ '$rootScope', function($rootScope) {
     $rootScope.glassPane--;
     if ($rootScope.glassPane < 0) {
       console.log("The Glass Pane activity indicator may not be functioning correctly.");
+      $rootScope.glassPane = 0;
     }
-    console.debug("glass pane decrement", $rootScope.glassPane);
-    $rootScope.glassPane = 0;
   };
 
-} ]);
+}]);
+
+mapProjectApp.service('userService', [ '$rootScope', '$location', '$http', 'localStorageService',
+    'gpService', function($rootScope, $location, $http, localStorageService, gpService) {
+      console.debug('user service');
+      var user = localStorageService.get('currentUser');
+      this.logout = function() {
+        $http({
+          url : root_security + 'logout/user/id/' + user.userName,
+          method : 'POST',
+          headers : {
+            'Content-Type' : 'text/plain'
+          // save userToken from authentication
+          }
+        }).success(function(data) {
+          gpService.decrement();
+          console.debug("logout out", data);
+          localStorageService.clearAll();
+          //$window.location.href = data;
+          $location.path(data);
+        }).error(function(data, status, headers, config) {
+          gpService.decrement();
+          $location.path('/');
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
+      };
+    } ]);
