@@ -1841,11 +1841,16 @@ mapProjectAppDashboards.controller('terminologyBrowserDashboardCtrl', function($
   $scope.currentRole = localStorageService.get('currentRole');
   $scope.preferences = localStorageService.get('preferences');
   $scope.focusProject = localStorageService.get('focusProject');
-  //$scope.browserRequest = localStorageService.get('browserRequest');
+  $scope.browserRequest = localStorageService.get('browserRequest');
 
   $scope.page = 'terminologyBrowserDashboard';
   
-  $rootScope.title = $scope.focusProject.destinationTerminology + ' Terminology Browser';
+  if ($scope.browserRequest === 'source' && $location.path().includes('terminology/browser')) {
+    $rootScope.title = $scope.focusProject.sourceTerminology;
+  } else {
+    $rootScope.title = $scope.focusProject.destinationTerminology;
+  }
+  $rootScope.title = $rootScope.title +  ' Terminology Browser';
   
   $scope.$on('localStorageModule.notification.setMapProjects', function(event, parameters) {
     $scope.mapProjects = parameters.mapProjects;
