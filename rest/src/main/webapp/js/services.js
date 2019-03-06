@@ -422,8 +422,8 @@ mapProjectApp.service('gpService', [ '$rootScope', function($rootScope) {
 
 }]);
 
-mapProjectApp.service('userService', [ '$rootScope', '$location', '$http', 'localStorageService',
-    'gpService', function($rootScope, $location, $http, localStorageService, gpService) {
+mapProjectApp.service('userService', [ '$rootScope', '$window', '$location', '$http', 'localStorageService',
+    'gpService', function($rootScope, $window, $location, $http, localStorageService, gpService) {
       console.debug('user service');
       var user = localStorageService.get('currentUser');
       this.logout = function() {
