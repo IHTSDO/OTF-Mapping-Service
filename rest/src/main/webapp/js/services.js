@@ -438,8 +438,7 @@ mapProjectApp.service('userService', [ '$rootScope', '$location', '$http', 'loca
           gpService.decrement();
           console.debug("logout out", data);
           localStorageService.clearAll();
-          //$window.location.href = data;
-          $location.path(data);
+          $window.location.href = data;
         }).error(function(data, status, headers, config) {
           gpService.decrement();
           $location.path('/');
