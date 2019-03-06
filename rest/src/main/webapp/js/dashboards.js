@@ -1817,7 +1817,7 @@ mapProjectAppDashboards.controller('IndexViewerDashboardCtrl', function($rootSco
 });
 
 mapProjectAppDashboards.controller('terminologyBrowserDashboardCtrl', function($scope, $rootScope, $http,
-  $routeParams, $location, $window, localStorageService, appConfig, userService) {
+  $routeParams, $location, $window, localStorageService, appConfig, userService, utilService) {
 
 //Attach an onbeforeunload function
   window.onbeforeunload = null;
@@ -1875,7 +1875,7 @@ mapProjectAppDashboards.controller('terminologyBrowserDashboardCtrl', function($
       });
     }
   });
-
+  
   // watch for project change
   $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
     utilService.initializeTerminologyNotes(parameters.focusProject.id);
