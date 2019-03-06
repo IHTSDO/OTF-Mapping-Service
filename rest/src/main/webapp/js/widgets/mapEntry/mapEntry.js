@@ -625,6 +625,9 @@ angular
                 case 'years':
                   upperValue = parseFloat(ageRange.upperValue, 10) * 365;
                   break;
+                case 'year':
+                  upperValue = parseFloat(ageRange.upperValue, 10) * 365;
+                  break;
                 default:
                   $scope.ruleError += 'Unexpected error determining upper units\n';
                 }
