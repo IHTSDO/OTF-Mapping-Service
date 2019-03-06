@@ -477,10 +477,11 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       // ACTION: add the advice
       //
       final String adviceP09 = "CONSIDER STAGE OF GLAUCOMA SPECIFICATION";
-      if (mapEntry.getTargetId().startsWith("H40.20")
+      if ((mapEntry.getTargetId().startsWith("H40.20")
           || mapEntry.getTargetId().startsWith("H40.22")
-          || mapEntry.getTargetId().matches("(^H40.1).*")
-          || mapEntry.getTargetId().matches("(^H40.[3-6]).*")) {
+          || mapEntry.getTargetId().matches("(^H40.1[0-4]).*")
+          || mapEntry.getTargetId().matches("(^H40.[3-6]).*")) 
+          && mapEntry.getTargetName().contains("stage unspecified")) {
         if (!TerminologyUtility.hasAdvice(mapEntry, adviceP09)) {
           advices.add(TerminologyUtility.getAdvice(mapProject, adviceP09));
         }
@@ -511,7 +512,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       // ACTION: add the advice
       //
       final String adviceP11 = "CONSIDER TIME OF COMA SCALE SPECIFICATION";
-      if (mapEntry.getTargetId().startsWith("R40.2")) {
+      if (mapEntry.getTargetId().startsWith("R40.2") && !mapEntry.getTargetId().equals("R40.20")) {
         if (!TerminologyUtility.hasAdvice(mapEntry, adviceP11)) {
           advices.add(TerminologyUtility.getAdvice(mapProject, adviceP11));
         }
