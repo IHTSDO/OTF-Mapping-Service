@@ -18,7 +18,7 @@ angular
   .controller(
     'compareRecordsCtrl',
     function($scope, $rootScope, $http, $routeParams, $location, $timeout,
-      localStorageService, $sce, $window) {
+      localStorageService, $sce, $window, gpService) {
 
       // ///////////////////////////////////
       // Map Record Controller Functions //
