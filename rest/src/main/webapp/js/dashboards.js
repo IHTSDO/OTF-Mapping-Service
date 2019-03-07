@@ -4,7 +4,7 @@ var mapProjectAppDashboards = angular.module('mapProjectAppDashboards', [ 'adf',
   'LocalStorageModule' ]);
 
 mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($scope, $routeParams,
-  $rootScope, $location, $window, $http, localStorageService, utilService, appConfig, gpService, userService) {
+  $rootScope, $location, $window, $http, localStorageService, utilService, appConfig, userService) {
 
   // Attach an onbeforeunload function
   window.onbeforeunload = function() {
@@ -505,7 +505,7 @@ mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', functio
 
 // Main dashboard controller?
 mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope, $http, $location,
-  $window, localStorageService, utilService, appConfig, userService) {
+  $window, localStorageService, utilService, appConfig, userService, gpService) {
 
   // Attach an onbeforeunload function
   window.onbeforeunload = null;
