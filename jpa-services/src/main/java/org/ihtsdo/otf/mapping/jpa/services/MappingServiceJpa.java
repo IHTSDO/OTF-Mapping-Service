@@ -3414,21 +3414,24 @@ public class MappingServiceJpa extends RootServiceJpa
   
   /* see superclass */
   public Map<String, String> getTargetCodeForReadyForPublication(Long mapProjectId) throws Exception {
-       
+    
     final String sql = ""
         + "  SELECT DISTINCT mea.targetId, mu.team "
-        + "  FROM map_entries_AUD mea "
-        + "  JOIN (SELECT targetId, MIN(REV) AS min_rev "
-        + "     FROM map_entries_AUD a "
-        + "         JOIN map_records b on a.mapRecord_id = b.id and b.workflowStatus IN ('READY_FOR_PUBLICATION','REVISION') "
-        + "    WHERE targetId IS NOT NULL "
-        + "      AND targetId != '' "
-        + "    GROUP BY targetId) fme ON mea.targetId = fme.targetId AND mea.REV = fme.min_rev "
-        + "  JOIN map_records mr ON mea.mapRecord_id = mr.id "
-        + "  JOIN map_users   mu ON mr.owner_id = mu.id "
-        + " WHERE mr.workflowStatus IN ('READY_FOR_PUBLICATION','REVISION') "
-        + "   AND mr.mapProjectId = :mapProjectId "
-        + "ORDER BY mea.targetId; ";
+        + "    FROM map_entries_AUD mea "
+        + "    JOIN (SELECT targetId, MIN(REV) AS min_rev "
+        + "         FROM map_entries_AUD mea2 "
+        + "        WHERE EXISTS ("
+        + "             SELECT me.targetId "
+        + "               FROM map_records mr, map_entries me "
+        + "              WHERE mea2.targetId = me.targetId "
+        + "                AND me.targetID IS NOT NULL "
+        + "                AND targetId != '' "
+        + "                AND me.mapRecord_id = mr.id "
+        + "                AND mr.workflowStatus in ('READY_FOR_PUBLICATION','REVISION')) "
+        + "           GROUP BY targetId) fme ON mea.targetId = fme.targetId AND mea.REV = fme.min_rev "
+        + "    JOIN map_records_AUD mra ON mea.mapRecord_id = mra.id "
+        + "    JOIN map_users   mu ON mra.owner_id = mu.id AND mra.mapProjectId = :mapProjectId "
+        + " ORDER BY mea.targetId; ";
     
     Map<String, String> list = new HashMap<>();
     
