@@ -3416,22 +3416,53 @@ public class MappingServiceJpa extends RootServiceJpa
   public Map<String, String> getTargetCodeForReadyForPublication(Long mapProjectId) throws Exception {
     
     final String sql = ""
-        + "  SELECT DISTINCT mea.targetId, mu.team "
-        + "    FROM map_entries_AUD mea "
-        + "    JOIN (SELECT targetId, MIN(REV) AS min_rev "
-        + "         FROM map_entries_AUD mea2 "
-        + "        WHERE EXISTS ("
-        + "             SELECT me.targetId "
-        + "               FROM map_records mr, map_entries me "
-        + "              WHERE mea2.targetId = me.targetId "
-        + "                AND me.targetID IS NOT NULL "
-        + "                AND targetId != '' "
-        + "                AND me.mapRecord_id = mr.id "
-        + "                AND mr.workflowStatus in ('READY_FOR_PUBLICATION','REVISION')) "
-        + "           GROUP BY targetId) fme ON mea.targetId = fme.targetId AND mea.REV = fme.min_rev "
-        + "    JOIN map_records_AUD mra ON mea.mapRecord_id = mra.id "
-        + "    JOIN map_users   mu ON mra.owner_id = mu.id AND mra.mapProjectId = :mapProjectId "
-        + " ORDER BY mea.targetId; ";
+        + " SELECT  "
+        + "     b.targetId, mu.team "
+        + " FROM "
+                /*Find all historical map records for each MedDRA sourceId that maps to a current SNOMED targetId*/ 
+        + "     (SELECT  "
+        + "         a.targetId, "
+        + "             a.conceptId, "
+        + "             mra.workflowStatus, "
+        + "             mra.lastModifiedBy_id, "
+        + "             mra.REV "
+        + "     FROM "
+        + "         map_records_AUD mra "
+        + "     JOIN  "
+                /*For each SNOMEDCT target Id, identify all of the MedDRA sourceIds that map to it*/ 
+        + "     (SELECT DISTINCT "
+        + "         me2.targetId, mr.conceptId "
+        + "     FROM "
+        + "         map_records mr, map_entries me2 "
+        + "     WHERE "
+        + "         mr.mapProjectId = :mapProjectId "
+        + "         AND mr.id = me2.mapRecord_Id "
+        + "             AND EXISTS "
+                        /*Get target Ids for all CURRENT finished map records*/ 
+        + "             (SELECT  "
+        + "                 me.targetId "
+        + "             FROM "
+        + "                 map_records mr, map_entries me "
+        + "             WHERE "
+        + "                 mr.mapProjectId = :mapProjectId "
+        + "                     AND me2.targetId = me.targetId "
+        + "                     AND me.targetID IS NOT NULL "
+        + "                     AND targetId != '' "
+        + "                     AND me.mapRecord_id = mr.id "
+        + "                     AND mr.workflowStatus IN ('READY_FOR_PUBLICATION' , 'REVISION') "
+        + "              ) "
+        + "      ) a ON a.conceptId = mra.conceptId "
+                 /* Only look at the historical map record entries for when they were finished */ 
+        + "     WHERE "
+        + "         mra.mapProjectId = :mapProjectId "
+        + "         AND mra.workflowStatus IN ('READY_FOR_PUBLICATION') "
+                /* Order by REV, so the earliest 'READY_FOR_PUBLICATION' historical map record is on top*/ 
+        + "     ORDER BY mra.REV) b "
+        + "         JOIN "
+                /*Get the user that finished each map record*/ 
+        + "     map_users mu ON b.lastModifiedBy_id = mu.id "
+            /* Group by targetId to collapse all of the historial map records, leaving only the first time it was finished */ 
+        + " GROUP BY b.targetId; ";
     
     Map<String, String> list = new HashMap<>();
     
