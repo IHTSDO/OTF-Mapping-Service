@@ -19,6 +19,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import javax.persistence.Entity;
 import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
@@ -284,7 +285,13 @@ public class WorkflowServiceJpa extends MappingServiceJpa
         .setParameter("mapProjectId", mapProject.getId())
         .setParameter("terminologyId", terminologyId);
 
-    return (TrackingRecord) query.getSingleResult();
+    List results = query.getResultList();
+    Object foundObject = null;
+    if(!results.isEmpty()){
+        foundObject = results.get(0);
+    }
+    
+    return (TrackingRecord) foundObject;
   }
 
   /* see superclass */
