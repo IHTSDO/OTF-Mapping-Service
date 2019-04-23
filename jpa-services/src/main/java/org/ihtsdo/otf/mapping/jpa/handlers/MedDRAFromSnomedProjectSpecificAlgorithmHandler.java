@@ -6,21 +6,50 @@ import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
+import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
+import org.ihtsdo.otf.mapping.services.ContentService;
 
 /**
  * Implementation for the SNOMED-to-MedDRA mapping project. 
  */
 public class MedDRAFromSnomedProjectSpecificAlgorithmHandler extends
-
-DefaultProjectSpecificAlgorithmHandler {
+  DefaultProjectSpecificAlgorithmHandler {
 
   /* see superclass */
   @Override
+  public ValidationResult validateTargetCodes(MapRecord mapRecord)
+      throws Exception {
+
+    // A relation must be selected
+    // Maps cannot have multiple groups
+    // Maps cannot have multiple entries
+    // If either condition is not met, the changes will not be saved
+
+    final ValidationResult validationResult = new ValidationResultJpa();
+
+    try (final ContentService contentService = new ContentServiceJpa();) {
+
+      if (mapRecord.getMapEntries().size() > 1) {
+        validationResult.addError("A map record may only have one entry.");
+      }
+
+      for (final MapEntry mapEntry : mapRecord.getMapEntries()) {
+        if (mapEntry.getMapRelation() == null) {
+          validationResult
+              .addError("A relation indicating the reason must be selected.");
+        }
+      }
+    }
+    return validationResult;
+  }
+  
+  /* see superclass */
+  @Override
   public boolean isTargetCodeValid(String terminologyId) throws Exception {
-	  return true;
+    return true;
   }
 
   /* see superclass */
