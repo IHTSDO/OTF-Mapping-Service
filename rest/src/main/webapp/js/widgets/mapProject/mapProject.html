@@ -13,9 +13,7 @@
 		class="btn btn-xs btn-primary" ng-click="openConceptBrowser()">SNOMEDCT
 		Browser</button>
 	<button class="btn btn-xs btn-primary"
-		ng-click="openTerminologyBrowser()">{{(project.sourceTerminology
-		=== 'SNOMEDCT' || project.sourceTerminology === 'SNOMEDCT_US') ?
-		project.destinationTerminology : project.sourceTerminology}} Browser</button>
+		ng-click="openTerminologyBrowser()">{{project.terminologyButtonText}} Browser</button>
 	<button class="btn btn-xs btn-primary"
 		ng-show="indexViewerExists == true" ng-click="openIndexViewer()">Index
 		Viewer</button>
