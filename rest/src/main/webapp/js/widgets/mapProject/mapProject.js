@@ -28,13 +28,7 @@ angular
             : (appConfig['deploy.terminology.browser.label'] === '' ) 
                   ? $scope.project.destinationTerminology
                   : appConfig['deploy.terminology.browser.label'];
-            
-      console.log("$scope.project.sourceTerminology", $scope.project.sourceTerminology);
-      console.log("$scope.project.destinationTerminology", $scope.project.destinationTerminology);      
-      console.log("$scope.project.terminologyButtonText", $scope.project.terminologyButtonText);
-      console.log("appConfig['deploy.terminology.browser.label']",appConfig['deploy.terminology.browser.label'] === '');
       
-
       // flag indicating if index viewer is available for dest terminology
       $scope.indexViewerExists = false;
       
