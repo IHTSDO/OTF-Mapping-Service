@@ -19,6 +19,21 @@ angular
       $scope.currentUser = localStorageService.get('currentUser');
       $scope.currentRole = localStorageService.get('currentRole');
       $scope.userToken = localStorageService.get('userToken');
+      
+      $scope.project.terminologyButtonText =
+        ($scope.project.sourceTerminology !== 'SNOMEDCT' && $scope.project.sourceTerminology !== 'SNOMEDCT_US')
+            ? (appConfig['deploy.terminology.browser.label'] === '' )
+                  ? $scope.project.sourceTerminology
+                  : appConfig['deploy.terminology.browser.label']
+            : (appConfig['deploy.terminology.browser.label'] === '' ) 
+                  ? $scope.project.destinationTerminology
+                  : appConfig['deploy.terminology.browser.label'];
+            
+      console.log("$scope.project.sourceTerminology", $scope.project.sourceTerminology);
+      console.log("$scope.project.destinationTerminology", $scope.project.destinationTerminology);      
+      console.log("$scope.project.terminologyButtonText", $scope.project.terminologyButtonText);
+      console.log("appConfig['deploy.terminology.browser.label']",appConfig['deploy.terminology.browser.label'] === '');
+      
 
       // flag indicating if index viewer is available for dest terminology
       $scope.indexViewerExists = false;
@@ -247,20 +262,24 @@ angular
         }
         myWindow.focus();
       };
-    //TODO Opening a new window for Terminology browser  
-      $scope.openTerminologyBrowser = function(){
-        var currentUrl = window.location.href;
-        var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
-        var newUrl = baseUrl + '/terminology/browser';
-        
-        if ($scope.project.sourceTerminology === 'SNOMEDCT' || $scope.project.sourceTerminology === 'SNOMEDCT_US') {
-          $scope.browserRequest = 'destination';
-        } else {
-          $scope.browserRequest = 'source';
-        }
-        localStorageService.add('browserRequest', $scope.browserRequest);
 
-        var myWindow = window.open(newUrl, 'terminologyBrowserWindow');
+      $scope.openTerminologyBrowser = function(){
+        var browserUrl = appConfig['deploy.terminology.browser.url'];
+        if (browserUrl == null || browserUrl === "")
+        {
+          var currentUrl = window.location.href;
+          var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
+          var browserUrl = baseUrl + '/terminology/browser';
+          
+          if ($scope.project.sourceTerminology === 'SNOMEDCT' || $scope.project.sourceTerminology === 'SNOMEDCT_US') {
+            $scope.browserRequest = 'destination';
+          } else {
+            $scope.browserRequest = 'source';
+          }
+          localStorageService.add('browserRequest', $scope.browserRequest);
+        }
+        
+        var myWindow = window.open(browserUrl, 'terminologyBrowserWindow');
         myWindow.focus();
       }
 

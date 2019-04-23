@@ -54,7 +54,7 @@ angular
         $scope.mapLeads = $scope.project.mapLead;
         organizeUsers($scope.mapLeads);
         $scope.enableAuthoringHistoryButton = (appConfig["deploy.show.authoring.history.button"] === 'true') ? true : false;
-
+     
         $scope.returnRecipients = new Array();
         $scope.multiSelectSettings = {
           displayProp : 'name',
@@ -1697,24 +1697,24 @@ angular
             }
         };
         
-        $scope.openConceptBrowser = function() {
-          var myWindow = window.open($scope.getBrowserUrl(), 'browserWindow');
-          myWindow.focus();
-        };
-
-        $scope.openTerminologyBrowser = function() {
-          var currentUrl = window.location.href;
-          var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
-          var newUrl = baseUrl + '/terminology/browser';
-          
-          if ($scope.project.sourceTerminology === 'SNOMEDCT' || $scope.project.sourceTerminology === 'SNOMEDCT_US') {
-            $scope.browserRequest = 'destination';
-          } else {
-            $scope.browserRequest = 'source';
+        $scope.openTerminologyBrowser = function(){
+          var browserUrl = appConfig['deploy.terminology.browser.url'];
+          if (browserUrl == null || browserUrl === "")
+          {
+            var currentUrl = window.location.href;
+            var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
+            var browserUrl = baseUrl + '/terminology/browser';
+            
+            if ($scope.project.sourceTerminology === 'SNOMEDCT' 
+                || $scope.project.sourceTerminology === 'SNOMEDCT_US') {
+              $scope.browserRequest = 'destination';
+            } else {
+              $scope.browserRequest = 'source';
+            }
+            localStorageService.add('browserRequest', $scope.browserRequest);
           }
-          localStorageService.add('browserRequest', $scope.browserRequest);
           
-          var myWindow = window.open(newUrl, 'terminologyBrowserWindow');
+          var myWindow = window.open(browserUrl, 'terminologyBrowserWindow');
           myWindow.focus();
         }
 
