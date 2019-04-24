@@ -54,14 +54,14 @@ angular
         $scope.mapLeads = $scope.project.mapLead;
         organizeUsers($scope.mapLeads);
         $scope.enableAuthoringHistoryButton = (appConfig["deploy.show.authoring.history.button"] === 'true') ? true : false;
-     
+        
         $scope.returnRecipients = new Array();
         $scope.multiSelectSettings = {
           displayProp : 'name',
           scrollableHeight : '150',
           scrollable : true,
           showCheckAll : false,
-          showUncheckAll : false
+          showUncheckAll : true
         };
         $scope.multiSelectCustomTexts = {
           buttonDefaultText : 'Select Leads'
@@ -1192,6 +1192,8 @@ angular
         };
 
         $scope.sendFeedback = function(record, feedbackMessage, recipientList) {
+          
+          console.debug("sendFeedback recipientList is ", recipientList);
 
           if (feedbackMessage == null || feedbackMessage == undefined || feedbackMessage === '') {
             window.alert('The feedback field cannot be blank. ');
@@ -2087,5 +2089,31 @@ angular
           $scope.retrieveAuthoringChanges($scope.concept);
         }
 
+        // feedback groups functionality
+        var feedbackGroupConfig = appConfig["deploy.feedback.group.names"]; 
+        
+        $scope.feedbackGroups = (feedbackGroupConfig != null || typeof feedbackGroupConfig !== 'undefined')
+          ? JSON.parse(feedbackGroupConfig)
+              : null;
+        
+        $scope.setGroupRecipients = function(groupId) {
+          var recipients = (appConfig["deploy.feedback.group.users." + groupId]).split(',');
+          $scope.returnRecipients = [];
+          recipients.forEach(function(r){
+            var fbr = findUser(r, $scope.project.mapLead);
+            if (fbr != null && typeof fbr !== 'undefined' && fbr.id != null) {
+              $scope.returnRecipients.push({ id: fbr.id});
+            }
+          });
+          
+        }
+        
+        function findUser(userName, array) {
+          for (var i=0; i < array.length; i++)
+            if (array[i].userName === userName)
+                return array[i];
+        }
+        
+        
         //end
       } ]);
