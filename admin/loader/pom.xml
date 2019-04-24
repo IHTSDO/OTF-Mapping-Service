@@ -54,6 +54,9 @@
     <!--  required for  -->
     <source.map.project.name></source.map.project.name>
     <target.map.project.name></target.map.project.name>
+    
+    <report.map.project.ids></report.map.project.ids>
+    
   </properties>
 
   <profiles>
@@ -628,6 +631,30 @@
                 <configuration>
                 	<sourceMapProjectName>${source.map.project.name}</sourceMapProjectName>
                 	<targetMapProjectName>${target.map.project.name}</targetMapProjectName>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    
+    <profile>
+      <id>MeddraSqlReport</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>meddra-sql-report</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>run-meddra-sql-report</goal>
+                </goals>
+                <configuration>
+                  <projectIds>${report.map.project.ids}</projectIds>
                 </configuration>
               </execution>
             </executions>
