@@ -207,12 +207,14 @@
 		  Editing</button>
 	  </div>
     </div>
-    </uib-accordion-group> <uib-accordion-group is-open="isGroupFeedbackOpen"> <uib-accordion-heading>
-    Group Feedback<i class="pull-right glyphicon"
-      ng-class="{'glyphicon-chevron-down': isGroupFeedbackOpen, 'glyphicon-chevron-right': !isGroupFeedbackOpen}"></i>
-    </uib-accordion-heading>
+    </uib-accordion-group>
 
-    <div ng-show="leadConversation.feedback.length > 0">
+    <uib-accordion-group is-open="isGroupFeedbackOpen">
+      <uib-accordion-heading>Group Feedback<i class="pull-right glyphicon"
+        ng-class="{'glyphicon-chevron-down': isGroupFeedbackOpen, 'glyphicon-chevron-right': !isGroupFeedbackOpen}"></i>
+      </uib-accordion-heading>
+
+      <div ng-show="leadConversation.feedback.length > 0">
       <div ng-repeat="feedback in leadConversation.feedback">
         <div class="alert alert-warning" disabled>
           [By {{feedback.sender.name}} to
@@ -259,7 +261,34 @@
       ng-change="selectDiscrepancyReview(indicateDiscrepancyReview)">
     Mark for Discrepancy Review <!--  <select multiple size="3"  ng-model="returnRecipients"
                    ng-options="mapUser as mapUser.name for mapUser in allUsers track by mapUser.name">
-                </select> --> </uib-accordion-group> <uib-accordion-group ng-show="record2 != null"
+                </select> -->
+    </uib-accordion-group>
+
+    <!-- Feedback History - start -->
+    <uib-accordion-group is-open="isFeedbackHistoryOpen">
+      <uib-accordion-heading>
+        Historical Feedback<i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': isFeedbackHistoryOpen, 'glyphicon-chevron-right': !isFeedbackHistoryOpen}"></i>
+      </uib-accordion-heading>
+      
+      <div ng-show="historicalConversation.feedback.length > 0">
+        <div ng-repeat="feedback in historicalConversation.feedback">
+          <div class="alert alert-warning" disabled>
+            [By {{feedback.sender.name}} to
+            <span ng-repeat="recipient in feedback.recipients">
+              {{recipient.name}}
+              <span ng-if="$last == false">,</span>
+            </span>
+            on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
+            <div style="padding-left: 20px;" ng-bind-html="to_trusted(feedback.message)"></div>
+          </div>
+        </div>
+        <hr>
+      </div>
+    </uib-accordion-group>
+    <!-- Feedback History - end -->
+
+
+    <uib-accordion-group ng-show="record2 != null"
       is-open="isReportOpen"> <uib-accordion-heading>
     Conflict Report <i class="pull-right glyphicon"
       ng-class="{'glyphicon-chevron-down': isReportOpen, 'glyphicon-chevron-right': !isReportOpen}"></i>

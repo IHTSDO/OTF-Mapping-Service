@@ -47,6 +47,7 @@ angular
 
       $scope.leadRecord = null;
       $scope.leadConversation = null;
+      $scope.historicalConversation = null;
       $scope.newLeadFeedbackMessages = new Array();
 
       // initialize accordion variables
@@ -56,6 +57,7 @@ angular
       $scope.isNotesOpen = true;
       $scope.isReportOpen = true;
       $scope.isGroupFeedbackOpen = false;
+      $scope.isFeedbackHistoryOpen = false;
       $scope.returnRecipients = new Array();
       $scope.allUsers = new Array();
       $scope.multiSelectSettings = {
@@ -70,11 +72,11 @@ angular
       };
       
       // start note edit mode in off mode
-            $scope.feedbackEditMode = false;
-            $scope.feedbackEditId = null;
-            $scope.content = {
-             text : ''
-            };
+      $scope.feedbackEditMode = false;
+      $scope.feedbackEditId = null;
+      $scope.content = {
+          text : ''
+      };
 
       $scope.errorMessages = $scope.project.errorMessages;
       $scope.errorMessages.sort();
@@ -705,7 +707,7 @@ angular
         
         // broadcast to the map record widget
         console.debug(
-          'broadcastcompareRecordsWidget.notification.selectRecord = ',
+          'broadcast compareRecordsWidget.notification.selectRecord = ',
           $scope.leadRecord);
         $rootScope.$broadcast('compareRecordsWidget.notification.selectRecord',
           {
@@ -1043,7 +1045,7 @@ angular
             $scope.conversation1 = data;
           });
           }
-          if(recordType == 'record2'){
+          if(recordType === 'record2'){
           $http({
             url : root_workflow + 'conversation/id/'+ $scope.record2.id,
             dataType : 'json',
@@ -1055,7 +1057,7 @@ angular
             $scope.conversation2 = data;
           });
           }
-          if(recordType == 'leadRecord'){
+          if(recordType === 'leadRecord'){
             $http({
               url : root_workflow + 'conversation/id/'+ $scope.leadRecord.id,
               dataType : 'json',
@@ -1072,8 +1074,102 @@ angular
         $rootScope.handleHttpError(data, status, headers, config);
       });
     }
+           
+      // function to retrieve the feedback conversation based on record id
+      $scope.getFeedbackConversation = function(record) {
+        $scope.feedbackRecord = record;
+        gpService.increment();
+        $http({
+          url : root_workflow + 'conversation/id/' + $scope.feedbackRecord.id,
+          dataType : 'json',
+          method : 'GET',
+          headers : {
+            'Content-Type' : 'application/json'
+          }
+        }).success(
+          function(data) {
+            $scope.historicalConversation = data;
+            //$scope.markFeedbackViewed($scope.conversation, $scope.currentUser);
+
+            // load record to be displayed; try to find active
+            // record first
+            if (data !== '') {
+              $http(
+                {
+                  url : root_mapping + 'record/id/'
+                    + $scope.historicalConversation.mapRecordId + '/historical',
+                  dataType : 'json',
+                  method : 'GET',
+                  authorization : $scope.currentUserToken,
+                  headers : {
+                    'Content-Type' : 'application/json'
+                  }
+                }).success(
+                function(data) {
+                  gpService.decrement();
+                  var record = data;
+  
+                  // get the conflict records if they exist
+                  var originIds = record.originIds;
+                  if (originIds != null && originIds.length > 0) {
+  
+                    gpService.increment();
+                    $http(
+                      {
+                        url : root_mapping + 'record/id/' + originIds[0]
+                          + '/historical',
+                        dataType : 'json',
+                        method : 'GET',
+                        authorization : $scope.currentUserToken,
+                        headers : {
+                          'Content-Type' : 'application/json'
+                        }
+                      }).success(
+                      function(data) {
+                        gpService.decrement();
+                        if (originIds != null && originIds.length === 2) {
+                          gpService.increment();
+                          $http(
+                            {
+                              url : root_mapping + 'record/id/' + originIds[1]
+                                + '/historical',
+                              dataType : 'json',
+                              method : 'GET',
+                              authorization : $scope.currentUserToken,
+                              headers : {
+                                'Content-Type' : 'application/json'
+                              }
+                            }).success(function(data) {
+                            gpService.decrement();
+                            setDisplayRecords();
+                          }).error(
+                            function(data, status, headers, config) {
+                              gpService.decrement();
+                              $rootScope.handleHttpError(data, status, headers,
+                                config);
+                            });
+                        }
+                      }).error(function(data, status, headers, config) {
+                      gpService.decrement();
+                      $rootScope.handleHttpError(data, status, headers, config);
+                    });
+                  }
+                }).error(function(data, status, headers, config) {
+                gpService.decrement();
+                $rootScope.handleHttpError(data, status, headers, config);
+              });
+            } else {
+              gpService.decrement();
+            }
+          }).error(function(data, status, headers, config) {
+          gpService.decrement();
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
+      };
       
-      
+      $scope.$on('compareRecordsWidget.notification.selectRecord', function(event, parameters) {
+        $scope.getFeedbackConversation(parameters.record);
+      });      
 
       function recordToText(record) {
 
