@@ -34,9 +34,9 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
  * 
  * See admin/loader/pom.xml for a sample execution.
  * 
- * @goal run-meddra-sql-report
+ * @goal run-meddra2-sql-report
  */
-public class MeddraSqlReportMojo extends AbstractMojo {
+public class Meddra2SqlReportMojo extends AbstractMojo {
 
   /**
    * 
@@ -79,26 +79,25 @@ public class MeddraSqlReportMojo extends AbstractMojo {
   private void runReport(int mapProjectId) throws Exception {
     try (ContentService service = new ContentServiceJpa()
         {{
-          MeddraSqlReportMojo.this.manager = manager;
+          Meddra2SqlReportMojo.this.manager = manager;
         }}
         ) {
 
       // Run the SQL report
       final javax.persistence.Query query = manager.createNativeQuery(
-        "SELECT DISTINCT "
-          + "  mr.conceptId as referencedComponentId "
-          + ", mr.conceptName as referencedComponentName "
-          + ", mapGroup as mapGroup "
-          + ", mapPriority as mapPriority "
-          + ", me.targetId as mapTarget "
-          + ", me.targetName as mapTargetName "
-          //+ "-- , mapRelation " ??
-          + "           FROM map_records mr "
-          + "    LEFT JOIN map_entries me ON mr.id = me.mapRecord_id "
-          + "      LEFT JOIN map_records_labels_AUD mrl ON mr.id = mrl.id "
-          + "      WHERE mr.mapProjectId = :MAP_PROJECT_ID "
-          + "      AND mr.workflowStatus = 'READY_FOR_PUBLICATION' "
-          + "            AND (mrl.labels IS NOT NULL);");
+          " SELECT DISTINCT mr.conceptName AS SourceConcept, mr.conceptId AS SourceId, "
+        + "        me.targetName AS TargetConcept, me.targetId AS TargetId, IFNULL(tp.ancestorPath,'') AS Hierarchy "
+        + "   FROM map_records mr "
+        + "   JOIN map_entries me ON mr.id = me.mapRecord_id "
+        + "   LEFT OUTER JOIN tree_positions tp ON me.targetId = tp.terminologyId "
+        + "  WHERE mr.mapProjectId = :MAP_PROJECT_ID "
+        + "    AND lower(me.targetName) != 'no target' "
+        + "    AND (lower(me.targetName) NOT LIKE '%(event)' "
+        + "    AND  lower(me.targetName) NOT LIKE '%(procedure)' "
+        + "    AND  lower(me.targetName) NOT LIKE '%(situation)' "
+        + "    AND  lower(me.targetName) NOT LIKE '%(finding)' "
+        + "    AND  lower(me.targetName) NOT LIKE '%(disorder)') "
+        + "  ORDER BY mr.conceptName, mr.conceptId) ");
 
       query.setParameter("MAP_PROJECT_ID", mapProjectId);
       
@@ -108,7 +107,7 @@ public class MeddraSqlReportMojo extends AbstractMojo {
       List<String> results = new ArrayList<>();
       // Add header row
       results.add(
-          "Referenced Component Id\tReferenced Component Name\tMap Group\tMap Priority\tMap Target\tMap Target Name\tMap Relation");
+          "Source Concept\tSource Id\tTarget Concept\tTarget Id\tSNOMED Hierarchy");
 
       // Add result rows
       for (Object[] array : objects) {
