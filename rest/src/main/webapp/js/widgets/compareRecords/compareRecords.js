@@ -58,6 +58,7 @@ angular
       $scope.isReportOpen = true;
       $scope.isGroupFeedbackOpen = false;
       $scope.isFeedbackHistoryOpen = false;
+      $scope.showFeedbackHistory = $window.location.hash.includes('review');
       $scope.returnRecipients = new Array();
       $scope.allUsers = new Array();
       $scope.multiSelectSettings = {
@@ -77,7 +78,7 @@ angular
       $scope.content = {
           text : ''
       };
-
+      
       $scope.errorMessages = $scope.project.errorMessages;
       $scope.errorMessages.sort();
       $scope.errorMessages.unshift('None');
