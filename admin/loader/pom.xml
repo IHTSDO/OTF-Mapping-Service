@@ -662,6 +662,30 @@
         </plugins>
       </build>
     </profile>
+    
+    <profile>
+      <id>Meddra2SqlReport</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>meddra2-sql-report</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>run-meddra2-sql-report</goal>
+                </goals>
+                <configuration>
+                  <projectIds>${report.map.project.ids}</projectIds>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
   </profiles>
 </project>
