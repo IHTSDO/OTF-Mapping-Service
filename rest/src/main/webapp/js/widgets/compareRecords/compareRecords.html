@@ -270,16 +270,18 @@
         Historical Feedback<i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': isFeedbackHistoryOpen, 'glyphicon-chevron-right': !isFeedbackHistoryOpen}"></i>
       </uib-accordion-heading>
       
-      <div ng-show="historicalConversation.feedback.length > 0">
-        <div ng-repeat="feedback in historicalConversation.feedback">
-          <div class="alert alert-warning" disabled>
-            [By {{feedback.sender.name}} to
-            <span ng-repeat="recipient in feedback.recipients">
-              {{recipient.name}}
-              <span ng-if="$last == false">,</span>
-            </span>
-            on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
-            <div style="padding-left: 20px;" ng-bind-html="to_trusted(feedback.message)"></div>
+      <div ng-show="historicalConversation.count > 0">
+        <div ng-repeat="c in historicalConversation.feedbackConversation">
+          <div ng-repeat="feedback in c.feedback">
+              <div class="alert alert-warning" disabled>
+              [By {{feedback.sender.name}} to
+              <span ng-repeat="recipient in feedback.recipients">
+                Recipient: {{recipient.name}}
+                <span ng-if="$last == false">,</span>
+              </span>
+              on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
+              <div style="padding-left: 20px;" ng-bind-html="to_trusted(feedback.message)"></div>
+            </div>
           </div>
         </div>
         <hr>
