@@ -235,6 +235,7 @@
     </div>
 
     <div>
+    HERE
       <div ng-dropdown-multiselect="" options="allUsers"
         selected-model="returnRecipients" extra-settings="multiSelectSettings"
         translation-texts="multiSelectCustomTexts"></div>
@@ -265,7 +266,7 @@
     </uib-accordion-group>
 
     <!-- Feedback History - start -->
-    <uib-accordion-group is-open="isFeedbackHistoryOpen">
+    <uib-accordion-group is-open="isFeedbackHistoryOpen" ng-if="showFeedbackHistory">
       <uib-accordion-heading>
         Historical Feedback<i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': isFeedbackHistoryOpen, 'glyphicon-chevron-right': !isFeedbackHistoryOpen}"></i>
       </uib-accordion-heading>
