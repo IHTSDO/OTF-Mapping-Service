@@ -18,7 +18,7 @@ angular
   .controller(
     'compareRecordsCtrl',
     function($scope, $rootScope, $http, $routeParams, $location, $timeout,
-      localStorageService, $sce, $window, gpService) {
+      localStorageService, $sce, $window, gpService, appConfig) {
 
       // ///////////////////////////////////
       // Map Record Controller Functions //
@@ -58,7 +58,10 @@ angular
       $scope.isReportOpen = true;
       $scope.isGroupFeedbackOpen = false;
       $scope.isFeedbackHistoryOpen = false;
-      $scope.showFeedbackHistory = $window.location.hash.includes('review');
+      
+      $scope.isReview = $window.location.hash.includes('review');
+      $scope.isConflict = $window.location.hash.includes('conflicts');
+      $scope.showFeedbackHistory = $scope.isReview;
       $scope.returnRecipients = new Array();
       $scope.allUsers = new Array();
       $scope.multiSelectSettings = {
@@ -419,7 +422,7 @@ angular
                   $scope.leadConversation = data;
 
                   // if no prior conversation, initialize with the specialists
-                  if (!$scope.leadConversation) {
+                  if (!$scope.leadConversation && !$scope.isReview) {
 
                     if ($scope.record1 != null)
                       $scope.returnRecipients.push($scope.record1.owner);
@@ -428,6 +431,9 @@ angular
                       $scope.returnRecipients.push($scope.record2.owner);
 
                     // otherwise initialize with recipients on prior feedback
+                  } else if($scope.isReview){
+                    //$scope.getRecordsForConceptHistorical();
+                    initializeReturnRecipients($scope.leadConversation);
                   } else {
                     initializeReturnRecipients($scope.leadConversation);
                   }
@@ -1403,5 +1409,29 @@ angular
           return ((x < y) ? -1 : ((x > y) ? 1 : 0));
         });
       }
-
+      
+      // feedback groups functionality
+      var feedbackGroupConfig = appConfig["deploy.feedback.group.names"]; 
+      
+      $scope.feedbackGroups = (feedbackGroupConfig != null || typeof feedbackGroupConfig !== 'undefined')
+        ? JSON.parse(feedbackGroupConfig)
+            : null;
+      
+      $scope.setGroupRecipients = function(groupId) {
+        var recipients = (appConfig["deploy.feedback.group.users." + groupId]).split(',');
+        $scope.returnRecipients = [];
+        recipients.forEach(function(r){
+          var fbr = findUser(r, $scope.project.mapLead);
+          if (fbr != null && typeof fbr !== 'undefined' && fbr.id != null) {
+            $scope.returnRecipients.push({ id: fbr.id});
+          }
+        });
+        
+      }
+      
+      function findUser(userName, array) {
+        for (var i=0; i < array.length; i++)
+          if (array[i].userName === userName)
+              return array[i];
+      }
     });

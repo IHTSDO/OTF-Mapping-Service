@@ -234,6 +234,10 @@
       <hr>
     </div>
 
+    <div class="btn-group" role="group" aria-label="Feedback Group" ng-if="feedbackGroups && (isReview || isConflict)">
+        <button ng-repeat="group in feedbackGroups" class="btn btn-xs btn-primary" 
+          ng-click="setGroupRecipients(group.id);">{{group.displayName}}</button>
+    </div>
     <div>
       <div ng-dropdown-multiselect="" options="allUsers"
         selected-model="returnRecipients" extra-settings="multiSelectSettings"
