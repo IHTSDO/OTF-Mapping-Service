@@ -1080,7 +1080,7 @@ angular
         $scope.feedbackRecord = record;
         gpService.increment();
         $http({
-          url : root_workflow + 'conversation/id/' + $scope.feedbackRecord.id,
+          url : root_workflow + 'conversation/project/id/' + record.mapProjectId + '/concept/id/' + record.conceptId,
           dataType : 'json',
           method : 'GET',
           headers : {
@@ -1088,79 +1088,11 @@ angular
           }
         }).success(
           function(data) {
+           
             $scope.historicalConversation = data;
             //$scope.markFeedbackViewed($scope.conversation, $scope.currentUser);
 
-            // load record to be displayed; try to find active
-            // record first
-            if (data !== '') {
-              $http(
-                {
-                  url : root_mapping + 'record/id/'
-                    + $scope.historicalConversation.mapRecordId + '/historical',
-                  dataType : 'json',
-                  method : 'GET',
-                  authorization : $scope.currentUserToken,
-                  headers : {
-                    'Content-Type' : 'application/json'
-                  }
-                }).success(
-                function(data) {
-                  gpService.decrement();
-                  var record = data;
-  
-                  // get the conflict records if they exist
-                  var originIds = record.originIds;
-                  if (originIds != null && originIds.length > 0) {
-  
-                    gpService.increment();
-                    $http(
-                      {
-                        url : root_mapping + 'record/id/' + originIds[0]
-                          + '/historical',
-                        dataType : 'json',
-                        method : 'GET',
-                        authorization : $scope.currentUserToken,
-                        headers : {
-                          'Content-Type' : 'application/json'
-                        }
-                      }).success(
-                      function(data) {
-                        gpService.decrement();
-                        if (originIds != null && originIds.length === 2) {
-                          gpService.increment();
-                          $http(
-                            {
-                              url : root_mapping + 'record/id/' + originIds[1]
-                                + '/historical',
-                              dataType : 'json',
-                              method : 'GET',
-                              authorization : $scope.currentUserToken,
-                              headers : {
-                                'Content-Type' : 'application/json'
-                              }
-                            }).success(function(data) {
-                            gpService.decrement();
-                            setDisplayRecords();
-                          }).error(
-                            function(data, status, headers, config) {
-                              gpService.decrement();
-                              $rootScope.handleHttpError(data, status, headers,
-                                config);
-                            });
-                        }
-                      }).error(function(data, status, headers, config) {
-                      gpService.decrement();
-                      $rootScope.handleHttpError(data, status, headers, config);
-                    });
-                  }
-                }).error(function(data, status, headers, config) {
-                gpService.decrement();
-                $rootScope.handleHttpError(data, status, headers, config);
-              });
-            } else {
-              gpService.decrement();
-            }
+            gpService.decrement();
           }).error(function(data, status, headers, config) {
           gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
