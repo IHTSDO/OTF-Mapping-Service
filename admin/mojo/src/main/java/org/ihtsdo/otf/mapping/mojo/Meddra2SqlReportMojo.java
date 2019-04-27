@@ -97,7 +97,7 @@ public class Meddra2SqlReportMojo extends AbstractMojo {
         + "    AND  lower(me.targetName) NOT LIKE '%(situation)' "
         + "    AND  lower(me.targetName) NOT LIKE '%(finding)' "
         + "    AND  lower(me.targetName) NOT LIKE '%(disorder)') "
-        + "  ORDER BY mr.conceptName, mr.conceptId) ");
+        + "  ORDER BY mr.conceptName, mr.conceptId ");
 
       query.setParameter("MAP_PROJECT_ID", mapProjectId);
       
