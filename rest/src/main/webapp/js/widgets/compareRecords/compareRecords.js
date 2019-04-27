@@ -1419,13 +1419,13 @@ angular
       $scope.setGroupRecipients = function(groupId) {
         var recipients = (appConfig["deploy.feedback.group.users." + groupId]).split(',');
         $scope.returnRecipients = [];
+        var allUsers = $scope.project.mapLead.concat($scope.project.mapSpecialist);
         recipients.forEach(function(r){
-          var fbr = findUser(r, $scope.project.mapLead);
-          if (fbr != null && typeof fbr !== 'undefined' && fbr.id != null) {
+          var fbr = findUser(r, allUsers);
+          if ((fbr) && fbr.id != null) {
             $scope.returnRecipients.push({ id: fbr.id});
           }
         });
-        
       }
       
       function findUser(userName, array) {
