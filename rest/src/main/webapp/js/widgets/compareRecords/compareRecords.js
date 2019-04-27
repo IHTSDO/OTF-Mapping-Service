@@ -107,7 +107,7 @@ angular
           // if first visit, retrieve the records to be compared
           if ($scope.leadRecord == null) {
 
-        	// Set up "all users"
+          // Set up "all users"
             $scope.allUsers = $scope.project.mapSpecialist
               .concat($scope.project.mapLead);
             organizeUsers($scope.allUsers);
@@ -152,16 +152,16 @@ angular
       });
       
       $scope.isNewFeedback = function(feedback, conversationLocation) {
-    	  if(conversationLocation == '1'){
-    		  return $scope.newFeedbackMessages1.includes(feedback.message);
-    	  }
-    	  if(conversationLocation == '2'){
-    		  return $scope.newFeedbackMessages2.includes(feedback.message);
-    	  }
-    	  if(conversationLocation == 'lead'){
-    		  return $scope.newLeadFeedbackMessages.includes(feedback.message);
-    	  }
-    	  
+        if(conversationLocation == '1'){
+          return $scope.newFeedbackMessages1.includes(feedback.message);
+        }
+        if(conversationLocation == '2'){
+          return $scope.newFeedbackMessages2.includes(feedback.message);
+        }
+        if(conversationLocation == 'lead'){
+          return $scope.newLeadFeedbackMessages.includes(feedback.message);
+        }
+        
       }
             
       $scope.editFeedback = function(feedback) {
@@ -220,7 +220,7 @@ angular
                   'Content-Type' : 'application/json'
                 }
               }).success(function(data) {
-            	$scope.newFeedbackMessages1.push(feedback);
+              $scope.newFeedbackMessages1.push(feedback);
                 $scope.conversation1 = data;
 
               });
@@ -235,7 +235,7 @@ angular
                   'Content-Type' : 'application/json'
                 }
               }).success(function(data) {
-              	$scope.newFeedbackMessages2.push(feedback);
+                $scope.newFeedbackMessages2.push(feedback);
                 $scope.conversation2 = data;
 
               });
@@ -432,8 +432,7 @@ angular
 
                     // otherwise initialize with recipients on prior feedback
                   } else if($scope.isReview){
-                    //$scope.getRecordsForConceptHistorical();
-                    initializeReturnRecipients($scope.leadConversation);
+                    $scope.getUsersForConceptHistorical();
                   } else {
                     initializeReturnRecipients($scope.leadConversation);
                   }
@@ -1305,11 +1304,11 @@ angular
       };
       
       $scope.tinymceOptionsForGroupFeedback = {
-    	menubar : false,
-    	statusbar : false,
-    	plugins : 'autolink link image charmap searchreplace',
-    	toolbar : 'undo redo | styleselect | bold italic underline strikethrough | charmap link image',
-    	height : "300"
+      menubar : false,
+      statusbar : false,
+      plugins : 'autolink link image charmap searchreplace',
+      toolbar : 'undo redo | styleselect | bold italic underline strikethrough | charmap link image',
+      height : "300"
       };
 
       $scope.tinymceOptionsForGroupFeedback = {
@@ -1434,4 +1433,37 @@ angular
           if (array[i].userName === userName)
               return array[i];
       }
+      
+      $scope.getUsersForConceptHistorical = function() {
+        // retrieve all records with this concept id
+        gpService.increment();
+        $http(
+          {
+            url : root_mapping + 'record/concept/id/' + $scope.leadRecord.conceptId 
+              + '/project/id/' + $scope.project.id + '/users',
+            dataType : 'json',
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            var users = [];
+            var map = new Map();
+            if (data.mapUser) {
+              for (const user of data.mapUser) {
+                if(!map.has(user.id)){
+                    map.set(user.id, true);
+                    users.push(user);
+                }
+              }
+            }
+            $scope.returnRecipients = users;
+            gpService.decrement();
+        }).error(function(data, status, headers, config) {
+          $rootScope.handleHttpError(data, status, headers, config);
+          gpService.decrement();
+        }).then(function() {          
+        });
+      };
+
     });

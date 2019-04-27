@@ -60,6 +60,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.hibernate.Hibernate;
 import org.ihtsdo.otf.mapping.helpers.ConceptList;
 import org.ihtsdo.otf.mapping.helpers.KeyValuePair;
 import org.ihtsdo.otf.mapping.helpers.KeyValuePairList;
@@ -2776,6 +2777,61 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       return null;
     } finally {
       mappingService.close();
+      securityService.close();
+    }
+  }
+  
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * getMapRecordsForConceptIdHistorical(java.lang.String, java.lang.Long,
+   * java.lang.String)
+   */
+  @Override
+  @GET
+  @Path("/record/concept/id/{conceptId}/project/id/{id:[0-9][0-9]*}/users")
+  @ApiOperation(value = "Get map users by concept id", 
+    notes = "Gets map users for all map records with given concept id.", response = MapUserListJpa.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public MapUserListJpa getMapRecordsForConceptIdHistoricalMapUsers (
+    @ApiParam(value = "Concept id", required = true) @PathParam("conceptId") String conceptId,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(MappingServiceRestImpl.class)
+        .info("RESTful call (Mapping): /record/concept/id/" + conceptId
+            + "/project/id/" + mapProjectId + "/users");
+
+    String user = null;
+    
+    try (final MappingService mappingService = new MappingServiceJpa())
+    {
+      // authorize call
+      user = authorizeApp(authToken, MapUserRole.VIEWER,
+          "get map records for historical concept", securityService);
+
+      final MapRecordListJpa mapRecordList = (MapRecordListJpa) mappingService
+          .getMapRecordRevisionsForConcept(conceptId, mapProjectId);
+
+      MapUserListJpa mapUserList = new MapUserListJpa();
+      
+      for(MapRecord mr : mapRecordList.getMapRecords())
+      {
+        Hibernate.initialize(mr.getOwner());
+        mapUserList.addMapUser(mr.getOwner());
+      }
+      return mapUserList;
+      
+    } catch (Exception e) {
+      handleException(e,
+          "trying to find historical records by the given concept id", user, "",
+          conceptId);
+      return null;
+    } finally {
       securityService.close();
     }
   }

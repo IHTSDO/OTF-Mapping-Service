@@ -20,7 +20,6 @@ import org.ihtsdo.otf.mapping.helpers.MapRelationListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
-import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
@@ -397,6 +396,13 @@ public class MappingClientRest extends RootClientRest
 
   @Override
   public MapRecordListJpa getMapRecordsForConceptIdHistorical(String conceptId,
+    Long mapProjectId, String authToken) throws Exception {
+    // N/A
+    return null;
+  }
+  
+  @Override
+  public MapUserListJpa getMapRecordsForConceptIdHistoricalMapUsers(String conceptId,
     Long mapProjectId, String authToken) throws Exception {
     // N/A
     return null;

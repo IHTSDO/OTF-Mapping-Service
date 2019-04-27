@@ -19,7 +19,6 @@ import org.ihtsdo.otf.mapping.helpers.MapRelationListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
-import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
@@ -531,6 +530,19 @@ public interface MappingServiceRest {
 	   */
 	MapRecordListJpa getMapRecordsForConceptIdHistorical(String conceptId, Long mapProjectId, String authToken)
 			throws Exception;
+	
+	/**
+   * Gets the users involved with a concept
+   * id.
+   *
+   * @param conceptId the concept id
+   * @param mapProjectId the map project id
+   * @param authToken the auth token
+   * @return the map users for concept id historical
+   * @throws Exception the exception
+   */
+	MapUserListJpa getMapRecordsForConceptIdHistoricalMapUsers(String conceptId, Long mapProjectId, String authToken)
+    throws Exception;
 
 	/**
 	 * Returns delimited page of Published or Ready For Publication MapRecords
