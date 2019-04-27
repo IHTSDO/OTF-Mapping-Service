@@ -85,20 +85,24 @@ public class MeddraSqlReportMojo extends AbstractMojo {
 
       // Run the SQL report
       final javax.persistence.Query query = manager.createNativeQuery(
-        "SELECT DISTINCT "
-          + "  mr.conceptId as referencedComponentId "
-          + ", mr.conceptName as referencedComponentName "
-          + ", mapGroup as mapGroup "
-          + ", mapPriority as mapPriority "
-          + ", me.targetId as mapTarget "
-          + ", me.targetName as mapTargetName "
-          //+ "-- , mapRelation " ??
-          + "           FROM map_records mr "
-          + "    LEFT JOIN map_entries me ON mr.id = me.mapRecord_id "
-          + "      LEFT JOIN map_records_labels_AUD mrl ON mr.id = mrl.id "
-          + "      WHERE mr.mapProjectId = :MAP_PROJECT_ID "
-          + "      AND mr.workflowStatus = 'READY_FOR_PUBLICATION' "
-          + "            AND (mrl.labels IS NOT NULL);");
+          " SELECT DISTINCT "
+        + "        mr.conceptId AS referencedComponentId "
+        + "      , mr.conceptName AS referencedComponentName "
+        + "      , mapGroup AS mapGroup "
+        + "      , mapPriority AS mapPriority "
+        + "      , me.targetId AS mapTarget "
+        + "      , me.targetName AS mapTargetName "
+        + "      , rel.name AS mapRelation "
+        + "   FROM map_records mr "
+        + "   JOIN map_entries me ON mr.id = me.mapRecord_id "
+        + "   LEFT OUTER JOIN map_relations rel ON me.mapRelation_id = rel.id "
+        + "  WHERE mr.mapProjectId = :MAP_PROJECT_ID "
+        + "    AND mr.workflowStatus = 'READY_FOR_PUBLICATION' "
+        //+ "    AND EXISTS (SELECT id FROM map_records_labels_AUD qa  WHERE labels = 'Final QA Check' AND mr.id = qa.id) "
+        + "    AND EXISTS (SELECT id FROM map_records_labels_AUD med WHERE labels = 'Final QA Check MSSO' AND mr.id = med.id) "
+        + "    AND EXISTS (SELECT id FROM map_records_labels_AUD sno WHERE labels = 'Final QA Check SNOMED' AND mr.id = sno.id) "
+        + "  ORDER BY 1,2; "
+      );
 
       query.setParameter("MAP_PROJECT_ID", mapProjectId);
       
