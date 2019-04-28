@@ -18,13 +18,13 @@
     <td>
       <form>
         <input type="radio" ng-model="assignedTypes.work" value="ALL"
-          ng-change="retrieveAssignedWork(1, queryAssigned); setRadio(assignedTypes.work);">All <input
+          ng-change="retrieveAssignedWork(1, queryAssigned); setRadio(0, assignedTypes.work);">All <input
           type="radio" ng-model="assignedTypes.work" value="NEW"
-          ng-change="retrieveAssignedWork(1, queryAssigned); setRadio(assignedTypes.work);">New <input
+          ng-change="retrieveAssignedWork(1, queryAssigned); setRadio(0, assignedTypes.work);">New <input
           type="radio" ng-model="assignedTypes.work" value="EDITING_IN_PROGRESS"
-          ng-change="retrieveAssignedWork(1, queryAssigned); setRadio(assignedTypes.work);">Editing <input
+          ng-change="retrieveAssignedWork(1, queryAssigned); setRadio(0, assignedTypes.work);">Editing <input
           type="radio" ng-model="assignedTypes.work" value="EDITING_DONE"
-          ng-change="retrieveAssignedWork(1, queryAssigned); setRadio(assignedTypes.work);">Finished
+          ng-change="retrieveAssignedWork(1, queryAssigned); setRadio(0, assignedTypes.work);">Finished
       </form>
     </td>
   </tr>
@@ -178,15 +178,15 @@
     <td>
       <form>
         <input type="radio" ng-model="assignedTypes.conflict" value="ALL"
-          ng-change="retrieveAssignedConflicts(1, queryAssigned); setRadio(assignedTypes.conflict);">All <input
+          ng-change="retrieveAssignedConflicts(1, queryAssigned); setRadio(1, assignedTypes.conflict);">All <input
           type="radio" ng-model="assignedTypes.conflict" value="CONFLICT_NEW"
-          ng-change="retrieveAssignedConflicts(1, queryAssigned); setRadio(assignedTypes.conflict);">New <input
+          ng-change="retrieveAssignedConflicts(1, queryAssigned); setRadio(1, assignedTypes.conflict);">New <input
           type="radio" ng-model="assignedTypes.conflict"
           value="CONFLICT_IN_PROGRESS"
-          ng-change="retrieveAssignedConflicts(1, queryAssigned); setRadio(assignedTypes.conflict);">Editing
+          ng-change="retrieveAssignedConflicts(1, queryAssigned); setRadio(1, assignedTypes.conflict);">Editing
         <input type="radio" ng-model="assignedTypes.conflict"
           value="CONFLICT_RESOLVED"
-          ng-change="retrieveAssignedConflicts(1, queryAssigned); setRadio(assignedTypes.conflict);">Resolved
+          ng-change="retrieveAssignedConflicts(1, queryAssigned); setRadio(1, assignedTypes.conflict);">Resolved
       </form>
     </td>
   </tr>
@@ -319,15 +319,15 @@
     <td>
       <form>
         <input type="radio" ng-model="assignedTypes.review" value="ALL"
-          ng-change="retrieveAssignedReviewWork(1, queryAssigned); setRadio(assignedTypes.review);">All <input
+          ng-change="retrieveAssignedReviewWork(1, queryAssigned); setRadio(2, assignedTypes.review);">All <input
           type="radio" ng-model="assignedTypes.review" value="REVIEW_NEW"
-          ng-change="retrieveAssignedReviewWork(1, queryAssigned); setRadio(assignedTypes.review);">New <input
+          ng-change="retrieveAssignedReviewWork(1, queryAssigned); setRadio(2, assignedTypes.review);">New <input
           type="radio" ng-model="assignedTypes.review"
           value="REVIEW_IN_PROGRESS"
-          ng-change="retrieveAssignedReviewWork(1, queryAssigned); setRadio(assignedTypes.review);">Editing
+          ng-change="retrieveAssignedReviewWork(1, queryAssigned); setRadio(2, assignedTypes.review);">Editing
         <input type="radio" ng-model="assignedTypes.review"
           value="REVIEW_RESOLVED"
-          ng-change="retrieveAssignedReviewWork(1, queryAssigned); setRadio(assignedTypes.review);">Resolved
+          ng-change="retrieveAssignedReviewWork(1, queryAssigned); setRadio(2, assignedTypes.review);">Resolved
       </form>
     </td>
   </tr>
@@ -468,15 +468,15 @@
     <td>
       <form>
         <input type="radio" ng-model="assignedTypes.forUser" value="ALL"
-          ng-change="retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, queryAssignedForUser); setRadio(assignedTypes.forUser);">All
+          ng-change="retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, queryAssignedForUser); setRadio(3, assignedTypes.forUser);">All
         <input type="radio" ng-model="assignedTypes.forUser" value="NEW"
-          ng-change="retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, queryAssignedForUser); setRadio(assignedTypes.forUser);">New
+          ng-change="retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, queryAssignedForUser); setRadio(3, assignedTypes.forUser);">New
         <input type="radio" ng-model="assignedTypes.forUser"
           value="EDITING_IN_PROGRESS"
-          ng-change="retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, queryAssignedForUser); setRadio(assignedTypes.forUser);">Editing
+          ng-change="retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, queryAssignedForUser); setRadio(3, assignedTypes.forUser);">Editing
         <input type="radio" ng-model="assignedTypes.forUser"
           value="EDITING_DONE"
-          ng-change="retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, queryAssignedForUser); setRadio(assignedTypes.forUser);">Finished
+          ng-change="retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, queryAssignedForUser); setRadio(3, assignedTypes.forUser);">Finished
       </form>
     </td>
   </tr>
@@ -550,13 +550,13 @@
     <td>
       <form>
         <input type="radio" ng-model="assignedTypes.qa" value="ALL"
-          ng-change="retrieveAssignedQAWork(1, queryAssigned); setRadio(assignedTypes.qa);">All <input
+          ng-change="retrieveAssignedQAWork(1, queryAssigned); setRadio(4, assignedTypes.qa);">All <input
           type="radio" ng-model="assignedTypes.qa" value="QA_NEW"
-          ng-change="retrieveAssignedQAWork(1, queryAssigned); setRadio(assignedTypes.qa);">New <input
+          ng-change="retrieveAssignedQAWork(1, queryAssigned); setRadio(4, assignedTypes.qa);">New <input
           type="radio" ng-model="assignedTypes.qa" value="QA_IN_PROGRESS"
-          ng-change="retrieveAssignedQAWork(1, queryAssigned); setRadio(assignedTypes.qa);">Editing <input
+          ng-change="retrieveAssignedQAWork(1, queryAssigned); setRadio(4, assignedTypes.qa);">Editing <input
           type="radio" ng-model="assignedTypes.qa" value="QA_RESOLVED"
-          ng-change="retrieveAssignedQAWork(1, queryAssigned); setRadio(assignedTypes.qa);">Resolved
+          ng-change="retrieveAssignedQAWork(1, queryAssigned); setRadio(4, assignedTypes.qa);">Resolved
       </form>
     </td>
   </tr>
