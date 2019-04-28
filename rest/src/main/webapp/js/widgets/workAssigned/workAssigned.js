@@ -31,31 +31,39 @@ angular
       $scope.focusProject = localStorageService.get('focusProject');
       $scope.currentUserToken = localStorageService.get('userToken');
       $scope.preferences = localStorageService.get('preferences');
-      $scope.assignedTab = localStorageService.get('assignedTab');
+      $scope.assignedTab = localStorageService.get('assignedTab');      
+      $scope.tabs = localStorageService.get('assignedWorkTabs');
       
-      // tab variables
-      $scope.tabs = [ {
-        id : 0,
-        title : 'Concepts',
-        active : true
-      }, {
-        id : 1,
-        title : 'Conflicts',
-        active : false
-      }, {
-        id : 2,
-        title : 'Review',
-        active : false
-      }, {
-        id : 3,
-        title : 'By User',
-        active : false
-      }, {
-        id : 4,
-        title : 'QA',
-        active : false
-      } ];
-
+      if ($scope.tabs == null || $scope.tabs === '') {
+        // tab variables
+        $scope.tabs = [ {
+          id : 0,
+          title : 'Concepts',
+          active : true,
+          selection : null
+        }, {
+          id : 1,
+          title : 'Conflicts',
+          active : false,
+          selection : null
+        }, {
+          id : 2,
+          title : 'Review',
+          active : false,
+          selection : null
+        }, {
+          id : 3,
+          title : 'By User',
+          active : false,
+          selection : null
+        }, {
+          id : 4,
+          title : 'QA',
+          active : false,
+          selection : null
+        } ];
+      }
+      
       // labels for QA filtering
       $scope.labelNames = [];
 
@@ -109,36 +117,12 @@ angular
             }
         }).success(function(data) {
           $scope.preferences.lastAssignedRadio = localStorageService.get('assignedRadio');
-          
-          if ($scope.preferences.lastAssignedRadio != null &&
-              $scope.preferences.lastAssignedRadio.includes('NEW')) {
-            $scope.assignedTypes.work = 'NEW';
-            $scope.assignedTypes.conflict = 'CONFLICT_NEW';
-            $scope.assignedTypes.review = 'REVIEW_NEW';
-            $scope.assignedTypes.forUser = 'NEW';
-            $scope.assignedTypes.qa = 'QA_NEW'
-          } else if ($scope.preferences.lastAssignedRadio != null &&
-              $scope.preferences.lastAssignedRadio.includes('IN_PROGRESS')) {
-            $scope.assignedTypes.work = 'EDITING_IN_PROGRESS';
-            $scope.assignedTypes.conflict = 'CONFLICT_IN_PROGRESS';
-            $scope.assignedTypes.review = 'REVIEW_IN_PROGRESS';
-            $scope.assignedTypes.forUser = 'EDITING_IN_PROGRESS';
-            $scope.assignedTypes.qa = 'QA_IN_PROGRESS';
-          } else if ($scope.preferences.lastAssignedRadio != null &&
-              ($scope.preferences.lastAssignedRadio.includes('RESOLVED') ||
-                  $scope.preferences.lastAssignedRadio.includes('DONE')) ) {
-            $scope.assignedTypes.work = 'EDITING_DONE';
-            $scope.assignedTypes.conflict = 'CONFLICT_RESOLVED';
-            $scope.assignedTypes.review = 'REVIEW_RESOLVED';
-            $scope.assignedTypes.forUser = 'EDITING_DONE';
-            $scope.assignedTypes.qa = 'QA_RESOLVED';
-          } else {
-            $scope.assignedTypes.work = 'ALL';
-            $scope.assignedTypes.conflict = 'ALL';
-            $scope.assignedTypes.review = 'ALL';
-            $scope.assignedTypes.forUser = 'ALL';
-            $scope.assignedTypes.qa = 'ALL'
-          }
+                    
+          $scope.assignedTypes.work = $scope.tabs[0].selection || 'ALL';
+          $scope.assignedTypes.conflict = $scope.tabs[1].selection || 'ALL';
+          $scope.assignedTypes.review = $scope.tabs[2].selection || 'ALL';
+          $scope.assignedTypes.forUser = $scope.tabs[3].selection || 'ALL';
+          $scope.assignedTypes.qa = $scope.tabs[4].selection || 'ALL';
           
           // update lists based on radio button selected when tab changes
           $scope.retrieveAssignedWork($scope.assignedWorkPage, null);
@@ -153,10 +137,13 @@ angular
         }); 
       }
       
-      $scope.setRadio = function(type) {
+      $scope.setRadio = function(tab, type) {
           // add the radio button to the local storage service for the next visit       
           $scope.preferences.lastAssignedRadio = type;
           localStorageService.add('assignedRadio', type);
+          
+          $scope.tabs[tab].selection = type;
+          localStorageService.add('assignedWorkTabs', $scope.tabs);
           
           // update the user preferences
           $http({
@@ -401,6 +388,7 @@ angular
 
           // set title
           $scope.tabs[1].title = 'Conflicts (' + data.totalCount + ')';
+          localStorageService.add('assignedWorkTabs', $scope.tabs);
 
         }).error(function(data, status, headers, config) {
           gpService.decrement();
@@ -463,6 +451,7 @@ angular
 
           // set title
           $scope.tabs[0].title = 'Concepts (' + $scope.nAssignedRecords + ')';
+          localStorageService.add('assignedWorkTabs', $scope.tabs);
 
         }).error(function(data, status, headers, config) {
           gpService.decrement();
@@ -547,6 +536,7 @@ angular
 
           // set title
           $scope.tabs[4].title = 'QA (' + $scope.nAssignedQAWork + ')';
+          localStorageService.add('assignedWorkTabs', $scope.tabs);
 
           // set labels
           for (var i = 0; i < $scope.assignedQAWork.length; i++) {
@@ -615,7 +605,7 @@ angular
 
           // set title
           $scope.tabs[2].title = 'Review (' + $scope.nAssignedReviewWork + ')';
-
+          localStorageService.add('assignedWorkTabs', $scope.tabs);
 
         }).error(function(data, status, headers, config) {
           gpService.decrement();
@@ -689,7 +679,7 @@ angular
           $scope.nAssignedRecordsForUser = data.totalCount;
 
           $scope.tabs[3].title = 'By User (' + data.totalCount + ')';
-
+          localStorageService.add('assignedWorkTabs', $scope.tabs);
 
         }).error(function(data, status, headers, config) {
           gpService.decrement();
