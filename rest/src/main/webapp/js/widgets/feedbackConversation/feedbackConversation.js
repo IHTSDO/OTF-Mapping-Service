@@ -301,6 +301,10 @@ angular
       $scope.sendFeedback = function(record, feedbackMessage, conversation,
         recipientList) {
 
+        if($scope.conversation.resolved){          
+          window.alert('This feedback conversation is closed.  Please uncheck Mark resolved to submit feedback.');
+          return;
+        }        
         if (feedbackMessage == null || feedbackMessage == undefined
           || feedbackMessage === '') {
           window.alert('The feedback field cannot be blank. ');
