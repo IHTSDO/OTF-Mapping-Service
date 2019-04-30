@@ -182,7 +182,7 @@ public class MeddraSqlReportMojo extends AbstractMojo {
       throw new MojoExecutionException("Failed to retrieve config properties");
     }
     String notificationRecipients = config
-        .getProperty("sqlreport.send.notification.recipients.meddra");
+        .getProperty("sqlreport.send.notification.recipients.meddra." + getClass().getSimpleName());
     String notificationMessage = "";
     getLog().info("Request to send notification email to recipients: "
         + notificationRecipients);
