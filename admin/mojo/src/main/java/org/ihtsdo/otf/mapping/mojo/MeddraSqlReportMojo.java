@@ -26,7 +26,10 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
@@ -67,7 +70,7 @@ public class MeddraSqlReportMojo extends AbstractMojo {
       
       while(st.hasMoreTokens())
       {
-        int project = Integer.parseInt(st.nextToken());
+        long project = Long.parseLong(st.nextToken());
         runReport(project);  
       }
       
@@ -76,11 +79,12 @@ public class MeddraSqlReportMojo extends AbstractMojo {
     }
   }
 
-  private void runReport(int mapProjectId) throws Exception {
+  private void runReport(long mapProjectId) throws Exception {
     try (ContentService service = new ContentServiceJpa()
         {{
           MeddraSqlReportMojo.this.manager = manager;
-        }}
+        }};
+        MappingService mappingService = new MappingServiceJpa();
         ) {
 
       // Run the SQL report
@@ -130,8 +134,12 @@ public class MeddraSqlReportMojo extends AbstractMojo {
       final DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
       final String dateStamp = dateFormat.format(new Date());
 
-      File resultFile = new File(System.getProperty("java.io.tmpdir")
-          + "/sqlReport_" + dateStamp + ".txt");
+      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      final String filename = "/sqlReport_"
+          + mapProject.getName().replace(" ", "") + "_" + dateStamp;
+
+      File resultFile = new File(
+          System.getProperty("java.io.tmpdir") + filename + ".txt");
       getLog().info("Created result file: " + resultFile.getAbsolutePath());
 
       try (FileWriter writer = new FileWriter(resultFile);) {
@@ -143,7 +151,7 @@ public class MeddraSqlReportMojo extends AbstractMojo {
 
       // Zip results file
       File zipFile = new File(System.getProperty("java.io.tmpdir")
-          + "/sqlReport_" + dateStamp + ".zip");
+          + filename + ".zip");
 
       try (FileOutputStream fos = new FileOutputStream(zipFile);
           ZipOutputStream zipOut = new ZipOutputStream(
