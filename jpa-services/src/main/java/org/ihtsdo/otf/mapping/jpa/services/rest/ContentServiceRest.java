@@ -167,6 +167,18 @@ public interface ContentServiceRest {
     String authToken) throws Exception;
 
   /**
+   * Append map record rf 2 complex map.
+   *
+   * @param inputFile the input file
+   * @param refsetId the refset id
+   * @param workflowStatus the workflow status
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  void appendMapRecordRf2ComplexMap(String inputFile, String refsetId,
+    String workflowStatus, String authToken) throws Exception;
+
+  /**
    * Loads simple maps. - the members flag loads refset members if "true" - the
    * records flag loads map records if "true"
    *

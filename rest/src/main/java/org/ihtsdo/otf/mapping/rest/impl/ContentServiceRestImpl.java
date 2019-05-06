@@ -49,6 +49,7 @@ import org.ihtsdo.otf.mapping.helpers.TerminologyVersionList;
 import org.ihtsdo.otf.mapping.jpa.algo.ClamlLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.GmdnDownloadAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.GmdnLoaderAlgorithm;
+import org.ihtsdo.otf.mapping.jpa.algo.MapRecordRf2ComplexMapAppenderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.MapRecordRf2ComplexMapLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.MapRecordRf2SimpleMapLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.RefsetmemberRemoverAlgorithm;
@@ -671,6 +672,44 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
   }
+  
+  /* see superclass */
+  @Override
+  @PUT
+  @Path("/map/record/rf2/complex/append")
+  @Consumes(MediaType.TEXT_PLAIN)
+  @ApiOperation(value = "Append entries onto existing complex RF2 map record data", notes = "Append complex map data.")
+  public void appendMapRecordRf2ComplexMap(
+    @ApiParam(value = "RF2 input file", required = true) String inputFile,
+    @ApiParam(value = "Refset id", required = false) @QueryParam("refsetId") String refsetId,
+    @ApiParam(value = "Workflow status", required = true) @QueryParam("workflowStatus") String workflowStatus,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("RESTful call (Content): /map/record/rf2/complex/append");
+
+    // Track system level information
+    long startTimeOrig = System.nanoTime();
+
+    authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "append map record",
+        securityService);
+
+    try (final MapRecordRf2ComplexMapAppenderAlgorithm algo =
+        new MapRecordRf2ComplexMapAppenderAlgorithm(inputFile, refsetId, workflowStatus);) {
+
+      algo.compute();
+
+      Logger.getLogger(getClass())
+          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+
+    } catch (Exception e) {
+      handleException(e, "trying to append complex map record");
+
+    } finally {
+      securityService.close();
+    }
+  }  
 
   /* see superclass */
   @Override

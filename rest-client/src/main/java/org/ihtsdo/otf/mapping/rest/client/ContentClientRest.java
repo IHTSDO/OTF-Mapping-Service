@@ -165,6 +165,43 @@ public class ContentClientRest extends RootClientRest
 		}
 	}
 	
+	  @Override
+	  public void appendMapRecordRf2ComplexMap(String inputFile, String refsetId,
+	    String workflowStatus, String authToken) throws Exception {
+
+        Logger.getLogger(getClass())
+                .debug("Content Client - append map record RF2 complex "
+                        + " input file:" + inputFile 
+                        + " refset Id:" + refsetId
+                        + " workflow status: " + workflowStatus);
+
+        validateNotEmpty(inputFile, "inputFile");
+
+        StringBuilder qs = new StringBuilder();
+        qs.append("?");
+        if (refsetId != null) {
+          qs.append("refsetId=").append(refsetId);
+        }
+        if (workflowStatus != null) {
+            qs.append("workflowStatus=").append(workflowStatus);
+        }
+
+        final Client client = ClientBuilder.newClient();
+        final WebTarget target = client.target(config.getProperty("base.url")
+                + URL_SERVICE_ROOT + "/map/record/rf2/complex/append" + qs.toString());
+
+        final Response response = target.request(MediaType.TEXT_PLAIN)
+                .header("Authorization", authToken).put(Entity.text(inputFile));
+
+        if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+            // do nothing
+        } else {
+            if (response.getStatus() != 204)
+                throw new Exception(
+                        "Unexpected status " + response.getStatus());
+        }
+    }	
+	
 	/* see superclass */
 	@Override
 	public void loadMapRecordRf2SimpleMap(String inputFile, Boolean memberFlag,
@@ -558,4 +595,6 @@ public class ContentClientRest extends RootClientRest
     // not yet implemented in rest client
     return null;
   }
+
+
 }
