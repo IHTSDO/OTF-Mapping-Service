@@ -169,6 +169,14 @@ angular
           function(data) {
 
             $scope.records = data.mapRecord;
+            
+            //For each map record, sort the map notes by date, most recent note first
+            for (var i = 0; i < $scope.records.length; i++) {
+              if ($scope.records[i].mapNote.length > 1){
+                $scope.records[i].mapNote = $scope.records[i].mapNote.sort(function(a,b){return b.timestamp - a.timestamp});
+              }            
+            }
+            
             $scope.statusRecordLoad = '';
 
             // set pagination variables
