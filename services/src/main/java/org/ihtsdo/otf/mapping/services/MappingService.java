@@ -376,6 +376,19 @@ public interface MappingService extends RootService {
     WorkflowStatus workflowStatus) throws Exception;
 
   /**
+   * Append entries to map records for project.
+   *
+   * @param mapProjectId the map project id
+   * @param mapUser the map user
+   * @param complexMapRefSetMembers the complex map ref set members
+   * @param workflowStatus the workflow status
+   * @throws Exception the exception
+   */
+  public void appendEntriesToMapRecordsForProject(Long mapProjectId,
+    MapUser mapUser, List<ComplexMapRefSetMember> complexMapRefSetMembers,
+    WorkflowStatus workflowStatus) throws Exception;
+
+  /**
    * Removes the map records for project id.
    * 
    * @param mapProjectId the map project id
@@ -763,7 +776,7 @@ public interface MappingService extends RootService {
    * @throws Exception the exception
    */
   void recalculateMapAdviceForProject(MapProject mapProject) throws Exception;
-  
+
   /**
    * Gets the map project metadata.
    *
@@ -844,7 +857,7 @@ public interface MappingService extends RootService {
    */
   public MapRecord getLatestMapRecordForConcept(Long mapProjectId,
     String terminologyId) throws Exception;
-  
+
   /**
    * Returns the release file names.
    *
@@ -861,6 +874,7 @@ public interface MappingService extends RootService {
    * @return the map user role for application
    * @throws Exception the exception
    */
-  public MapUserRole getMapUserRoleForApplication(String userName) throws Exception;
+  public MapUserRole getMapUserRoleForApplication(String userName)
+    throws Exception;
 
 }
