@@ -1699,6 +1699,10 @@ angular
             }
         };
         
+        $scope.openConceptBrowser = function() {
+          window.open($scope.getBrowserUrl(), 'browserWindow');
+        };
+        
         $scope.openTerminologyBrowser = function(){
           var browserUrl = appConfig['deploy.terminology.browser.url'];
           if (browserUrl == null || browserUrl === "")
