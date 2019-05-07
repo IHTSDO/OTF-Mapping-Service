@@ -1682,7 +1682,13 @@ angular
         // opens SNOMED CT browser
         $scope.getBrowserUrl = function() {
             if (appConfig['deploy.snomed.browser.force']) {
-              return appConfig['deploy.snomed.browser.url'];  
+              if ($scope.project.sourceTerminology.contains("SNOMED")) {
+                return appConfig['deploy.snomed.browser.url'] + "&conceptId1="
+                  + $scope.record.conceptId;
+              }
+              else {
+                return appConfig['deploy.snomed.browser.url'];
+              }
             }
             else {
               if ($scope.project.sourceTerminology === 'SNOMEDCT_US') {
@@ -1690,7 +1696,7 @@ angular
                   + appConfig['deploy.snomed.dailybuild.url.us'] 
                   + "&conceptId1="
                   + $scope.record.conceptId;
-              } else {
+              } else {                
                 return appConfig['deploy.snomed.dailybuild.url']
                   + appConfig['deploy.snomed.dailybuild.url.other']
                   + "&conceptId1="
