@@ -1682,7 +1682,7 @@ angular
         // opens SNOMED CT browser
         $scope.getBrowserUrl = function() {
             if (appConfig['deploy.snomed.browser.force']) {
-              if ($scope.project.sourceTerminology.contains("SNOMED")) {
+              if ($scope.project.sourceTerminology.includes("SNOMED")) {
                 return appConfig['deploy.snomed.browser.url'] + "&conceptId1="
                   + $scope.record.conceptId;
               }
