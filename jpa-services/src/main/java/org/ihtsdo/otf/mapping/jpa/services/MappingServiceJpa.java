@@ -3462,7 +3462,7 @@ public class MappingServiceJpa extends RootServiceJpa
                 /*Get the user that finished each map record*/ 
         + "     map_users mu ON b.lastModifiedBy_id = mu.id "
             /* Group by targetId to collapse all of the historical map records, leaving only the first time it was finished */ 
-        + " GROUP BY b.targetId, mu.team; ";
+        + " GROUP BY b.targetId; ";
     
     Map<String, String> list = new HashMap<>();
     
