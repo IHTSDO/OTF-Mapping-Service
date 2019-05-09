@@ -12,16 +12,28 @@ angular
   })
   .controller(
     'MapProjectWidgetCtrl',
-    function($scope, $http, $rootScope, $location, $uibModal, localStorageService) {
-
+    function($scope, $http, $rootScope, $location, $uibModal, localStorageService, appConfig, gpService) {
+      
       // get the local storage variables
       $scope.project = localStorageService.get('focusProject');
       $scope.currentUser = localStorageService.get('currentUser');
       $scope.currentRole = localStorageService.get('currentRole');
       $scope.userToken = localStorageService.get('userToken');
-
+      
+      $scope.project.terminologyButtonText =
+        ($scope.project.sourceTerminology !== 'SNOMEDCT' && $scope.project.sourceTerminology !== 'SNOMEDCT_US')
+            ? (appConfig['deploy.terminology.browser.label'] === '' )
+                  ? $scope.project.sourceTerminology
+                  : appConfig['deploy.terminology.browser.label']
+            : (appConfig['deploy.terminology.browser.label'] === '' ) 
+                  ? $scope.project.destinationTerminology
+                  : appConfig['deploy.terminology.browser.label'];
+      
       // flag indicating if index viewer is available for dest terminology
       $scope.indexViewerExists = false;
+      
+      //must be disabled in config file, otherwise enabled even if key not in config
+      $scope.showDeltaIsEnabled = (appConfig['deploy.mapproject.showdelta.button.enabled'] === 'true') ? true : false; 
 
       // watch for project change
       $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
@@ -52,7 +64,7 @@ angular
         if ($scope.nConflicts == undefined || $scope.nConflicts == null) {
           alert('You must specify the number of conflicts to be generated.');
         } else {
-          $rootScope.glassPane++;
+          gpService.increment();
           var confirmGenerate = confirm('Are you sure you want to generate test data?');
           if (confirmGenerate == true) {
             // call the generate API
@@ -66,21 +78,21 @@ angular
                   'Content-Type' : 'application/json'
                 }
               }).success(function(data) {
-              $rootScope.glassPane--;
+              gpService.decrement();
             }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
             });
 
           } else {
-            $rootScope.glassPane--;
+            gpService.decrement();
 
           }
         }
       };
 
       $scope.generateTestingStateForKLININ = function() {
-        $rootScope.glassPane++;
+        gpService.increment();
 
         var confirmGenerate = confirm('Are you sure you want to generate the clean mapping user testing state?');
         if (confirmGenerate == true) {
@@ -95,16 +107,16 @@ angular
                 'Content-Type' : 'application/json'
               }
             }).success(function(data) {
-            $rootScope.glassPane--;
+            gpService.decrement();
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
           });
         }
       };
 
       $scope.generateTestingStateForBHEKRE = function() {
-        $rootScope.glassPane++;
+        gpService.increment();
         var confirmGenerate = confirm('Are you sure you want to generate the clean mapping user testing state?');
         if (confirmGenerate == true) {
           // call the generate API
@@ -118,9 +130,9 @@ angular
                 'Content-Type' : 'application/json'
               }
             }).success(function(data) {
-            $rootScope.glassPane--;
+            gpService.decrement();
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
           });
         }
@@ -149,7 +161,7 @@ angular
 
       // Compute Workflow
       $scope.computeWorkflow = function() {
-        $rootScope.glassPane++;
+        gpService.increment();
         $http({
           url : root_workflow + 'project/id/' + $scope.project.id + '/compute',
           dataType : 'json',
@@ -158,16 +170,16 @@ angular
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
 
       // Compute names
       $scope.computeNames = function() {
-        $rootScope.glassPane++;
+        gpService.increment();
         $http({
           url : root_mapping + 'project/id/' + $scope.project.id + '/names',
           dataType : 'json',
@@ -176,9 +188,9 @@ angular
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
@@ -195,7 +207,7 @@ angular
         };
 
         $scope.getConcepts = function(page, filter) {
-          $rootScope.glassPane++;
+          gpService.increment();
           var pfsParameterObj = {
             'startIndex' : page == -1 ? -1 : (page - 1) * $scope.pageSize,
             'maxResults' : page == -1 ? -1 : $scope.pageSize,
@@ -211,14 +223,14 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-            $rootScope.glassPane--;
+            gpService.decrement();
 
             $scope.concepts = data.searchResult;
             $scope.nConcepts = data.totalCount;
             $scope.numConceptPages = Math.ceil(data.totalCount / $scope.pageSize);
 
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $scope.concepts = [];
             // $rootScope.handleHttpError(data, status, headers,
             // config);
@@ -231,23 +243,37 @@ angular
       $scope.openConceptBrowser = function() {
         var myWindow = null;
 
-        if ($scope.currentUser.userName === 'guest')
-          myWindow = window.open('http://browser.ihtsdotools.org/index.html?perspective=full'
-            + '&acceptLicense=true');
-        else if ($scope.project.sourceTerminology === 'SNOMEDCT_US') 
-          myWindow = window.open('https://dailybuild.ihtsdotools.org/us.html?perspective=full'
-            + '&acceptLicense=true');
-        else
-          myWindow = window.open('http://dailybuild.ihtsdotools.org/index.html?perspective=full'
-            + '&acceptLicense=true');
+        if (appConfig['deploy.snomed.browser.force']) {
+         myWindow = window.open(appConfig['deploy.snomed.browser.url']); 
+        }
+        else {
+          if ($scope.currentUser.userName === 'guest')
+            myWindow = window.open(appConfig['deploy.snomed.browser.url.base']);
+          else if ($scope.project.sourceTerminology === 'SNOMEDCT_US') 
+            myWindow = window.open(appConfig['deploy.snomed.dailybuild.url']+appConfig['deploy.snomed.dailybuild.url.us']);
+          else
+            myWindow = window.open(appConfig['deploy.snomed.dailybuild.url']+appConfig['deploy.snomed.dailybuild.url.other']);
+        }
         myWindow.focus();
       };
-    //TODO Opening a new window for Terminology browser  
+
       $scope.openTerminologyBrowser = function(){
-        var currentUrl = window.location.href;
-        var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
-        var newUrl = baseUrl + '/terminology/browser';
-        var myWindow = window.open(newUrl, 'terminologyBrowserWindow');
+        var browserUrl = appConfig['deploy.terminology.browser.url'];
+        if (browserUrl == null || browserUrl === "")
+        {
+          var currentUrl = window.location.href;
+          var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
+          var browserUrl = baseUrl + '/terminology/browser';
+          
+          if ($scope.project.sourceTerminology === 'SNOMEDCT' || $scope.project.sourceTerminology === 'SNOMEDCT_US') {
+            $scope.browserRequest = 'destination';
+          } else {
+            $scope.browserRequest = 'source';
+          }
+          localStorageService.add('browserRequest', $scope.browserRequest);
+        }
+        
+        var myWindow = window.open(browserUrl, 'terminologyBrowserWindow');
         myWindow.focus();
       }
 

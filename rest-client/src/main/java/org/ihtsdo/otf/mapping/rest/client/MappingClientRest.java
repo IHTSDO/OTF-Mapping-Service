@@ -20,7 +20,6 @@ import org.ihtsdo.otf.mapping.helpers.MapRelationListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
-import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
@@ -401,6 +400,13 @@ public class MappingClientRest extends RootClientRest
     // N/A
     return null;
   }
+  
+  @Override
+  public MapUserListJpa getMapRecordsForConceptIdHistoricalMapUsers(String conceptId,
+    Long mapProjectId, String authToken) throws Exception {
+    // N/A
+    return null;
+  }
 
   @Override
   public MapRecordListJpa getMapRecordsForMapProjectAndQuery(Long mapProjectId,
@@ -467,6 +473,14 @@ public class MappingClientRest extends RootClientRest
     // N/A
     return null;
   }
+  
+  @Override
+  public TreePositionList getSourceTreePositionWithDescendantsForConceptAndMapProject(
+    String terminologyId, Long mapProjectId, String authToken)
+    throws Exception {
+    // N/A
+    return null;
+  }
 
   @Override
   public TreePositionList getDestinationRootTreePositionsForMapProject(
@@ -488,6 +502,13 @@ public class MappingClientRest extends RootClientRest
     String authToken) throws Exception {
     // N/A
     return null;
+  }
+  
+  public TreePositionList getSourceTreePositionGraphsForQueryAndMapProject(
+	String query, Long mapProjectId, PfsParameterJpa pfsParameter,
+	String authToken) throws Exception {
+	// N/A
+	return null;
   }
 
   @Override

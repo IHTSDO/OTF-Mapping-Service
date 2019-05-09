@@ -12,7 +12,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
   })
   .controller(
     'feedbackCtrl',
-    function($scope, $rootScope, $http, $location, $uibModal, $sce, localStorageService) {
+    function($scope, $rootScope, $http, $location, $uibModal, $sce, localStorageService, gpService) {
       $scope.currentUser = null;
       $scope.currentRole = null;
       $scope.focusProject = null;
@@ -79,13 +79,13 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
 
       $scope.retrieveFeedback = function(ppage, feedbackType, reviewedType, resolvedType, ownedByMe, pquery) {
 
-    	console.log("ppage", ppage, 
-    			"feedbackType", feedbackType,
-    			"reviewedType", reviewedType, 
-    			"resolvedType", resolvedType, 
-    			"ownedByMe", ownedByMe, 
-    			"pquery", pquery);
-    	  
+      console.log("ppage", ppage, 
+          "feedbackType", feedbackType,
+          "reviewedType", reviewedType, 
+          "resolvedType", resolvedType, 
+          "ownedByMe", ownedByMe, 
+          "pquery", pquery);
+        
         var query = pquery;
         var page = ppage;
 
@@ -129,8 +129,8 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
         };
         
         console.log("pfsParameterObj", pfsParameterObj);
-              
-        $rootScope.glassPane++;
+        
+        gpService.increment();
 
         $http(
           {
@@ -143,7 +143,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
 
           // set pagination variables
           $scope.nRecords = data.totalCount;
@@ -152,7 +152,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
           $scope.feedbackConversations = data.feedbackConversation;
 
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
 
@@ -161,15 +161,15 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
       // if any of the feedbacks are not yet viewed, return false indicating
       // that conversation is not yet viewed
       $scope.isFeedbackViewed = function(conversation) {
-    	      	  
+                
         for (var i = 0; i < conversation.feedback.length; i++) {
           var alreadyViewedBy = conversation.feedback[i].viewedBy;
           var found = false;
           
           for (var j = 0; j < alreadyViewedBy.length; j++) {
-        	  if (alreadyViewedBy[j].userName == $scope.currentUser.userName) {
-              	found = true;
-        	  }
+            if (alreadyViewedBy[j].userName == $scope.currentUser.userName) {
+                found = true;
+            }
           }
           if (found == false) {
             return false;
@@ -198,7 +198,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
       };
       
       function updateFeedbackConversation(conversation) {
-        $rootScope.glassPane++;
+        gpService.increment();
 
         $http({
           url : root_workflow + 'conversation/update',
@@ -209,9 +209,9 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $scope.recordError = 'Error updating feedback conversation.';
           $rootScope.handleHttpError(data, status, headers, config);
         });

@@ -16,7 +16,7 @@ angular
           });
     }).controller(
     'editedListCtrl',
-    function($scope, $rootScope, $http, $location, localStorageService, utilService) {
+    function($scope, $rootScope, $http, $location, localStorageService, utilService, gpService) {
 
       // initialize as empty to indicate still initializing database connection
       $scope.editedRecords = [];
@@ -83,7 +83,7 @@ angular
           'queryRestriction' : queryTerms ? JSON.stringify(queryTerms) : ''		  
         };
         
-        $rootScope.glassPane++;
+        gpService.increment();
 
         $http(
           {
@@ -96,7 +96,7 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
 
           //set pagination variables
           $scope.totalRecords = data.totalCount;
@@ -111,7 +111,7 @@ angular
           $scope.searchPerformed = true;
 
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };

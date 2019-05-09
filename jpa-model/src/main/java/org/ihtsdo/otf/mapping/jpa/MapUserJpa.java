@@ -33,7 +33,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 })
 @Audited
 @XmlRootElement(name = "mapUser")
-@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonIgnoreProperties(ignoreUnknown = true , value={"hibernateLazyInitializer", "handler"})
 public class MapUserJpa implements MapUser {
 
   /** The id. */

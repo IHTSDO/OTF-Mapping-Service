@@ -6,6 +6,7 @@ package org.ihtsdo.otf.mapping.jpa.services;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
+import java.math.BigInteger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.hibernate.SQLQuery;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
@@ -3648,6 +3650,79 @@ public class MappingServiceJpa extends RootServiceJpa
           releaseFileNames.substring(0, releaseFileNames.length() - 1);
     }
     return releaseFileNames;
+  }
+  
+  /* see superclass */
+  public Map<String, String> getTargetCodeForReadyForPublication(Long mapProjectId) throws Exception {
+    
+    final String sql = ""
+        + " SELECT  "
+        + "     b.targetId, mu.team "
+        + " FROM "
+                /*Find all historical map records for each MedDRA sourceId that maps to a current SNOMED targetId*/ 
+        + "     (SELECT  "
+        + "         a.targetId, "
+        + "             a.conceptId, "
+        + "             mra.workflowStatus, "
+        + "             mra.lastModifiedBy_id, "
+        + "             mra.REV "
+        + "     FROM "
+        + "         map_records_AUD mra "
+        + "     JOIN  "
+                /*For each SNOMEDCT target Id, identify all of the MedDRA sourceIds that map to it*/ 
+        + "     (SELECT DISTINCT "
+        + "         me2.targetId, mr.conceptId "
+        + "     FROM "
+        + "         map_records mr, map_entries me2 "
+        + "     WHERE "
+        + "         mr.mapProjectId = :mapProjectId "
+        + "         AND mr.id = me2.mapRecord_Id "
+        + "             AND EXISTS "
+                        /*Get target Ids for all CURRENT finished map records*/ 
+        + "             (SELECT  "
+        + "                 me.targetId "
+        + "             FROM "
+        + "                 map_records mr, map_entries me "
+        + "             WHERE "
+        + "                 mr.mapProjectId = :mapProjectId "
+        + "                     AND me2.targetId = me.targetId "
+        + "                     AND me.targetID IS NOT NULL "
+        + "                     AND targetId != '' "
+        + "                     AND me.mapRecord_id = mr.id "
+        + "                     AND mr.workflowStatus IN ('READY_FOR_PUBLICATION' , 'REVISION') "
+        + "              ) "
+        + "      ) a ON a.conceptId = mra.conceptId "
+                 /* Only look at the historical map record entries for when they were finished */ 
+        + "     WHERE "
+        + "         mra.mapProjectId = :mapProjectId "
+        + "         AND mra.workflowStatus IN ('READY_FOR_PUBLICATION') "
+                /* Order by REV, so the earliest 'READY_FOR_PUBLICATION' historical map record is on top*/ 
+        + "     ORDER BY mra.REV) b "
+        + "         JOIN "
+                /*Get the user that finished each map record*/ 
+        + "     map_users mu ON b.lastModifiedBy_id = mu.id "
+            /* Group by targetId to collapse all of the historical map records, leaving only the first time it was finished */ 
+        + " GROUP BY b.targetId; ";
+    
+    Map<String, String> list = new HashMap<>();
+    
+    try {
+      javax.persistence.Query query = manager.createNativeQuery(sql);
+      query.setParameter("mapProjectId", mapProjectId);
+      
+      List<Object[]> objects = query.getResultList();
+      
+      for(Object[] array : objects) {
+        list.put((String) array[0], (String) array[1]);
+      }
+            
+    } catch(Exception e) {
+      Logger.getLogger(getClass()).error("ERROR IN getTargetCodeForReadyForPublication " + e.getMessage() , e);
+      throw e;
+    }
+    
+    return list;
+    
   }
 
 }

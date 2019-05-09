@@ -45,6 +45,11 @@
 	  <classifier>classes</classifier>
     </dependency>
 
+    <!-- Maven invoker -->
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-invoker</artifactId>
+    </dependency>
 
     <!-- JPA dependencies -->
     <dependency>

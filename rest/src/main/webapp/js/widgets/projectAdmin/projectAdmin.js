@@ -15,7 +15,7 @@ angular
     })
   .controller(
     'projectAdminCtrl',
-    function($scope, $rootScope, $http, $location, localStorageService) {
+    function($scope, $rootScope, $http, $location, localStorageService, gpService) {
 
       $scope.user = localStorageService.get('currentUser');
       $scope.project = localStorageService.get('focusProject');
@@ -43,7 +43,7 @@ angular
         $scope.successMsg = null;
         $scope.errorMsg = null;
 
-        $rootScope.glassPane++;
+        gpService.increment();
         $http({
           url : root_mapping + 'project/id/' + id,
           method : 'GET',
@@ -51,14 +51,14 @@ angular
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $scope.adminProject = data;
 
           // check for duplicate ref set id
           $scope.checkRefSetId();
 
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $scope.errorMsg = 'Could not retrieve map project';
         });
       };
@@ -95,7 +95,7 @@ angular
         if (confirm('ARE YOU ABSOLUTELY SURE?\n\n  Updating a project can have significant implications for any existing mappings.') == false)
           return;
 
-        $rootScope.glassPane++;
+        gpService.increment();
         $http({
           url : root_mapping + 'project/update',
           method : 'POST',
@@ -105,7 +105,7 @@ angular
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
 
           $scope.successMsg = 'Successfully updated project ' + $scope.adminProject.id;
 
@@ -128,7 +128,7 @@ angular
           });
 
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
 
@@ -137,7 +137,7 @@ angular
 
       $scope.copyAdminProject = function() {
 
-        $rootScope.glassPane++;
+        gpService.increment();
 
         $scope.adminProject.id = null;
         $scope.adminProject.refSetId = null;
@@ -151,7 +151,7 @@ angular
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
 
           // set the admin project to response
           $scope.adminProject = data;
@@ -172,7 +172,7 @@ angular
           });
 
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
@@ -182,7 +182,7 @@ angular
         if (confirm('ARE YOU ABSOLUTELY SURE?\n\n  Deleting a project requires recomputing workflow and rerunning indexes, and may cause workflow problems for other projects.') == false)
           return;
 
-        $rootScope.glassPane++;
+        gpService.increment();
         $http({
           url : root_mapping + 'project/delete',
           method : 'DELETE',
@@ -192,7 +192,7 @@ angular
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
 
           $scope.successMsg = 'Successfully deleted project ' + $scope.adminProject.id;
 
@@ -216,7 +216,7 @@ angular
           $scope.adminProject = null;
 
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };

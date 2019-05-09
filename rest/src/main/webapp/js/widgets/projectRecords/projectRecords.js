@@ -36,7 +36,7 @@ angular
   .controller(
     'projectRecordsCtrl',
     function($scope, $rootScope, $http, $routeParams, $location, $uibModal, $q,
-      localStorageService, $sce, appConfig) {
+      localStorageService, $sce, appConfig, gpService) {
       $scope.appConfig = appConfig;
       $scope.page = 'records';
 
@@ -136,13 +136,13 @@ angular
         + ($scope.searchParameters.advancedMode && $scope.searchParameters.descendants == 'excludes' ? 'true'
                 : 'false') ;
 
-        $rootScope.glassPane++;
+        gpService.increment();
 
         // retrieve map records
         $http.post(query_url, pfs).then(
           // Success
           function(response) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             if (!response || !response.data || !response.data.mapRecord) {
               deferred.reject('Bad response');
             } else {
@@ -151,7 +151,7 @@ angular
           },
           // Error
           function(response) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(response.data, response.status,
               response.headers, response.config);
             deferred.reject('Bad request');
@@ -294,7 +294,7 @@ angular
       }
 
       $scope.logout = function() {
-        $rootScope.glassPane++;
+        gpService.increment();
         $http(
           {
             url : root_security + 'logout/user/id/'
@@ -305,10 +305,10 @@ angular
             // save userToken from authentication
             }
           }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $location.path(data);
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $location.path('/');
           $rootScope.handleHttpError(data, status, headers, config);
         });
@@ -376,7 +376,7 @@ angular
           // otherwise, assign this record along the FIX_ERROR_PATH
         } else {
 
-          $rootScope.glassPane++;
+          gpService.increment();
           console
             .debug('Edit record clicked, assigning record along QA_PATH');
           $http(
@@ -418,24 +418,24 @@ angular
                   }
                 }).success(function(data) {
 
-                $rootScope.glassPane--;
+                gpService.decrement();
 
                 // open the record edit view
                 $location.path('/record/review/' + data.id);
               }).error(function(data, status, headers, config) {
-                $rootScope.glassPane--;
+                gpService.decrement();
 
                 $rootScope.handleHttpError(data, status, headers, config);
               });
 
             }).error(function(data, status, headers, config) {
-                $rootScope.glassPane--;
+                gpService.decrement();
 
                 $rootScope.handleHttpError(data, status, headers, config);
               });
 
             }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
 
             $rootScope.handleHttpError(data, status, headers, config);
           });
@@ -513,7 +513,7 @@ angular
           var sList = [ name, email, record.conceptId, record.conceptName,
             $scope.project.refSetId, feedbackMessage ];
 
-          $rootScope.glassPane++;
+          gpService.increment();
           $http({
             url : root_workflow + 'message',
             dataType : 'json',
@@ -525,12 +525,12 @@ angular
 
           }).success(function(data) {
             console.debug('success to sendFeedbackEmail.');
-            $rootScope.glassPane--;
+            gpService.decrement();
             $uibModalInstance.close();
           }).error(function(data, status, headers, config) {
             $uibModalInstance.close();
             $scope.recordError = 'Error sending feedback email.';
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
           });
 
@@ -640,19 +640,19 @@ angular
       $scope.initializeSearchParameters = function() {
 
         console.debug('Getting root trees');
-        $rootScope.glassPane++;
+        gpService.increment();
         $http.get(
           root_mapping + 'treePosition/project/id/' + $scope.focusProject.id
             + '/source').then(
           // Success
           function(response) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             console.debug('Root trees', response);
             $scope.searchParameters.roots = response.data.treePosition;
           },
           // Error
           function(response) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(response.data, response.status,
               response.headers, response.config);
 
@@ -930,15 +930,15 @@ angular
               record.labels = [];
             }
             record.labels.push(label);
-            $rootScope.glassPane++;
+            gpService.increment();
             $http.post(root_workflow + 'createQARecord', record).then(
               function() {
                 $scope.qaSucceeded++;
-                $rootScope.glassPane--;
+                gpService.decrement();
                 deferred.resolve();
               }, function() {
                 $scope.qaFailed++;
-                $rootScope.glassPane--;
+                gpService.decrement();
                 deferred.reject();
               });
           }

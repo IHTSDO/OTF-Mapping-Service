@@ -11,7 +11,7 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
     });
   }).controller(
   'reportCtrl',
-  function($scope, $rootScope, $http, $location, $uibModal, $sce, localStorageService) {
+  function($scope, $rootScope, $http, $location, $uibModal, $sce, localStorageService, gpService) {
 
     // initialize as empty to indicate still initializing
     // database connection
@@ -82,7 +82,7 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
         'queryRestriction' : null
       };
 
-      // $rootScope.glassPane++;
+      // gpService.increment();
 
       // construct the url based on whether report type is
       // null
@@ -99,14 +99,14 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
           'Content-Type' : 'application/json'
         }
       }).success(function(data) {
-        // $rootScope.glassPane--;
+        // gpService.decrement();
         $scope.reports = data.report;
         // set paging parameters
         $scope.nReports = data.totalCount;
         $scope.nReportPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
 
       }).error(function(data, status, headers, config) {
-        // $rootScope.glassPane--;
+        // gpService.decrement();
         $scope.reports = null;
         $rootScope.handleHttpError(data, status, headers, config);
       });
@@ -116,11 +116,11 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
       console.debug('view report', $scope.focusProject, report);
       
       // retrieve the report
-      $rootScope.glassPane++;
+      gpService.increment();
       // obtain the record
       $http.get(root_reporting + 'report/project/id/' + $scope.focusProject.id
             + '/' + report.id).success(function(report) {
-        $rootScope.glassPane--;
+        gpService.decrement();
         
         
         initializeCollapsed(report); // set the collapses
@@ -128,7 +128,7 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
         $scope.reportDisplayed = report; // set the displayed
         // report
       }).error(function(data, status, headers, config) {
-        $rootScope.glassPane--;
+        gpService.decrement();
         $scope.generatedReport = null;
         $rootScope.handleHttpError(data, status, headers, config);
       });
@@ -142,7 +142,7 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
 
     $scope.generateReport = function(definition) {
 
-      $rootScope.glassPane++;
+      gpService.increment();
       // obtain the record
       $http(
         {
@@ -155,10 +155,10 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-        $rootScope.glassPane--;
+        gpService.decrement();
         $scope.generatedReport = data;
       }).error(function(data, status, headers, config) {
-        $rootScope.glassPane--;
+        gpService.decrement();
         $scope.generatedReport = null;
         $rootScope.handleHttpError(data, status, headers, config);
       });
@@ -182,7 +182,7 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
     };
     // if closed, open
     $scope.getResultItems = function(reportResult, page) {
-      $rootScope.glassPane++;
+      gpService.increment();
       // construct a PFS object
       var pfsParameterObj = {
         'startIndex' : (page - 1) * $scope.itemsPerPage,
@@ -201,14 +201,14 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
           'Content-Type' : 'application/json'
         }
       }).success(function(data) {
-        $rootScope.glassPane--;
+        gpService.decrement();
         reportResult.reportResultItems = data.reportResultItem;
         reportResult.page = page;
         reportResult.nPages = Math.ceil(reportResult.ct / $scope.itemsPerPage);
 
         return reportResult;
       }).error(function(data, status, headers, config) {
-        $rootScope.glassPane--;
+        gpService.decrement();
         reportResult.reportResultItems = null;
         $rootScope.handleHttpError(data, status, headers, config);
         return null;
@@ -225,7 +225,7 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
     };
 
     $scope.generateNewReport = function(reportDefinition) {
-      $rootScope.glassPane++;
+      gpService.increment();
       // obtain the record
       $http(
         {
@@ -238,12 +238,12 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-        $rootScope.glassPane--;
+        gpService.decrement();
         $scope.viewReport(data);
         $scope.getReports(1, null, null);
         $scope.definitionMsg = 'Successfully saved definition';
       }).error(function(data, status, headers, config) {
-        $rootScope.glassPane--;
+        gpService.decrement();
         $rootScope.handleHttpError(data, status, headers, config);
       });
     };
@@ -288,7 +288,7 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
     };
 
     $scope.exportReport = function(report) {
-      $rootScope.glassPane++;
+      gpService.increment();
       $http({
         url : root_reporting + 'report/export/' + report.id,
         dataType : 'json',
@@ -309,10 +309,10 @@ angular.module('mapProjectApp.widgets.report', [ 'adf.provider' ]).config(
         a.target = '_blank';
         a.download = getReportFileName(report);
         document.body.appendChild(a);
-        $rootScope.glassPane--;
+        gpService.decrement();
         a.click();
       }).error(function(data, status, headers, config) {
-        $rootScope.glassPane--;
+        gpService.decrement();
         $rootScope.handleHttpError(data, status, headers, config);
       });
     };

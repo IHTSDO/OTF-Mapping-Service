@@ -37,6 +37,16 @@ import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
 /**
  * Workflow path handler for "non legacy path".
  */
+
+// When this was first created in 2014,
+// Team-Based was performed across-teams (i.e. one member from team 1 and
+// another memnber from team 2 mapped the same concept, and any lead can resolve
+// conflicts.)
+
+// In 2019, based on the
+// client's request, this was changed so Team-Based is being performed
+// within-teams (i.e. two members from team 1 map a concept and one lead from
+// team 1 resolve the conflict, and no-one from team 2 can see them)
 public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 
   // The workflow path states defining the Non Legacy Path
@@ -140,11 +150,10 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
         .addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
             WorkflowStatus.CONFLICT_DETECTED, WorkflowStatus.CONFLICT_DETECTED,
             WorkflowStatus.CONFLICT_RESOLVED)));
-    trackingRecordStateToActionMap
-        .put(leadFinishedState,
-            new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING,
-                WorkflowAction.PUBLISH, WorkflowAction.SAVE_FOR_LATER,
-                WorkflowAction.UNASSIGN)));
+    trackingRecordStateToActionMap.put(leadFinishedState,
+        new HashSet<>(
+            Arrays.asList(WorkflowAction.FINISH_EDITING, WorkflowAction.PUBLISH,
+                WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN)));
 
     // Terminal State: No tracking record
   }
@@ -819,8 +828,15 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
     switch (userRole) {
 
       case LEAD:
-        sb.append(" AND userAndWorkflowStatusPairs:CONFLICT_DETECTED_*");
+        // Handle "team" based assignment
+        if (mapProject.isTeamBased() && mapUser.getTeam() != null
+            && !mapUser.getTeam().isEmpty()) {
+          // Only include tracking records assigned to my team
+          sb.append(" AND assignedTeamName:" + mapUser.getTeam());
+        }
+        
         sb.append(" AND NOT assignedUserNames:" + mapUser.getUserName());
+        sb.append(" AND userAndWorkflowStatusPairs:CONFLICT_DETECTED_*");
         sb.append(" AND NOT (" + "userAndWorkflowStatusPairs:CONFLICT_NEW_* OR "
             + "userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_* OR "
             + "userAndWorkflowStatusPairs:CONFLICT_RESOLVED_*)");
@@ -831,19 +847,13 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
         // Handle "team" based assignment
         if (mapProject.isTeamBased() && mapUser.getTeam() != null
             && !mapUser.getTeam().isEmpty()) {
-          // Use "AND NOT" clauses for all members matching my user's
-          // team.
-          sb.append(" AND (assignedUserCount:0 OR (assignedUserCount:1 ");
-          for (final MapUser user : workflowService
-              .getMapUsersForTeam(mapUser.getTeam()).getMapUsers()) {
-            sb.append(" AND NOT assignedUserNames:" + user.getUserName());
-          }
-          sb.append(") )");
-        } else {
-          sb.append(" AND (assignedUserCount:0 OR "
-              + "(assignedUserCount:1 AND NOT assignedUserNames:"
-              + mapUser.getUserName() + "))");
+          // Only include tracking records assigned to my team
+          sb.append(" AND assignedTeamName:" + mapUser.getTeam());
         }
+
+        sb.append(" AND (assignedUserCount:0 OR "
+            + "(assignedUserCount:1 AND NOT assignedUserNames:"
+            + mapUser.getUserName() + "))");
         break;
 
       default:

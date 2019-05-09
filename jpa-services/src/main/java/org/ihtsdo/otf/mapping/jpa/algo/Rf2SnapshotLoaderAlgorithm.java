@@ -205,6 +205,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
 		// Set the input directory
 		File coreInputDir = new File(inputDir);
+		System.out.println("\n\n\n\n********* inputDir: " + inputDir);
 		if (!coreInputDir.exists()) {
 			throw new Exception("Specified input dir missing");
 		}

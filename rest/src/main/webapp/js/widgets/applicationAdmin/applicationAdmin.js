@@ -26,7 +26,8 @@ angular
       '$location',
       'localStorageService',
       '$q',
-      function($scope, $http, $sce, $rootScope, $location, localStorageService, $q) {
+      'gpService',
+      function($scope, $http, $sce, $rootScope, $location, localStorageService, $q, gpService) {
 
         $scope.page = 'project';
 
@@ -1415,7 +1416,7 @@ angular
             'applicationRole' : mapUserApplicationRole
           };
 
-          $rootScope.glassPane++;
+          gpService.increment();
 
           $http({
             url : root_mapping + 'user/add',
@@ -1454,10 +1455,10 @@ angular
                 mapUsers : data.mapUsers
               });
               $scope.allowableMapUsers = localStorageService.get('mapUsers');
-              $rootScope.glassPane--;
+              gpService.decrement();
             }).error(function(data, status, headers, config) {
               $rootScope.handleHttpError(data, status, headers, config);
-              $rootScope.glassPane--;
+              gpService.decrement();
             });
 
           });
@@ -2002,7 +2003,7 @@ angular
               + ' with this report definition type will be deleted as well!') == false)
             return;
 
-          $rootScope.glassPane++;
+          gpService.increment();
 
           $http({
             url : root_reporting + 'definition/delete',
@@ -2013,11 +2014,11 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-            $rootScope.glassPane--;
+            gpService.decrement();
           }).error(function(data, status, headers, config) {
             $scope.recordError = 'Error deleting map reportDefinition from application.';
             $rootScope.handleHttpError(data, status, headers, config);
-            $rootScope.glassPane--;
+            gpService.decrement();
           }).then(function(data) {
             $http({
               url : root_reporting + 'definition/definitions',
@@ -2109,7 +2110,7 @@ angular
           if ($scope.validateReportDefinition(definition) != true)
             return;
 
-          $rootScope.glassPane++;
+          gpService.increment();
 
           $http(
             {
@@ -2122,13 +2123,13 @@ angular
                 'Content-Type' : 'application/json'
               }
             }).success(function(data) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             definition.testReportSuccess = true
             definition.testReportError = null;
             // NOTE: Do not handle this as normal http error
             // instead set a local error variable
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             definition.testReportSuccess = false;
             definition.testReportError = data.replace(/"/g, '');
 
@@ -2145,7 +2146,7 @@ angular
           definition.testReportSuccess = null;
           definition.testReportErrors = null;
 
-          $rootScope.glassPane++;
+          gpService.increment();
 
           $http({
             url : root_reporting + 'definition/update',
@@ -2202,7 +2203,7 @@ angular
             }).error(function(data, status, headers, config) {
               $rootScope.handleHttpError(data, status, headers, config);
             }).then(function() {
-              $rootScope.glassPane--;
+              gpService.decrement();
             });
 
           });
@@ -2213,7 +2214,7 @@ angular
           // if validation returns an error, simply return
           if ($scope.validateReportDefinition(definition) != true)
             return;
-          $rootScope.glassPane++;
+          gpService.increment();
           $http({
             url : root_reporting + 'definition/add',
             dataType : 'json',
@@ -2250,7 +2251,7 @@ angular
             }).error(function(data, status, headers, config) {
               $rootScope.handleHttpError(data, status, headers, config);
             }).then(function() {
-              $rootScope.glassPane--;
+              gpService.decrement();
             });
 
           });
@@ -2260,7 +2261,7 @@ angular
           if (confirm('Are you sure that you want to delete a map QA Check Definition?') == false)
             return;
 
-          $rootScope.glassPane++;
+          gpService.increment();
 
           $http({
             url : root_reporting + 'definition/delete',
@@ -2271,12 +2272,12 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-            $rootScope.glassPane--;
+            gpService.decrement();
 
           }).error(function(data, status, headers, config) {
             $scope.recordError = 'Error deleting map qaCheckDefinition from application.';
             $rootScope.handleHttpError(data, status, headers, config);
-            $rootScope.glassPane--;
+            gpService.decrement();
 
           }).then(function(data) {
             $http({
@@ -2326,7 +2327,7 @@ angular
           if ($scope.validateReportDefinition(definition) != true)
             return;
 
-          $rootScope.glassPane++;
+          gpService.increment();
 
           $http(
             {
@@ -2339,7 +2340,7 @@ angular
                 'Content-Type' : 'application/json'
               }
             }).success(function(data) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             definition.testQaSuccess = true;
             definition.testQaError = null;
 
@@ -2348,7 +2349,7 @@ angular
             // instead set a local error
             // variable
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             definition.testQaSuccess = false;
             definition.testQaError = data.replace(/"/g, '');
           });
@@ -2369,7 +2370,7 @@ angular
           definition.testQaSuccess = null;
           definition.testQaErrors = null;
 
-          $rootScope.glassPane++;
+          gpService.increment();
           $http({
             url : root_reporting + 'definition/update',
             dataType : 'json',
@@ -2395,7 +2396,7 @@ angular
             }).success(
 
             function(data) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $scope.qaCheckDefinitions = data.reportDefinition;
               for (var j = 0; j < $scope.focusProject.reportDefinition.length; j++) {
                 if (definition.id === $scope.focusProject.reportDefinition[j].id) {
@@ -2427,7 +2428,7 @@ angular
             }).error(
 
             function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
             });
 
@@ -2551,7 +2552,7 @@ angular
           project.mapRelationStyle = project.mapRelationStyle.key;
           project.mapRefsetPattern = project.mapRefsetPattern.key;
 
-          $rootScope.glassPane++;
+          gpService.increment();
           $http({
             url : root_mapping + 'project/delete',
             method : 'DELETE',
@@ -2561,7 +2562,7 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-            $rootScope.glassPane--;
+            gpService.decrement();
 
             $scope.successMsg = 'Successfully deleted project ' + project.id;
 
@@ -2582,7 +2583,7 @@ angular
             });
 
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
           });
         };
@@ -2693,7 +2694,7 @@ angular
               return;
             }
 
-            $rootScope.glassPane++;
+            gpService.increment();
 
             $http({
               url : root_mapping + 'project/add',
@@ -2704,7 +2705,7 @@ angular
                 'Content-Type' : 'application/json'
               }
             }).success(function(data) {
-              $rootScope.glassPane--;
+              gpService.decrement();
 
               // set
               // the
@@ -2741,7 +2742,7 @@ angular
               });
 
             }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
             });
           });
@@ -2790,7 +2791,7 @@ angular
           if (confirm('Are you sure that you want to delete ' + terminologyVersion + '?') == false)
             return;
           
-          $rootScope.glassPane++;
+          gpService.increment();
 
           var termVerArray = terminologyVersion.split(' ');
           var terminology = termVerArray[0];
@@ -2806,17 +2807,17 @@ angular
             //Reload terminology metadata
             var promise = reloadTerminologies();
             promise.then(function(data){
-              $rootScope.glassPane--;
+              gpService.decrement();
             });
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $scope.recordError = 'Error deleting terminology from application.';
             $rootScope.handleHttpError(data, status, headers, config);
           });
         };        
     
         $scope.downloadTerminologyGmdn = function() {
-          $rootScope.glassPane++;
+          gpService.increment();
          
           // download the latest version of gmdn from SFTP   
           $http({
@@ -2826,10 +2827,10 @@ angular
               //Reload downloaded gmdn version metadata
               var promise = getDownloadedGmdnVersions();
               promise.then(function(data){
-                $rootScope.glassPane--;
+                gpService.decrement();
               });
             }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;          
+            gpService.decrement();          
             $rootScope.handleHttpError(data, status, headers, config);
           });
         };
@@ -2846,7 +2847,7 @@ angular
             return;
           }
 
-          $rootScope.glassPane++;
+          gpService.increment();
 
           // download the latest version of gmdn from SFTP
           $http({
@@ -2874,10 +2875,10 @@ angular
 
             } 
             
-            $rootScope.glassPane--;
+            gpService.decrement();
 
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
           });
         };
@@ -2912,7 +2913,7 @@ angular
         
         // terminology/load/aws/{terminology}
         $scope.loadTerminologyAws = function(terminology, version, scope) {
-          $rootScope.glassPane++;
+          gpService.increment();
 
           var warnings = '';
           for (var i = 0; i < $scope.terminologyVersionPairs.length; i++) {
@@ -2937,7 +2938,7 @@ angular
           console.log("warnings", warnings);
           
           if (warnings.length > 0  && !confirm(warnings)) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             return;
           }
           
@@ -2946,7 +2947,7 @@ angular
             loadTerminologyAwsRf2Snapshot(terminology, loadVersion, scope);
           }
           reloadTerminologies();
-          $rootScope.glassPane--;          
+          gpService.decrement();          
         };
         
         
@@ -2959,7 +2960,7 @@ angular
         
         // terminology/load/gmdn
         $scope.loadTerminologyGmdn = function(gmdnVersion) {
-          $rootScope.glassPane++;
+          gpService.increment();
 
           var errors = '';
           for (var i = 0; i < $scope.terminologyVersionPairs.length; i++) {
@@ -2972,7 +2973,7 @@ angular
 
           if (errors.length > 0) {
             alert(errors);
-            $rootScope.glassPane--;
+            gpService.decrement();
             return;
           }
           
@@ -2988,10 +2989,10 @@ angular
               //Reload terminology metadata
               var promise = reloadTerminologies();
               promise.then(function(data){
-                $rootScope.glassPane--;
+                gpService.decrement();
               });
             }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;          
+            gpService.decrement();          
             $rootScope.handleHttpError(data, status, headers, config);
           });
         };
@@ -2999,13 +3000,13 @@ angular
         
         // load load Map Record Rf2 Complex Map
         $scope.loadMapRecordRf2ComplexMap = function(loadTerminology) {
-          $rootScope.glassPane++;
+          gpService.increment();
 
           var errors = '';
 
           if (error.length > 0) {
             alert(errors);
-            $rootScope.glassPane--;
+            gpService.decrement();
             return;
           }
           
@@ -3037,7 +3038,7 @@ angular
             }).success(function(data) {
               //nothing
             }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;          
+            gpService.decrement();          
             $rootScope.handleHttpError(data, status, headers, config);
           });
 
@@ -3046,13 +3047,13 @@ angular
         
         // load Map Record Rf2 Simple Map
         $scope.loadMapRecordRf2SimpleMap = function(loadTerminology) {
-          $rootScope.glassPane++;
+          gpService.increment();
 
           var errors = '';
 
           if (error.length > 0) {
             alert(errors);
-            $rootScope.glassPane--;
+            gpService.decrement();
             return;
           }
           
@@ -3084,7 +3085,7 @@ angular
             }).success(function(data) {
               //nothing
             }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;          
+            gpService.decrement();          
             $rootScope.handleHttpError(data, status, headers, config);
           });
 
@@ -3092,13 +3093,13 @@ angular
         
         // load terminology Claml
         $scope.loadTerminologyClaml = function(loadTerminology) {
-          $rootScope.glassPane++;
+          gpService.increment();
 
           var errors = '';
 
           if (error.length > 0) {
             alert(errors);
-            $rootScope.glassPane--;
+            gpService.decrement();
             return;
           }
           
@@ -3112,7 +3113,7 @@ angular
             }).success(function(data) {
               //nothing
             }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;          
+            gpService.decrement();          
             $rootScope.handleHttpError(data, status, headers, config);
           });
 
@@ -3121,13 +3122,13 @@ angular
         
         // remove Map Record
         $scope.removeMapRecord = function(loadTerminology) {
-          $rootScope.glassPane++;
+          gpService.increment();
 
           var errors = '';
 
           if (error.length > 0) {
             alert(errors);
-            $rootScope.glassPane--;
+            gpService.decrement();
             return;
           }
           
@@ -3139,7 +3140,7 @@ angular
             }).success(function(data) {
               //nothing
             }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;          
+            gpService.decrement();          
             $rootScope.handleHttpError(data, status, headers, config);
           });
 
@@ -3148,13 +3149,13 @@ angular
         
         // remove terminology
         $scope.removeTerminology = function(removeTerminology) {
-          $rootScope.glassPane++;
+          gpService.increment();
 
           var errors = '';
 
           if (error.length > 0) {
             alert(errors);
-            $rootScope.glassPane--;
+            gpService.decrement();
             return;
           }
           
@@ -3167,7 +3168,7 @@ angular
             }).success(function(data) {
               //nothing
             }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;          
+            gpService.decrement();          
             $rootScope.handleHttpError(data, status, headers, config);
           });
 
@@ -3175,13 +3176,13 @@ angular
         
         // load terminology Rf2 delta
         $scope.loadTerminologyRf2Delta = function(loadTerminology) {
-          $rootScope.glassPane++;
+          gpService.increment();
 
           var errors = '';
 
           if (error.length > 0) {
             alert(errors);
-            $rootScope.glassPane--;
+            gpService.decrement();
             return;
           }
           
@@ -3195,7 +3196,7 @@ angular
             }).success(function(data) {
               //nothing
             }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;          
+            gpService.decrement();          
             $rootScope.handleHttpError(data, status, headers, config);
           });
 
@@ -3203,7 +3204,7 @@ angular
         
         // load terminology Rf2 snapshot
         function loadTerminologyAwsRf2Snapshot(terminology, version, scope) {
-          $rootScope.glassPane++;
+          gpService.increment();
 
           var errors = '';
           for (var i = 0; i < $scope.terminologyVersionPairs.length; i++) {
@@ -3222,7 +3223,7 @@ angular
           
           if (errors.length > 0) {
             alert(errors);
-            $rootScope.glassPane--;
+            gpService.decrement();
             return;
           }
           
@@ -3238,9 +3239,9 @@ angular
             data: null, 
             headers: { 'Content-Type' : 'text/plain' }
             }).success(function(data) {
-              $rootScope.glassPane--;
+              gpService.decrement();
             }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;          
+            gpService.decrement();          
             $rootScope.handleHttpError(data, status, headers, config);
           });
 
@@ -3249,13 +3250,13 @@ angular
         
         // load terminology simple
         $scope.loadTerminologySimple = function(loadTerminology) {
-          $rootScope.glassPane++;
+          gpService.increment();
 
           var errors = '';
 
           if (error.length > 0) {
             alert(errors);
-            $rootScope.glassPane--;
+            gpService.decrement();
             return;
           }
           
@@ -3268,7 +3269,7 @@ angular
             }).success(function(data) {
               //nothing
             }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;          
+            gpService.decrement();          
             $rootScope.handleHttpError(data, status, headers, config);
           });
 
@@ -3277,13 +3278,13 @@ angular
         
         // reload terminology Rf2 snapshot
         $scope.reloadTerminologyRf2Snapshot = function(loadTerminology) {
-          $rootScope.glassPane++;
+          gpService.increment();
 
           var errors = '';
 
           if (error.length > 0) {
             alert(errors);
-            $rootScope.glassPane--;
+            gpService.decrement();
             return;
           }
           
@@ -3311,7 +3312,7 @@ angular
             }).success(function(data) {
               //nothing
             }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;          
+            gpService.decrement();          
             $rootScope.handleHttpError(data, status, headers, config);
           });
 
@@ -3319,13 +3320,13 @@ angular
         
         // reload map record
         $scope.reloadMapRecord = function(loadTerminology) {
-          $rootScope.glassPane++;
+          gpService.increment();
 
           var errors = '';
 
           if (error.length > 0) {
             alert(errors);
-            $rootScope.glassPane--;
+            gpService.decrement();
             return;
           }
           
@@ -3352,7 +3353,7 @@ angular
             }).success(function(data) {
               //nothing
             }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;          
+            gpService.decrement();          
             $rootScope.handleHttpError(data, status, headers, config);
           });
 

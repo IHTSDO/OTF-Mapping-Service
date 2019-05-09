@@ -1434,8 +1434,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       // get the map relation name for the human readable file
       MapRelation mapRelation = null;
       for (final MapRelation mr : mapProject.getMapRelations()) {
-        if (mr.getTerminologyId()
-            .equals(member.getMapRelationId().toString())) {
+        if (mr.getTerminologyId() != null && member.getMapRelationId() != null && 
+            mr.getTerminologyId().equals(member.getMapRelationId().toString())) {
           mapRelation = mr;
         }
       }

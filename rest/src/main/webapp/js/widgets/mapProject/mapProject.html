@@ -2,33 +2,35 @@
 
 <div ng-show="project != null">
 
-  <h4>{{project.name}}</h4>
+	<h4>{{project.name}}</h4>
 
-  <button class="btn btn-xs btn-primary" ng-click="goProjectDetails()">Project
-    Details</button>
-  <button class="btn btn-xs btn-primary" ng-click="goMapRecords()">Map
-    Records</button>
-  <button ng-show="project.sourceTerminology === 'SNOMEDCT' || project.sourceTerminology === 'SNOMEDCT_US'"
-    class="btn btn-xs btn-primary" ng-click="openConceptBrowser()">SNOMEDCT
-    Browser</button>
-    <button 
-    class="btn btn-xs btn-primary" ng-click="openTerminologyBrowser()">Terminology
-    Browser</button>
-  <button class="btn btn-xs btn-primary" ng-show="indexViewerExists == true"
-    ng-click="openIndexViewer()">Index Viewer</button>
-  <span ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
-    <button class="btn btn-xs btn-primary" ng-click="showDelta()">Show
-      Delta</button>
-  </span>
-  <span ng-show="currentRole=='Administrator'">
-    <button class="btn btn-xs btn-primary" ng-click="computeWorkflow()">Compute
-      Workflow</button>
-    <button class="btn btn-xs btn-primary" ng-click="computeNames()">Compute
-      Names</button>
-  </span>
+	<button class="btn btn-xs btn-primary" ng-click="goProjectDetails()">Project
+		Details</button>
+	<button class="btn btn-xs btn-primary" ng-click="goMapRecords()">Map
+		Records</button>
+	<button
+		ng-show="project.sourceTerminology === 'SNOMEDCT' || project.sourceTerminology === 'SNOMEDCT_US' || project.destinationTerminology === 'SNOMEDCT' || project.destinationTerminology === 'SNOMEDCT_US'"
+		class="btn btn-xs btn-primary" ng-click="openConceptBrowser()">SNOMEDCT
+		Browser</button>
+	<button class="btn btn-xs btn-primary"
+		ng-click="openTerminologyBrowser()">{{project.terminologyButtonText}} Browser</button>
+	<button class="btn btn-xs btn-primary"
+		ng-show="indexViewerExists == true" ng-click="openIndexViewer()">Index
+		Viewer</button>
+	<span 
+		ng-show="showDeltaIsEnabled && (currentRole === 'Lead' || currentRole === 'Administrator')">
+		<button class="btn btn-xs btn-primary" ng-click="showDelta()">Show
+			Delta</button>
+	</span>
+    <span ng-show="currentRole=='Administrator'">
+		<button class="btn btn-xs btn-primary" ng-click="computeWorkflow()">Compute
+			Workflow</button>
+		<button class="btn btn-xs btn-primary" ng-click="computeNames()">Compute
+			Names</button>
+	</span>
 
 
-  <!--  REMOVED FOR LIVE VERSION
+	<!--  REMOVED FOR LIVE VERSION
    <span ng-show="currentRole === 'Administrator'">
     <button class="btn btn-xs btn-primary" ng-click="generateTestingStateForKLININ()">Reset Records for KLI/NIN</button>
   </span>

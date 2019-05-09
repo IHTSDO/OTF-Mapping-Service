@@ -11,7 +11,7 @@ angular.module('mapProjectApp.widgets.qaCheck', [ 'adf.provider' ]).config(
     });
   }).controller(
   'qaCheckCtrl',
-  function($scope, $rootScope, $http, $location, $uibModal, $sce, localStorageService) {
+  function($scope, $rootScope, $http, $location, $uibModal, $sce, localStorageService, gpService) {
 
     // initialize as empty to indicate still initializing
     // database connection
@@ -64,7 +64,7 @@ angular.module('mapProjectApp.widgets.qaCheck', [ 'adf.provider' ]).config(
 
     $scope.getResultItems = function(reportResult, page) {
 
-      $rootScope.glassPane++;
+      gpService.increment();
 
       // construct a PFS object
       var pfsParameterObj = {
@@ -84,14 +84,14 @@ angular.module('mapProjectApp.widgets.qaCheck', [ 'adf.provider' ]).config(
           'Content-Type' : 'application/json'
         }
       }).success(function(data) {
-        $rootScope.glassPane--;
+        gpService.decrement();
         reportResult.reportResultItems = data.reportResultItem;
         reportResult.page = page;
         reportResult.nPages = Math.ceil(reportResult.ct / $scope.itemsPerPage);
 
         return reportResult;
       }).error(function(data, status, headers, config) {
-        $rootScope.glassPane--;
+        gpService.decrement();
         reportResult.reportResultItems = null;
         $rootScope.handleHttpError(data, status, headers, config);
         return null;
@@ -99,7 +99,7 @@ angular.module('mapProjectApp.widgets.qaCheck', [ 'adf.provider' ]).config(
     };
 
     $scope.generateNewReport = function(reportDefinition) {
-      $rootScope.glassPane++;
+      gpService.increment();
 
       // obtain the record
       $http(
@@ -113,7 +113,7 @@ angular.module('mapProjectApp.widgets.qaCheck', [ 'adf.provider' ]).config(
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-        $rootScope.glassPane--;
+        gpService.decrement();
         // clear the items to prevent display of potentially enormous list
         for (var i = 0; i < data.results.length; i++) {
           data.results[i].resultsItems = [];
@@ -133,13 +133,13 @@ angular.module('mapProjectApp.widgets.qaCheck', [ 'adf.provider' ]).config(
         // $scope.reportDisplayed.results[0], 1);
         // }
       }).error(function(data, status, headers, config) {
-        $rootScope.glassPane--;
+        gpService.decrement();
         $rootScope.handleHttpError(data, status, headers, config);
       });
     };
 
     $scope.exportReport = function(report) {
-      $rootScope.glassPane++;
+      gpService.increment();
       $http({
         url : root_reporting + 'report/export/' + $scope.reportDisplayed.id,
         dataType : 'json',
@@ -161,11 +161,11 @@ angular.module('mapProjectApp.widgets.qaCheck', [ 'adf.provider' ]).config(
         a.target = '_blank';
         a.download = getReportFileName(report);
         document.body.appendChild(a);
-        $rootScope.glassPane--;
+        gpService.decrement();
         a.click();
 
       }).error(function(data, status, headers, config) {
-        $rootScope.glassPane--;
+        gpService.decrement();
         $rootScope.handleHttpError(data, status, headers, config);
       });
     };
@@ -176,7 +176,7 @@ angular.module('mapProjectApp.widgets.qaCheck', [ 'adf.provider' ]).config(
     };
 
     $scope.addToQAWorkflow = function(report) {
-      $rootScope.glassPane++;
+      gpService.increment();
 
       $http({
         url : root_workflow + 'createQAWork',
@@ -187,12 +187,12 @@ angular.module('mapProjectApp.widgets.qaCheck', [ 'adf.provider' ]).config(
           'Content-Type' : 'application/json'
         }
       }).success(function(data) {
-        $rootScope.glassPane--;
+        gpService.decrement();
         $rootScope.$broadcast('qaCheckWidget.notification.qaWorkCreated');
         $scope.reportDisplayed = null;
         $scope.definitionMsg = 'Successfully added concepts to qa workflow';
       }).error(function(data, status, headers, config) {
-        $rootScope.glassPane--;
+        gpService.decrement();
         $rootScope.handleHttpError(data, status, headers, config);
       });
     };

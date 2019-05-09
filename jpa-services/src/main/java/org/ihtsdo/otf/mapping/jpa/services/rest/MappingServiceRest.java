@@ -19,7 +19,6 @@ import org.ihtsdo.otf.mapping.helpers.MapRelationListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
-import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
@@ -531,6 +530,19 @@ public interface MappingServiceRest {
 	   */
 	MapRecordListJpa getMapRecordsForConceptIdHistorical(String conceptId, Long mapProjectId, String authToken)
 			throws Exception;
+	
+	/**
+   * Gets the users involved with a concept
+   * id.
+   *
+   * @param conceptId the concept id
+   * @param mapProjectId the map project id
+   * @param authToken the auth token
+   * @return the map users for concept id historical
+   * @throws Exception the exception
+   */
+	MapUserListJpa getMapRecordsForConceptIdHistoricalMapUsers(String conceptId, Long mapProjectId, String authToken)
+    throws Exception;
 
 	/**
 	 * Returns delimited page of Published or Ready For Publication MapRecords
@@ -642,10 +654,10 @@ public interface MappingServiceRest {
 			throws Exception;
 
 	// /////////////////////////////////////////////////////
-	// Tree Position Routines for Terminology Browser
+	// Tree Position Routines for Terminology Browser based on destination terminology
 	// /////////////////////////////////////////////////////
 	/**
-	 * Gets tree positions for concept.
+	 * Gets tree positions for concept based on destination terminology.
 	 *
 	 * @param terminologyId the terminology id
 	 * @param mapProjectId the contextual project of this tree, used for
@@ -656,6 +668,25 @@ public interface MappingServiceRest {
 	 */
 
 	TreePositionList getTreePositionWithDescendantsForConceptAndMapProject(String terminologyId, Long mapProjectId,
+			String authToken
+
+	) throws Exception;
+	
+	// /////////////////////////////////////////////////////
+	// Tree Position Routines for Terminology Browser base on source terminology
+	// /////////////////////////////////////////////////////
+	/**
+	 * Gets tree positions for concept base on source terminology.
+	 *
+	 * @param terminologyId the terminology id
+	 * @param mapProjectId the contextual project of this tree, used for
+	 *          determining valid codes
+	 * @param authToken the auth token
+	 * @return the search result list
+	 * @throws Exception the exception
+	 */
+
+	TreePositionList getSourceTreePositionWithDescendantsForConceptAndMapProject(String terminologyId, Long mapProjectId,
 			String authToken
 
 	) throws Exception;
@@ -691,6 +722,19 @@ public interface MappingServiceRest {
 	   * @throws Exception the exception
 	   */
 	TreePositionList getTreePositionGraphsForQueryAndMapProject(String query, Long mapProjectId,
+			PfsParameterJpa pfsParameter, String authToken) throws Exception;
+	
+	/**
+	   * Gets tree positions for source concept query.
+	   *
+	   * @param query the query
+	   * @param mapProjectId the map project id
+	   * @param pfsParameter the pfs parameter
+	   * @param authToken the auth token
+	   * @return the root-level trees corresponding to the query
+	   * @throws Exception the exception
+	   */
+	TreePositionList getSourceTreePositionGraphsForQueryAndMapProject(String query, Long mapProjectId,
 			PfsParameterJpa pfsParameter, String authToken) throws Exception;
 
 	/**
