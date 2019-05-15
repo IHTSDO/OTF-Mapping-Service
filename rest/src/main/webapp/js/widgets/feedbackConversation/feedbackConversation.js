@@ -114,6 +114,7 @@ angular
           function(data) {
             $scope.conversation = data;
             $scope.markFeedbackViewed($scope.conversation, $scope.currentUser);
+            $scope.setIsMarkResolvedDisabled();
             initializeReturnRecipients($scope.conversation);
 
             $scope.record = null;
@@ -296,13 +297,29 @@ angular
         plugins : 'autolink link image charmap searchreplace',
         toolbar : 'undo redo | styleselect | bold italic underline strikethrough | charmap link image',
       };
+      
+      //default
+      $scope.isMarkResolvedDisabled = true;
+
+      $scope.setIsMarkResolvedDisabled = function(){
+        if ( $scope.conversation != null 
+            && (($scope.conversation.userName === $scope.currentUser.userName
+                || $scope.currentRole === 'Lead') &&
+                $scope.conversation.feedback && $scope.conversation.feedback.length > 0)) {
+              $scope.isMarkResolvedDisabled = false; 
+        } else {
+          $scope.isMarkResolvedDisabled = true;
+        }
+      }
 
       // send feedback on already started conversation
       $scope.sendFeedback = function(record, feedbackMessage, conversation,
         recipientList) {
 
-        if($scope.conversation.resolved){          
-          window.alert('This feedback conversation is closed.  Please uncheck Mark resolved to submit feedback.');
+        if($scope.conversation.resolved && $scope.currentRole !== 'Lead'){          
+          if (window.confirm('This feedback conversation is closed.  Please uncheck Mark resolved to submit feedback.')) {
+            $scope.isMarkResolvedDisabled = false;
+          }
           return;
         }        
         if (feedbackMessage == null || feedbackMessage == undefined
