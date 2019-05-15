@@ -91,10 +91,9 @@
   disabled> Record is inactive. </span>
 <input type="checkbox" ng-model="markUnviewed" ng-click="toggleMarkUnviewed()">
 Mark unviewed
-<span
-  ng-show="(conversation.userName == currentUser.userName || currentRole == 'Lead') &&
-  conversation.feedback && conversation.feedback.length > 0">
+<span>
   <input type="checkbox" ng-model="conversation.resolved"
+    ng-disabled="isMarkResolvedDisabled"
     ng-click="updateFeedbackConversation(conversation)"> Mark resolved
 </span>
 <br>
