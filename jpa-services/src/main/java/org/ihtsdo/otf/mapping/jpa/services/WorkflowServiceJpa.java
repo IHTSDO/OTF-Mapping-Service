@@ -284,7 +284,13 @@ public class WorkflowServiceJpa extends MappingServiceJpa
         .setParameter("mapProjectId", mapProject.getId())
         .setParameter("terminologyId", terminologyId);
 
-    return (TrackingRecord) query.getSingleResult();
+    List results = query.getResultList();
+    Object foundObject = null;
+    if(!results.isEmpty()){
+        foundObject = results.get(0);
+    }
+
+    return (TrackingRecord) foundObject;
   }
 
   /* see superclass */
