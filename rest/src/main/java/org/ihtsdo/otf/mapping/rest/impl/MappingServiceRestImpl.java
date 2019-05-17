@@ -3406,7 +3406,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public SearchResultList getUnmappedDescendantsForConcept(
-    @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("id") String terminologyId,
+    @ApiParam(value = "Concept terminology id, e.g. 22298006", required = true) @PathParam("terminologyId") String terminologyId,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
