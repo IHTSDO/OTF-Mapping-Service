@@ -102,8 +102,9 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
 		if (!new File(this.inputDir, CONCEPT_FILE_NAME).exists()) {
 			throw new Exception("The " + CONCEPT_FILE_NAME + " file of the input directory does not exist");
 		}
-		if (!new File(this.inputDir, PARENT_CHILD_FILE_NAME).exists()) {
-			throw new Exception("The " + PARENT_CHILD_FILE_NAME + " file of the input directory does not exist");
+		if (new File(this.inputDir, PARENT_CHILD_FILE_NAME).exists()) {
+		    log.info("The " + PARENT_CHILD_FILE_NAME + " file of the input directory does not exist. Making default isa relationships to root.");
+            parChdFileExists = false;
 		} else {
 			parChdFileExists = true;
 		}
