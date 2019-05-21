@@ -1,5 +1,5 @@
 /*
- *    Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.mojo;
 
@@ -108,7 +108,7 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     //
     // Add lead users
     //
-/*    Logger.getLogger(getClass()).info("Add new lead users");
+    Logger.getLogger(getClass()).info("Add new lead users");
     MapUserJpa lead1 = (MapUserJpa) securityService.getMapUser("lead1");
     if (lead1 == null) {
       lead1 = makeMapUser("lead1", "Lead1");
@@ -124,11 +124,11 @@ public class GenerateDemoDataMojo extends AbstractMojo {
       lead3 = makeMapUser("lead3", "Lead3");
       lead3 = (MapUserJpa) securityService.addMapUser(lead3);
     }
-*/
+
     //
     // Add specialist users
     //
-/*    Logger.getLogger(getClass()).info("Add new specialist users");
+    Logger.getLogger(getClass()).info("Add new specialist users");
     MapUserJpa specialist1 =
         (MapUserJpa) securityService.getMapUser("specialist1");
     if (specialist1 == null) {
@@ -147,11 +147,11 @@ public class GenerateDemoDataMojo extends AbstractMojo {
       specialist3 = makeMapUser("specialist3", "Specialist3");
       specialist3 = (MapUserJpa) securityService.addMapUser(specialist3);
     }
-*/
+
     //
     // Mapping relationships
     //
-/*    final Set<MapRelation> mapRelations = new HashSet<>();
+    final Set<MapRelation> mapRelations = new HashSet<>();
     for (final String rel : new String[] {
         "exact", "partial", "narrower", "broader", "none"
     }) {
@@ -169,11 +169,11 @@ public class GenerateDemoDataMojo extends AbstractMojo {
       mappingService.addMapRelation(relation);
       mapRelations.add(relation);
     }
-*/
+
     //
     // Mapping Advice
     //
-/*    final Set<MapAdvice> mapAdvices = new HashSet<>();
+    final Set<MapAdvice> mapAdvices = new HashSet<>();
     for (final String adv : new String[] {
         "Test advice 1", "Test advice 2", "Test advice 3", "Null target advice"
     }) {
@@ -189,84 +189,152 @@ public class GenerateDemoDataMojo extends AbstractMojo {
       mappingService.addMapAdvice(advice);
       mapAdvices.add(advice);
     }
-*/
+
     //
-    // Create project SNOMEDCT to MedDRA project
+    // Create project Allergy to SNOMED project
     //
     Logger.getLogger(getClass())
-        .info("Create project SNOMEDCT to MedDRA with REVIEW");
+        .info("Create project ALLERGY to SNOMEDCT with REVIEW");
     MapProject project1 = new MapProjectJpa();
-    project1.setDestinationTerminology("MEDDRA");
-    project1.setDestinationTerminologyVersion("latest");
+    project1.setDestinationTerminology("SNOMEDCT");
+    project1.setDestinationTerminologyVersion("20140731");
     project1.setGroupStructure(true);
     project1.setMapRefsetPattern(MapRefsetPattern.ComplexMap);
-    project1.setName("SNOMEDCT to MedDRA with REVIEW");
+    project1.setName("ALLERGY to SNOMEDCT with REVIEW");
     project1.setProjectSpecificAlgorithmHandlerClass(
-        "org.ihtsdo.otf.mapping.jpa.handlers.DefaultProjectSpecificAlgorithmHandler");
+        "org.ihtsdo.otf.mapping.jpa.handlers.AllergyProjectSpecificAlgorithmHandler");
     project1.setPropagatedFlag(false);
-    project1.setPublic(false);
-    project1.setTeamBased(true);
+    project1.setPublic(true);
     project1.setRefSetId("12345");
-    project1.setRefSetName("SNOMED to MedDRA Refset");
-    project1.setSourceTerminology("SNOMEDCT");
+    project1.setRefSetName("Allergy to SNOMED Refset");
+    project1.setSourceTerminology("ALLERGY");
     project1.setSourceTerminologyVersion("latest");
-    project1.setWorkflowType(WorkflowType.CONFLICT_PROJECT);
-    project1.setMapRelationStyle(RelationStyle.NONE);
-    project1.getScopeConcepts().add("404684003");
-    project1.setScopeDescendantsFlag(false);
-    /*    project1.setMapRelations(mapRelations);
+    project1.setWorkflowType(WorkflowType.REVIEW_PROJECT);
+    project1.setMapRelationStyle(RelationStyle.RELATIONSHIP_STYLE);
+    project1.getScopeConcepts().add("root");
+    project1.setScopeDescendantsFlag(true);
+    project1.setMapRelations(mapRelations);
     project1.getMapLeads().add(lead1);
     project1.getMapLeads().add(lead2);
     project1.getMapSpecialists().add(specialist1);
     project1.getMapSpecialists().add(specialist2);
     project1.getMapSpecialists().add(specialist3);
-*/
+
     // Add project
     Logger.getLogger(getClass()).info("  add " + project1);
     project1 = mappingService.addMapProject(project1);
     Logger.getLogger(getClass()).info("  compute workflow");
     workflowService.computeWorkflow(project1);
 
-    //
-    // Create project SNOMEDCT to MedDRA project
-    //
+    // Create project MEDICATION to RXNORM with REVIEW
     Logger.getLogger(getClass())
-        .info("Create project MedDRA to SNOMEDCT with REVIEW");
+        .info("Create project MEDICATION to RXNORM with REVIEW");
     MapProject project2 = new MapProjectJpa();
-    project2.setDestinationTerminology("SNOMEDCT");
-    project2.setDestinationTerminologyVersion("latest");
+    project2.setDestinationTerminology("RXNORM");
+    project2.setDestinationTerminologyVersion("2016AA");
     project2.setGroupStructure(true);
     project2.setMapRefsetPattern(MapRefsetPattern.ComplexMap);
-    project2.setName("MedDRA to SNOMEDCT with REVIEW");
+    project2.setName("MEDICATION to RXNORM with REVIEW");
     project2.setProjectSpecificAlgorithmHandlerClass(
-        "org.ihtsdo.otf.mapping.jpa.handlers.DefaultProjectSpecificAlgorithmHandler");
+        "org.ihtsdo.otf.mapping.jpa.handlers.MedicationProjectSpecificAlgorithmHandler");
     project2.setPropagatedFlag(false);
-    project2.setPublic(false);
-    project2.setTeamBased(true);
-    project2.setRefSetId("67890");
-    project2.setRefSetName("MedDRA to SNOMEDCT Refset");
-    project2.setSourceTerminology("MEDDRA");
+    project2.setPublic(true);
+    project2.setRefSetId("23456");
+    project2.setRefSetName("Medication to RXNORM Mapping");
+    project2.setSourceTerminology("MEDICATION");
     project2.setSourceTerminologyVersion("latest");
-    project2.setWorkflowType(WorkflowType.CONFLICT_PROJECT);
-    project2.setMapRelationStyle(RelationStyle.NONE);
-    //project2.getScopeConcepts().add("root");
-    project2.setScopeDescendantsFlag(false);
-/*    project2.setMapRelations(mapRelations);
+    project2.setWorkflowType(WorkflowType.REVIEW_PROJECT);
+    project2.setMapRelationStyle(RelationStyle.RELATIONSHIP_STYLE);
+    project2.getScopeConcepts().add("root");
+    project2.setScopeDescendantsFlag(true);
+    project2.setMapRelations(mapRelations);
     project2.getMapLeads().add(lead1);
     project2.getMapLeads().add(lead2);
     project2.getMapSpecialists().add(specialist1);
     project2.getMapSpecialists().add(specialist2);
     project2.getMapSpecialists().add(specialist3);
-*/
+
     // Add project
     Logger.getLogger(getClass()).info("  add " + project2);
     project2 = mappingService.addMapProject(project2);
-
-	// TODO: Figure out why hanging. Until then, commented out.
-	/* 
     Logger.getLogger(getClass()).info("  compute workflow");
     workflowService.computeWorkflow(project2);
-	*/
+
+    // Add project
+    Logger.getLogger(getClass()).info("  add " + project1);
+    project1 = mappingService.addMapProject(project1);
+    Logger.getLogger(getClass()).info("  compute workflow");
+    workflowService.computeWorkflow(project1);
+
+    // Create project SNOMED to ICD10
+    Logger.getLogger(getClass())
+        .info("Create project SNOMEDCT to ICD10 with NON-LEGACY");
+    MapProject project3 = new MapProjectJpa();
+    project3.setDestinationTerminology("ICD10");
+    project3.setDestinationTerminologyVersion("2016");
+    project3.setGroupStructure(true);
+    project3.setMapRefsetPattern(MapRefsetPattern.ExtendedMap);
+    project3.setName("SNOMEDCT to ICD10 with NON-LEGACY");
+    project3.setProjectSpecificAlgorithmHandlerClass(
+        "org.ihtsdo.otf.mapping.jpa.handlers.ICD10ProjectSpecificAlgorithmHandler");
+    project3.setPropagatedFlag(false);
+    project3.setPublic(true);
+    project3.setRefSetId("3333333");
+    project3.setRefSetName("SNOMEDCT to ICD10");
+    project3.setSourceTerminology("SNOMEDCT");
+    project3.setSourceTerminologyVersion("20140731");
+    project3.setWorkflowType(WorkflowType.CONFLICT_PROJECT);
+    project3.setMapRelationStyle(RelationStyle.MAP_CATEGORY_STYLE);
+    project3.getScopeConcepts().add("404684003");
+    project3.setScopeDescendantsFlag(true);
+    project3.setMapRelations(mapRelations);
+    project3.setMapAdvices(mapAdvices);
+    project3.getMapLeads().add(lead1);
+    project3.getMapLeads().add(lead2);
+    project3.getMapSpecialists().add(specialist1);
+    project3.getMapSpecialists().add(specialist2);
+    project3.getMapSpecialists().add(specialist3);
+
+    // Add project
+    Logger.getLogger(getClass()).info("  add " + project3);
+    project3 = mappingService.addMapProject(project3);
+    Logger.getLogger(getClass()).info("  compute workflow");
+    workflowService.computeWorkflow(project3);
+
+    // Create project SNOMED to ICD10CM
+    Logger.getLogger(getClass())
+        .info("Create project SNOMEDCT to ICD10CM with NON-LEGACY");
+    MapProject project4 = new MapProjectJpa();
+    project4.setDestinationTerminology("ICD10CM");
+    project4.setDestinationTerminologyVersion("2016");
+    project4.setGroupStructure(true);
+    project4.setMapRefsetPattern(MapRefsetPattern.ExtendedMap);
+    project4.setName("SNOMEDCT to ICD10CM with NON-LEGACY");
+    project4.setProjectSpecificAlgorithmHandlerClass(
+        "org.ihtsdo.otf.mapping.jpa.handlers.ICD10ProjectSpecificAlgorithmHandler");
+    project4.setPropagatedFlag(false);
+    project4.setPublic(true);
+    project4.setRefSetId("3333333");
+    project4.setRefSetName("SNOMEDCT to ICD10CM");
+    project4.setSourceTerminology("SNOMEDCT");
+    project4.setSourceTerminologyVersion("20140731");
+    project4.setWorkflowType(WorkflowType.CONFLICT_PROJECT);
+    project4.setMapRelationStyle(RelationStyle.MAP_CATEGORY_STYLE);
+    project4.getScopeConcepts().add("404684003");
+    project4.setScopeDescendantsFlag(true);
+    project4.setMapRelations(mapRelations);
+    project4.setMapAdvices(mapAdvices);
+    project4.getMapLeads().add(lead1);
+    project4.getMapLeads().add(lead2);
+    project4.getMapSpecialists().add(specialist1);
+    project4.getMapSpecialists().add(specialist2);
+    project4.getMapSpecialists().add(specialist3);
+
+    // Add project
+    Logger.getLogger(getClass()).info("  add " + project4);
+    project4 = mappingService.addMapProject(project4);
+    Logger.getLogger(getClass()).info("  compute workflow");
+    workflowService.computeWorkflow(project4);
 
     //
     // Cross-project steps
@@ -274,15 +342,17 @@ public class GenerateDemoDataMojo extends AbstractMojo {
 
     // Start editing cycle
     SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");
-    project1.setEditingCycleBeginDate(DATE_FORMAT.parse("20190116"));
-    project2.setEditingCycleBeginDate(DATE_FORMAT.parse("20190116"));
+    project1.setEditingCycleBeginDate(DATE_FORMAT.parse("20160101"));
     mappingService.updateMapProject(project1);
+    project2.setEditingCycleBeginDate(DATE_FORMAT.parse("20160101"));
     mappingService.updateMapProject(project2);
+    project2.setEditingCycleBeginDate(DATE_FORMAT.parse("20160101"));
+    mappingService.updateMapProject(project3);
+    project2.setEditingCycleBeginDate(DATE_FORMAT.parse("20160101"));
+    mappingService.updateMapProject(project4);
 
     // Reports
-    /*
     ReportDefinition def1 = new ReportDefinitionJpa();
-    
     def1.setDescription("Specialist productivity report.");
     def1.setDiffReport(false);
     def1.setFrequency(ReportFrequency.DAILY);
@@ -360,9 +430,7 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     def4.setTimePeriod(ReportTimePeriod.DAILY);
     def3.setDiffReportDefinitionName("Lead productivity");
     reportService.addReportDefinition(def4);
-*/
 
-/*    
     // specialist productivity, lead productivity
 
     // QA checks
@@ -390,24 +458,35 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     project1.getReportDefinitions().add(def3);
     project1.getReportDefinitions().add(def4);
     project1.getReportDefinitions().add(qa1);
-*/
     mappingService.updateMapProject(project1);
 
-    // Generate the reports
-    /*reportService.generateDailyReports(project1, lead1);
-
-    // Add report definitions to the project(s)
     project2.getReportDefinitions().add(def1);
     project2.getReportDefinitions().add(def2);
     project2.getReportDefinitions().add(def3);
     project2.getReportDefinitions().add(def4);
     project2.getReportDefinitions().add(qa1);
-    */
     mappingService.updateMapProject(project2);
 
+    project3.getReportDefinitions().add(def1);
+    project3.getReportDefinitions().add(def2);
+    project3.getReportDefinitions().add(def3);
+    project3.getReportDefinitions().add(def4);
+    project3.getReportDefinitions().add(qa1);
+    mappingService.updateMapProject(project3);
+
+    project4.getReportDefinitions().add(def1);
+    project4.getReportDefinitions().add(def2);
+    project4.getReportDefinitions().add(def3);
+    project4.getReportDefinitions().add(def4);
+    project4.getReportDefinitions().add(qa1);
+    mappingService.updateMapProject(project4);
+
     // Generate the reports
-/*    reportService.generateDailyReports(project2, lead1);
-*/
+    reportService.generateDailyReports(project1, lead1);
+    reportService.generateDailyReports(project2, lead1);
+    reportService.generateDailyReports(project3, lead1);
+    reportService.generateDailyReports(project4, lead1);
+
     // TODO: add qa check for "invalid codes"
   }
 
