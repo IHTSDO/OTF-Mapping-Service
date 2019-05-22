@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -502,7 +503,7 @@ public class ICD11ProjectSpecificAlgorithmHandler
       }
       if (!found) {
         mapRecord.addMapNote(
-            new MapNoteJpa(null, mapRecord.getLastModifiedBy(), note, null));
+            new MapNoteJpa(null, mapRecord.getLastModifiedBy(), note, new Date()));
       }
     }
   }
