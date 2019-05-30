@@ -1625,6 +1625,9 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     mapProject = getMapProject(mapProjectId);
     Boolean ownedByMe = null;
 
+    // remove from the query the viewed parameter, if it exists
+    // viewed will be handled later because it is on the Feedback object,
+    // not the FeedbackConversation object
     String modifiedQuery = new String(query);
     if (query.contains(" AND viewed:false"))
       modifiedQuery = modifiedQuery.replace(" AND viewed:false", "");
@@ -1646,12 +1649,10 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       sb.append(" AND ").append("mapProjectId:").append(mapProject.getId());
     }
 
-    // remove from the query the viewed parameter, if it exists
-    // viewed will be handled later because it is on the Feedback object,
-    // not the FeedbackConversation object
-    sb.append(" AND terminology:").append(mapProject.getSourceTerminology());
-    sb.append(" AND terminologyVersion:")
-        .append(mapProject.getSourceTerminologyVersion());
+    // MapProjectId is already used - no reason to look for terminology and version
+//    sb.append(" AND terminology:").append(mapProject.getSourceTerminology());
+//    sb.append(" AND terminologyVersion:")
+//        .append(mapProject.getSourceTerminologyVersion());
 
     // if simplest query, just get most recent 12 months of results, to make
     // expedient
