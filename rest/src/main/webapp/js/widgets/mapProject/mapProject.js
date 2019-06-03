@@ -20,15 +20,19 @@ angular
       $scope.currentRole = localStorageService.get('currentRole');
       $scope.userToken = localStorageService.get('userToken');
       
+      var deployBrowserLabel = appConfig['deploy.terminology.browser.label']; 
+      
       $scope.project.terminologyButtonText =
         ($scope.project.sourceTerminology !== 'SNOMEDCT' && $scope.project.sourceTerminology !== 'SNOMEDCT_US')
-            ? (appConfig['deploy.terminology.browser.label'] === '' )
+            ? (deployBrowserLabel = null || typeof deployBrowserLabel == 'undefined' || deployBrowserLabel === '' )
                   ? $scope.project.sourceTerminology
-                  : appConfig['deploy.terminology.browser.label']
-            : (appConfig['deploy.terminology.browser.label'] === '' ) 
+                  : deployBrowserLabel
+            : (deployBrowserLabel = null || typeof deployBrowserLabel == 'undefined' || deployBrowserLabel === '' ) 
                   ? $scope.project.destinationTerminology
-                  : appConfig['deploy.terminology.browser.label'];
+                  : deployBrowserLabel;
       
+                   
+                  
       // flag indicating if index viewer is available for dest terminology
       $scope.indexViewerExists = false;
       

@@ -43,6 +43,17 @@ angular
       $scope.preferences = localStorageService.get('preferences');
       $scope.userToken = localStorageService.get('userToken');
 
+      var deployBrowserLabel = appConfig['deploy.terminology.browser.label']; 
+      
+      $scope.focusProject.terminologyButtonText =
+        ($scope.focusProject.sourceTerminology !== 'SNOMEDCT' && $scope.focusProject.sourceTerminology !== 'SNOMEDCT_US')
+            ? (deployBrowserLabel = null || typeof deployBrowserLabel == 'undefined' || deployBrowserLabel === '' )
+                  ? $scope.focusProject.sourceTerminology
+                  : deployBrowserLabel
+      : (deployBrowserLabel = null || typeof deployBrowserLabel == 'undefined' || deployBrowserLabel === '' ) 
+                  ? $scope.focusProject.destinationTerminology
+                  : deployBrowserLabel;      
+      
       // flag indicating if index viewer is available for dest terminology
       $scope.indexViewerExists = false;
 
