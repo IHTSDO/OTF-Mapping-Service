@@ -429,12 +429,12 @@ angular
             return appConfig['deploy.snomed.browser.url'] + "&conceptId1="
               + $scope.conversation.terminologyId;
           } else if ($scope.focusProject.sourceTerminology === 'SNOMEDCT_US') {
-            return appConfig['deploy.snomed.dailybuild.url']
+            return appConfig['deploy.snomed.dailybuild.url.base']
               + appConfig['deploy.snomed.dailybuild.url.us'] 
               + "&conceptId1="
               + $scope.conversation.terminologyId;
           } else {
-            return appConfig['deploy.snomed.dailybuild.url']
+            return appConfig['deploy.snomed.dailybuild.url.base']
               + appConfig['deploy.snomed.dailybuild.url.other']
               + "&conceptId1="
               + $scope.conversation.terminologyId;

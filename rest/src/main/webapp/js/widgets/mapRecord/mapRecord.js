@@ -1692,12 +1692,12 @@ angular
             }
             else {
               if ($scope.project.sourceTerminology === 'SNOMEDCT_US') {
-                return appConfig['deploy.snomed.dailybuild.url']
+                return appConfig['deploy.snomed.dailybuild.url.base']
                   + appConfig['deploy.snomed.dailybuild.url.us'] 
                   + "&conceptId1="
                   + $scope.record.conceptId;
               } else {                
-                return appConfig['deploy.snomed.dailybuild.url']
+                return appConfig['deploy.snomed.dailybuild.url.base']
                   + appConfig['deploy.snomed.dailybuild.url.other']
                   + "&conceptId1="
                   + $scope.record.conceptId;

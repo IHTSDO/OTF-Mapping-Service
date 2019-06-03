@@ -250,9 +250,9 @@ angular
           if ($scope.currentUser.userName === 'guest')
             myWindow = window.open(appConfig['deploy.snomed.browser.url.base']);
           else if ($scope.project.sourceTerminology === 'SNOMEDCT_US') 
-            myWindow = window.open(appConfig['deploy.snomed.dailybuild.url']+appConfig['deploy.snomed.dailybuild.url.us']);
+            myWindow = window.open(appConfig['deploy.snomed.dailybuild.url.base']+appConfig['deploy.snomed.dailybuild.url.us']);
           else
-            myWindow = window.open(appConfig['deploy.snomed.dailybuild.url']+appConfig['deploy.snomed.dailybuild.url.other']);
+            myWindow = window.open(appConfig['deploy.snomed.dailybuild.url.base']+appConfig['deploy.snomed.dailybuild.url.other']);
         }
         myWindow.focus();
       };
