@@ -316,7 +316,7 @@ angular
       $scope.sendFeedback = function(record, feedbackMessage, conversation,
         recipientList) {
 
-        if($scope.conversation.resolved && $scope.currentRole !== 'Lead'){          
+        if($scope.conversation.resolved){          
           if (window.confirm('This feedback conversation is closed.  Please uncheck Mark resolved to submit feedback.')) {
             $scope.isMarkResolvedDisabled = false;
           }
