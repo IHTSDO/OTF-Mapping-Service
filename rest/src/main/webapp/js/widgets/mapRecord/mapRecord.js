@@ -2102,7 +2102,7 @@ angular
         // feedback groups functionality
         var feedbackGroupConfig = appConfig["deploy.feedback.group.names"]; 
         
-        $scope.feedbackGroups = (feedbackGroupConfig != null || typeof feedbackGroupConfig !== 'undefined')
+        $scope.feedbackGroups = (feedbackGroupConfig != null || typeof feedbackGroupConfig !== 'undefined' || feedbackGroupConfig != '')
           ? JSON.parse(feedbackGroupConfig)
               : null;
         
