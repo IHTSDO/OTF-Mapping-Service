@@ -6,7 +6,6 @@ package org.ihtsdo.otf.mapping.jpa.services;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
-import java.math.BigInteger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -27,7 +26,6 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.hibernate.SQLQuery;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
@@ -90,6 +88,7 @@ import org.ihtsdo.otf.mapping.rf2.jpa.ComplexMapRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
+import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.json.JSONObject;
 
@@ -2156,7 +2155,7 @@ public class MappingServiceJpa extends RootServiceJpa
             + mapProject.getName() + ", assigning workflow status "
             + workflowStatus.toString());
 
-    List<String> duplicateList = new ArrayList<>();
+    List<String> notReadyForPubList = new ArrayList<>();
 
     // Verify application is letting the service manage transactions
     if (!getTransactionPerOperation()) {
@@ -2166,6 +2165,9 @@ public class MappingServiceJpa extends RootServiceJpa
 
     // Setup content service
     ContentService contentService = new ContentServiceJpa();
+
+    // Setup workflow service
+    WorkflowService workflowService = new WorkflowServiceJpa();
 
     // Get map relation id->name mapping
     MetadataService metadataService = new MetadataServiceJpa();
@@ -2186,8 +2188,10 @@ public class MappingServiceJpa extends RootServiceJpa
     }
 
     // keep track of each concept's original highest Group value.
-    // This will allow us to append our map entries to new groups.
-    Map<String, Integer> conceptIdMaxGroup = new HashMap<>();
+    // This will allow us to bump up the incoming map groups if neccesary so
+    // they don't overwrite existing map groups/entries
+    Map<String, Integer> conceptIdOrigMaxGroup = new HashMap<>();
+    Map<String, Boolean> conceptIdNeedsBumping = new HashMap<>();
 
     boolean prevTransactionPerOperationSetting = getTransactionPerOperation();
     setTransactionPerOperation(false);
@@ -2254,13 +2258,24 @@ public class MappingServiceJpa extends RootServiceJpa
         }
 
         // Identifying max group for each concept prior to starting of this run
-        if (!conceptIdMaxGroup.keySet().contains(concept.getTerminologyId())) {
+        if (!conceptIdOrigMaxGroup.keySet()
+            .contains(concept.getTerminologyId())) {
           Logger.getLogger(MappingServiceJpa.class)
               .debug("    Identifying max Group value for "
                   + concept.getTerminologyId());
 
           mapRecord = getMapRecordsForProjectAndConcept(mapProjectId,
               concept.getTerminologyId()).getMapRecords().get(0);
+
+          // Skip if member is for a concept that has a map record that are not
+          // READY_FOR_PUBLICATION or PUBLISHED
+          if (!mapRecord.getWorkflowStatus()
+              .equals(WorkflowStatus.READY_FOR_PUBLICATION)
+              && !mapRecord.getWorkflowStatus()
+                  .equals(WorkflowStatus.PUBLISHED)) {
+            notReadyForPubList.add(refSetMember.toString());
+            continue;
+          }
 
           List<MapEntry> mapEntries = mapRecord.getMapEntries();
 
@@ -2271,7 +2286,7 @@ public class MappingServiceJpa extends RootServiceJpa
             }
           }
 
-          conceptIdMaxGroup.put(concept.getTerminologyId(), maxGroupCount);
+          conceptIdOrigMaxGroup.put(concept.getTerminologyId(), maxGroupCount);
         }
 
         // check if target is in desired terminology; if so, create
@@ -2312,11 +2327,19 @@ public class MappingServiceJpa extends RootServiceJpa
           continue;
         }
 
-        // Skip if new entry is going to overwrite existing entry
-        if (refSetMember.getMapGroup() <= (conceptIdMaxGroup
-            .get(refSetMember.getConcept().getTerminologyId()))) {
-          duplicateList.add("Concept " + refSetMember.getConcept().getTerminologyId()
-              + ", map group: " + refSetMember.getMapGroup());
+        // Check to see if this concept' new entry is going to require map group
+        // value bumping to avoid overwriting an existing entry
+        // Only check once per concept
+        if (!conceptIdNeedsBumping
+            .containsKey(refSetMember.getConcept().getTerminologyId())) {
+          if (refSetMember.getMapGroup() <= (conceptIdOrigMaxGroup
+              .get(refSetMember.getConcept().getTerminologyId()))) {
+            conceptIdNeedsBumping
+                .put(refSetMember.getConcept().getTerminologyId(), true);
+          } else {
+            conceptIdNeedsBumping
+                .put(refSetMember.getConcept().getTerminologyId(), false);
+          }
         }
 
         Logger.getLogger(getClass()).debug("      Create map entry");
@@ -2332,18 +2355,32 @@ public class MappingServiceJpa extends RootServiceJpa
           rule = "TRUE";
         mapEntry.setRule(rule);
         mapEntry.setMapBlock(refSetMember.getMapBlock());
-        mapEntry.setMapGroup(refSetMember.getMapGroup());
+
+        // Bump up the refsetMember's map group value, if it has been previously
+        // determined to need it
+        int mapGroupValue = refSetMember.getMapGroup();
+        if (conceptIdNeedsBumping
+            .get(refSetMember.getConcept().getTerminologyId())) {
+          mapGroupValue = mapGroupValue + conceptIdOrigMaxGroup
+              .get(refSetMember.getConcept().getTerminologyId());
+        }
+        mapEntry.setMapGroup(mapGroupValue);
 
         // Increment map priority as we go through records
         mapEntry.setMapPriority(refSetMember.getMapPriority());
 
         mapRecord.addMapEntry(mapEntry);
 
+        // Update the mapRecord workflow status, if necessary
+        if (!mapRecord.getWorkflowStatus().equals(workflowStatus)) {
+          mapRecord.setWorkflowStatus(workflowStatus);
+          updateMapRecord(mapRecord);
+        }
+
         // Add support for advices - and there can be multiple map
         // advice values
         // Only add advice if it is an allowable value and doesn't
-        // match
-        // relation name
+        // match relation name
         // This should automatically exclude IFA/ALWAYS advice
         Logger.getLogger(getClass()).debug("      Setting map advice");
         if (refSetMember.getMapAdvice() != null
@@ -2363,10 +2400,10 @@ public class MappingServiceJpa extends RootServiceJpa
       Logger.getLogger(MappingServiceJpa.class)
           .info("    " + ct + " records updated");
 
-      if (duplicateList.size() > 0) {
+      if (notReadyForPubList.size() > 0) {
         Logger.getLogger(MappingServiceJpa.class).warn(
-            "The following lines had map groups already present in an existing map record, and created conflicting entries.");
-        for (String message : duplicateList) {
+            "The following members were skipped because they were associated with concepts that were currently in the workflow being edited.");
+        for (String message : notReadyForPubList) {
           Logger.getLogger(MappingServiceJpa.class).warn(message);
         }
       }
@@ -3651,36 +3688,30 @@ public class MappingServiceJpa extends RootServiceJpa
     }
     return releaseFileNames;
   }
-  
+
   /* see superclass */
-  public Map<String, String> getTargetCodeForReadyForPublication(Long mapProjectId) throws Exception {
-    
-    final String sql = ""
-        + " SELECT  "
-        + "     b.targetId, mu.team "
-        + " FROM "
-                /*Find all historical map records for each MedDRA sourceId that maps to a current SNOMED targetId*/ 
-        + "     (SELECT  "
-        + "         a.targetId, "
-        + "             a.conceptId, "
-        + "             mra.workflowStatus, "
-        + "             mra.lastModifiedBy_id, "
-        + "             mra.REV "
-        + "     FROM "
-        + "         map_records_AUD mra "
-        + "     JOIN  "
-                /*For each SNOMEDCT target Id, identify all of the MedDRA sourceIds that map to it*/ 
-        + "     (SELECT DISTINCT "
-        + "         me2.targetId, mr.conceptId "
-        + "     FROM "
-        + "         map_records mr, map_entries me2 "
-        + "     WHERE "
-        + "         mr.mapProjectId = :mapProjectId "
-        + "         AND mr.id = me2.mapRecord_Id "
-        + "             AND EXISTS "
-                        /*Get target Ids for all CURRENT finished map records*/ 
-        + "             (SELECT  "
-        + "                 me.targetId "
+  public Map<String, String> getTargetCodeForReadyForPublication(
+    Long mapProjectId) throws Exception {
+
+    final String sql = "" + " SELECT  " + "     b.targetId, mu.team " + " FROM "
+    /*
+     * Find all historical map records for each MedDRA sourceId that maps to a
+     * current SNOMED targetId
+     */
+        + "     (SELECT  " + "         a.targetId, "
+        + "             a.conceptId, " + "             mra.workflowStatus, "
+        + "             mra.lastModifiedBy_id, " + "             mra.REV "
+        + "     FROM " + "         map_records_AUD mra " + "     JOIN  "
+        /*
+         * For each SNOMEDCT target Id, identify all of the MedDRA sourceIds
+         * that map to it
+         */
+        + "     (SELECT DISTINCT " + "         me2.targetId, mr.conceptId "
+        + "     FROM " + "         map_records mr, map_entries me2 "
+        + "     WHERE " + "         mr.mapProjectId = :mapProjectId "
+        + "         AND mr.id = me2.mapRecord_Id " + "             AND EXISTS "
+        /* Get target Ids for all CURRENT finished map records */
+        + "             (SELECT  " + "                 me.targetId "
         + "             FROM "
         + "                 map_records mr, map_entries me "
         + "             WHERE "
@@ -3690,39 +3721,46 @@ public class MappingServiceJpa extends RootServiceJpa
         + "                     AND targetId != '' "
         + "                     AND me.mapRecord_id = mr.id "
         + "                     AND mr.workflowStatus IN ('READY_FOR_PUBLICATION' , 'REVISION') "
-        + "              ) "
-        + "      ) a ON a.conceptId = mra.conceptId "
-                 /* Only look at the historical map record entries for when they were finished */ 
-        + "     WHERE "
-        + "         mra.mapProjectId = :mapProjectId "
+        + "              ) " + "      ) a ON a.conceptId = mra.conceptId "
+        /*
+         * Only look at the historical map record entries for when they were
+         * finished
+         */
+        + "     WHERE " + "         mra.mapProjectId = :mapProjectId "
         + "         AND mra.workflowStatus IN ('READY_FOR_PUBLICATION') "
-                /* Order by REV, so the earliest 'READY_FOR_PUBLICATION' historical map record is on top*/ 
-        + "     ORDER BY mra.REV) b "
-        + "         JOIN "
-                /*Get the user that finished each map record*/ 
+        /*
+         * Order by REV, so the earliest 'READY_FOR_PUBLICATION' historical map
+         * record is on top
+         */
+        + "     ORDER BY mra.REV) b " + "         JOIN "
+        /* Get the user that finished each map record */
         + "     map_users mu ON b.lastModifiedBy_id = mu.id "
-            /* Group by targetId to collapse all of the historical map records, leaving only the first time it was finished */ 
+        /*
+         * Group by targetId to collapse all of the historical map records,
+         * leaving only the first time it was finished
+         */
         + " GROUP BY b.targetId; ";
-    
+
     Map<String, String> list = new HashMap<>();
-    
+
     try {
       javax.persistence.Query query = manager.createNativeQuery(sql);
       query.setParameter("mapProjectId", mapProjectId);
-      
+
       List<Object[]> objects = query.getResultList();
-      
-      for(Object[] array : objects) {
+
+      for (Object[] array : objects) {
         list.put((String) array[0], (String) array[1]);
       }
-            
-    } catch(Exception e) {
-      Logger.getLogger(getClass()).error("ERROR IN getTargetCodeForReadyForPublication " + e.getMessage() , e);
+
+    } catch (Exception e) {
+      Logger.getLogger(getClass()).error(
+          "ERROR IN getTargetCodeForReadyForPublication " + e.getMessage(), e);
       throw e;
     }
-    
+
     return list;
-    
+
   }
 
 }
