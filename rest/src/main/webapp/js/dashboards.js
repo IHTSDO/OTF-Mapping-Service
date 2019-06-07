@@ -4,7 +4,7 @@ var mapProjectAppDashboards = angular.module('mapProjectAppDashboards', [ 'adf',
   'LocalStorageModule' ]);
 
 mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($scope, $routeParams,
-  $rootScope, $location, $window, $http, localStorageService, utilService, appConfig) {
+  $rootScope, $location, $window, $http, localStorageService, utilService, appConfig, userService) {
 
   // Attach an onbeforeunload function
   window.onbeforeunload = function() {
@@ -217,25 +217,9 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($sc
 
     };
   }
-
+  
   $scope.logout = function() {
-
-    $rootScope.glassPane++;
-    $http({
-      url : root_security + 'logout/user/id/' + $scope.currentUser.userName,
-      method : 'POST',
-      headers : {
-        'Content-Type' : 'text/plain'
-      // save userToken from authentication
-      }
-    }).success(function(data) {
-      $rootScope.glassPane--;
-      $window.location.href = data;
-    }).error(function(data, status, headers, config) {
-      $rootScope.glassPane--;
-      $location.path('/');
-      $rootScope.handleHttpError(data, status, headers, config);
-    });
+    userService.logout();
   };
 
   // function to change project from the header
@@ -298,7 +282,7 @@ mapProjectAppDashboards.controller('ResolveConflictsDashboardCtrl', function($sc
 });
 
 mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', function($scope, $http,
-  $routeParams, $rootScope, $location, $window, localStorageService, appConfig) {
+  $routeParams, $rootScope, $location, $window, localStorageService, appConfig, userService) {
 
   // Attach an onbeforeunload function
   window.onbeforeunload = null;
@@ -412,7 +396,7 @@ mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', functio
   $scope.$on('adfDashboardChanged', function(event, name, model) {
     console.debug('Dashboard change detected by mainDashboard', model);
     localStorageService.set(name, model);
-
+    
     $scope.preferences.dashboardModels[$scope.page] = JSON.stringify($scope.model);
     localStorageService.add('preferences', $scope.preferences);
 
@@ -461,23 +445,7 @@ mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', functio
   }
 
   $scope.logout = function() {
-
-    $rootScope.glassPane++;
-    $http({
-      url : root_security + 'logout/user/id/' + $scope.currentUser.userName,
-      method : 'POST',
-      headers : {
-        'Content-Type' : 'text/plain'
-      // save userToken from authentication
-      }
-    }).success(function(data) {
-      $rootScope.glassPane--;
-      $window.location.href = data;
-    }).error(function(data, status, headers, config) {
-      $rootScope.glassPane--;
-      $location.path('/');
-      $rootScope.handleHttpError(data, status, headers, config);
-    });
+    userService.logout();
   };
 
   // function to change project from the header
@@ -537,7 +505,7 @@ mapProjectAppDashboards.controller('FeedbackConversationsDashboardCtrl', functio
 
 // Main dashboard controller?
 mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope, $http, $location,
-  $window, localStorageService, utilService, appConfig) {
+  $window, localStorageService, utilService, appConfig, userService, gpService) {
 
   // Attach an onbeforeunload function
   window.onbeforeunload = null;
@@ -605,7 +573,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
         utilService.initializeTerminologyNotes($scope.focusProject.id);
 
       }).error(function(data, status, headers, config) {
-        $rootScope.glassPane--;
+        gpService.decrement();
         $location.path('/');
         $rootScope.handleHttpError(data, status, headers, config);
       });
@@ -958,7 +926,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
   $scope.$on('adfDashboardChanged', function(event, name, model) {
     console.debug('Dashboard change detected by mainDashboard', model);
     localStorageService.set(name, model);
-
+    
     $scope.preferences.dashboardModels[$scope.page] = JSON.stringify($scope.model);
     localStorageService.add('preferences', $scope.preferences);
 
@@ -984,23 +952,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
   });
 
   $scope.logout = function() {
-
-    $rootScope.glassPane++;
-    $http({
-      url : root_security + 'logout/user/id/' + $scope.currentUser.userName,
-      method : 'POST',
-      headers : {
-        'Content-Type' : 'text/plain'
-      // save userToken from authentication
-      }
-    }).success(function(data) {
-      $rootScope.glassPane--;
-      $window.location.href = data;
-    }).error(function(data, status, headers, config) {
-      $rootScope.glassPane--;
-      $location.path('/');
-      $rootScope.handleHttpError(data, status, headers, config);
-    });
+    userService.logout();
   };
 
   // function to change project from the header
@@ -1046,7 +998,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
     $http(
       {
         url : root_mapping + 'userRole/user/id/' + $scope.currentUser.userName + '/project/id/'
-          + $scope.focusProject.id,
+          + $scope.focusProject.objectId,
         method : 'GET',
         headers : {
           'Content-Type' : 'application/json'
@@ -1088,7 +1040,7 @@ mapProjectAppDashboards.controller('dashboardCtrl', function($rootScope, $scope,
 });
 
 mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $rootScope, $http,
-  $routeParams, $location, $window, localStorageService, appConfig) {
+  $routeParams, $location, $window, localStorageService, utilService, appConfig, userService) {
 
   // Attach an onbeforeunload function
   window.onbeforeunload = function() {
@@ -1249,7 +1201,7 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $r
   $scope.$on('adfDashboardChanged', function(event, name, model) {
     console.debug('Dashboard change detected by mapRecordDashboard', model);
     localStorageService.set(name, model);
-
+    
     $scope.preferences.dashboardModels[$scope.page] = JSON.stringify($scope.model);
     localStorageService.add('preferences', $scope.preferences);
 
@@ -1275,30 +1227,27 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $r
   });
 
   // watch for project change
-  $scope.$on('localStorageModule.notification.setFocusProject', function(event, name) {
+  $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
     console.debug('MainDashboardCtrl:  Detected change in map projects');
     utilService.initializeTerminologyNotes(parameters.focusProject.id);
     $scope.mapProjects = localStorageService.get('mapProjects');
+    
+    var path = '';
+
+    if ($scope.currentRole === 'Specialist') {
+      path = '/specialist/dash';
+    } else if ($scope.currentRole === 'Lead') {
+      path = '/lead/dash';
+    } else if ($scope.currentRole === 'Administrator') {
+      path = '/admin/dash';
+    } else if ($scope.currentRole === 'Viewer') {
+      path = '/viewer/dash';
+    }
+    $location.path(path);
   });
 
   $scope.logout = function() {
-
-    $rootScope.glassPane++;
-    $http({
-      url : root_security + 'logout/user/id/' + $scope.currentUser.userName,
-      method : 'POST',
-      headers : {
-        'Content-Type' : 'text/plain'
-      // save userToken from authentication
-      }
-    }).success(function(data) {
-      $rootScope.glassPane--;
-      $window.location.href = data;
-    }).error(function(data, status, headers, config) {
-      $rootScope.glassPane--;
-      $location.path('/');
-      $rootScope.handleHttpError(data, status, headers, config);
-    });
+    userService.logout();
   };
 
   // function to change project from the header
@@ -1356,7 +1305,7 @@ mapProjectAppDashboards.controller('MapRecordDashboardCtrl', function($scope, $r
 });
 
 mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function($rootScope, $scope,
-  $http, $location, $window, localStorageService, utilService, appConfig) {
+  $http, $location, $window, localStorageService, utilService, appConfig, userService) {
 
   // Attach an onbeforeunload function
   window.onbeforeunload = null;
@@ -1440,23 +1389,7 @@ mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function($root
   });
 
   $scope.logout = function() {
-
-    $rootScope.glassPane++;
-    $http({
-      url : root_security + 'logout/user/id/' + $scope.currentUser.userName,
-      method : 'POST',
-      headers : {
-        'Content-Type' : 'text/plain'
-      // save userToken from authentication
-      }
-    }).success(function(data) {
-      $rootScope.glassPane--;
-      $window.location.href = data;
-    }).error(function(data, status, headers, config) {
-      $rootScope.glassPane--;
-      $location.path('/');
-      $rootScope.handleHttpError(data, status, headers, config);
-    });
+    userService.logout();
   };
 
   // function to change project from the header
@@ -1514,7 +1447,7 @@ mapProjectAppDashboards.controller('ProjectDetailsDashboardCtrl', function($root
 });
 
 mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl', function($rootScope, $scope,
-  $http, $location, $window, localStorageService, utilService, appConfig) {
+  $http, $location, $window, localStorageService, utilService, appConfig, userService) {
 
   // Attach an onbeforeunload function
   window.onbeforeunload = null;
@@ -1594,28 +1527,11 @@ mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl', function($root
   }
 
   $scope.$on('adfDashboardChanged', function(event, name, model) {
-
     $scope.model = model;
   });
 
   $scope.logout = function() {
-
-    $rootScope.glassPane++;
-    $http({
-      url : root_security + 'logout/user/id/' + $scope.currentUser.userName,
-      method : 'POST',
-      headers : {
-        'Content-Type' : 'text/plain'
-      // save userToken from authentication
-      }
-    }).success(function(data) {
-      $rootScope.glassPane--;
-      $window.location.href = data;
-    }).error(function(data, status, headers, config) {
-      $rootScope.glassPane--;
-      $location.path('/');
-      $rootScope.handleHttpError(data, status, headers, config);
-    });
+    userService.logout();
   };
 
   $scope.$on('localStorageModule.notification.setMapProjects', function(event, parameters) {
@@ -1656,7 +1572,7 @@ mapProjectAppDashboards.controller('ProjectRecordsDashboardCtrl', function($root
 });
 
 mapProjectAppDashboards.controller('RecordConceptDashboardCtrl', function($rootScope, $scope,
-  $http, $location, $window, localStorageService, utilService, appConfig) {
+  $http, $location, $window, localStorageService, utilService, appConfig, userService) {
 
   // Attach an onbeforeunload function
   window.onbeforeunload = null;
@@ -1744,23 +1660,7 @@ mapProjectAppDashboards.controller('RecordConceptDashboardCtrl', function($rootS
   });
 
   $scope.logout = function() {
-
-    $rootScope.glassPane++;
-    $http({
-      url : root_security + 'logout/user/id/' + $scope.currentUser.userName,
-      method : 'POST',
-      headers : {
-        'Content-Type' : 'text/plain'
-      // save userToken from authentication
-      }
-    }).success(function(data) {
-      $rootScope.glassPane--;
-      $window.location.href = data;
-    }).error(function(data, status, headers, config) {
-      $rootScope.glassPane--;
-      $location.path('/');
-      $rootScope.handleHttpError(data, status, headers, config);
-    });
+    userService.logout();
   };
 
   // function to change project from the header
@@ -1798,7 +1698,7 @@ mapProjectAppDashboards.controller('RecordConceptDashboardCtrl', function($rootS
 });
 
 mapProjectAppDashboards.controller('IndexViewerDashboardCtrl', function($rootScope, $scope, $http,
-  $location, $window, localStorageService, appConfig) {
+  $location, $window, localStorageService, appConfig, userService) {
   // Attach an onbeforeunload function
   window.onbeforeunload = null;
   $scope.appConfig = appConfig;
@@ -1917,7 +1817,7 @@ mapProjectAppDashboards.controller('IndexViewerDashboardCtrl', function($rootSco
 });
 
 mapProjectAppDashboards.controller('terminologyBrowserDashboardCtrl', function($scope, $rootScope, $http,
-  $routeParams, $location, $window, localStorageService, appConfig) {
+  $routeParams, $location, $window, localStorageService, appConfig, userService, utilService) {
 
 //Attach an onbeforeunload function
   window.onbeforeunload = null;
@@ -1941,10 +1841,17 @@ mapProjectAppDashboards.controller('terminologyBrowserDashboardCtrl', function($
   $scope.currentRole = localStorageService.get('currentRole');
   $scope.preferences = localStorageService.get('preferences');
   $scope.focusProject = localStorageService.get('focusProject');
+  $scope.browserRequest = localStorageService.get('browserRequest');
 
   $scope.page = 'terminologyBrowserDashboard';
-  $rootScope.title = $scope.focusProject.destinationTerminology + ' Terminology Browser';
-
+  
+  if ($scope.browserRequest === 'source' && $location.path().includes('terminology/browser')) {
+    $rootScope.title = $scope.focusProject.sourceTerminology;
+  } else {
+    $rootScope.title = $scope.focusProject.destinationTerminology;
+  }
+  $rootScope.title = $rootScope.title +  ' Terminology Browser';
+  
   $scope.$on('localStorageModule.notification.setMapProjects', function(event, parameters) {
     $scope.mapProjects = parameters.mapProjects;
   });
@@ -1968,7 +1875,7 @@ mapProjectAppDashboards.controller('terminologyBrowserDashboardCtrl', function($
       });
     }
   });
-
+  
   // watch for project change
   $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
     utilService.initializeTerminologyNotes(parameters.focusProject.id);

@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.5.40-US_SNAPSHOT</version>
+    <version>1.6.4-SNAPSHOT</version>
     <relativePath>../../parent</relativePath>
   </parent>
 
@@ -51,7 +51,7 @@
                 </goals>
                 <configuration>
                   <terminology>${terminology}</terminology>
-                  <terminologyVersion>${version}</terminologyVersion>
+                  <version>${version}</version>
                 </configuration>
               </execution>
             </executions>
@@ -150,7 +150,8 @@
                 </goals>
                 <configuration>
                   <refsetId>${refset.id}</refsetId>
-                  <inputFile>${input.file}</inputFile>
+                  <inputFile>${input.file}</inputFile>                  
+                  <server>${server}</server>
                 </configuration>
               </execution>
             </executions>
@@ -176,6 +177,7 @@
                 </goals>
                 <configuration>
                   <refsetId>${refset.id}</refsetId>
+                  <server>${server}</server>
                 </configuration>
               </execution>
             </executions>
@@ -278,6 +280,59 @@
                   <refsetId>${refset.id}</refsetId>
                   <startDate>${start.date}</startDate>
                   <endDate>${end.date}</endDate>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    
+        <!-- Remove all reports for a project, specify -Drun.config... -->
+    <profile>
+      <id>ReportsId</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>remove-reports-id</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>remove-reports-id</goal>
+                </goals>
+                <configuration>
+                  <startId>${start.id}</startId>
+                  <endId>${end.id}</endId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    
+    <!-- Remove Feedback Conversations, specify -Drun.config... -->
+    <profile>
+      <id>Feedback</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>remove-feedback</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>remove-feedback</goal>
+                </goals>
+                <configuration>
+                  <refsetId>${refset.id}</refsetId>
+                  <inputFile>${input.file}</inputFile>                  
+                  <server>${server}</server>
                 </configuration>
               </execution>
             </executions>

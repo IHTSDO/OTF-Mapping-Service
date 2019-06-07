@@ -418,7 +418,7 @@ public class WorkflowReviewProjectPathHandler
     throws Exception {
 
     Logger.getLogger(this.getClass())
-        .debug(getName() + ": findAvailableWork for project "
+        .debug(getName() + ": findAssignedWork for project "
             + mapProject.getName() + " and user " + mapUser.getUserName());
 
     SearchResultList assignedWork = new SearchResultListJpa();

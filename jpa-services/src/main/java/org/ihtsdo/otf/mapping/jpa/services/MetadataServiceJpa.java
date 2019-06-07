@@ -484,6 +484,37 @@ public class MetadataServiceJpa extends RootServiceJpa implements
     return resultMap;
 
   }
+  
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.services.MetadataService#getTerminologyVersionExists
+   * ()
+   */
+  @Override
+  public Boolean checkTerminologyVersionExists(String terminology, String version) throws Exception {
+
+    javax.persistence.TypedQuery<Object[]> query =
+        manager
+            .createQuery(
+                "SELECT c.terminology, c.terminologyVersion from ConceptJpa c "
+                + " where c.terminology=:terminology and c.terminologyVersion=:version",
+                Object[].class);
+
+    query.setParameter("terminology", terminology);
+    query.setParameter("version", version);
+    
+    List<Object[]> resultList = query.getResultList();
+    
+    if (resultList != null && resultList.size() > 0) {
+    	return true;
+    }
+    else {
+    	return false;
+    }
+
+  }
 
   /* see superclass */
   @Override

@@ -507,4 +507,23 @@ public interface WorkflowService extends MappingService {
    */
   public void removeFeedback(Long feedbackId) throws Exception;
 
+  /**
+   * Gets the feedback.
+   *
+   * @param id the id
+   * @return the feedback
+   * @throws Exception the exception
+   */
+  public Feedback getFeedback(Long id) throws Exception;
+
+  /**
+   * Gets the feedback conversations for map project.
+   *
+   * @param mapProjectId the map project id
+   * @return the feedback conversations for map project
+   * @throws Exception the exception
+   */
+  public FeedbackConversationList getFeedbackConversationsForMapProject(
+    Long mapProjectId) throws Exception;
+
 }

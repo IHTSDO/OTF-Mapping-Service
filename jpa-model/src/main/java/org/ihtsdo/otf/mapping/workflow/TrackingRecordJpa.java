@@ -20,6 +20,7 @@ import org.apache.lucene.analysis.WhitespaceAnalyzer;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
@@ -88,6 +89,9 @@ public class TrackingRecordJpa implements TrackingRecord {
   @Column(nullable = false)
   private int assignedUserCount = 0;
 
+  @Column(nullable = true)
+  private String assignedTeamName;
+  
   /**
    * {@inheritDoc}
    */
@@ -164,7 +168,10 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   @Override
-  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Fields({
+    @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+    @Field(name = "defaultPreferredNameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  })
   @Analyzer(definition = "noStopWord")
   public String getDefaultPreferredName() {
     return defaultPreferredName;
@@ -303,6 +310,17 @@ public class TrackingRecordJpa implements TrackingRecord {
     }
   }
 
+  @Override
+  public void setAssignedTeamName(String assignedTeamName) {
+    this.assignedTeamName = assignedTeamName;
+  }
+  
+  @Override
+  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  public String getAssignedTeamName() {
+    return this.assignedTeamName;
+  }
+  
   @Override
   public String toString() {
 		return "TrackingRecordJpa [id=" + id + ", mapProjectId=" + mapProjectId + ", terminology=" + terminology

@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.5.40-US_SNAPSHOT</version>
+    <version>1.6.4-SNAPSHOT</version>
     <relativePath>../../parent</relativePath>
   </parent>
 
@@ -23,8 +23,10 @@
     <send.notification></send.notification>
     <!-- The input dir -->
     <input.dir></input.dir>
+    <!-- The output dir for converted input files -->
+    <output.dir></output.dir>
     <!-- The input file -->
-    <input.dir></input.dir>
+    <input.file></input.file>
     <!-- The terminology -->
     <terminology></terminology>
     <!-- The terminology version -->
@@ -49,6 +51,12 @@
     <member.flag>false</member.flag>
     <record.flag>false</record.flag>
     <workflow.status>PUBLISHED</workflow.status>
+    <!--  required for  -->
+    <source.map.project.name></source.map.project.name>
+    <target.map.project.name></target.map.project.name>
+    
+    <report.map.project.ids></report.map.project.ids>
+    
   </properties>
 
   <profiles>
@@ -257,8 +265,7 @@
                   <goal>load-simple</goal>
                 </goals>
                 <configuration>
-                  <inputFile>${input.file}</inputFile>
-                  <parChdFile>${par.chd.file}</parChdFile>
+                  <inputDir>${input.dir}</inputDir>
                   <terminology>${terminology}</terminology>
                   <version>${version}</version>
                 </configuration>
@@ -268,7 +275,7 @@
         </plugins>
       </build>
     </profile>
-
+    
     <!-- Load GMDN -Drun.config=.. must also be specified. -->
     <profile>
       <id>GMDN</id>
@@ -316,6 +323,7 @@
                   <workflowStatus>${workflow.status}</workflowStatus>
                   <memberFlag>${member.flag}</memberFlag>
                   <recordFlag>${record.flag}</recordFlag>
+                  <refsetId>${refset.id}</refsetId>
                 </configuration>
               </execution>
             </executions>
@@ -323,6 +331,33 @@
         </plugins>
       </build>
     </profile>
+    
+    <!-- Append entries onto existing map records from RF2 -Drun.config=.. must also be specified. -->
+    <profile>
+      <id>AppendMapRecords</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>append-rf2-complex-map</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>append-rf2-complex-map</goal>
+                </goals>
+                <configuration>
+                  <inputFile>${input.file}</inputFile>
+                  <workflowStatus>${workflow.status}</workflowStatus>
+                  <refsetId>${refset.id}</refsetId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>    
 
     <!-- Update map records from RF2 -Drun.config=.. must also be specified. -->
     <profile>
@@ -395,6 +430,7 @@
                   <workflowStatus>PUBLISHED</workflowStatus>
                   <memberFlag>${member.flag}</memberFlag>
                   <recordFlag>${record.flag}</recordFlag>
+                  <refsetId>${refset.id}</refsetId>
                 </configuration>
               </execution>
             </executions>
@@ -557,7 +593,7 @@
         </plugins>
       </build>
     </profile>
-
+    
     <profile>
       <id>AdHoc</id>
       <build>
@@ -603,7 +639,80 @@
           </plugin>
         </plugins>
       </build>
-    </profile>    
+    </profile>
+
+    <profile>
+      <id>TargetMappingToScopedConcepts</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>target-to-scope-concept</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>target-to-scope-concept</goal>
+                </goals>
+                <configuration>
+                	<sourceMapProjectName>${source.map.project.name}</sourceMapProjectName>
+                	<targetMapProjectName>${target.map.project.name}</targetMapProjectName>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    
+    <profile>
+      <id>MeddraSqlReport</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>meddra-sql-report</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>run-meddra-sql-report</goal>
+                </goals>
+                <configuration>
+                  <projectIds>${report.map.project.ids}</projectIds>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    
+    <profile>
+      <id>Meddra2SqlReport</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>meddra2-sql-report</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>run-meddra2-sql-report</goal>
+                </goals>
+                <configuration>
+                  <projectIds>${report.map.project.ids}</projectIds>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
   </profiles>
 </project>

@@ -20,6 +20,9 @@
       <a title='Open Index Viewer' ng-show="indexViewerExists == true">
         <i ng-click="openIndexViewer()" class="glyphicon glyphicon-book"></i>
       </a>
+      <a title="Open Authoring History" ng-if="enableAuthoringHistoryButton == true">
+        <i ng-click="openAuthoringHistory(concept)" class="glyphicon glyphicon-inbox"></i>
+      </a>
     </td>
   </tr>
   <tr>
@@ -85,9 +88,9 @@ Notes <i class="pull-right glyphicon"
   <div ng-repeat="note in record.mapNote">
     <div class="alert alert-warning" disabled>
       <i class="glyphicon glyphicon-remove pull-right"
-        ng-click="removeRecordNote(record, note)"></i>
+        ng-click="removeRecordNote(record, note)""></i>
       <i class="glyphicon glyphicon-pencil pull-right"
-		ng-click="editRecordNote(record, note); content.text = note.note"></i>
+		ng-click="editRecordNote(record, note); noteContent.text = note.note" ng-show="isEditableNote(note)"></i>
 	
       [By
       <a href="mailto:{{user.email}}">{{note.user.name}}</a>
@@ -99,22 +102,22 @@ Notes <i class="pull-right glyphicon"
 </div>
 <span style="color: red">{{errorAddRecordNote}}</span> <!--  tinymce text area -->
 <form>
-  <textarea id="tinymce-notes" ui-tinymce="tinymceOptions" ng-model="content.text"></textarea>
+  <textarea id="tinymce-notes" ui-tinymce="tinymceOptions" ng-model="noteContent.text"></textarea>
   <button class="btn btn-xs btn-primary" 
     ng-show="noteEditMode == false" class="pull-right" accesskey="a"
-    ng-disabled="!content.text"
-    ng-click="addRecordNote(record, content.text); content.text = null;">Add
+    ng-disabled="!noteContent.text"
+    ng-click="addRecordNote(record, noteContent.text); noteContent.text = null;">Add
     Note</button>
   
   <button class="btn btn-xs btn-primary" 
     ng-show="noteEditMode == true" class="pull-right" accesskey="a"
-    ng-disabled="!content.text"
-    ng-click="saveEditRecordNote(record, content.text); content.text = ''">Save
+    ng-disabled="!noteContent.text"
+    ng-click="saveEditRecordNote(record, noteContent.text); noteContent.text = ''">Save
     Editing</button>
   <button class="btn btn-xs btn-primary" 
     ng-show="noteEditMode == true" class="pull-right" accesskey="a"
-    ng-disabled="!content.text"
-    ng-click="cancelEditRecordNote(); content.text = ''">Cancel
+    ng-disabled="!noteContent.text"
+    ng-click="cancelEditRecordNote(); noteContent.text = ''">Cancel
     Editing</button>
   <span class="pull-right">
     Shortcut to add note:
@@ -206,9 +209,9 @@ review<br>
         </span>
         on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
         <i class="glyphicon glyphicon-remove pull-right"
-        ng-click="removeFeedback(feedback)"></i>
+        ng-click="removeFeedback(feedback)" ng-show="isNewFeedback(feedback)"></i>
         <i class="glyphicon glyphicon-pencil pull-right"
-		ng-click="editFeedback(feedback); content.text = feedback.message"></i>
+		ng-click="editFeedback(feedback); feedbackContent.text = feedback.message" ng-show="isNewFeedback(feedback)"></i>
         <div ng-show="feedback.mapError != 'None'" style="padding-left: 20px;"
           ng-bind-html="to_trusted(feedback.mapError)"></div>
         <div style="padding-left: 20px;"
@@ -218,25 +221,30 @@ review<br>
     <hr>
   </div>
   <!--  tinymce text area --> <span>
+    
+    <div class="btn-group" role="group" aria-label="Feedback Group" ng-if="feedbackGroups">
+        <button ng-repeat="group in feedbackGroups" class="btn btn-xs btn-primary" 
+          ng-click="setGroupRecipients(group.id);">{{group.displayName}}</button>
+    </div>
     <div ng-dropdown-multiselect="" options="project.mapLead"
       selected-model="returnRecipients" extra-settings="multiSelectSettings"
       translation-texts="multiSelectCustomTexts"></div>
     <textarea id="tinymce-feedback" ui-tinymce="tinymceOptions"
-      ng-model="content.text"></textarea>
+      ng-model="feedbackContent.text"></textarea>
     <button class="btn btn-xs btn-primary pull-right"
-      ng-disabled="!content.text"
+      ng-disabled="!feedbackContent.text"
        ng-show = "feedbackEditMode == false"
-      ng-click="sendFeedback(record, content.text, returnRecipients); content.text = ''">
+      ng-click="sendFeedback(record, feedbackContent.text, returnRecipients)">
       Send Feedback</button>
        <button class="btn btn-xs btn-primary pull-right"
-      ng-disabled="!content.text"
+      ng-disabled="!feedbackContent.text"
       ng-show = "feedbackEditMode == true"
-      ng-click="saveEditFeedback(content.text); content.text = ''">Save
+      ng-click="saveEditFeedback(feedbackContent.text); feedbackContent.text = ''">Save
       Editing</button>
     <button class="btn btn-xs btn-primary pull-right"
-     ng-disabled="!content.text"
+     ng-disabled="!feedbackContent.text"
      ng-show = "feedbackEditMode == true"
-     ng-click="cancelEditFeedback(); content.text = ''">Cancel
+     ng-click="cancelEditFeedback(); feedbackContent.text = ''">Cancel
      Editing</button>
     <span class="pull-right">
       Shortcut to send feedback:
@@ -250,6 +258,10 @@ review<br>
 <button class="btn btn-xs btn-primary" ng-click="finishMapRecord(true)">Finish</button>
 <button class="btn btn-xs btn-warning" ng-click="cancelMapRecord()">Cancel</button>
 <button class="btn btn-xs btn-danger" ng-click="clearMapRecord()">Clear</button>
+
+<button id="undo" class="btn btn-xs btn-primary" ng-click="undo()" ng-disabled="undoDisabled"><i class="fa fa-undo"></i></button>
+<button id="redo" class="btn btn-xs btn-primary" ng-click="redo()" ng-disabled="redoDisabled"><i class="fa fa-repeat"></i></button>
+ 
 <button class="btn btn-xs btn-primary" style="float: right;"
   ng-click="saveMapRecord(true)">Save For Later</button>
 <button class="btn btn-xs btn-primary" tooltip-placement="top"

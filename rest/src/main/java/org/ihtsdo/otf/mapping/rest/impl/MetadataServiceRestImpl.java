@@ -1,0 +1,318 @@
+package org.ihtsdo.otf.mapping.rest.impl;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.List;
+import java.util.Map;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
+import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.KeyValuePair;
+import org.ihtsdo.otf.mapping.helpers.KeyValuePairList;
+import org.ihtsdo.otf.mapping.helpers.KeyValuePairLists;
+import org.ihtsdo.otf.mapping.helpers.MapUserRole;
+import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.rest.MetadataServiceRest;
+import org.ihtsdo.otf.mapping.services.MetadataService;
+import org.ihtsdo.otf.mapping.services.SecurityService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+
+/**
+ * REST implementation for metadata service.
+ */
+@Path("/metadata")
+@Api(value = "/metadata", description = "Operations providing terminology metadata.")
+@Produces({
+    MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+})
+public class MetadataServiceRestImpl extends RootServiceRestImpl
+    implements MetadataServiceRest {
+
+  /** The security service. */
+  private SecurityService securityService;
+
+  /**
+   * Instantiates an empty {@link MetadataServiceRestImpl}.
+   *
+   * @throws Exception the exception
+   */
+  public MetadataServiceRestImpl() throws Exception {
+    securityService = new SecurityServiceJpa();
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MetadataServiceRest#getMetadata(java.lang.
+   * String, java.lang.String, java.lang.String)
+   */
+  @Override
+  @GET
+  @Path("/metadata/terminology/id/{terminology}/{version}")
+  @ApiOperation(value = "Get metadata for terminology and version.", notes = "Gets the key-value pairs representing all metadata for a particular terminology and version.", response = KeyValuePairLists.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public KeyValuePairLists getMetadata(
+    @ApiParam(value = "Terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
+    @ApiParam(value = "Terminology version, e.g. 20140731", required = true) @PathParam("version") String version,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(MetadataServiceRestImpl.class).info(
+        "RESTful call (Metadata): /metadata/" + terminology + "/" + version);
+
+    String user = "";
+    final MetadataService metadataService = new MetadataServiceJpa();
+    try {
+      // authorize
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "get metadata",
+          securityService);
+
+      // call jpa service and get complex map return type
+      final Map<String, Map<String, String>> mapOfMaps =
+          metadataService.getAllMetadata(terminology, version);
+
+      // convert complex map to KeyValuePair objects for easy transformation to
+      // XML/JSON
+      final KeyValuePairLists keyValuePairLists = new KeyValuePairLists();
+      for (final Map.Entry<String, Map<String, String>> entry : mapOfMaps
+          .entrySet()) {
+        final String metadataType = entry.getKey();
+        final Map<String, String> metadataPairs = entry.getValue();
+        final KeyValuePairList keyValuePairList = new KeyValuePairList();
+        keyValuePairList.setName(metadataType);
+        for (final Map.Entry<String, String> pairEntry : metadataPairs
+            .entrySet()) {
+          final KeyValuePair keyValuePair = new KeyValuePair(
+              pairEntry.getKey().toString(), pairEntry.getValue());
+          keyValuePairList.addKeyValuePair(keyValuePair);
+        }
+        keyValuePairLists.addKeyValuePairList(keyValuePairList);
+      }
+      return keyValuePairLists;
+    } catch (Exception e) {
+      handleException(e, "trying to get the metadata", user, "", "");
+      return null;
+    } finally {
+      metadataService.close();
+      securityService.close();
+    }
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MetadataServiceRest#getAllMetadata(java.
+   * lang.String, java.lang.String)
+   */
+  @Override
+  @GET
+  @Path("/metadata/terminology/id/{terminology}/latest")
+  @ApiOperation(value = "Get all metadata for the the latest version of a terminology.", notes = "Returns all metadata for the latest version of a specified terminology.", response = KeyValuePairLists.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public KeyValuePairLists getAllMetadata(
+    @ApiParam(value = "Terminology name, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(MetadataServiceRestImpl.class)
+        .info("RESTful call (Metadata): /all/" + terminology);
+
+    String user = "";
+    final MetadataService metadataService = new MetadataServiceJpa();
+    try {
+      // authorize
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "get all metadata",
+          securityService);
+
+      final String version = metadataService.getLatestVersion(terminology);
+      return getMetadata(terminology, version, authToken);
+
+    } catch (Exception e) {
+      handleException(e, "trying to get all metadata", user, "", "");
+      return null;
+    } finally {
+      metadataService.close();
+      securityService.close();
+    }
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MetadataServiceRest#
+   * getAllTerminologiesLatestVersions(java.lang.String)
+   */
+  @Override
+  @GET
+  @Path("/terminology/terminologies/latest")
+  @ApiOperation(value = "Get all terminologies and their latest versions.", notes = "Gets the list of terminologies and their latest versions.", response = KeyValuePairList.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public KeyValuePairList getAllTerminologiesLatestVersions(
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(MetadataServiceRestImpl.class)
+        .info("RESTful call (Metadata): /terminologies/latest/");
+
+    String user = "";
+    final MetadataService metadataService = new MetadataServiceJpa();
+    try {
+      // authorize
+      user = authorizeApp(authToken, MapUserRole.VIEWER,
+          "get all terminologies and versions", securityService);
+
+      final Map<String, String> terminologyVersionMap =
+          metadataService.getTerminologyLatestVersions();
+      final KeyValuePairList keyValuePairList = new KeyValuePairList();
+      for (final Map.Entry<String, String> termVersionPair : terminologyVersionMap
+          .entrySet()) {
+        keyValuePairList.addKeyValuePair(new KeyValuePair(
+            termVersionPair.getKey(), termVersionPair.getValue()));
+      }
+      return keyValuePairList;
+    } catch (Exception e) {
+      handleException(e,
+          "trying to get the latest versions of all terminologies", user, "",
+          "");
+      return null;
+    } finally {
+      metadataService.close();
+      securityService.close();
+    }
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MetadataServiceRest#
+   * getAllTerminologiesVersions(java.lang.String)
+   */
+  @Override
+  @GET
+  @Path("/terminology/terminologies")
+  @ApiOperation(value = "Get all terminologies and all their versions", notes = "Gets the list of all terminologies and all of their versions", response = KeyValuePairList.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public KeyValuePairLists getAllTerminologiesVersions(
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(MetadataServiceRestImpl.class)
+        .info("RESTful call (Metadata): /terminologies");
+
+    String user = "";
+    final MetadataService metadataService = new MetadataServiceJpa();
+    try {
+      // authorize
+      user = authorizeApp(authToken, MapUserRole.VIEWER,
+          "get all terminology versions", securityService);
+
+      final KeyValuePairLists keyValuePairLists = new KeyValuePairLists();
+      final List<String> terminologies = metadataService.getTerminologies();
+      for (final String terminology : terminologies) {
+        final List<String> versions = metadataService.getVersions(terminology);
+        final KeyValuePairList keyValuePairList = new KeyValuePairList();
+        for (final String version : versions) {
+          keyValuePairList
+              .addKeyValuePair(new KeyValuePair(terminology, version));
+        }
+        keyValuePairList.setName(terminology);
+        keyValuePairLists.addKeyValuePairList(keyValuePairList);
+      }
+      return keyValuePairLists;
+    } catch (Exception e) {
+      handleException(e, "trying to get the versions of all terminologies",
+          user, "", "");
+      return null;
+    } finally {
+      metadataService.close();
+      securityService.close();
+    }
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MetadataServiceRest#
+   * getAllTerminologiesVersions(java.lang.String)
+   */
+  @Override
+  @GET
+  @Path("/terminology/gmdn")
+  @ApiOperation(value = "Get all downloaded gmdn versions", notes = "Gets the list of all version of gmdn that are present on the server", response = KeyValuePairList.class)
+  @Produces({
+      MediaType.TEXT_PLAIN
+  })
+  public String getAllGmdnVersions(
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(MetadataServiceRestImpl.class)
+        .info("RESTful call (Metadata): /terminology/gmdn");
+
+    String user = "";
+    try {
+      // authorize
+      user = authorizeApp(authToken, MapUserRole.VIEWER,
+          "get all downloaded gmdn versions", securityService);
+
+      String gmdnVersions = "";
+
+      final String gmdnDir =
+          ConfigUtility.getConfigProperties().getProperty("gmdnsftp.dir");
+
+      File folder = new File(gmdnDir);
+      if(!folder.exists()){
+        throw new FileNotFoundException(folder + " not found");
+      }
+      
+      File[] listOfFiles = folder.listFiles();
+
+      // We only care about the directories that follow a yy_M naming convention
+      for (int i = 0; i < listOfFiles.length; i++) {
+        if (listOfFiles[i].isDirectory()
+            && listOfFiles[i].getName().matches("\\d{2}_\\d{1,2}")) {
+          gmdnVersions += listOfFiles[i].getName() + ";";
+        }
+      }
+
+      //get rid of final ';'
+      if(gmdnVersions.length() > 1){
+        gmdnVersions = gmdnVersions.substring(0, gmdnVersions.length()-1);
+      }
+      
+      return gmdnVersions;
+    } catch (FileNotFoundException e) {
+      handleException(e, "get downloaded versions of gmdn: " + e.getMessage(),
+          user, "", "");
+      return null;
+   } catch (Exception e) {
+      handleException(e, "get downloaded versions of gmdn",
+          user, "", "");
+      return null;
+    } finally {
+      securityService.close();
+    }
+  }
+
+}

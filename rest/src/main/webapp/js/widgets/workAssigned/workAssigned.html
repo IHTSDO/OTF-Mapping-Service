@@ -18,13 +18,13 @@
     <td>
       <form>
         <input type="radio" ng-model="assignedTypes.work" value="ALL"
-          ng-change="retrieveAssignedWork(1, queryAssigned); setRadio(assignedTypes.work);">All <input
+          ng-change="retrieveAssignedWork(1, queryAssigned); setRadio(0, assignedTypes.work);">All <input
           type="radio" ng-model="assignedTypes.work" value="NEW"
-          ng-change="retrieveAssignedWork(1, queryAssigned); setRadio(assignedTypes.work);">New <input
+          ng-change="retrieveAssignedWork(1, queryAssigned); setRadio(0, assignedTypes.work);">New <input
           type="radio" ng-model="assignedTypes.work" value="EDITING_IN_PROGRESS"
-          ng-change="retrieveAssignedWork(1, queryAssigned); setRadio(assignedTypes.work);">Editing <input
+          ng-change="retrieveAssignedWork(1, queryAssigned); setRadio(0, assignedTypes.work);">Editing <input
           type="radio" ng-model="assignedTypes.work" value="EDITING_DONE"
-          ng-change="retrieveAssignedWork(1, queryAssigned); setRadio(assignedTypes.work);">Finished
+          ng-change="retrieveAssignedWork(1, queryAssigned); setRadio(0, assignedTypes.work);">Finished
       </form>
     </td>
   </tr>
@@ -41,8 +41,8 @@
     <thead>
       <tr>
         <th style="width: 3%; padding: 5px;"></th>
-        <th style="width: 14%; padding: 5px;">Id</th>
-
+        <th class="pointer" style="width: 14%; padding: 5px;" ng-click="setSortField('concepts','terminologyId')">
+        	Id<span ng-bind="getSortIndicator('concepts','terminologyId')"></span></th>
         <!--  Extra column if on editing in progress page for dashboard finish commands -->
         <th style="width: 3%; padding: 5px;"><a
             ng-show="assignedTypes.work === 'EDITING_IN_PROGRESS'"
@@ -60,9 +60,11 @@
             ng-click="finishOrPublishBatch(assignedTypes.work)">
             <i class="glyphicon glyphicon-check"></i>
           </a></th>
-
-        <th style="width: 75%; padding: 5px;">Preferred Name</th>
-        <th style="width: 3%; padding: 5px;"><a title="Return All Work"
+        <th class="pointer" style="width: 72%; padding: 5px;" ng-click="setSortField('concepts','defaultPreferredName')">
+        	Preferred Name<span ng-bind="getSortIndicator('concepts','defaultPreferredName')"></span></th>
+        <th style="width: 3%; padding: 5px;"></th>
+        <th style="width: 3%; padding: 5px;">
+        <a title="Return All Work"
             ng-click="unassignAllWork(currentUser, 'concept', assignedTypes.work, queryAssigned)">
             <i
               class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
@@ -133,12 +135,18 @@
             <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
           </a>
         </td>
-        <td style="width: 75%; padding: 5px;">{{result.value}}</td>
+        <td style="width: 72%; padding: 5px;">{{result.value}}</td>
+        <td style="width: 3%; padding: 5px;">
+          <span><a title="Send feedback to author"
+            ng-click="createJiraTicket(result)">
+            <i class="glyphicon glyphicon glyphicon-export"></i>
+          </a>
+        </td>
         <td style="width: 3%; padding: 5px;">
           <a title="Return"
             ng-click="unassignWork(result, currentUser, 'concept')">
             <i class="glyphicon glyphicon-share-alt icon-rotate icon-flipped"></i>
-          </a>
+          </a></span>
         </td>
       </tr>
     </tbody>
@@ -170,15 +178,15 @@
     <td>
       <form>
         <input type="radio" ng-model="assignedTypes.conflict" value="ALL"
-          ng-change="retrieveAssignedConflicts(1, queryAssigned); setRadio(assignedTypes.conflict);">All <input
+          ng-change="retrieveAssignedConflicts(1, queryAssigned); setRadio(1, assignedTypes.conflict);">All <input
           type="radio" ng-model="assignedTypes.conflict" value="CONFLICT_NEW"
-          ng-change="retrieveAssignedConflicts(1, queryAssigned); setRadio(assignedTypes.conflict);">New <input
+          ng-change="retrieveAssignedConflicts(1, queryAssigned); setRadio(1, assignedTypes.conflict);">New <input
           type="radio" ng-model="assignedTypes.conflict"
           value="CONFLICT_IN_PROGRESS"
-          ng-change="retrieveAssignedConflicts(1, queryAssigned); setRadio(assignedTypes.conflict);">Editing
+          ng-change="retrieveAssignedConflicts(1, queryAssigned); setRadio(1, assignedTypes.conflict);">Editing
         <input type="radio" ng-model="assignedTypes.conflict"
           value="CONFLICT_RESOLVED"
-          ng-change="retrieveAssignedConflicts(1, queryAssigned); setRadio(assignedTypes.conflict);">Resolved
+          ng-change="retrieveAssignedConflicts(1, queryAssigned); setRadio(1, assignedTypes.conflict);">Resolved
       </form>
     </td>
   </tr>
@@ -199,9 +207,10 @@
 
   <table class="table">
     <thead>
-      <tr>
+      <tr">
         <th style="width: 3%; padding: 5px;"></th>
-        <th style="width: 14%; padding: 5px;">Id</th>
+        <th class="pointer" style="width: 14%; padding: 5px;" ng-click="setSortField('conflicts','terminologyId')">
+			Id<span ng-bind="getSortIndicator('conflicts','terminologyId')"></span></th>
         <!--  Extra column if on editing in progress page for dashboard finish commands -->
         <th style="width: 3%; padding: 5px;"><a
             ng-show="assignedTypes.conflict === 'CONFLICT_IN_PROGRESS'"
@@ -213,8 +222,9 @@
             ng-click="finishOrPublishBatch(assignedTypes.conflict)">
             <i class="glyphicon glyphicon-check"></i>
           </a></th>
-
-        <th style="width: 75%; padding: 5px;">Preferred Name</th>
+        <th class="pointer" style="width: 72%; padding: 5px;" ng-click="setSortField('conflicts','defaultPreferredName')">
+    		Preferred Name<span ng-bind="getSortIndicator('conflicts','defaultPreferredName')"></span></th>
+        <th style="width: 3%; padding: 5px;"></th>
         <th style="width: 3%; padding: 5px;"><a
             title="Return All Conflicts"
             ng-click="unassignAllWork(currentUser, 'conflict', assignedTypes.conflict, queryConflict)">
@@ -225,7 +235,6 @@
     </thead>
     <tbody>
       <tr ng-repeat="result in assignedConflicts">
-
         <td style="width: 3%; padding: 5px;">
           <!-- Display a pushpin if this record has previously been edited -->
           <!--  NOTE: the result.termionlogyVersion is overloaded with the workflow status of the record  -->
@@ -268,7 +277,13 @@
           </a>
         </td>
 
-        <td style="width: 80%; padding: 5px;">{{result.value}}</td>
+        <td style="width: 77%; padding: 5px;">{{result.value}}</td>
+        <td style="width: 3%; padding: 5px;">
+          <a title="Send feedback to author"
+            ng-click="createJiraTicket(result)">
+            <i class="glyphicon glyphicon glyphicon-export"></i>
+          </a>
+        </td>
         <td style="width: 3%; padding: 5px;">
           <a title="Return"
             ng-click="unassignWork(result, currentUser, 'conflict')">
@@ -304,15 +319,15 @@
     <td>
       <form>
         <input type="radio" ng-model="assignedTypes.review" value="ALL"
-          ng-change="retrieveAssignedReviewWork(1, queryAssigned); setRadio(assignedTypes.review);">All <input
+          ng-change="retrieveAssignedReviewWork(1, queryAssigned); setRadio(2, assignedTypes.review);">All <input
           type="radio" ng-model="assignedTypes.review" value="REVIEW_NEW"
-          ng-change="retrieveAssignedReviewWork(1, queryAssigned); setRadio(assignedTypes.review);">New <input
+          ng-change="retrieveAssignedReviewWork(1, queryAssigned); setRadio(2, assignedTypes.review);">New <input
           type="radio" ng-model="assignedTypes.review"
           value="REVIEW_IN_PROGRESS"
-          ng-change="retrieveAssignedReviewWork(1, queryAssigned); setRadio(assignedTypes.review);">Editing
+          ng-change="retrieveAssignedReviewWork(1, queryAssigned); setRadio(2, assignedTypes.review);">Editing
         <input type="radio" ng-model="assignedTypes.review"
           value="REVIEW_RESOLVED"
-          ng-change="retrieveAssignedReviewWork(1, queryAssigned); setRadio(assignedTypes.review);">Resolved
+          ng-change="retrieveAssignedReviewWork(1, queryAssigned); setRadio(2, assignedTypes.review);">Resolved
       </form>
     </td>
   </tr>
@@ -336,8 +351,8 @@
     <thead>
       <tr>
         <th style="width: 3%; padding: 5px;"></th>
-        <th style="width: 14%; padding: 5px;">Id</th>
-
+        <th class="pointer" style="width: 14%;" padding: 5px; ng-click="setSortField('review','terminologyId')">
+			Id<span ng-bind="getSortIndicator('review','terminologyId')"></span></th>
         <!--  Extra column if on editing in progress page for dashboard finish commands -->
         <th style="width: 3%; padding: 5px;"><a
             ng-show="assignedTypes.review === 'REVIEW_IN_PROGRESS'"
@@ -349,7 +364,9 @@
             ng-click="finishOrPublishBatch(assignedTypes.review)">
             <i class="glyphicon glyphicon-check"></i>
           </a></th>
-        <th style="width: 80%; padding: 5px;">Preferred Name</th>
+        <th class="pointer" style="width: 77%; padding: 5px;" ng-click="setSortField('review','defaultPreferredName')">
+    		Preferred Name<span ng-bind="getSortIndicator('review','defaultPreferredName')"></span></th>
+        <th style="width: 3%; padding: 5px;"></th>
         <th style="width: 3%; padding: 5px;"><a title="Return All Work"
             ng-click="unassignAllWork(currentUser, 'review', assignedTypes.review, queryReviewWork)">
             <i
@@ -401,7 +418,13 @@
           </a>
         </td>
 
-        <td style="width: 80%; padding: 5px;">{{result.value}}</td>
+        <td style="width: 77%; padding: 5px;">{{result.value}}</td>
+        <td style="width: 3%; padding: 5px;">
+          <a title="Send feedback to author"
+            ng-click="createJiraTicket(result)">
+            <i class="glyphicon glyphicon glyphicon-export"></i>
+          </a>
+        </td>
         <td style="width: 3%; padding: 5px;">
           <a title="Return"
             ng-click="unassignWork(result, currentUser, 'review')">
@@ -445,15 +468,15 @@
     <td>
       <form>
         <input type="radio" ng-model="assignedTypes.forUser" value="ALL"
-          ng-change="retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, queryAssignedForUser); setRadio(assignedTypes.forUser);">All
+          ng-change="retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, queryAssignedForUser); setRadio(3, assignedTypes.forUser);">All
         <input type="radio" ng-model="assignedTypes.forUser" value="NEW"
-          ng-change="retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, queryAssignedForUser); setRadio(assignedTypes.forUser);">New
+          ng-change="retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, queryAssignedForUser); setRadio(3, assignedTypes.forUser);">New
         <input type="radio" ng-model="assignedTypes.forUser"
           value="EDITING_IN_PROGRESS"
-          ng-change="retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, queryAssignedForUser); setRadio(assignedTypes.forUser);">Editing
+          ng-change="retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, queryAssignedForUser); setRadio(3, assignedTypes.forUser);">Editing
         <input type="radio" ng-model="assignedTypes.forUser"
           value="EDITING_DONE"
-          ng-change="retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, queryAssignedForUser); setRadio(assignedTypes.forUser);">Finished
+          ng-change="retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, queryAssignedForUser); setRadio(3, assignedTypes.forUser);">Finished
       </form>
     </td>
   </tr>
@@ -474,9 +497,12 @@
 <table class="table" ng-show="nAssignedRecordsForUser > 0">
   <thead>
     <tr>
-      <th style="width: 12%; padding: 5px;">Id</th>
-      <th style="width: 60%; padding: 5px;">Preferred Name</th>
-      <th style="width: 25%; padding: 5px;">Last Modified</th>
+      <th class="pointer" style="width: 12%; padding: 5px;" ng-click="setSortField('user','terminologyId')">
+		Id<span ng-bind="getSortIndicator('user','terminologyId')"></span></th>
+      <th class="pointer" style="width: 60%; padding: 5px;" ng-click="setSortField('user','defaultPreferredName')">
+    	Preferred Name<span ng-bind="getSortIndicator('user','defaultPreferredName')"></span></th>
+      <th class="pointer" style="width: 25%; padding: 5px;" ng-click="setSortField('user','terminology')">
+    	Last Modified<span ng-bind="getSortIndicator('user','terminology')"></span></th>
       <th style="width: 3%; padding: 5px;"><a title="Return All Work"
           ng-click="unassignAllWork(selected.mapUserViewed, 'concept', assignedTypes.forUser, queryAssignedForUser)">
           <i
@@ -524,13 +550,13 @@
     <td>
       <form>
         <input type="radio" ng-model="assignedTypes.qa" value="ALL"
-          ng-change="retrieveAssignedQAWork(1, queryAssigned); setRadio(assignedTypes.qa);">All <input
+          ng-change="retrieveAssignedQAWork(1, queryAssigned); setRadio(4, assignedTypes.qa);">All <input
           type="radio" ng-model="assignedTypes.qa" value="QA_NEW"
-          ng-change="retrieveAssignedQAWork(1, queryAssigned); setRadio(assignedTypes.qa);">New <input
+          ng-change="retrieveAssignedQAWork(1, queryAssigned); setRadio(4, assignedTypes.qa);">New <input
           type="radio" ng-model="assignedTypes.qa" value="QA_IN_PROGRESS"
-          ng-change="retrieveAssignedQAWork(1, queryAssigned); setRadio(assignedTypes.qa);">Editing <input
+          ng-change="retrieveAssignedQAWork(1, queryAssigned); setRadio(4, assignedTypes.qa);">Editing <input
           type="radio" ng-model="assignedTypes.qa" value="QA_RESOLVED"
-          ng-change="retrieveAssignedQAWork(1, queryAssigned); setRadio(assignedTypes.qa);">Resolved
+          ng-change="retrieveAssignedQAWork(1, queryAssigned); setRadio(4, assignedTypes.qa);">Resolved
       </form>
     </td>
   </tr>
@@ -553,7 +579,8 @@
     <thead>
       <tr>
         <th style="width: 3%; padding: 5px;"></th>
-        <th style="width: 14%; padding: 5px;">Id</th>
+        <th class="pointer" style="width: 14%; padding: 5px;" ng-click="setSortField('qa','terminologyId')">
+			Id<span ng-bind="getSortIndicator('qa','terminologyId')"></span></th>
 
         <!--  Extra column if on editing in progress page for dashboard finish commands -->
         <th style="width: 3%; padding: 5px;"><a
@@ -566,7 +593,9 @@
             ng-click="finishOrPublishBatch(assignedTypes.qa)">
             <i class="glyphicon glyphicon-check"></i>
           </a></th>
-        <th style="width: 77%; padding: 5px;">Preferred Name</th>
+        <th class="pointer" style="width: 74%; padding: 5px;" ng-click="setSortField('qa','defaultPreferredName')">
+    		Preferred Name<span ng-bind="getSortIndicator('qa','defaultPreferredName')"></span></th>
+        <th style="width: 3%; padding: 5px;"></th>
         <th style="width: 3%; padding: 5px;"></th>
         <th style="width: 3%; padding: 5px;"><a title="Return All Work"
             ng-click="unassignAllWork(currentUser, 'qa', assignedTypes.qa, queryQAWork)">
@@ -621,9 +650,15 @@
         <td style="width: 77%; padding: 5px;">{{result.name}}</td>
         <td style="width: 3%; padding: 5px;">
           <a title="Labels" ng-show="result.labels.length > 0"
-            tooltip-placement="top" uib-tooltip="{{result.labels}}"
+            tooltip-placement="left" uib-tooltip="{{result.labels}}"
             style="float: right; margin-right: 5px;">
             <i class="glyphicon glyphicon-tasks"></i>
+          </a>
+        </td>
+        <td style="width: 3%; padding: 5px;">
+          <a title="Send feedback to author"
+            ng-click="createJiraTicket(result)">
+            <i class="glyphicon glyphicon glyphicon-export"></i>
           </a>
         </td>
         <td style="width: 3%; padding: 5px;">

@@ -63,21 +63,19 @@
     ng-change="retrieveAvailableWork(availableWorkPage, queryAvailable, assignedMapUser)"></uib-pagination>
 
   <table class="table" ng-show="nAvailableWork > 0">
-
     <thead>
       <tr>
         <th style="width: 3%; padding: 5px;"></th>
-        <th style="width: 17%; padding: 5px;">Id</th>
-        <th style="width: 80%; padding: 5px;">Preferred Name</th>
-
+        <th class="pointer" style="width: 17%; padding: 5px;" ng-click="setSortField('concepts','terminologyId')">
+        	Id<span ng-bind="getSortIndicator('concepts','terminologyId')"></span>
+        </th>
+        <th class="pointer" style="width: 80%; padding: 5px;" ng-click="setSortField('concepts','defaultPreferredName')">
+        	Preferred Name<span ng-bind="getSortIndicator('concepts','defaultPreferredName')"></span>
+        </th>
       </tr>
-
     </thead>
-
     <tbody>
-
       <tr ng-repeat="concept in availableWork">
-
         <td style="width: 3%; padding: 5px;">
           <a title="Claim" ng-show="currentRole == 'Specialist'"
             ng-click="assignWork(concept, currentUser, queryAvailable, 'concept', availableWorkPage)">
@@ -92,7 +90,6 @@
         <td style="width: 17%; padding: 5px;">{{concept.terminologyId}}</td>
         <td style="width: 80%; padding: 5px;">{{concept.value}}</td>
     </tbody>
-
   </table>
 
 
@@ -155,21 +152,17 @@
     ng-change="retrieveAvailableConflicts(availableConflictsPage, queryAvailableConflict)"></uib-pagination>
 
   <table class="table" ng-show="nAvailableConflicts > 0">
-
     <thead>
       <tr>
         <th style="width: 3%; padding: 5px;"></th>
-        <th style="width: 17%; padding: 5px;">Id</th>
-        <th style="width: 80%; padding: 5px;">Preferred Name</th>
-
+        <th class="pointer" style="width: 17%; padding: 5px;" ng-click="setSortField('conflicts','terminologyId')">
+			Id<span ng-bind="getSortIndicator('conflicts','terminologyId')"></span></th>
+        <th class="pointer" style="width: 80%; padding: 5px;" ng-click="setSortField('conflicts','defaultPreferredName')">
+    		Preferred Name<span ng-bind="getSortIndicator('conflicts','defaultPreferredName')"></span></th>
       </tr>
-
     </thead>
-
     <tbody>
-
       <tr ng-repeat="concept in availableConflicts">
-
         <td style="width: 3%; padding: 5px;">
           <a title="Assign"
             ng-click="assignWork(concept, assignedMapLead, queryAvailableConflict, 'conflict', availableConflictsPage)">
@@ -179,7 +172,6 @@
         <td style="width: 17%; padding: 5px;">{{concept.terminologyId}}</td>
         <td style="width: 80%; padding: 5px;">{{concept.value}}</td>
     </tbody>
-
   </table>
 
 </div>
@@ -231,7 +223,6 @@
 
 <div ng-show="nAvailableReviewWork != 0">
 
-
   <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
     first-text="&laquo;" last-text="&raquo;"
     ng-show="numAvailableReviewWorkPages > 1" total-items="nAvailableReviewWork"
@@ -240,21 +231,17 @@
     ng-change="retrieveAvailableReviewWork(availableReviewWorkPage, queryAvailableReview)"></uib-pagination>
 
   <table class="table" ng-show="nAvailableReviewWork > 0">
-
     <thead>
       <tr>
         <th style="width: 3%; padding: 5px;"></th>
-        <th style="width: 17%; padding: 5px;">Id</th>
-        <th style="width: 80%; padding: 5px;">Preferred Name</th>
-
+        <th class="pointer" style="width: 17%; padding: 5px;" ng-click="setSortField('review','terminologyId')">
+			Id<span ng-bind="getSortIndicator('review','terminologyId')"></span></th>
+        <th class="pointer" style="width: 80%; padding: 5px;" ng-click="setSortField('review','defaultPreferredName')">
+    		Preferred Name<span ng-bind="getSortIndicator('review','defaultPreferredName')"></span></th>
       </tr>
-
     </thead>
-
     <tbody>
-
       <tr ng-repeat="concept in availableReviewWork">
-
         <td style="width: 3%; padding: 5px;">
           <a title="Assign"
             ng-click="assignWork(concept, assignedMapLead, queryAvailableReview, 'review', availableReviewWorkPage)">
@@ -264,7 +251,6 @@
         <td style="width: 17%; padding: 5px;">{{concept.terminologyId}}</td>
         <td style="width: 80%; padding: 5px;">{{concept.value}}</td>
     </tbody>
-
   </table>
 
 </div>
@@ -334,12 +320,13 @@
     ng-change="retrieveAvailableQAWork(availableQAWorkPage, selectedQaLabel, assignedMapUser)"></uib-pagination>
 
   <table class="table" ng-show="nAvailableQAWork > 0">
-
     <thead>
       <tr>
         <th style="width: 3%; padding: 5px;"></th>
-        <th style="width: 17%; padding: 5px;">Id</th>
-        <th style="width: 72%; padding: 5px;">Preferred Name</th>
+        <th class="pointer" style="width: 17%; padding: 5px;" ng-click="setSortField('qa','terminologyId')">
+			Id<span ng-bind="getSortIndicator('qa','terminologyId')"></span></th>
+        <th class="pointer" style="width: 72%; padding: 5px;" ng-click="setSortField('qa','defaultPreferredName')">
+    		Preferred Name<span ng-bind="getSortIndicator('qa','defaultPreferredName')"></span></th>
         <th style="width: 3%; padding: 5px;"></th>
         <th style="width: 3%; padding: 5px;"><a
             title="Remove all displayed work from QA"
@@ -348,13 +335,9 @@
               class="glyphicon glyphicon-trash icon-rotate icon-flipped pull-right"></i>
           </a></th>
       </tr>
-
     </thead>
-
     <tbody>
-
       <tr ng-repeat="concept in availableQAWork">
-
         <td style="width: 3%; padding: 5px;">
           <a title="Claim" ng-show="currentRole == 'Specialist'"
             ng-click="assignWork(concept, currentUser, selectedQaLabel, 'qa', availableQAWorkPage)">
@@ -369,7 +352,7 @@
         <td style="width: 17%; padding: 5px;">{{concept.terminologyId}}</td>
         <td style="width: 72%; padding: 5px;">{{concept.name}}</td>
         <td style="width: 3%; padding: 5px;">
-          <i ng-show="concept.labels.length > 0" tooltip-placement="top"
+          <i ng-show="concept.labels.length > 0" tooltip-placement="left"
             uib-tooltip="{{concept.labels}}"
             style="float: right; margin-right: 5px;"
             class="glyphicon glyphicon-tasks"></i>
@@ -381,7 +364,6 @@
           </a>
         </td>
     </tbody>
-
   </table>
 
 

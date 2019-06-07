@@ -16,7 +16,7 @@ angular
 
   .controller(
     'workAvailableWidgetCtrl',
-    function($scope, $rootScope, $http, $routeParams, $uibModal, $location, localStorageService) {
+    function($scope, $rootScope, $http, $routeParams, $uibModal, $location, localStorageService, gpService) {
 
       // local variables
       $scope.batchSizes = [ 100, 50, 25, 10, 5 ];
@@ -163,7 +163,7 @@ angular
       });
 
       $scope.retrieveLabels = function() {
-        $rootScope.glassPane++;
+        gpService.increment();
         $http({
           url : root_reporting + 'qaLabel/qaLabels/' + $scope.focusProject.id,
           dataType : 'json',
@@ -172,16 +172,45 @@ angular
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           for (var i = 0; i < data.searchResult.length; i++) {
             $scope.labelNames.push(data.searchResult[i].value);
           }
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
 
+      //sort direction
+      var sortAscending = [];
+      var sortField = [];
+      
+      $scope.getSortIndicator = function(table, field){
+		if (sortField[table] !== field) return '';
+		if (sortField[table] === field && sortAscending[table]) return '▴';
+		if (sortField[table] === field && !sortAscending[table]) return '▾';
+      };
+      
+      //sort field and get data
+      $scope.setSortField = function(table, field) {
+    	  sortAscending[table] = !sortAscending[table];
+    	  sortField[table] = field;
+    	  if (table === 'concepts') {
+    		  $scope.retrieveAvailableWork(
+    				  1, $scope.queryAvailable, $scope.assignedMapUser);
+    	  } else if (table === 'conflicts') {
+    		  $scope.retrieveAvailableConflicts(
+    				  1, $scope.queryAvailableConflict, $scope.assignedMapUser);
+    	  } else if (table === 'review') {
+    		  $scope.retrieveAvailableReviewWork(
+    				  1, $scope.queryAvailableReview, $scope.assignedMapUser);
+    	  } else if (table === 'qa') {
+    		  $scope.retrieveAvailableQAWork(
+    				  1, $scope.selectedQaLabel, $scope.assignedMapUser);
+    	  }
+      };
+      
       $scope.retrieveAvailableConflicts = function(page, pquery, puser) {
         var query = pquery;
         var user = puser;
@@ -208,11 +237,12 @@ angular
         var pfsParameterObj = {
           'startIndex' : (page - 1) * $scope.itemsPerPage,
           'maxResults' : $scope.itemsPerPage,
-          'sortField' : 'sortKey',
+          'sortField' : (sortField['conflicts']) ? sortField['conflicts'] : 'sortKey',
+          'ascending' : sortAscending['conflicts'],
           'queryRestriction' : null
         };
 
-        $rootScope.glassPane++;
+        gpService.increment();
 
         $http(
           {
@@ -225,7 +255,7 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
 
           $scope.availableConflicts = data.searchResult;
 
@@ -236,7 +266,7 @@ angular
           // set title
           $scope.tabs[1].title = 'Conflicts (' + data.totalCount + ')';
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
 
           $rootScope.handleHttpError(data, status, headers, config);
         });
@@ -269,11 +299,12 @@ angular
         var pfsParameterObj = {
           'startIndex' : (page - 1) * $scope.itemsPerPage,
           'maxResults' : $scope.itemsPerPage,
-          'sortField' : 'sortKey',
+          'sortField' : (sortField['concepts']) ? sortField['concepts'] : 'sortKey',
+          'ascending' : sortAscending['concepts'],
           'queryRestriction' : null
         };
 
-        $rootScope.glassPane++;
+        gpService.increment();
 
         $http(
           {
@@ -286,7 +317,7 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $scope.availableWork = data.searchResult;
 
           // set pagination
@@ -298,7 +329,7 @@ angular
           $scope.availableCount = data.totalCount;
 
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
@@ -324,11 +355,12 @@ angular
         var pfsParameterObj = {
           'startIndex' : (page - 1) * $scope.itemsPerPage,
           'maxResults' : $scope.itemsPerPage,
-          'sortField' : 'sortKey',
+          'sortField' : (sortField['qa']) ? sortField['qa'] : 'sortKey',
+          'ascending' : sortAscending['qa'],
           'queryRestriction' : null
         };
 
-        $rootScope.glassPane++;
+        gpService.increment();
 
         $http(
           {
@@ -341,7 +373,7 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
 
           $scope.availableQAWork = data.searchResult;
 
@@ -361,13 +393,13 @@ angular
           }
 
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
 
       $scope.removeQaWork = function(conceptId, query, page) {
-        $rootScope.glassPane++;
+        gpService.increment();
 
         // clear local error
         $scope.error = null;
@@ -389,10 +421,10 @@ angular
 
           $scope.retrieveAvailableQAWork(page, query);
 
-          $rootScope.glassPane--;
+          gpService.decrement();
 
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
@@ -400,7 +432,7 @@ angular
       $scope.removeAllQaWork = function(pquery) {
         var query = pquery;
 
-        $rootScope.glassPane++;
+        gpService.increment();
 
         // clear local error
         $scope.error = null;
@@ -460,15 +492,15 @@ angular
 
               $scope.retrieveAvailableQAWork(1, query);
 
-              $rootScope.glassPane--;
+              gpService.decrement();
 
             }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
             });
 
           }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
@@ -498,11 +530,12 @@ angular
         var pfsParameterObj = {
           'startIndex' : (page - 1) * $scope.itemsPerPage,
           'maxResults' : $scope.itemsPerPage,
-          'sortField' : 'sortKey',
+          'sortField' : (sortField['review']) ? sortField['review'] : 'sortKey',
+          'ascending' : sortAscending['review'],
           'queryRestriction' : null
         };
 
-        $rootScope.glassPane++;
+        gpService.increment();
 
         $http(
           {
@@ -515,7 +548,7 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
 
           $scope.availableReviewWork = data.searchResult;
 
@@ -526,7 +559,7 @@ angular
           // set title
           $scope.tabs[2].title = 'Review (' + data.totalCount + ')';
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
 
           $rootScope.handleHttpError(data, status, headers, config);
         });
@@ -552,7 +585,7 @@ angular
         if (query == undefined)
           query = null;
 
-        $rootScope.glassPane++;
+        gpService.increment();
 
         $http(
           {
@@ -563,7 +596,7 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.$broadcast('workAvailableWidget.notification.assignWork', {
             assignUser : mapUser,
             assignType : workType
@@ -579,7 +612,7 @@ angular
             $scope.retrieveAvailableQAWork(workPage, query, mapUser);
           }
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
 
@@ -607,11 +640,12 @@ angular
         var pfsParameterObj = {
           'startIndex' : ($scope.availableWorkPage - 1) * $scope.itemsPerPage,
           'maxResults' : batchSize,
-          'sortField' : 'sortKey',
+          'sortField' : (sortField['concepts']) ? sortField['concepts'] : 'sortKey',
+          'ascending' : sortAscending['concepts'],
           'queryRestriction' : null
         };
 
-        $rootScope.glassPane++;
+        gpService.increment();
         $http(
           {
             url : root_workflow + 'project/id/' + $scope.focusProject.id + '/user/id/'
@@ -636,7 +670,7 @@ angular
                   if (trackingRecords[i].id != $scope.availableWork[i].id) {
                     $scope.retrieveAvailableWork($scope.availableWorkPage, query);
                     alert('The list of available concepts has changed.  Please check the refreshed list and try again');
-                    $rootScope.glassPane--;
+                    gpService.decrement();
                     return;
                     conceptListValid = false;
                   }
@@ -660,7 +694,7 @@ angular
                       'Content-Type' : 'application/json'
                     }
                   }).success(function(data) {
-                  $rootScope.glassPane--;
+                  gpService.decrement();
 
                   // notify other widgets of work assignment
                   $rootScope.$broadcast('workAvailableWidget.notification.assignWork', {
@@ -671,15 +705,15 @@ angular
                   // refresh the available work list
                   $scope.retrieveAvailableWork(1, query, mapUser);
                 }).error(function(data, status, headers, config) {
-                  $rootScope.glassPane--;
+                  gpService.decrement();
 
                   $rootScope.handleHttpError(data, status, headers, config);
                 });
               } else {
-                $rootScope.glassPane--;
+                gpService.decrement();
               }
             }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
 
             $rootScope.handleHttpError(data, status, headers, config);
           });
@@ -701,11 +735,12 @@ angular
         var pfsParameterObj = {
           'startIndex' : ($scope.availableWorkPage - 1) * $scope.itemsPerPage,
           'maxResults' : batchSize,
-          'sortField' : 'sortKey',
+          'sortField' : (sortField['conflicts']) ? sortField['conflicts'] : 'sortKey',
+          'ascending' : sortAscending['conflicts'],
           'queryRestriction' : null
         };
 
-        $rootScope.glassPane++;
+        gpService.increment();
         $http(
           {
             url : root_workflow + 'project/id/' + $scope.focusProject.id + '/user/id/'
@@ -755,7 +790,7 @@ angular
                       'Content-Type' : 'application/json'
                     }
                   }).success(function(data) {
-                  $rootScope.glassPane--;
+                  gpService.decrement();
 
                   // broadcast the work assignment
                   $rootScope.$broadcast('workAvailableWidget.notification.assignWork', {
@@ -766,14 +801,14 @@ angular
                   // refresh the displayed list of conflicts
                   $scope.retrieveAvailableConflicts(1, query, mapUser);
                 }).error(function(data, status, headers, config) {
-                  $rootScope.glassPane--;
+                  gpService.decrement();
                   $rootScope.handleHttpError(data, status, headers, config);
                 });
               } else {
-                $rootScope.glassPane--;
+                gpService.decrement();
               }
             }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
 
             $rootScope.handleHttpError(data, status, headers, config);
           });
@@ -796,11 +831,12 @@ angular
         var pfsParameterObj = {
           'startIndex' : ($scope.availableWorkPage - 1) * $scope.itemsPerPage,
           'maxResults' : batchSize,
-          'sortField' : 'sortKey',
+          'sortField' : (sortField['review']) ? sortField['review'] : 'sortKey',
+          'ascending' : sortAscending['review'],
           'queryRestriction' : null
         };
 
-        $rootScope.glassPane++;
+        gpService.increment();
         $http(
           {
             url : root_workflow + 'project/id/' + $scope.focusProject.id + '/user/id/'
@@ -852,7 +888,7 @@ angular
                       'Content-Type' : 'application/json'
                     }
                   }).success(function(data) {
-                  $rootScope.glassPane--;
+                  gpService.decrement();
 
                   // broadcast the work assignment
                   $rootScope.$broadcast('workAvailableWidget.notification.assignWork', {
@@ -863,14 +899,14 @@ angular
                   // refresh the displayed list of conflicts
                   $scope.retrieveAvailableReviewWork(1, query, mapUser);
                 }).error(function(data, status, headers, config) {
-                  $rootScope.glassPane--;
+                  gpService.decrement();
                   $rootScope.handleHttpError(data, status, headers, config);
                 });
               } else {
-                $rootScope.glassPane--;
+                gpService.decrement();
               }
             }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
 
             $rootScope.handleHttpError(data, status, headers, config);
           });
@@ -893,11 +929,12 @@ angular
         var pfsParameterObj = {
           'startIndex' : ($scope.availableQAWorkPage - 1) * $scope.itemsPerPage,
           'maxResults' : batchSize,
-          'sortField' : 'sortKey',
+          'sortField' : (sortField['qa']) ? sortField['qa'] : 'sortKey',
+          'ascending' : sortAscending['qa'],
           'queryRestriction' : null
         };
 
-        $rootScope.glassPane++;
+        gpService.increment();
         $http(
           {
             url : root_workflow + 'project/id/' + $scope.focusProject.id + '/availableQAWork'
@@ -948,7 +985,7 @@ angular
                       'Content-Type' : 'application/json'
                     }
                   }).success(function(data) {
-                  $rootScope.glassPane--;
+                  gpService.decrement();
 
                   // broadcast the work assignment
                   $rootScope.$broadcast('workAvailableWidget.notification.assignWork', {
@@ -959,14 +996,14 @@ angular
                   // refresh the displayed list of qa items
                   $scope.retrieveAvailableQAWork(1, query, mapUser);
                 }).error(function(data, status, headers, config) {
-                  $rootScope.glassPane--;
+                  gpService.decrement();
                   $rootScope.handleHttpError(data, status, headers, config);
                 });
               } else {
-                $rootScope.glassPane--;
+                gpService.decrement();
               }
             }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
 
             $rootScope.handleHttpError(data, status, headers, config);
           });

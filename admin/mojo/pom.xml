@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.5.40-US_SNAPSHOT</version>
+    <version>1.6.4-SNAPSHOT</version>
     <relativePath>../../parent</relativePath>
   </parent>
 
@@ -17,7 +17,7 @@
 
   <!-- Declare Project Dependency Versions -->
   <dependencies>
-
+  
     <!-- Model interfaces. -->
     <dependency>
       <groupId>org.ihtsdo.otf.mapping</groupId>
@@ -34,6 +34,21 @@
     <dependency>
       <groupId>org.ihtsdo.otf.mapping</groupId>
       <artifactId>mapping-jpa-services</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ihtsdo.otf.mapping</groupId>
+      <artifactId>mapping-rest-client</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ihtsdo.otf.mapping</groupId>
+      <artifactId>mapping-rest</artifactId>
+	  <classifier>classes</classifier>
+    </dependency>
+
+    <!-- Maven invoker -->
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-invoker</artifactId>
     </dependency>
 
     <!-- JPA dependencies -->
@@ -85,7 +100,16 @@
       <groupId>xom</groupId>
       <artifactId>xom</artifactId>
     </dependency>
-
   </dependencies>
-
+	
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-plugin-plugin</artifactId>
+				<version>3.4</version>
+			</plugin>
+			<!-- other plugins -->
+		</plugins>
+	</build>
 </project>

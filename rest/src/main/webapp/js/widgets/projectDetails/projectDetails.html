@@ -5,7 +5,6 @@
     Records</button>
 </h3>
 <p></p>
-
 <div ng-show="currentRole == 'Administrator' || currentRole == 'Lead'"
   align="right">
   <span style="font-size: 16px"> <a href=""
@@ -29,6 +28,8 @@
 </uib-accordion-heading>
 
 <p></p>
+
+
 <table class="table table-bordered" style="padding: 5px">
   <tbody>
     <tr>
@@ -1106,14 +1107,14 @@
 </uib-accordion-heading> <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
   first-text="&laquo;" last-text="&raquo;" direction-links="false"
   boundary-links="true" total-items="pagedScopeConceptCount"
-  items-per-page="pageSize" max-size="maxSize" ng-model="pageScopeConcept"
-  ng-change="getPagedScopeConcepts(pageScopeConcept)"></uib-pagination> 
-  <!-- 
-<form ng-submit="resetScopeConceptFilter()">
+  items-per-page="pageSize" max-size="maxSize" ng-model="currentPage"
+  ng-change="getPagedScopeConcepts(currentPage, scopeConceptFilter)"></uib-pagination> 
+  
+<form ng-submit="resetScopeConceptFilter(); scopeConceptFilter = '';">
   <input id="scopeConceptSearch" type="text" ng-model="scopeConceptFilter"
-    ng-change="getPagedScopeConcepts(1)">
+    ng-change="getPagedScopeConcepts(1, scopeConceptFilter)">
   <button type="submit" class="btn btn-xs btn-primary">Reset Filter</button>
-</form> -->
+</form>
 
 <table style="width: 100%" class="table pure-table">
   <thead>
@@ -1159,22 +1160,25 @@
   Enter concept terminology ids, delimited by either whitespace or
   commas. <textarea style="width: 100%; height: 100px"
     ng-model="scopeConceptsToAdd"></textarea>
-  <button class="btn btn-xs btn-primary"
+    <div ng-show="scopeAddLog.length > 0" style="max-height: 100px; overflow-y: scroll;">
+        <pre>{{scopeAddLog}}</pre>
+    </div>
+  <button class="btn btn-xs btn-primary" ng-disabled="!scopeConceptsToAdd"
     ng-click="submitNewScopeIncludedConcepts(scopeConceptsToAdd)">Add</button>
-  <button class="btn btn-xs btn-warning" ng-click="scopeConceptsToAdd = null">Clear</button>
-  <div ng-show="scopeWarnings.length>0">
-    <span style="margin-top: 10px;" ng-repeat="warning in scopeWarnings" class="alert alert-warning">
-      {{warning}}<br />
-    </span>
-  </div>
+  <button class="btn btn-xs btn-warning" ng-disabled="!scopeConceptsToAdd" ng-click="scopeConceptsToAdd = null; clearScopeAdd()">Clear</button>
+  
   </uib-tab> <uib-tab heading="Remove Concepts"> Enter concept terminology ids,
   delimited by either whitespace or commas. <textarea
     style="width: 100%; height: 100px" ng-model="scopeConceptsToRemove"></textarea>
-  <button class="btn btn-xs btn-primary"
+	<div ng-show="scopeRemoveLog.length > 0" style="max-height: 100px; overflow-y: scroll;">
+        <pre>{{scopeRemoveLog}}</pre>
+    </div>
+  <button class="btn btn-xs btn-primary" ng-disabled="!scopeConceptsToRemove"
     ng-click="removeScopeIncludedConcepts(scopeConceptsToRemove)">Remove</button>
-  <button class="btn btn-xs btn-warning"
-    ng-click="scopeConceptsToRemove = null">Clear</button>
+  <button class="btn btn-xs btn-warning" ng-disabled="!scopeConceptsToRemove"
+    ng-click="scopeConceptsToRemove = null; clearScopeRemove()">Clear</button>
   </uib-tab> </tabset>
+    
 </div>
 
 </uib-accordion-group> <uib-accordion-group> <uib-accordion-heading>
@@ -1184,17 +1188,19 @@
     Scope Excluded Concepts </span>
     
 </h5>
-</uib-accordion-heading> <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
+</uib-accordion-heading> 
+  
+<uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
   first-text="&laquo;" last-text="&raquo;" direction-links="false"
   boundary-links="true" total-items="pagedScopeExcludedConceptCount"
-  items-per-page="pageSize" max-size="maxSize"
-  ng-model="pageScopeExcludedConcept"
-  ng-change="getPagedScopeExcludedConcepts(pageScopeExcludedConcept)"></uib-pagination>
+  items-per-page="pageSize" max-size="maxSize" ng-model="currentExcludedPage"
+  ng-change="getPagedScopeExcludedConcepts(currentExcludedPage, scopeExcludedConceptFilter)"></uib-pagination> 
   
-<!--<form ng-submit="resetScopeExcludedConceptFilter()">
-      <input id="scopeExcludedConceptSearch" type="text" ng-model="scopeExcludedConceptFilter" ng-change="getPagedScopeExcludedConcepts(1)">
+<form ng-submit="resetScopeExcludedConceptFilter(); scopeExcludedConceptFilter = '';">
+  <input id="scopeExcludedConceptSearch" type="text" ng-model="scopeExcludedConceptFilter"
+    ng-change="getPagedScopeExcludedConcepts(1, scopeExcludedConceptFilter)">
   <button type="submit" class="btn btn-xs btn-primary">Reset Filter</button>
-    </form>  -->
+</form>
 
 <table style="width: 100%" class="table pure-table">
   <thead>
@@ -1241,46 +1247,136 @@
   Enter concept terminology ids, delimited by either whitespace or
   commas. <textarea style="width: 100%; height: 100px"
     ng-model="scopeExcludedConceptsToAdd"></textarea>
-  <button class="btn btn-xs btn-primary"
+    <div ng-show="scopeExcludedAddLog.length > 0" style="max-height: 100px; overflow-y: scroll;">
+        <pre>{{scopeExcludedAddLog}}</pre>
+    </div>
+  <button class="btn btn-xs btn-primary" ng-disabled="!scopeExcludedConceptsToAdd"
     ng-click="submitNewScopeExcludedConcepts(scopeExcludedConceptsToAdd)">Add</button>
-  <button class="btn btn-xs btn-warning"
-    ng-click="scopeExcludedConceptsToAdd = null">Clear</button>
+  <button class="btn btn-xs btn-warning" ng-disabled="!scopeExcludedConceptsToAdd"
+    ng-click="scopeExcludedConceptsToAdd = null; clearScopeExcludedAdd()">Clear</button>
   </uib-tab> <uib-tab heading="Remove Concepts"> Enter concept
   terminology ids, delimited by either whitespace or commas. <textarea
     style="width: 100%; height: 100px"
     ng-model="scopeExcludedConceptsToRemove"></textarea>
-  <button class="btn btn-xs btn-primary"
+    <div ng-show="scopeExcludedRemoveLog.length > 0" style="max-height: 100px; overflow-y: scroll;">
+        <pre>{{scopeExcludedRemoveLog}}</pre>
+    </div>
+  <button class="btn btn-xs btn-primary" ng-disabled="!scopeExcludedConceptsToRemove"
     ng-click="removeScopeExcludedConcepts(scopeExcludedConceptsToRemove)">Remove</button>
-  <button class="btn btn-xs btn-warning"
-    ng-click="scopeExcludedConceptsToRemove = null">Clear</button>
+  <button class="btn btn-xs btn-warning" ng-disabled="!scopeExcludedConceptsToRemove"
+    ng-click="scopeExcludedConceptsToRemove = null; clearScopeExcludedRemove()">Clear</button>
   </uib-tab> </uib-tabset>
 </div>
 
 </uib-accordion-group> <!--  Release Handling --> <uib-accordion-group
-  ng-show="currentRole == 'Administrator' || currentRole == 'Lead'">
+  ng-click="S3Initialize()" ng-show="applicationRole == 'Administrator' || currentRole == 'Lead'">
 <uib-accordion-heading>
 <h5>Release Handling</h5>
-</uib-accordion-heading> <!-- TODO Add compute workflow button -->
+</uib-accordion-heading>
 <div class="row">
 
   <div class="col-md-6">
-
-    <h4>Release Actions</h4>
+    <a target="_blank" href="https://confluence.ihtsdotools.org/display/MT/Release+Process" title="Release Handling Documentation"> 
+      <span style="float:right" ng-show="applicationRole == 'Administrator'" class="glyphicon glyphicon-question-sign">
+      </span>
+    </a>  
+    <h4>Release Actions</h4>        
     <table class="table">
+      <tr style="border-bottom:3px solid black"><td colspan="100%"><b>Pre-release steps</b> - executed on production mapping server</td></tr>           
       <tr>
         <td>
           <button class="btn btn-primary btn-xs"
             ng-click="computeWorkflow()">Compute Workflow</button>
         </td>
-        <td>Recompute workflow. Provided to check for available
+        <td>Recomputes workflow. Provided to check for available
           work prior to running release.</td>
+      </tr>
+      <tr>
+        <td>
+          <button class="btn btn-primary btn-xs"
+            ng-click="checkCompletion()">Check Completion</button>
+        </td>
+        <td>Checks that all in-scope records are ready for publication.<br>
+            If 'Check Completion' runs clean, ready for WCI to clone to release server.  Details available in Reports accordion, 'Project Dashboard' report.</td>
+      </tr>
+      <tr ng-show="applicationRole == 'Administrator'">
+        <td>
+          <button class="btn btn-primary btn-xs"
+            ng-click="startEditingCycle()">Start Editing Cycle</button>
+        </td>
+        <td>Sets the editing cycle start date for the project to
+          today's date. Current value:
+          {{focusProject.editingCycleBeginDate | date:'short'}}</td>
+      </tr> 
+    </table>
+    <table class="table" ng-show="applicationRole == 'Administrator'">  
+      <tr style="border-bottom:3px solid black"><td colspan="100%"><b>Release processing steps</b> - executed on release server after clone</td></tr>      
+      <tr>
+        <td colspan="100%"> 
+        Current source = {{focusProject.sourceTerminology}}, {{focusProject.sourceTerminologyVersion}} 
+          <span ng-show="focusProject.sourceTerminologyVersion == 'latest' && latestCloneDate != ''" >(clone date: {{latestCloneDate}})</span>
+        <br>
+        Current destination = {{focusProject.destinationTerminology}}, {{focusProject.destinationTerminologyVersion}}        
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <button ng-disabled="!(termLoad.version && termLoad.scope)"
+            class="btn btn-primary btn-xs" ng-click="reloadTerminologyAwsRf2Snapshot(focusProject.sourceTerminology, termLoad.version, termLoad.scope)">Reload {{focusProject.sourceTerminology}}</button>
+        </td>
+        <td>Reloads selected {{focusProject.sourceTerminology}} version and sets projects to it.
+        <br><br>
+			<!-- Define Versions  -->
+				Select version: 
+				<select
+					ng-model="termLoad.version"
+					ng-options="item for item in termLoadVersions | orderBy:-'item'"
+					ng-change="handleVersionSelection(focusProject.sourceTerminology, termLoad.version)">
+				</select>
+				<br>
+            <!-- Define Scope (For SNOMEDCT Only) -->
+                <div ng-show="termLoad.version">
+                Select scope:   
+                <select 
+                  ng-model="termLoad.scope"
+                  ng-options="item for item in termLoadScopes"
+                  ng-change="handleScopeSelection(focusProject.sourceTerminology, termLoad.scope)">
+                </select>
+                </div>
+        </td>
+          <td>
+            <i
+              style="margin-left: 5px; margin-right: 10px;"
+              ng-click="openLog('removeTerminology,loadTerminology')" class="noul glyphicon glyphicon-file"
+              title="View the log"></i>          
+          </td>          
+      </tr>
+      <tr>
+        <td>
+          <button
+            class="btn btn-primary btn-xs" ng-click="loadRefsetMembers()">Reload Refset Members</button>
+        </td>
+        <td>Reloads refset members from last release.
+        </td>
+          <td>
+            <i
+              style="margin-left: 5px; margin-right: 10px;"
+              ng-click="openLog('removePreviousMembers,loadPreviousMembers')" class="noul glyphicon glyphicon-file"
+              title="View the log"></i>          
+          </td>            
       </tr>
       <tr>
         <td>
           <button ng-disabled="!release.effectiveTime"
             class="btn btn-primary btn-xs" ng-click="beginRelease()">Begin</button>
         </td>
-        <td>Creates QA Validation Report. Requires effective time.</td>
+        <td>Creates 'Release QA', located on Reports accordion. Requires effective time.</td>
+          <td>
+            <i
+              style="margin-left: 5px; margin-right: 10px;"
+              ng-click="openLog('begin')" class="noul glyphicon glyphicon-file"
+              title="View the log"></i>          
+          </td>          
       </tr>
       <tr>
         <td>
@@ -1291,7 +1387,16 @@
         </td>
         <td>Creates release files. Requires effective time and
           module id.</td>
+          <td>
+            <i
+              style="margin-left: 5px; margin-right: 10px;"
+              ng-click="openLog('process')" class="noul glyphicon glyphicon-file"
+              title="View the log"></i>          
+          </td>          
       </tr>
+    </table>
+    <table class="table" ng-show="applicationRole == 'Administrator'"> 
+      <tr style="border-bottom:3px solid black"><td colspan="100%"><b>Finalize release steps</b> -  executed on prod mapping after release file is transfered by WCI</td></tr>            
       <tr>
         <td>
           <button ng-disabled="!release.effectiveTime"
@@ -1300,8 +1405,14 @@
             Finish</button>
         </td>
         <td>Previews results of finish using file generated by
-          Process Release. Requires effective time. Expects file to be
-          present on server.</td>
+          Process Release. Requires effective time. Expects release file to be
+          present on server after WCI transfer. Creates 'Release Finalization QA' available on Reports accordion.</td>
+          <td>
+            <i
+              style="margin-left: 5px; margin-right: 10px;"
+              ng-click="openLog('previewFinish')" class="noul glyphicon glyphicon-file"
+              title="View the log"></i>          
+          </td>             
       </tr>
       <tr>
         <td>
@@ -1310,19 +1421,16 @@
             ng-click="finishRelease(false)">Finish</button>
         </td>
         <td>Updates map records and refsets from file generated by
-          Process Release. Requires effective time. Expects file to be
-          present on server. <br>
+          'Process' step. Requires effective time. Expects release file to be
+          present on server. Should be run when others are not editing.<br>
         <strong style="color: red">Cannot be undone.</strong>
         </td>
-      </tr>
-      <tr>
-        <td>
-          <button class="btn btn-primary btn-xs"
-            ng-click="startEditingCycle()">Start Editing Cycle</button>
-        </td>
-        <td>Sets the editing cycle start date for the project to
-          today's date. Current value:
-          {{focusProject.editingCycleBeginDate | date:'short'}}</td>
+          <td>
+            <i
+              style="margin-left: 5px; margin-right: 10px;"
+              ng-click="openLog('finish')" class="noul glyphicon glyphicon-file"
+              title="View the log"></i>          
+          </td>          
       </tr>
     </table>
 
@@ -1330,35 +1438,146 @@
 
   </div>
 
-  <div class="col-md-6">
-    <h4>Parameters</h4>
+  <div class="col-md-6"  ng-show="applicationRole == 'Administrator'" style="margin-top: 340px;">  
+             
+    <b>Parameters</b>
+     
     <table class="table">
-
-      <tr>
-        <td>Effective Time:</td>
-        <td><input ng-model="release.effectiveTime"></td>
-
-      </tr>
-      <tr>
-        <td>Module Id</td>
-        <td><input ng-model="focusProject.moduleId"></td>
-        
-      </tr>
+      <thead>
+        <tr>
+          <th style="width: 40%;"></th>
+          <th style="width: 60%;"></th>
+        </tr>
+      </thead>
+	  <tbody>
+        <tr>
+          <td>Effective Time (YYYYMMDD):</td>
+          <td><input ng-model="release.effectiveTime"></td>
+        </tr>
+        <tr>
+          <td>Module Id</td>
+          <td><input ng-model="focusProject.moduleId"></td>      
+        </tr>
+      </tbody>
     </table>
 
-
-
-    <h4>Notes</h4>
-    <ul>
-      <li>Reports generated from "Begin Release" are available on
-        the dashboard under "Release QA".</li>
-      <li>Reports generated from "Preview Finish" are available on
-        the dashboard under "Release Finalization QA"</li>
-    </ul>
+    <b>Releases</b>
+    <br>
+    
+    <select style="width:75%;"
+        ng-model="selectedProjectReleaseFile"
+          ng-options="item for item in projectReleaseFiles">
+          </select>
+    <a
+    href="doc/release/{{focusProject.sourceTerminology}}_to_{{focusProject.destinationTerminology}}_{{focusProject.refSetId}}/{{selectedProjectReleaseFile}}"
+    target="_blank">
+      <i
+      style="margin-left: 5px; margin-right: 10px;"
+      class="noul glyphicon glyphicon-download"
+      title="Download selected release file."></i>
+    </a>
+    
   </div>
 </div>
 
 
 
 
-</uib-accordion-group> </uib-accordion>
+</uib-accordion-group> <!--  Release Reports --> <uib-accordion-group
+  ng-click="S3Initialize()" ng-show="applicationRole == 'Administrator'">
+<uib-accordion-heading>
+<h5>Release Reports</h5>
+</uib-accordion-heading> 
+<div>
+  <form>
+  <table style="width: 100%" class="table pure-table">
+    <thead>
+      <tr>
+        <th style="width: 47%;">Initial File</th>
+        <th style="width: 3%;"></th>
+        <th style="width: 47%;">Later File</th>
+        <th style="width: 3%;"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding: 5px;">
+          <select style="width: 500px;" id="compareFile1"
+            ng-options='file as (file.terminologyVersion + "  " + file.terminology + "  " + file.value) for file in amazons3FilesPlusCurrent'
+            ng-change="setFiles(selectedFile1, null)"
+            ng-model="selectedFile1"></select>
+        </td>
+        <td><i ng-show="fileArray[0].terminology && fileArray[0].terminology != 'current'"
+      		style="margin-left: 5px; margin-right: 10px;"
+      		class="noul glyphicon glyphicon-download"
+      		title="Download initial release file."
+      		ng-click="downloadFileFromAmazonS3(fileArray[0])"></i>
+      	   <i ng-show="fileArray[0].terminology == 'current'"
+      		style="margin-left: 5px; margin-right: 10px;"
+      		class="noul glyphicon glyphicon-download"
+      		title="Download initial release file."
+      		ng-click="downloadFileFromCurrentRelease(fileArray[0])"></i></td>
+
+        <td style="padding: 5px;">
+           <select style="width: 500px;" id="compareFile2"
+            ng-options='file as (file.terminologyVersion + "  " + file.terminology + "  " + file.value) for file in amazons3FilesPlusCurrent'
+            ng-change="setFiles(null, selectedFile2)"
+            ng-model="selectedFile2"></select>
+        </td>
+        
+      	<td> 
+      	   <i ng-show="fileArray[1].terminology && fileArray[1].terminology != 'current'"
+      		style="margin-left: 5px; margin-right: 10px;"
+      		class="noul glyphicon glyphicon-download"
+      		title="Download later release file."
+      		ng-click="downloadFileFromAmazonS3(fileArray[1])"></i>
+      	   <i ng-show="fileArray[1].terminology == 'current'"
+      		style="margin-left: 5px; margin-right: 10px;"
+      		class="noul glyphicon glyphicon-download"
+      		title="Download later release file."
+      		ng-click="downloadFileFromCurrentRelease(fileArray[1])"></i></td>    
+      </tr>
+    </tbody>
+  </table>
+  </form>
+  <button class="btn btn-xs btn-primary" ng-click="compareFiles()">Create Comparison Report</button>
+  <button class="btn btn-xs btn-primary" ng-click="prepareCurrentReleaseReport()">Update Current File</button>  
+</div>
+
+<uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
+  first-text="&laquo;" last-text="&raquo;" direction-links="false"
+  boundary-links="true" total-items="pagedReleaseReportCount"
+  items-per-page="pageSize" max-size="maxSize" ng-model="currentPage"
+  ng-change="getPagedReleaseReports(currentPage, releaseReportFilter)"></uib-pagination> 
+  
+<form ng-submit="resetReleaseReportFilter(); releaseReportFilter = '';">
+  <input id="releaseReportSearch" type="text" ng-model="releaseReportFilter"
+    ng-change="getPagedReleaseReports(1, releaseReportFilter)">
+  <button type="submit" class="btn btn-xs btn-primary">Reset Filter</button>
+</form>
+
+<table style="width: 100%" class="table pure-table">
+  <thead>
+    <tr>
+      <th style="width: 50%;">Report Name</th>
+      <th style="width: 47%;">Last Modified</th>
+      <th style="width: 3%;"></th>
+    </tr>
+  </thead>
+  <tbody ng-repeat="report in pagedReleaseReport "
+    style="border: 2px solid #ccc;">
+    <tr>
+      <td>{{report.value}}</td>
+      <td>{{report.value2}}</td>
+      <td><a href="doc/{{focusProject.id}}/reports/{{report.value}}"
+    	target="_blank"><i
+        class="glyphicon glyphicon-download-alt" title="Download report"></i></a></td>
+    </tr>
+
+  </tbody>
+</table>
+
+
+  </uib-accordion-group>
+  
+  </uib-accordion>

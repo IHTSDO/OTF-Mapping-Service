@@ -30,10 +30,10 @@
       </span>
       on {{feedback.timestamp | date:'MM-dd-yyyy HH:mm'}}]
       <i class="glyphicon glyphicon-remove pull-right" 
-        ng-click="removeFeedback(feedback)"
-        ng-show = "currentRole == 'Lead'" ></i>
+        ng-click="removeFeedback(feedback)" ng-show = "isNewFeedback(feedback)" ></i>
       <i class="glyphicon glyphicon-pencil pull-right"
-		ng-click="editFeedback(feedback); content.text = feedback.message"></i>
+		ng-click="editFeedback(feedback); content.text = feedback.message"
+		ng-show = "isNewFeedback(feedback)"></i>
       <div ng-show="feedback.mapError != 'None'" style="padding-left: 20px;"
         ng-bind-html="to_trusted(feedback.mapError)"></div>
       <div style="padding-left: 20px;"
@@ -42,6 +42,16 @@
   </div>
 </div>
 <hr>
+
+<div>
+  Mapped by: <span ng-show="record != null && record.mapEntry.length > 0">{{record.owner.name}}</span>
+                        <span ng-show="record1 != null && record1.mapEntry.length > 0">{{record1.owner.name}}</span>
+                        <span ng-show="record2 != null && record2.mapEntry.length > 0">{{record2.owner.name}}</span>  
+</div>                      
+<div>
+  Currently owned by: {{conversation.userName}}
+</div>
+  <hr>
 
 <div ng-dropdown-multiselect="" options="allUsers"
   selected-model="returnRecipients" extra-settings="multiSelectSettings"
@@ -54,7 +64,7 @@
   <button class="btn btn-xs btn-primary pull-right"
     ng-disabled="!content.text"
     ng-show = "feedbackEditMode == false"
-    ng-click="sendFeedback(record, content.text, conversation, returnRecipients); content.text = ''">Send
+    ng-click="sendFeedback(record, content.text, conversation, returnRecipients)">Send
     Feedback</button>
   <button class="btn btn-xs btn-primary pull-right"
     ng-disabled="!content.text"
@@ -81,10 +91,9 @@
   disabled> Record is inactive. </span>
 <input type="checkbox" ng-model="markUnviewed" ng-click="toggleMarkUnviewed()">
 Mark unviewed
-<span
-  ng-show="(conversation.userName == currentUser.userName || currentRole == 'Lead') &&
-  conversation.feedback && conversation.feedback.length > 0">
+<span>
   <input type="checkbox" ng-model="conversation.resolved"
+    ng-disabled="isMarkResolvedDisabled"
     ng-click="updateFeedbackConversation(conversation)"> Mark resolved
 </span>
 <br>
