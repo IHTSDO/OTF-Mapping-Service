@@ -27,8 +27,10 @@ angular
       '$uibModal',
       'localStorageService',
       'utilService',
-      function($scope, $window, $rootScope, $http, $routeParams, $location,
-        $sce, $uibModal, localStorageService, utilService) {
+      'appConfig',
+      'gpService',
+      function($scope, $window, $rootScope, $http, $routeParams, $location, $sce, $uibModal,
+        localStorageService, utilService, appConfig, gpService) {
 
         // ///////////////////////////////////
         // Map Record Controller Functions //
@@ -36,6 +38,8 @@ angular
 
         // this controller handles a potentially 'dirty' page
         // $rootScope.currentPageDirty = true;
+
+        var latestNoteId = null;
 
         // initialize scope variables
         $scope.record = null;
@@ -49,23 +53,25 @@ angular
         $scope.conversation = null;
         $scope.mapLeads = $scope.project.mapLead;
         organizeUsers($scope.mapLeads);
-
+        $scope.enableAuthoringHistoryButton = (appConfig["deploy.show.authoring.history.button"] === 'true') ? true : false;
+        
         $scope.returnRecipients = new Array();
         $scope.multiSelectSettings = {
           displayProp : 'name',
           scrollableHeight : '150',
           scrollable : true,
           showCheckAll : false,
-          showUncheckAll : false
+          showUncheckAll : true
         };
         $scope.multiSelectCustomTexts = {
           buttonDefaultText : 'Select Leads'
         };
-        
-     // start note edit mode in off mode
+
+        // start note edit mode in off mode
         $scope.feedbackEditMode = false;
         $scope.feedbackEditId = null;
-        $scope.content = {
+        $scope.newFeedbackMessages = new Array();
+        $scope.feedbackContent = {
           text : ''
         };
 
@@ -79,7 +85,7 @@ angular
         $scope.isNotesOpen = false;
         $scope.isFlagsOpen = false;
         $scope.groupOpen = new Array(10);
-        var i = 0;
+
         for (var i = 0; i < $scope.groupOpen.length; i++) {
           $scope.groupOpen[i] = true;
         }
@@ -87,8 +93,9 @@ angular
         // start note edit mode in off mode
         $scope.noteEditMode = false;
         $scope.noteEditId = null;
-        $scope.content = {
-        		text : ''
+        $scope.newNoteTimestamps = new Array();
+        $scope.noteContent = {
+          text : ''
         };
 
         // tooltip for Save/Next button
@@ -184,8 +191,7 @@ angular
         // Watcher for Conflict Resolution Select Record Event
         $rootScope.$on('compareRecordsWidget.notification.selectRecord',
           function(event, parameters) {
-            console.debug(
-              '  => on compareRecordsWidget.notification.selectRecord = ',
+            console.debug('  => on compareRecordsWidget.notification.selectRecord = ',
               parameters.record);
 
             // If not QA_NEW, REVIEW_NEW, or CONFLICT_NEW, bail here
@@ -194,15 +200,17 @@ angular
               return;
             }
 
-            $scope.record = parameters.record;
-            for (var i = 0; i < $scope.record.mapNote.length; i++) {
-              $scope.record.mapNote[i].user = $scope.user;
-              $scope.record.mapNote[i].timestamp = new Date();
-            }
-
+            $scope.record = parameters.record;        
+            
+            //Set the localId to the current max
+            for(var i=0; i<$scope.record.mapEntry.length; i++){
+              if($scope.record.mapEntry[i].localId > currentLocalId){
+                  currentLocalId = $scope.record.mapEntry[i].localId;
+              }
+            }                
+            
             // open principles accordion if one was copied from selectedRecord
-            if ($scope.record.mapPrinciple
-              && $scope.record.mapPrinciple.length > 0) {
+            if ($scope.record.mapPrinciple && $scope.record.mapPrinciple.length > 0) {
               $scope.isPrinciplesOpen = true;
             }
 
@@ -212,7 +220,7 @@ angular
             // Validate the record immediately
             // this is good to show messages right away
             // if there are problems
-            $rootScope.glassPane++;
+            gpService.increment();
             console.debug('Validate record on select', $scope.record);
             $http({
               url : root_mapping + 'validation/record/validate',
@@ -224,10 +232,10 @@ angular
               }
             }).success(function(data) {
               console.debug('  validation data = ', data);
-              $rootScope.glassPane--;
+              gpService.decrement();
               $scope.validationResult = data;
             }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $scope.validationResult = null;
               $rootScope.handleHttpError(data, status, headers, config);
             });
@@ -235,19 +243,18 @@ angular
 
         // on successful retrieval of project, get the
         // record/concept
-        $scope.$watch([ 'project', 'userToken', 'role', 'user', 'record' ],
-          function() {
-            if ($scope.project != null && $scope.userToken != null) {
-              $http.defaults.headers.common.Authorization = $scope.userToken;
-              setIndexViewerStatus();
+        $scope.$watch([ 'project', 'userToken', 'role', 'user', 'record' ], function() {
+          if ($scope.project != null && $scope.userToken != null) {
+            $http.defaults.headers.common.Authorization = $scope.userToken;
+            setIndexViewerStatus();
 
-              // Retrieve the record upon being loaded
-              retrieveRecord();
-
-              // Initialize terminology notes
-              utilService.initializeTerminologyNotes($scope.project.id);
-            }
-          });
+            // Retrieve the record upon being loaded
+            retrieveRecord();
+            
+            // Initialize terminology notes
+            utilService.initializeTerminologyNotes($scope.project.id);
+          }
+        });
 
         // any time the record changes, broadcast it to the record
         // summary widget
@@ -256,13 +263,10 @@ angular
         // });
 
         function broadcastRecord() {
-          console.debug(
-            'broadcast mapRecordWidget.notification.recordChanged =',
-            $scope.record);
+          console.debug('broadcast mapRecordWidget.notification.recordChanged =', $scope.record);
           $rootScope.$broadcast('mapRecordWidget.notification.recordChanged', {
             record : angular.copy($scope.record),
             project : $scope.project
-
           });
         }
 
@@ -284,130 +288,130 @@ angular
             headers : {
               'Content-Type' : 'application/json'
             }
-          })
-            .success(
-              function(data) {
-                console
-                  .debug('  record = ', data.id, data.workflowStatus, data);
+          }).success(
+            function(data) {
+              console.debug('  record = ', data.id, data.workflowStatus, data);
 
-                // *_NEW workflowStatus is a case where we are going to copy a
-                // record from compareRecords to get started so wait for the
-                // notification for "selectRecord" happen
-                if (!data.workflowStatus.endsWith('_NEW')) {
-                  $scope.record = data;
+              // *_NEW workflowStatus is a case where we are going to copy a
+              // record from compareRecords to get started so wait for the
+              // notification for "selectRecord" happen
+              if (!data.workflowStatus.endsWith('_NEW')) {
+                $scope.record = data;
 
-                  // verify that all entries on this record with no
-                  // target have 'No
-                  // target' set as target name
-                  for (var i = 0; i < $scope.record.mapEntry.length; i++) {
-                    if ($scope.record.mapEntry[i].targetId == null
-                      || $scope.record.mapEntry[i].targetId == null
-                      || $scope.record.mapEntry[i].targetId === '')
-                      $scope.record.mapEntry[i].targetName = 'No target';
-                  }
-                } else {
-                  // Set basic stuff for the "then.." below
-                  $scope.record = {};
-                  // used by selectRecord
-                  $scope.record.workflowStatus = data.workflowStatus;
-                  $scope.record.conceptId = data.conceptId;
-                  $scope.record.owner = {};
-                  $scope.record.owner.userName = data.owner.userName;
+                // verify that all entries on this record with no
+                // target have 'No
+                // target' set as target name
+                for (var i = 0; i < $scope.record.mapEntry.length; i++) {
+                  if ($scope.record.mapEntry[i].targetId == null
+                    || $scope.record.mapEntry[i].targetId == null
+                    || $scope.record.mapEntry[i].targetId === '')
+                    $scope.record.mapEntry[i].targetName = 'No target';
                 }
+              } else {
+                // Set basic stuff for the "then.." below
+                $scope.record = {};
+                // used by selectRecord
+                $scope.record.workflowStatus = data.workflowStatus;
+                $scope.record.conceptId = data.conceptId;
+                $scope.record.conceptName = data.conceptName;
+                $scope.record.owner = data.owner;
+                $scope.record.mapProjectId = data.mapProjectId;
+                $scope.record.id = data.id;
+                $scope.record.originIds = data.originIds;
+              }
 
-              })
-            .error(function(data, status, headers, config) {
-              $rootScope.handleHttpError(data, status, headers, config);
-            })
-            .then(
-              function() {
+            }).error(function(data, status, headers, config) {
+            $rootScope.handleHttpError(data, status, headers, config);
+          }).then(
+            function() {
 
-                // check that this user actually owns this record
-                if ($scope.record.owner.userName != $scope.user.userName) {
-                  $rootScope
-                    .handleReturnToDashboardError(
-                      'Attempted to edit a record owned by another user; returned to dashboard',
-                      $scope.role);
-                } else {
-                  // obtain the record concept
-                  console.debug('get concept', $scope.record.conceptId);
-                  $http(
-                    {
-                      url : root_content + 'concept/id/'
-                        + $scope.project.sourceTerminology + '/'
-                        + $scope.project.sourceTerminologyVersion + '/'
-                        + $scope.record.conceptId,
-                      dataType : 'json',
-                      method : 'GET',
-                      headers : {
-                        'Content-Type' : 'application/json'
-                      }
-                    }).success(function(data) {
-                    console.debug('  concept = ', data);
-                    $scope.concept = data;
-                    $scope.conceptBrowserUrl = $scope.getBrowserUrl();
-                    // initialize the dynamic tooltip on the Save/Next button
-                    // with the next concept to be mapped
-                    $scope.resolveNextConcept(true);
+              // check that this user actually owns this record
+              if ($scope.record.owner.userName != $scope.user.userName) {
+                $rootScope.handleReturnToDashboardError(
+                  'Attempted to edit a record owned by another user; returned to dashboard',
+                  $scope.role);
+              } else {
+                // obtain the record concept
+                console.debug('get concept', $scope.record.conceptId);
+                $http(
+                  {
+                    url : root_content + 'concept/id/' + $scope.project.sourceTerminology + '/'
+                      + $scope.project.sourceTerminologyVersion + '/' + $scope.record.conceptId,
+                    dataType : 'json',
+                    method : 'GET',
+                    headers : {
+                      'Content-Type' : 'application/json'
+                    }
+                  }).success(function(data) {
+                  console.debug('  concept = ', data);
+                  $scope.concept = data;
+                  $scope.conceptBrowserUrl = $scope.getBrowserUrl();
+                  // initialize the dynamic tooltip on the Save/Next button
+                  // with the next concept to be mapped
+                  $scope.resolveNextConcept(true);
+                }).error(function(data, status, headers, config) {
+                  $rootScope.handleHttpError(data, status, headers, config);
+                });
+
+                // IF id was set above, do this - otherwise it will get done
+                // later
+                if ($scope.record.id) {
+                  // initialize the entries
+                  initializeGroupsTree();
+
+                  // add code to get feedback conversations
+                  console.debug('Get feedback conversation for record', $scope.record.id);
+                  $http({
+                    url : root_workflow + 'conversation/id/' + $scope.record.id,
+                    dataType : 'json',
+                    method : 'GET',
+                    headers : {
+                      'Content-Type' : 'application/json'
+                    }
+                  }).success(function(data) {
+                    console.debug('  conversation = ', data);
+                    if (data) {
+                      $scope.conversation = data;
+                      initializeReturnRecipients();
+                    }
                   }).error(function(data, status, headers, config) {
                     $rootScope.handleHttpError(data, status, headers, config);
                   });
-
-                  // IF id was set above, do this - otherwise it will get done
-                  // later
-                  if ($scope.record.id) {
-                    // initialize the entries
-                    initializeGroupsTree();
-
-                    // add code to get feedback conversations
-                    console.debug('Get feedback conversation for record',
-                      $scope.record.id);
-                    $http(
-                      {
-                        url : root_workflow + 'conversation/id/'
-                          + $scope.record.id,
-                        dataType : 'json',
-                        method : 'GET',
-                        headers : {
-                          'Content-Type' : 'application/json'
-                        }
-                      }).success(function(data) {
-                      console.debug('  conversation = ', data);
-                      $scope.conversation = data;
-                      initializeReturnRecipients();
-                    }).error(
-                      function(data, status, headers, config) {
-                        $rootScope.handleHttpError(data, status, headers,
-                          config);
-                      });
-                  }
                 }
-              });
+              }
+            });
 
         }
-        
+
+        $scope.isNewFeedback = function(feedback) {
+          if ($scope.newFeedbackMessages.includes(feedback.message)) {
+            return true;
+          }
+          return false;
+        }
+
         $scope.editFeedback = function(feedback) {
-          $scope.content.text = feedback.message;
+          $scope.feedbackContent.text = feedback.message;
           $scope.feedbackEditMode = true;
           $scope.feedbackEditId = feedback.id ? feedback.id : feedback.localId;
         };
 
         $scope.cancelEditFeedback = function() {
-          $scope.content.text = '';
+          $scope.feedbackContent.text = '';
           $scope.feedbackEditMode = false;
           $scope.feedbackEditId = null;
           $scope.tinymceContent = '';
         };
 
         $scope.saveEditFeedback = function(feedback) {
-          
+
           if ($scope.feedbackEditMode == true) {
             var feedbackFound = false;
             // find the existing feedback
             for (var i = 0; i < $scope.conversation.feedback.length; i++) {
               // if this feedback, overwrite it
-              if ($scope.feedbackEditId == $scope.conversation.feedback[i].localId ||
-                  $scope.feedbackEditId == $scope.conversation.feedback[i].id) {
+              if ($scope.feedbackEditId == $scope.conversation.feedback[i].localId
+                || $scope.feedbackEditId == $scope.conversation.feedback[i].id) {
                 feedbackFound = true;
                 $scope.conversation.feedback[i].message = feedback;
                 //$scope.conversation.feedback[i].id = currentLocalId++;
@@ -415,8 +419,6 @@ angular
             }
             $scope.feedbackEditMode = false;
             $scope.tinymceContent = null;
-            
-           
 
             console.debug('update conversation', $scope.conversation);
             $http({
@@ -437,6 +439,7 @@ angular
                   'Content-Type' : 'application/json'
                 }
               }).success(function(data) {
+                $scope.newFeedbackMessages.push(feedback);
                 $scope.conversation = data;
               });
             }).error(function(data, status, headers, config) {
@@ -447,12 +450,10 @@ angular
         };
 
         function setIndexViewerStatus() {
-          console.debug('Get index viewer status',
-            $scope.project.destinationTerminology);
+          console.debug('Get index viewer status', $scope.project.destinationTerminology);
           $http(
             {
-              url : root_content + 'index/'
-                + $scope.project.destinationTerminology + '/'
+              url : root_content + 'index/' + $scope.project.destinationTerminology + '/'
                 + $scope.project.destinationTerminologyVersion,
               dataType : 'json',
               method : 'GET',
@@ -563,7 +564,7 @@ angular
           }
 
           // validate the record
-          $rootScope.glassPane++;
+          gpService.increment();
           console.debug('Validate on finish', $scope.record);
           $http({
             url : root_mapping + 'validation/record/validate',
@@ -576,16 +577,15 @@ angular
           })
             .success(function(data) {
               console.debug('  validation result = ' + data);
-              $rootScope.glassPane--;
+              gpService.decrement();
               $scope.validationResult = data;
             })
-            .error(
-              function(data, status, headers, config) {
-                $rootScope.glassPane--;
-                $scope.validationResult = null;
-                $scope.recordError = 'Unexpected error reported by server.  Contact an admin.';
-                $rootScope.handleHttpError(data, status, headers, config);
-              })
+            .error(function(data, status, headers, config) {
+              gpService.decrement();
+              $scope.validationResult = null;
+              $scope.recordError = 'Unexpected error reported by server.  Contact an admin.';
+              $rootScope.handleHttpError(data, status, headers, config);
+            })
             .then(
               function(data) {
 
@@ -620,7 +620,7 @@ angular
                     // assign the current user to the lastModifiedBy field
                     $scope.record.lastModifiedBy = $scope.user;
 
-                    $rootScope.glassPane++;
+                    gpService.increment();
                     console.debug('Finish record', $scope.record);
                     $http({
                       url : root_workflow + 'finish',
@@ -640,15 +640,14 @@ angular
                         // longer 'dirty'
                         $rootScope.currentPageDirty = false;
 
-                        $rootScope.glassPane--;
+                        gpService.decrement();
                         $location.path($scope.role + '/dash');
                       })
                       .error(
                         function(data, status, headers, config) {
-                          $rootScope.glassPane--;
+                          gpService.decrement();
                           $scope.recordError = 'Unexpected server error.  Try saving your work for later, and contact an admin.';
-                          $rootScope.handleHttpError(data, status, headers,
-                            config);
+                          $rootScope.handleHttpError(data, status, headers, config);
                           $scope.recordSuccess = '';
                         });
 
@@ -712,12 +711,12 @@ angular
             };
 
             // get the assigned work list
-            $rootScope.glassPane++;
+            gpService.increment();
             console.debug('Get assigned concepts', $scope.project.id);
             $http(
               {
-                url : root_workflow + 'project/id/' + $scope.project.id
-                  + '/user/id/' + $scope.user.userName + '/assignedConcepts',
+                url : root_workflow + 'project/id/' + $scope.project.id + '/user/id/'
+                  + $scope.user.userName + '/assignedConcepts',
 
                 dataType : 'json',
                 data : pfsParameterObj,
@@ -728,7 +727,7 @@ angular
               }).success(
               function(data) {
                 console.debug('  assignedWork = ', data);
-                $rootScope.glassPane--;
+                gpService.decrement();
 
                 var assignedWork = data.searchResult;
 
@@ -755,7 +754,7 @@ angular
                 }
 
               }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
             });
 
@@ -773,12 +772,12 @@ angular
             };
 
             // get the assigned conflicts
-            $rootScope.glassPane++;
+            gpService.increment();
             console.debug('get assigned conflicts', $scope.project.id);
             $http(
               {
-                url : root_workflow + 'project/id/' + $scope.project.id
-                  + '/user/id/' + $scope.user.userName + '/assignedConflicts',
+                url : root_workflow + 'project/id/' + $scope.project.id + '/user/id/'
+                  + $scope.user.userName + '/assignedConflicts',
 
                 dataType : 'json',
                 data : pfsParameterObj,
@@ -789,7 +788,7 @@ angular
               }).success(
               function(data) {
                 console.debug('  assigned work = ', data);
-                $rootScope.glassPane--;
+                gpService.decrement();
 
                 var assignedWork = data.searchResult;
 
@@ -816,7 +815,7 @@ angular
                 }
 
               }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
             });
 
@@ -838,12 +837,12 @@ angular
               'queryRestriction' : 'REVIEW_NEW'
             };
             // get the assigned review work
-            $rootScope.glassPane++;
+            gpService.increment();
             console.debug('get assigned review work', $scope.project.id);
             $http(
               {
-                url : root_workflow + 'project/id/' + $scope.project.id
-                  + '/user/id/' + $scope.user.userName + '/assignedReviewWork',
+                url : root_workflow + 'project/id/' + $scope.project.id + '/user/id/'
+                  + $scope.user.userName + '/assignedReviewWork',
 
                 dataType : 'json',
                 data : pfsParameterObj,
@@ -854,7 +853,7 @@ angular
               }).success(
               function(data) {
                 console.debug('  assigned work = ', data);
-                $rootScope.glassPane--;
+                gpService.decrement();
 
                 var assignedWork = data.searchResult;
                 if (tooltipOnly == true) {
@@ -879,7 +878,7 @@ angular
                   }
                 }
               }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
             });
           } else if ($scope.record.workflowStatus === 'QA_NEW'
@@ -893,12 +892,12 @@ angular
               'queryRestriction' : 'QA_NEW'
             };
             // get the assigned review work
-            $rootScope.glassPane++;
+            gpService.increment();
             console.debug('get assigned qa work', $scope.project.id);
             $http(
               {
-                url : root_workflow + 'project/id/' + $scope.project.id
-                  + '/user/id/' + $scope.user.userName + '/assignedQAWork',
+                url : root_workflow + 'project/id/' + $scope.project.id + '/user/id/'
+                  + $scope.user.userName + '/assignedQAWork',
 
                 dataType : 'json',
                 data : pfsParameterObj,
@@ -909,7 +908,7 @@ angular
               }).success(
               function(data) {
                 console.debug('  assigned work = ', data);
-                $rootScope.glassPane--;
+                gpService.decrement();
 
                 var assignedWork = data.searchResult;
                 if (tooltipOnly == true) {
@@ -934,7 +933,7 @@ angular
                   }
                 }
               }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
             });
           }
@@ -948,7 +947,7 @@ angular
             }
 
           }
-
+          
           // assign the current user to the lastModifiedBy field
           $scope.record.lastModifiedBy = $scope.user;
 
@@ -956,8 +955,8 @@ angular
           // if ($rootScope.currentPageDirty == false &&
           // !returnBack)
           // return;
-
-          $rootScope.glassPane++;
+          
+          gpService.increment();
           console.debug('save record', $scope.record);
           $http({
             url : root_workflow + 'save',
@@ -977,7 +976,7 @@ angular
             // $scope.record = data;
             $scope.recordSuccess = 'Record saved.';
             $scope.recordError = '';
-            $rootScope.glassPane--;
+            gpService.decrement();
             if (!returnBack) {
               $scope.resolveNextConcept(false);
 
@@ -985,7 +984,7 @@ angular
               $location.path($scope.role + '/dash');
             }
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $scope.recordError = 'Error saving record.';
             $rootScope.handleHttpError(data, status, headers, config);
             $scope.recordSuccess = '';
@@ -995,7 +994,7 @@ angular
         // discard changes
         $scope.cancelMapRecord = function() {
 
-          $rootScope.glassPane++;
+          gpService.increment();
           console.debug('cancel editing', $scope.record);
           $http({
             url : root_workflow + 'cancel',
@@ -1010,10 +1009,10 @@ angular
             // user has requested a cancel event, page is no
             // longer 'dirty'
             $rootScope.currentPageDirty = false;
-            $rootScope.glassPane--;
+            gpService.decrement();
             $location.path($scope.role + '/dash');
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
           });
 
@@ -1032,27 +1031,21 @@ angular
             headers : {
               'Content-Type' : 'application/json'
             }
-          })
-            .success(
-              function(data) {
-                $http(
-                  {
-                    url : root_workflow + 'conversation/id/'
-                      + $routeParams.recordId,
-                    dataType : 'json',
-                    method : 'GET',
-                    headers : {
-                      'Content-Type' : 'application/json'
-                    }
-                  }).success(function(data) {
-                  $scope.conversation = data;
-                });
-              })
-            .error(
-              function(data, status, headers, config) {
-                $scope.recordError = 'Error deleting feedback conversation from application.';
-                $rootScope.handleHttpError(data, status, headers, config);
-              });
+          }).success(function(data) {
+            $http({
+              url : root_workflow + 'conversation/id/' + $routeParams.recordId,
+              dataType : 'json',
+              method : 'GET',
+              headers : {
+                'Content-Type' : 'application/json'
+              }
+            }).success(function(data) {
+              $scope.conversation = data;
+            });
+          }).error(function(data, status, headers, config) {
+            $scope.recordError = 'Error deleting feedback conversation from application.';
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
         }
 
         $scope.addRecordPrinciple = function(record, principle) {
@@ -1076,8 +1069,7 @@ angular
             }
 
             if (principlePresent == true) {
-              $scope.errorAddRecordPrinciple = 'The principle with id '
-                + principle.principleId
+              $scope.errorAddRecordPrinciple = 'The principle with id ' + principle.principleId
                 + ' is already attached to the map record';
             } else {
               $scope.record['mapPrinciple'].push(principle);
@@ -1090,8 +1082,7 @@ angular
         };
 
         $scope.removeRecordPrinciple = function(record, principle) {
-          record['mapPrinciple'] = removeJsonElement(record['mapPrinciple'],
-            principle);
+          record['mapPrinciple'] = removeJsonElement(record['mapPrinciple'], principle);
           $scope.record = record;
           broadcastRecord();
         };
@@ -1116,14 +1107,22 @@ angular
           }
         };
 
+        $scope.isEditableNote = function(mapNote) {
+          if (($scope.record.workflowStatus != 'PUBLISHED')
+            && ($scope.record.workflowStatus != 'READY_FOR_PUBLICATION')) {
+            return true;
+          }
+          return false;
+        }
+
         $scope.editRecordNote = function(record, mapNote) {
-          $scope.content.text = mapNote.note;
+          $scope.noteContent.text = mapNote.note;
           $scope.noteEditMode = true;
           $scope.noteEditId = mapNote.id ? mapNote.id : mapNote.localId;
         };
 
         $scope.cancelEditRecordNote = function() {
-          $scope.content.text = '';
+          $scope.noteContent.text = '';
           $scope.noteEditMode = false;
           $scope.noteEditId = null;
           $scope.tinymceContent = '';
@@ -1136,11 +1135,13 @@ angular
             // find the existing note
             for (var i = 0; i < record.mapNote.length; i++) {
               // if this note, overwrite it
-              if ($scope.noteEditId == record.mapNote[i].localId ||
-            		  $scope.noteEditId == record.mapNote[i].id) {
+              if ((record.mapNote[i].localId != null && $scope.noteEditId == record.mapNote[i].localId)
+                || (record.mapNote[i].localId == null && $scope.noteEditId == record.mapNote[i].id)) {
                 noteFound = true;
                 record.mapNote[i].note = note;
-                record.mapNote[i].id = currentLocalId++;
+                record.mapNote[i].timestamp = (new Date()).getTime();
+                record.mapNote[i].user = $scope.user;
+                broadcastRecord();
               }
             }
             $scope.noteEditMode = false;
@@ -1165,6 +1166,9 @@ angular
             mapNote.timestamp = (new Date()).getTime();
             mapNote.user = $scope.user;
 
+            // add note's timestamp to the newNote list
+            $scope.newNoteTimestamps.push(mapNote.timestamp);
+
             // add note to record with new localId
             addElementWithId(record.mapNote, mapNote);
 
@@ -1188,14 +1192,15 @@ angular
         };
 
         $scope.sendFeedback = function(record, feedbackMessage, recipientList) {
+          
+          console.debug("sendFeedback recipientList is ", recipientList);
 
-          if (feedbackMessage == null || feedbackMessage == undefined
-            || feedbackMessage === '') {
+          if (feedbackMessage == null || feedbackMessage == undefined || feedbackMessage === '') {
             window.alert('The feedback field cannot be blank. ');
             return;
           }
 
-          var localFeedback = $scope.conversation.feedback;
+          var localTimestamp = new Date().getTime();
 
           // copy recipient list
           var localRecipients = recipientList.slice(0);
@@ -1206,6 +1211,10 @@ angular
                 newRecipients.push($scope.project.mapLead[j]);
             }
           }
+          if (newRecipients.length == 0) {
+              window.alert('At least one recipient must be selected. ');
+              return;
+          }
 
           // if the conversation has not yet been started
           if ($scope.conversation == null || $scope.conversation == '') {
@@ -1215,7 +1224,7 @@ angular
             var feedback = {
               'message' : feedbackMessage,
               'mapError' : '',
-              'timestamp' : new Date(),
+              'timestamp' : localTimestamp,
               'sender' : $scope.user,
               'recipients' : newRecipients,
               'isError' : 'false',
@@ -1252,9 +1261,11 @@ angular
                 'Content-Type' : 'application/json'
               }
             }).success(function(data) {
+              $scope.newFeedbackMessages.push(feedbackMessage);
               console.debug('  feedback conversation = ', data);
               $scope.conversation = data;
               $scope.tinymceContent = null;
+              $scope.feedbackContent.text = '';
             }).error(function(data, status, headers, config) {
               $scope.recordError = 'Error adding new feedback conversation.';
               $rootScope.handleHttpError(data, status, headers, config);
@@ -1262,12 +1273,14 @@ angular
 
           } else { // already started a conversation
 
+            var localFeedback = $scope.conversation.feedback;
+            
             // create feedback msg to be added to the
             // conversation
             var feedback = {
               'message' : feedbackMessage,
               'mapError' : '',
-              'timestamp' : new Date(),
+              'timestamp' : localTimestamp,
               'sender' : $scope.user,
               'recipients' : newRecipients,
               'isError' : 'false',
@@ -1298,7 +1311,9 @@ angular
                   'Content-Type' : 'application/json'
                 }
               }).success(function(data) {
+                $scope.newFeedbackMessages.push(feedbackMessage);
                 $scope.conversation = data;
+                $scope.feedbackContent.text = '';
               });
             }).error(function(data, status, headers, config) {
               $scope.recordError = 'Error updating feedback conversation.';
@@ -1369,8 +1384,7 @@ angular
           var entries = new Array();
 
           for (var i = 0; i < $scope.record.mapEntry.length; i++) {
-            if (parseInt($scope.record.mapEntry[i].mapGroup, 10) === parseInt(
-              mapGroup, 10)) {
+            if (parseInt($scope.record.mapEntry[i].mapGroup, 10) === parseInt(mapGroup, 10)) {
               entries.push($scope.record.mapEntry[i]);
             }
           }
@@ -1401,8 +1415,7 @@ angular
             // name
           } else {
             var allNotes = utilService.getNotes($scope.project.id);
-            var notes = (allNotes && allNotes[entry.targetId]) ? allNotes[entry.targetId]
-              : '';
+            var notes = (allNotes && allNotes[entry.targetId]) ? allNotes[entry.targetId] : '';
             entrySummary += entry.targetId + notes + ' ' + entry.targetName;
           }
 
@@ -1430,15 +1443,12 @@ angular
 
               ruleSummary += '[AGE ';
 
-              if (lowerBound != null && lowerBound != ''
-                && lowerBound.length > 0) {
+              if (lowerBound != null && lowerBound != '' && lowerBound.length > 0) {
                 ruleSummary += lowerBound[0];
-                if (upperBound != null && upperBound != ''
-                  && upperBound.length > 0)
+                if (upperBound != null && upperBound != '' && upperBound.length > 0)
                   ruleSummary += ' AND ';
               }
-              if (upperBound != null && upperBound != ''
-                && upperBound.length > 0)
+              if (upperBound != null && upperBound != '' && upperBound.length > 0)
                 ruleSummary += upperBound[0];
 
               ruleSummary += '] ';
@@ -1460,16 +1470,14 @@ angular
           // set this entry to selected
           entry.isSelected = true;
 
-          console.debug(
-            'broadcast mapRecordWidget.notification.changeSelectedEntry =',
+          console.debug('broadcast mapRecordWidget.notification.changeSelectedEntry =',
             $scope.record, entry);
-          $rootScope.$broadcast(
-            'mapRecordWidget.notification.changeSelectedEntry', {
-              key : 'changeSelectedEntry',
-              entry : angular.copy(entry),
-              record : $scope.record,
-              project : $scope.project
-            });
+          $rootScope.$broadcast('mapRecordWidget.notification.changeSelectedEntry', {
+            key : 'changeSelectedEntry',
+            entry : angular.copy(entry),
+            record : $scope.record,
+            project : $scope.project
+          });
 
         };
 
@@ -1506,7 +1514,6 @@ angular
           $scope.selectMapEntry(newEntry);
 
           $scope.saveGroups();
-
         };
 
         $scope.deleteMapEntry = function(entry) {
@@ -1524,7 +1531,6 @@ angular
           if ($scope.record.mapEntry && $scope.record.mapEntry.length > 0) {
             $scope.selectMapEntry($scope.record.mapEntry[0]);
           }
-
         };
 
         // Notification watcher for save/delete entry events
@@ -1532,8 +1538,7 @@ angular
           .$on(
             'mapEntryWidget.notification.modifySelectedEntry',
             function(event, parameters) {
-              console.debug(
-                '  => on mapEntryWidget.notification.modifySelectedEntry',
+              console.debug('  => on mapEntryWidget.notification.modifySelectedEntry',
                 parameters.record, parameters.entry);
               var entry = parameters.entry;
               var record = parameters.record;
@@ -1598,7 +1603,6 @@ angular
           if ($scope.record.mapEntry && $scope.record.mapEntry.length > 0) {
             $scope.selectMapEntry($scope.record.mapEntry[0]);
           }
-
         };
 
         // /////////////////////
@@ -1620,11 +1624,20 @@ angular
 
           // if no hibernate id, assign local id
           if (elem.id == null || elem.id === '') {
-            var maxLocalId = Math.max.apply(null, array.map(function(v) {
-              return v.id;
-            }));
-            elem['localId'] = maxLocalId == -1 ? 1 : maxLocalId + 1;
+            // If first time adding note in session, use note array's max Note Id, else use note array's max Local Id
+            if (latestNoteId == null) {
+              if (array.length == 0) {
+                latestNoteId = 0;
+              } else {
+                latestNoteId = Math.max.apply(null, array.map(function(v) {
+                  return v.id;
+                }));
+              }
+            }
+
+            elem['localId'] = ++latestNoteId;
           }
+
           array.push(elem);
         }
         ;
@@ -1666,26 +1679,54 @@ angular
           return $sce.trustAsHtml(html_code);
         };
 
+        // opens SNOMED CT browser
         $scope.getBrowserUrl = function() {
-          if ($scope.project.sourceTerminology === 'SNOMEDCT_US') {
-            return 'https://dailybuild.ihtsdotools.org/us.html?perspective=full&conceptId1='
-              + $scope.record.conceptId + '&acceptLicense=true';
-          } else {
-            return 'http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1='
-              + $scope.record.conceptId + '&acceptLicense=true';
-          }
+            if (appConfig['deploy.snomed.browser.force']) {
+              if ($scope.project.sourceTerminology.includes("SNOMED")) {
+                return appConfig['deploy.snomed.browser.url'] + "&conceptId1="
+                  + $scope.record.conceptId;
+              }
+              else {
+                return appConfig['deploy.snomed.browser.url'];
+              }
+            }
+            else {
+              if ($scope.project.sourceTerminology === 'SNOMEDCT_US') {
+                return appConfig['deploy.snomed.dailybuild.url.base']
+                  + appConfig['deploy.snomed.dailybuild.url.us'] 
+                  + "&conceptId1="
+                  + $scope.record.conceptId;
+              } else {                
+                return appConfig['deploy.snomed.dailybuild.url.base']
+                  + appConfig['deploy.snomed.dailybuild.url.other']
+                  + "&conceptId1="
+                  + $scope.record.conceptId;
+              }
+            }
         };
-
+        
         $scope.openConceptBrowser = function() {
-          var myWindow = window.open($scope.getBrowserUrl(), 'browserWindow');
-          myWindow.focus();
+          window.open($scope.getBrowserUrl(), 'browserWindow');
         };
         
         $scope.openTerminologyBrowser = function(){
-          var currentUrl = window.location.href;
-          var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
-          var newUrl = baseUrl + '/terminology/browser';
-          var myWindow = window.open(newUrl, 'terminologyBrowserWindow');
+          var browserUrl = appConfig['deploy.terminology.browser.url'];
+          if (browserUrl == null || browserUrl === "")
+          {
+            var currentUrl = window.location.href;
+            var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
+            var browserUrl = baseUrl + '/terminology/browser';
+            
+            if ($scope.project.sourceTerminology === 'SNOMEDCT' 
+                || $scope.project.sourceTerminology === 'SNOMEDCT_US') {
+              $scope.browserRequest = 'destination';
+            } else {
+              $scope.browserRequest = 'source';
+            }
+            localStorageService.add('browserRequest', $scope.browserRequest);
+          }
+          
+          var myWindow = window.open(browserUrl, 'terminologyBrowserWindow');
           myWindow.focus();
         }
 
@@ -1747,8 +1788,7 @@ angular
 
           // if no previous feedback conversations, return just
           // first map lead in list
-          if ($scope.conversation == null || $scope.conversation == '') {
-            $scope.returnRecipients.push($scope.project.mapLead[0]);
+          if ($scope.conversation == null || $scope.conversation == '' || $scope.conversation.feedback.length == 0) {
             return;
           }
 
@@ -1810,4 +1850,281 @@ angular
           return parseInt(principle.principleId, 10) + 1;
         };
 
+        // //////////////////////////
+        // UNDO / REDO funtionality for Entries (New)
+        //
+        // //////////////////////////        
+
+        // history for undo/redo
+        var history = [];
+        var historyIndex = 0;
+        var historyLock = false;
+
+        $scope.undoDisabled = true;
+        $scope.redoDisabled = true;
+
+        $scope.setValues = function(historyRecord) {
+          historyLock = true;
+          console.debug('SET:', JSON.stringify(historyRecord));
+          $scope.groupsTree = historyRecord['groupsTree'];
+          $scope.record.mapEntry = historyRecord['record']['mapEntry'];
+          $scope.record.mapNote = historyRecord['record']['mapNote'];
+          $scope.record.mapPrinciple = historyRecord['record']['mapPrinciple'];
+          $scope.record.flagForConsensusReview = historyRecord['record']['flagForConsensusReview'];
+          $scope.record.flagForEditorialReview = historyRecord['record']['flagForEditorialReview'];
+          $scope.record.flagForMapLeadReview = historyRecord['record']['flagForMapLeadReview'];
+          historyLock = false;
+          for (var i = 0; i < $scope.groupsTree.length; i++) {
+            var entries = $scope.groupsTree[i].entry;
+            for (var j = 0; j < entries.length; j++) {
+              if (entries[j].isSelected) {
+                $scope.selectMapEntry(entries[j]);
+              }
+            }
+          }
+          //selectMapEntry($scope.record.mapEntry);
+        };
+
+        $scope.saveHistory = function(data) {
+          //if data is not the same as last history then add
+          if (JSON.stringify(data) !== JSON.stringify(history[historyIndex - 1])) {
+            //eliminate the future
+            history.length = (historyIndex);
+            history.push(data);
+            historyIndex++;
+          }
+          return true;
+        }
+
+        //user action to undo
+        $scope.undo = function() {
+          historyIndex--;
+          console.debug('click undo to:', historyIndex);
+          var h = JSON.parse(JSON.stringify(history[historyIndex - 1]));
+          console.debug("undo to: ", h);
+          $scope.setValues(h);
+          $scope.setButtons();
+          broadcastRecord();
+        };
+
+        //user action to redo
+        $scope.redo = function() {
+          historyIndex++;
+          console.debug('click redo to:', historyIndex);
+          var h = JSON.parse(JSON.stringify(history[historyIndex - 1]));
+          console.debug("redo to: ", h);
+          $scope.setValues(h);
+          $scope.setButtons();
+          broadcastRecord();
+        };
+
+        $scope.createHistoryRecord = function() {
+          var historyRecord = {};
+          historyRecord.groupsTree = (typeof eval($scope.groupsTree) === 'object') ? angular
+            .copy($scope.groupsTree) : {};
+          historyRecord.record = {};
+          historyRecord.record.mapEntry = (typeof $scope.record.mapEntry == 'object') ? angular
+            .copy($scope.record.mapEntry) : {};
+          historyRecord.record.mapNote = (typeof $scope.record.mapNote == 'object') ? angular
+            .copy($scope.record.mapNote) : {};
+          historyRecord.record.mapPrinciple = (typeof eval($scope.record.mapPrinciple) === 'object') ? angular
+            .copy($scope.record.mapPrinciple)
+            : {};
+          historyRecord.record.flagForConsensusReview = (typeof eval($scope.record.flagForConsensusReview) !== 'undefined') ? angular
+            .copy($scope.record.flagForConsensusReview)
+            : false;
+          historyRecord.record.flagForEditorialReview = (typeof eval($scope.record.flagForEditorialReview) !== 'undefined') ? angular
+            .copy($scope.record.flagForEditorialReview)
+            : false;
+          historyRecord.record.flagForMapLeadReview = (typeof eval($scope.record.flagForMapLeadReview) !== 'undefined') ? angular
+            .copy($scope.record.flagForMapLeadReview)
+            : false;
+
+          console.debug("createHistoryRecord", historyRecord);
+          return historyRecord;
+        }
+
+        //one $watch for each variable, $watchGroup was not working for all
+        //groupsTree
+        $scope.$watch('groupsTree', function(newVal, oldVal) {
+          if (historyLock == false && typeof (oldVal) !== 'undefined'
+            && JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+            $scope.saveHistory($scope.createHistoryRecord());
+            $scope.setButtons();
+          }
+        }, true);
+
+        //notes
+        $scope.$watch('record.mapNote', function(newVal, oldVal) {
+          if (historyLock == false && typeof (oldVal) !== 'undefined'
+            && JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+            $scope.saveHistory($scope.createHistoryRecord());
+            $scope.setButtons();
+          }
+        }, true);
+
+        //principle
+        $scope.$watch('record.mapPrinciple', function(newVal, oldVal) {
+          if (historyLock == false && typeof (oldVal) !== 'undefined'
+            && JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+            $scope.saveHistory($scope.createHistoryRecord());
+            $scope.setButtons();
+          }
+        }, true);
+
+        //flagForConsensusReview
+        $scope.$watch('record.flagForConsensusReview', function(newVal, oldVal) {
+          if (historyLock == false && typeof (oldVal) !== 'undefined'
+            && JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+            $scope.saveHistory($scope.createHistoryRecord());
+            $scope.setButtons();
+          }
+        }, true);
+
+        //flagForEditorialReview
+        $scope.$watch('record.flagForEditorialReview', function(newVal, oldVal) {
+          if (historyLock == false && typeof (oldVal) !== 'undefined'
+            && JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+            $scope.saveHistory($scope.createHistoryRecord());
+            $scope.setButtons();
+          }
+        }, true);
+
+        //flagForMapLeadReview
+        $scope.$watch('record.flagForMapLeadReview', function(newVal, oldVal) {
+          if (historyLock == false && typeof (oldVal) !== 'undefined'
+            && JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+            $scope.saveHistory($scope.createHistoryRecord());
+            $scope.setButtons();
+          }
+        }, true);
+
+        //track enable/disable of buttons        
+        $scope.setButtons = function() {
+          $scope.undoDisabled = (historyIndex > 1) ? false : true;
+          $scope.redoDisabled = (historyIndex <= (history.length - 1)) ? false : true;
+          console.debug("historyIndex:", historyIndex, "|size:", history.length, "|undoEnabled:",
+            $scope.undoDisabled, "|redoEnabled:", $scope.redoDisabled);
+        };
+
+        // Open modal to display authoring history for concept
+        $scope.openAuthoringHistory = function(concept) {
+
+          if (concept == null) {
+            return;
+          }
+
+          var modalInstance = $uibModal.open({
+            templateUrl : 'js/widgets/mapRecord/authoringHistory.html',
+            controller : AuthoringHistoryModalCtrl,
+            size : 'lg',
+            resolve : {
+              concept : function() {
+                return concept;
+              },
+              project : function() {
+                return $scope.project;
+              }
+            }
+          });
+
+          modalInstance.result.then(
+
+          // called on Done clicked by user
+          function() {
+          })
+
+        };
+
+        var AuthoringHistoryModalCtrl = function($scope, $uibModalInstance, $q, concept, project) {
+
+          $scope.concept = concept;
+          $scope.projectId = project.id
+          $scope.edits = [];
+          $scope.filter = '';
+
+          // get history of authoring changes for this concept
+          $scope.retrieveAuthoringChanges = function(concept) {
+            console.debug('AuthoringHistoryModalCtrl: retrieve Authoring Changes');
+
+            gpService.increment();
+            $http({
+              url : root_mapping + 'changes/' + $scope.projectId + '/' + concept.terminologyId,
+              dataType : 'json',
+              method : 'GET',
+              headers : {
+                'Content-Type' : 'application/json'
+              }
+            }).success(
+              function(data) {
+                console.debug('Success in getting authoring changes.', $scope.filter);
+                $scope.edits = [];
+                for (var i = 0; i < data.searchResult.length; i++) {
+                  var searchResult = data.searchResult[i];
+
+                  // if filter is set, but searchResult doesn't match it, continue without this result
+                  if ($scope.filter && searchResult.value.indexOf($scope.filter) == -1
+                    && searchResult.value2.indexOf($scope.filter) == -1) {
+                    continue;
+                  }
+
+                  // split the searchResult and put into edits object array
+                  var value = searchResult.value.split(":");
+                  var date = value[1].split("T");
+                  var value2 = searchResult.value2.split(":");
+                  var edit = {
+                    author : value[0],
+                    date : date[0],
+                    conceptId : value2[0],
+                    componentId : value2[1],
+                    type : value2[2],
+                    subcomponentType : value2[3],
+                    action : value2[4]
+                  }
+                  $scope.edits.push(edit);
+                }
+
+                gpService.decrement();
+
+              }).error(function(data, status, headers, config) {
+              gpService.decrement();
+              $rootScope.handleHttpError(data, status, headers, config);
+            });
+          };
+
+          $scope.close = function() {
+            $uibModalInstance.close();
+          };
+
+          $scope.retrieveAuthoringChanges($scope.concept);
+        }
+
+        // feedback groups functionality
+        var feedbackGroupConfig = appConfig["deploy.feedback.group.names"]; 
+        
+        $scope.feedbackGroups = (feedbackGroupConfig = null || typeof feedbackGroupConfig == 'undefined' || feedbackGroupConfig === '')
+        ? null : JSON.parse(feedbackGroupConfig);
+
+        
+        $scope.setGroupRecipients = function(groupId) {
+          var recipients = (appConfig["deploy.feedback.group.users." + groupId]).split(',');
+          $scope.returnRecipients = [];
+          var allUsers = $scope.project.mapLead.concat($scope.project.mapSpecialist);
+          recipients.forEach(function(r){
+            var fbr = findUser(r, allUsers);
+            if ((fbr) && fbr.id != null) {
+              $scope.returnRecipients.push({ id: fbr.id});
+            }
+          });
+          
+        }
+        
+        function findUser(userName, array) {
+          for (var i=0; i < array.length; i++)
+            if (array[i].userName === userName)
+                return array[i];
+        }
+        
+        
+        //end
       } ]);

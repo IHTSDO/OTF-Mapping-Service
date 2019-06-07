@@ -3,9 +3,13 @@
  */
 package org.ihtsdo.otf.mapping.jpa.services;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -13,7 +17,9 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringTokenizer;
 
+import javax.persistence.Entity;
 import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
@@ -54,6 +60,7 @@ import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowQaPathHandler;
 import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowReviewProjectPathHandler;
 import org.ihtsdo.otf.mapping.model.Feedback;
 import org.ihtsdo.otf.mapping.model.FeedbackConversation;
+import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -68,6 +75,8 @@ import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
 import org.ihtsdo.otf.mapping.workflow.WorkflowException;
 import org.ihtsdo.otf.mapping.workflow.WorkflowExceptionJpa;
+
+import com.amazonaws.util.StringUtils;
 
 /**
  * Default workflow service implementation.
@@ -117,7 +126,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       } else {
         manager.remove(manager.merge(ma));
       }
-      tx.commit(); 
+      tx.commit();
     } else {
       TrackingRecord ma =
           manager.find(TrackingRecordJpa.class, trackingRecordId);
@@ -129,7 +138,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     }
 
   }
-  
+
   /* see superclass */
   @Override
   public void removeFeedbackConversation(Long feedbackId) throws Exception {
@@ -146,9 +155,9 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       }
       tx.commit();
     } else {
-    	FeedbackConversation fa =
+      FeedbackConversation fa =
           manager.find(FeedbackConversationJpa.class, feedbackId);
-   if (manager.contains(fa)) {
+      if (manager.contains(fa)) {
         manager.remove(fa);
       } else {
         manager.remove(manager.merge(fa));
@@ -156,7 +165,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     }
 
   }
-  
+
   /* see superclass */
   @Override
   public void removeFeedback(Long feedbackId) throws Exception {
@@ -164,22 +173,20 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     if (getTransactionPerOperation()) {
       tx = manager.getTransaction();
       tx.begin();
-      Feedback fa =
-          manager.find(FeedbackJpa.class, feedbackId);
-      
+      Feedback fa = manager.find(FeedbackJpa.class, feedbackId);
+
       final FeedbackConversation conv = fa.getFeedbackConversation();
       conv.removeFeedback(fa);
       manager.merge(conv);
       tx.commit();
-      
+
     } else {
-      Feedback fa =
-          manager.find(FeedbackJpa.class, feedbackId);
-    	  
+      Feedback fa = manager.find(FeedbackJpa.class, feedbackId);
+
       final FeedbackConversation conv = fa.getFeedbackConversation();
       conv.removeFeedback(fa);
       manager.merge(conv);
-     
+
     }
 
   }
@@ -278,7 +285,13 @@ public class WorkflowServiceJpa extends MappingServiceJpa
         .setParameter("mapProjectId", mapProject.getId())
         .setParameter("terminologyId", terminologyId);
 
-    return (TrackingRecord) query.getSingleResult();
+    List results = query.getResultList();
+    Object foundObject = null;
+    if(!results.isEmpty()){
+        foundObject = results.get(0);
+    }
+    
+    return (TrackingRecord) foundObject;
   }
 
   /* see superclass */
@@ -671,6 +684,14 @@ public class WorkflowServiceJpa extends MappingServiceJpa
           mr.getWorkflowStatus().toString());
     }
 
+    // Handle team-based assignment:
+    // an unassigned Tracking record in a team-based project is set to the team
+    // name
+    if (mapProject.isTeamBased()
+        && trackingRecord.getAssignedUserNames() == null) {
+      trackingRecord.setAssignedUserNames(mapUser.getTeam());
+    }
+
     Logger.getLogger(WorkflowServiceJpa.class)
         .info("Revised tracking record: " + trackingRecord.toString());
 
@@ -796,6 +817,20 @@ public class WorkflowServiceJpa extends MappingServiceJpa
 
         if (!mr.isEquivalent(getMapRecordInSet(oldRecords, mr.getId()))) {
           Logger.getLogger(WorkflowServiceJpa.class).debug("    Update record");
+
+          /*
+           * Special handling for MapNotes based on mapRecordsMapNotes N:M FK
+           * table. Without this, updates to an already persisted map note will
+           * violate duplicate entry constraint on the table.
+           */
+          Set<MapNote> notesToUpdate = mr.getMapNotes();
+
+          // Persist with clearing out the notes
+          mr.setMapNotes(new HashSet<MapNote>());
+          updateMapRecord(mr);
+
+          // Persist with all notes including updated ones
+          mr.setMapNotes(notesToUpdate);
           updateMapRecord(mr);
         } else {
           Logger.getLogger(WorkflowServiceJpa.class)
@@ -857,6 +892,21 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     int commitCt = 1000;
     int trackingRecordCt = 0;
 
+    final Map<String, String> teamAssignedConcepts = new HashMap<>();
+    if (mapProject.isTeamBased()) {
+      //put into config - option to implement team based
+      //key = ProjectId-ConceptId, value = team name
+      TrackingRecordList trackingRecords = getTrackingRecordsForMapProject(mapProject);    
+      
+      if(trackingRecords != null){
+        Logger.getLogger(getClass()).info("Total number of tracking records: " + trackingRecords.getCount());
+        for (final TrackingRecord tr : trackingRecords.getIterable()) {
+          Logger.getLogger(getClass()).info("Workflow: build list of key:" + tr.getMapProjectId() + "||" + tr.getTerminologyId() + " teamName:" + tr.getAssignedTeamName());
+          teamAssignedConcepts.put(tr.getMapProjectId() + "||" + tr.getTerminologyId(), tr.getAssignedTeamName());
+        }
+      }
+    }
+    
     // Clear the workflow for this project
     Logger.getLogger(WorkflowServiceJpa.class).info("  Clear old workflow");
     clearWorkflowForMapProject(mapProject);
@@ -888,13 +938,14 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     // get the concepts in scope
     SearchResultList conceptsInScope =
         findConceptsInScope(mapProject.getId(), null);
-
+    
     // construct a hashset of concepts in scope
     Set<String> conceptIds = new HashSet<>();
     for (final SearchResult sr : conceptsInScope.getIterable()) {
       conceptIds.add(sr.getTerminologyId());
     }
-
+    
+    
     Logger.getLogger(WorkflowServiceJpa.class)
         .info("  Concept ids put into hash set: " + conceptIds.size());
 
@@ -942,10 +993,6 @@ public class WorkflowServiceJpa extends MappingServiceJpa
             + unpublishedRecords.size());
 
     beginTransaction();
-
-    // if (workflowHandler.isEmptyWorkflowAllowed()) {
-    //
-    // }
 
     // construct the tracking records for unmapped concepts
     for (final String terminologyId : conceptIds) {
@@ -1005,6 +1052,16 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       trackingRecord.setTerminologyVersion(concept.getTerminologyVersion());
       trackingRecord.setDefaultPreferredName(concept.getDefaultPreferredName());
       trackingRecord.setSortKey(sortKey);
+      
+      if (mapProject.isTeamBased() && !teamAssignedConcepts.isEmpty()) {
+        String team = teamAssignedConcepts.get(mapProject.getId() + "||"+ concept.getTerminologyId());
+        if (!StringUtils.isNullOrEmpty(team)){
+          
+          Logger.getLogger(getClass()).info("Tracking record set team name:" + team + " for: " + trackingRecord.getTerminologyId());
+          
+          trackingRecord.setAssignedTeamName(team);
+        }
+      }
 
       // add any existing map records to this tracking record
       Set<MapRecord> mapRecordsForTrackingRecord = new HashSet<>();
@@ -1123,6 +1180,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
         .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
         .threadsToLoadObjects(4).threadsForSubsequentFetching(8).startAndWait();
 
+    fullTextEntityManager.detach(manager);
     Logger.getLogger(WorkflowServiceJpa.class).info("Done.");
   }
 
@@ -1484,6 +1542,25 @@ public class WorkflowServiceJpa extends MappingServiceJpa
 
   }
 
+  /* see superclass */
+  @Override
+  public Feedback getFeedback(Long id) throws Exception {
+
+    try {
+      // construct query
+      javax.persistence.Query query =
+          manager.createQuery("select m from FeedbackJpa m where id = :id");
+
+      // Try query
+      query.setParameter("id", id);
+      final Feedback feedback = (Feedback) query.getSingleResult();
+      return feedback;
+    } catch (NoSuchElementException e) {
+      return null;
+    }
+
+  }
+
   /**
    * Handle feedback conversation lazy initialization.
    *
@@ -1546,30 +1623,57 @@ public class WorkflowServiceJpa extends MappingServiceJpa
 
     MapProject mapProject = null;
     mapProject = getMapProject(mapProjectId);
-
-    String modifiedQuery = "";
-    if (query.contains(" AND viewed:false"))
-      modifiedQuery = query.replace(" AND viewed:false", "");
-    else if (query.contains(" AND viewed:true"))
-      modifiedQuery = query.replace(" AND viewed:true", "");
-    else
-      modifiedQuery = query;
-
-    final StringBuilder sb = new StringBuilder();
-    sb.append(modifiedQuery).append(" AND ");
-    sb.append("mapProjectId:" + mapProject.getId());
+    Boolean ownedByMe = null;
 
     // remove from the query the viewed parameter, if it exists
     // viewed will be handled later because it is on the Feedback object,
     // not the FeedbackConversation object
-    sb.append(" AND terminology:" + mapProject.getSourceTerminology()
-        + " AND terminologyVersion:" + mapProject.getSourceTerminologyVersion()
-        + " AND " + "( feedbacks.sender.userName:" + userName + " OR "
-        + "feedbacks.recipients.userName:" + userName + ")");
+    String modifiedQuery = new String(query);
+    if (query.contains(" AND viewed:false"))
+      modifiedQuery = modifiedQuery.replace(" AND viewed:false", "");
+    else if (query.contains(" AND viewed:true"))
+      modifiedQuery = modifiedQuery.replace(" AND viewed:true", "");
+
+    if (query.contains(" AND ownedByMe:true")) {
+      ownedByMe = true;
+      modifiedQuery = modifiedQuery.replace(" AND ownedByMe:true", "");
+    } else if (query.contains(" AND ownedByMe:false")) {
+      ownedByMe = false;
+      modifiedQuery = modifiedQuery.replace(" AND ownedByMe:false", "");
+    }
+
+    final StringBuilder sb = new StringBuilder();
+    sb.append(modifiedQuery);
+
+    if (!query.contains("mapProjectId")) {
+      sb.append(" AND ").append("mapProjectId:").append(mapProject.getId());
+    }
+
+    // MapProjectId is already used - no reason to look for terminology and version
+//    sb.append(" AND terminology:").append(mapProject.getSourceTerminology());
+//    sb.append(" AND terminologyVersion:")
+//        .append(mapProject.getSourceTerminologyVersion());
+
+    // if simplest query, just get most recent 12 months of results, to make
+    // expedient
+    if (!query.contains("AND")) {
+      Calendar calendar = Calendar.getInstance();
+      calendar.add(Calendar.YEAR, -1);
+      Date yearAgo = calendar.getTime();
+      DateFormat dateFormat = new SimpleDateFormat("YYYYMMDD");
+      String sinceDate = dateFormat.format(yearAgo);
+      sb.append(" AND lastModified:[" + sinceDate + " TO *]");
+    }
+
+    sb.append(" AND " + "( feedbacks.sender.userName:").append(userName)
+        .append(" OR ").append("feedbacks.recipients.userName:")
+        .append(userName).append(")");
 
     Logger.getLogger(getClass()).info("  query = " + sb.toString());
 
     final PfsParameter pfs = new PfsParameterJpa(pfsParameter);
+    pfs.setMaxResults(-1);
+
     if (pfs.getSortField() == null || pfs.getSortField().isEmpty()) {
       pfs.setSortField("lastModified");
     }
@@ -1621,20 +1725,67 @@ public class WorkflowServiceJpa extends MappingServiceJpa
             conversationsToKeep.add(fc);
         }
       }
-      totalCt[0] = conversationsToKeep.size();
-      feedbackConversations.clear();
-      if (pfsParameter.getStartIndex() != -1) {
-        for (int i =
-            pfsParameter.getStartIndex(); i < pfsParameter.getStartIndex()
-                + pfsParameter.getMaxResults()
-                && i < conversationsToKeep.size(); i++) {
-          feedbackConversations.add(conversationsToKeep.get(i));
-        }
-      } else {
-        feedbackConversations.addAll(conversationsToKeep);
-      }
 
+      feedbackConversations.clear();
+      feedbackConversations.addAll(conversationsToKeep);
+      conversationsToKeep.clear();
     }
+
+    // replace username with owned by
+    for (final FeedbackConversation fc : feedbackConversations) {
+      final MapRecord mrl = this.getLatestMapRecordForConcept(
+          fc.getMapProjectId(), fc.getTerminologyId());
+      if (mrl != null && mrl.getLastModifiedBy() != null) {
+        fc.setUserName(mrl.getLastModifiedBy().getUserName());
+      } else {
+        fc.setUserName(null);
+      }
+    }
+
+    // filter for owned by me or not owned by me
+    if (ownedByMe != null) {
+      Logger.getLogger(getClass()).debug("owned: " + ownedByMe);
+      final List<FeedbackConversation> conversationsToKeep = new ArrayList<>();
+
+      for (final FeedbackConversation fc : feedbackConversations) {
+
+        Logger.getLogger(getClass()).debug("CHECK id: " + fc.getTerminologyId()
+            + " userName:" + userName + " fc.getUserName:" + fc.getUserName());
+
+        if (((ownedByMe) && userName.equals(fc.getUserName()))
+            || (!(ownedByMe) && !userName.equals(fc.getUserName()))) {
+
+          Logger.getLogger(getClass())
+              .debug("MATCH id: " + fc.getTerminologyId() + " userName:"
+                  + userName + " fc.getUserName:" + fc.getUserName());
+
+          conversationsToKeep.add(fc);
+        }
+      }
+      feedbackConversations.clear();
+      feedbackConversations.addAll(conversationsToKeep);
+      conversationsToKeep.clear();
+    }
+
+    final List<FeedbackConversation> recordsToKeep = new ArrayList<>();
+    // paging.
+    if (feedbackConversations != null && feedbackConversations.size() > 0
+        && pfsParameter.getStartIndex() != -1
+        && pfsParameter.getMaxResults() != -1) {
+
+      int startIndex =
+          (pfsParameter.getStartIndex() < 0) ? 0 : pfsParameter.getStartIndex();
+      int endIndex = startIndex + (((startIndex
+          + pfsParameter.getMaxResults()) < feedbackConversations.size())
+              ? pfsParameter.getMaxResults()
+              : feedbackConversations.size() - startIndex);
+      recordsToKeep.addAll(feedbackConversations.subList(startIndex, endIndex));
+    }
+
+    totalCt[0] = feedbackConversations.size();
+    feedbackConversations.clear();
+    feedbackConversations.addAll(recordsToKeep);
+    recordsToKeep.clear();
 
     Logger.getLogger(this.getClass())
         .debug(Integer.toString(feedbackConversations.size())
@@ -1672,6 +1823,17 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       handleFeedbackConversationLazyInitialization(feedbackConversation);
     }
 
+    // replace username with owned by
+    for (final FeedbackConversation fc : feedbackConversations) {
+      final MapRecord mrl = this.getLatestMapRecordForConcept(
+          fc.getMapProjectId(), fc.getTerminologyId());
+      if (mrl != null && mrl.getLastModifiedBy() != null) {
+        fc.setUserName(mrl.getLastModifiedBy().getUserName());
+      } else {
+        fc.setUserName(null);
+      }
+    }
+
     // set the total count
     FeedbackConversationListJpa feedbackConversationList =
         new FeedbackConversationListJpa();
@@ -1683,6 +1845,33 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     return feedbackConversationList;
   }
 
+  /* see superclass */
+  @SuppressWarnings("unchecked")
+  @Override
+  public FeedbackConversationList getFeedbackConversationsForMapProject(
+    Long mapProjectId) throws Exception {
+
+    javax.persistence.Query query = manager
+        .createQuery(
+            "select m from FeedbackConversationJpa m where mapProjectId=:mapProjectId")
+        .setParameter("mapProjectId", mapProjectId);
+
+    List<FeedbackConversation> feedbackConversations = query.getResultList();    
+    for (final FeedbackConversation feedbackConversation : feedbackConversations) {
+      handleFeedbackConversationLazyInitialization(feedbackConversation);
+    }     
+    
+    // set the total count
+    FeedbackConversationListJpa feedbackConversationList =
+        new FeedbackConversationListJpa();
+    feedbackConversationList.setTotalCount(feedbackConversations.size());
+
+    // extract the required sublist of feedback conversations
+    feedbackConversationList.setFeedbackConversations(feedbackConversations);
+
+    return feedbackConversationList;
+  }
+  
   /* see superclass */
   @Override
   public FeedbackList getFeedbackErrorsForRecord(MapRecord mapRecord)
@@ -1908,5 +2097,25 @@ public class WorkflowServiceJpa extends MappingServiceJpa
         return getWorkflowPathHandler(mapProject.getWorkflowType().toString());
 
     }
+  }
+
+  // parse query restrictions
+  private Map<String, String> convertToMap(String tokenizedString,
+    String firstToken, String secondToken) throws Exception {
+
+    final Map<String, String> map = new HashMap<String, String>();
+    final StringTokenizer st = new StringTokenizer(tokenizedString, firstToken);
+
+    while (st.hasMoreTokens()) {
+      final String first = st.nextToken();
+      final String[] second = first.split(secondToken);
+
+      if (second.length != 2) {
+        throw new Exception("Unexpeted number of tokens received.");
+      } else {
+        map.put(second[0], second[1]);
+      }
+    }
+    return map;
   }
 }

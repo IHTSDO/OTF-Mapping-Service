@@ -5,6 +5,7 @@ package org.ihtsdo.otf.mapping.services.helpers;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -26,6 +27,12 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.Configurable;
@@ -42,6 +49,63 @@ public class ConfigUtility {
   /** The test config. */
   public static Properties testConfig = null;
 
+  /**
+   * The get local config file.
+   *
+   * @return the local config file
+   * @throws Exception the exception
+   */
+  public static String getLocalConfigFile() throws Exception {
+    return getLocalConfigFolder() + "config.properties";
+  }
+
+  /**
+   * Gets the local config folder.
+   *
+   * @return the local config folder
+   * @throws Exception the exception
+   */
+  public static String getLocalConfigFolder() throws Exception {
+    return System.getProperty("user.home") + "/.mapping-service/" + getConfigLabel()
+        + "/";
+  }
+  
+  /**
+   * Get the config label.
+   *
+   * @return the label
+   * @throws Exception the exception
+   */
+  public static String getConfigLabel() throws Exception {
+    // Need to determine the label (default "")
+    String label = "";
+    Properties labelProp = new Properties();
+
+    // If no resource is available, go with the default
+    // ONLY setups that explicitly intend to override the setting
+    // cause it to be something other than the default.
+    InputStream input = ConfigUtility.class.getResourceAsStream("/label.prop");
+    if (input != null) {
+      labelProp.load(input);
+      // If a run.config.label override can be found, use it
+      String candidateLabel = labelProp.getProperty("run.config.label");
+      // If the default, uninterpolated value is used, stick again with the
+      // default
+      if (candidateLabel != null
+          && !candidateLabel.equals("${run.config.label}")) {
+        label = candidateLabel;
+      }
+    } else {
+      Logger.getLogger(ConfigUtility.class.getName())
+          .info("  label.prop resource cannot be found, using default");
+
+    }
+    Logger.getLogger(ConfigUtility.class.getName())
+        .info("  run.config.label = " + label);
+
+    return label;
+  }
+  
   /**
    * Returns the config properties.
    * @return the config properties
@@ -673,4 +737,33 @@ public class ConfigUtility {
     return number
         .matches("^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$");
   }
+  
+	/**
+	 * Indicates whether or not the server is active.
+	 *
+	 * @return <code>true</code> if so, <code>false</code> otherwise
+	 * @throws Exception
+	 *             the exception
+	 */
+	public static boolean isServerActive() throws Exception {
+		if (config == null)
+			config = ConfigUtility.getConfigProperties();
+
+		try {
+			// Attempt to logout to verify service is up (this works like a
+			// "ping").
+			Client client = ClientBuilder.newClient();
+			WebTarget target = client.target(config.getProperty("base.url") 
+					+ "/security/logout/user/id/dummy");
+
+			Response response = target.request(MediaType.TEXT_PLAIN).post(null);			
+			if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+				return true;
+			} else {
+				return false;
+			}
+		} catch (Exception e) {
+			return false;
+		}
+	}
 }

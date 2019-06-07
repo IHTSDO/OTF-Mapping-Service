@@ -386,6 +386,8 @@ public class ICD10CMProjectSpecificAlgorithmHandler
         }
       } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP04)) {
         advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP04));
+      } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP04)) {
+        advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP04));
       }
 
       //
@@ -449,6 +451,8 @@ public class ICD10CMProjectSpecificAlgorithmHandler
         }
       } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP07)) {
         advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP07));
+      } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP07)) {
+        advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP07));
       }
 
       //
@@ -465,6 +469,8 @@ public class ICD10CMProjectSpecificAlgorithmHandler
         if (!TerminologyUtility.hasAdvice(mapEntry, adviceP08)) {
           advices.add(TerminologyUtility.getAdvice(mapProject, adviceP08));
         }
+      } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP08)) {
+        advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP08));
       } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP08)) {
         advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP08));
       }
@@ -503,6 +509,8 @@ public class ICD10CMProjectSpecificAlgorithmHandler
 //      } else 
         if (TerminologyUtility.hasAdvice(mapEntry, adviceP10)) {
         advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP10));
+      } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP10)) {
+        advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP10));
       }
 
       //
@@ -516,6 +524,8 @@ public class ICD10CMProjectSpecificAlgorithmHandler
         if (!TerminologyUtility.hasAdvice(mapEntry, adviceP11)) {
           advices.add(TerminologyUtility.getAdvice(mapProject, adviceP11));
         }
+      } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP11)) {
+        advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP11));
       } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP11)) {
         advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP11));
       }

@@ -20,7 +20,10 @@ angular.module('mapProjectApp.widgets.recordSummary', [ 'adf.provider' ]).config
     $rootScope.$on('mapRecordWidget.notification.recordChanged', function(event, parameters) {
       $scope.record = parameters.record;
     });
-
+    $rootScope.$on('mapRecordWidget.notification.changeSelectedEntry', function(event, parameters) {
+      $scope.record = parameters.record;
+    });
+    
     // function to return trusted html code (for tooltip content)
     $scope.to_trusted = function(html_code) {
       return $sce.trustAsHtml(html_code);

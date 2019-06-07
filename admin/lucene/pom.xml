@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.5.40-US_SNAPSHOT</version>
+    <version>1.6.4-SNAPSHOT</version>
     <relativePath>../../parent</relativePath>
   </parent>
 
@@ -44,6 +44,7 @@
                 </goals>
                 <configuration>
                   <indexedObjects>${indexed.objects}</indexedObjects>
+                  <server>${server}</server>
                 </configuration>
               </execution>
             </executions>
@@ -160,7 +161,7 @@
                 <configuration>
                   <inputDir>${input.dir}</inputDir>
                   <inputFile>ICD10_TEIL1.ASC.xml</inputFile>
-                  <domain>TEIL1</domain>
+                  <domain>Alpha</domain>
                   <terminology>ICD10</terminology>
                   <terminologyVersion>2016</terminologyVersion>
                 </configuration>
@@ -175,7 +176,7 @@
                 <configuration>
                   <inputDir>${input.dir}</inputDir>
                   <inputFile>ICD10_TEIL2.ASC.xml</inputFile>
-                  <domain>TEIL2</domain>
+                  <domain>External</domain>
                   <terminology>ICD10</terminology>
                   <terminologyVersion>2016</terminologyVersion>
                 </configuration>
@@ -190,7 +191,7 @@
                 <configuration>
                   <inputDir>${input.dir}</inputDir>
                   <inputFile>ICD10_TEIL3.ASC.xml</inputFile>
-                  <domain>TEIL3</domain>
+                  <domain>Drugs</domain>
                   <terminology>ICD10</terminology>
                   <terminologyVersion>2016</terminologyVersion>
                 </configuration>
@@ -205,7 +206,7 @@
                 <configuration>
                   <inputDir>${input.dir}</inputDir>
                   <inputFile>ICD10_TEIL1.ASC.xml</inputFile>
-                  <domain>TEIL1</domain>
+                  <domain>Alpha</domain>
                   <terminology>ICD10</terminology>
                   <terminologyVersion>2016</terminologyVersion>
                 </configuration>
@@ -220,7 +221,7 @@
                 <configuration>
                   <inputDir>${input.dir}</inputDir>
                   <inputFile>ICD10_TEIL2.ASC.xml</inputFile>
-                  <domain>TEIL2</domain>
+                  <domain>External</domain>
                   <terminology>ICD10</terminology>
                   <terminologyVersion>2016</terminologyVersion>
                 </configuration>
@@ -235,7 +236,7 @@
                 <configuration>
                   <inputDir>${input.dir}</inputDir>
                   <inputFile>ICD10_TEIL3.ASC.xml</inputFile>
-                  <domain>TEIL3</domain>
+                  <domain>Drugs</domain>
                   <terminology>ICD10</terminology>
                   <terminologyVersion>2016</terminologyVersion>
                 </configuration>

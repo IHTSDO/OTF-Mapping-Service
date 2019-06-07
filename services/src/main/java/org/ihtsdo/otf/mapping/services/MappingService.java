@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.mapping.services;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -207,7 +208,7 @@ public interface MappingService extends RootService {
    * @throws Exception the exception
    */
   public MapProject addMapProject(MapProject mapProject) throws Exception;
-  
+
   /**
    * Adds the map record.
    * 
@@ -372,6 +373,19 @@ public interface MappingService extends RootService {
    */
   public void createMapRecordsForMapProject(Long mapProjectId, MapUser mapUser,
     List<ComplexMapRefSetMember> complexMapRefSetMembers,
+    WorkflowStatus workflowStatus) throws Exception;
+
+  /**
+   * Append entries to map records for project.
+   *
+   * @param mapProjectId the map project id
+   * @param mapUser the map user
+   * @param complexMapRefSetMembers the complex map ref set members
+   * @param workflowStatus the workflow status
+   * @throws Exception the exception
+   */
+  public void appendEntriesToMapRecordsForProject(Long mapProjectId,
+    MapUser mapUser, List<ComplexMapRefSetMember> complexMapRefSetMembers,
     WorkflowStatus workflowStatus) throws Exception;
 
   /**
@@ -674,9 +688,9 @@ public interface MappingService extends RootService {
    * @return the tree position list
    * @throws Exception the exception
    */
-  public TreePositionList setTreePositionTerminologyNotes(
-    MapProject mapProject, TreePositionList treePositions,
-    ProjectSpecificAlgorithmHandler handler) throws Exception;
+  public TreePositionList setTreePositionTerminologyNotes(MapProject mapProject,
+    TreePositionList treePositions, ProjectSpecificAlgorithmHandler handler)
+    throws Exception;
 
   /**
    * Gets the map user preferences.
@@ -762,7 +776,7 @@ public interface MappingService extends RootService {
    * @throws Exception the exception
    */
   void recalculateMapAdviceForProject(MapProject mapProject) throws Exception;
-  
+
   /**
    * Gets the map project metadata.
    *
@@ -817,4 +831,58 @@ public interface MappingService extends RootService {
   public SearchResultList getScopeConceptsForMapProject(MapProject mapProject,
     PfsParameter pfsParameter) throws Exception;
 
+  /**
+   * @param mapProjectd
+   * @param ancestorId
+   * @param excludeDescendants
+   * @param terminology
+   * @param terminologyVersion
+   * @param relationshipName
+   * @param pfsParameter
+   * @return
+   * @throws Exception
+   */
+  public SearchResultList findMapRecords(Long mapProjectd, String ancestorId,
+    boolean excludeDescendants, String relationshipName,
+    String relationshipValue, String terminology, String terminologyVersion,
+    PfsParameter pfsParameter, Collection<String> mapConcepts) throws Exception;
+
+  /**
+   * Retrieve latest map record for a given terminology id.
+   *
+   * @param mapProjectId the concept id
+   * @param terminologyId the concept id
+   * @return the list of map records
+   * @throws Exception the exception
+   */
+  public MapRecord getLatestMapRecordForConcept(Long mapProjectId,
+    String terminologyId) throws Exception;
+
+  /**
+   * Returns the release file names.
+   *
+   * @param mapProject the map project
+   * @return the release file names
+   * @throws Exception the exception
+   */
+  public String getReleaseFileNames(MapProject mapProject) throws Exception;
+
+  /**
+   * Returns the map user role for application.
+   *
+   * @param userName the user name
+   * @return the map user role for application
+   * @throws Exception the exception
+   */
+  public MapUserRole getMapUserRoleForApplication(String userName)
+    throws Exception;
+
+  /**
+   * Return a list of map record ids and team names which are Ready for Publication.
+   * 
+   * @param mapProjectId
+   * @return list of map record ids for the given map project
+   * @throws Exception the exception
+   */
+  public Map<String, String> getTargetCodeForReadyForPublication (Long mapProjectId) throws Exception;
 }

@@ -1,6 +1,7 @@
 package org.ihtsdo.otf.mapping.test.rest;
 
-import org.ihtsdo.otf.mapping.rest.MetadataServiceRest;
+import org.ihtsdo.otf.mapping.jpa.services.rest.MetadataServiceRest;
+import org.ihtsdo.otf.mapping.rest.impl.MetadataServiceRestImpl;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -33,12 +34,12 @@ public class MetadataServiceEdgeCasesTest {
    */
   @Before
   public void setup() throws Exception {
-    service = new MetadataServiceRest();
+    service = new MetadataServiceRestImpl();
   }
 
   /**
    * Test edge cases of getting the latest terminology versions from
-   * {@link MetadataServiceRest}.
+   * {@link MetadataServiceRestImpl}.
    * 
    * @throws Exception the exception
    */
@@ -49,7 +50,7 @@ public class MetadataServiceEdgeCasesTest {
 
   /**
    * Test edge cases of getting all terminology versions from
-   * {@link MetadataServiceRest}.
+   * {@link MetadataServiceRestImpl}.
    *
    * @throws Exception the exception
    */
@@ -60,7 +61,7 @@ public class MetadataServiceEdgeCasesTest {
 
   /**
    * Test edge cases of getting all metadata for terminology from
-   * {@link MetadataServiceRest}.
+   * {@link MetadataServiceRestImpl}.
    *
    * @throws Exception the exception
    */
@@ -70,7 +71,7 @@ public class MetadataServiceEdgeCasesTest {
   }
 
   /**
-   * Test edge cases of getting all metadata from {@link MetadataServiceRest}.
+   * Test edge cases of getting all metadata from {@link MetadataServiceRestImpl}.
    *
    * @throws Exception the exception
    */

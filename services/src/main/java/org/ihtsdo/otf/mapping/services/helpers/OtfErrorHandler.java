@@ -78,7 +78,7 @@ public class OtfErrorHandler {
     String userName, String project, String objectId)
     throws WebApplicationException {
 
-    e.printStackTrace();
+    Logger.getLogger(OtfErrorHandler.class).error("handle exception", e);
 
     // if a local exception, throw as web application exception
     if (e instanceof LocalException) {
@@ -99,9 +99,30 @@ public class OtfErrorHandler {
       }
     }
 
-    // if already a web application exception, simply rethrow
     if (e instanceof WebApplicationException) {
-      throw (WebApplicationException) e;
+      WebApplicationException ex = (WebApplicationException) e;
+      String message = "";
+      
+      if (ex.getResponse().getEntity() instanceof String) {
+        message = ex.getResponse().getEntity().toString();
+      }
+      // Rebuilding the Exception to ensure the Response status remains the same
+      // and setting message for the UI to parse.
+      // Throwing a new WebApplicationException was causing the a 500 error in
+      // the UI. (throw new WebApplicationException(e))
+      // Re-throwing the same error caused the message to drop.
+      // (WebApplicationException)e
+      if (ex.getResponse().getStatus() == Response.Status.UNAUTHORIZED.getStatusCode())
+      {
+        message = "\"Session expired, please login.\"";
+        throw new WebApplicationException(
+            Response.status(ex.getResponse().getStatusInfo())
+                .entity(message).build());
+      }
+      else {
+        throw new WebApplicationException(Response
+            .status(ex.getResponse().getStatusInfo()).entity(message).build());
+      }
     }
 
     // send email to the recipients designated in config file
@@ -109,7 +130,7 @@ public class OtfErrorHandler {
       getConfigProperties();
       sendEmail(e, whatIsHappening, userName, project, objectId);
     } catch (Exception ex) {
-      ex.printStackTrace();
+      Logger.getLogger(getClass()).error("Error sending email of error in handleException." , ex);
       throw new WebApplicationException(
           Response.status(500).entity(ex.getMessage()).build());
     }

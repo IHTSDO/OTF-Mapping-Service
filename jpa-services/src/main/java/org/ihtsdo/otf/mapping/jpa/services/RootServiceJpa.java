@@ -17,14 +17,20 @@ import org.apache.log4j.Logger;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.hibernate.search.jpa.FullTextQuery;
+import org.ihtsdo.otf.mapping.helpers.HasLastModified;
+import org.ihtsdo.otf.mapping.helpers.LogEntry;
+import org.ihtsdo.otf.mapping.helpers.LogEntryJpa;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.jpa.helpers.IndexUtility;
 import org.ihtsdo.otf.mapping.services.RootService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
+// TODO: Auto-generated Javadoc
 /**
  * The root service for managing the entity manager factory and hibernate search
- * field names
+ * field names.
+ *
+ * @author ${author}
  */
 public abstract class RootServiceJpa implements RootService {
 
@@ -43,10 +49,16 @@ public abstract class RootServiceJpa implements RootService {
   /** The transaction entity. */
   protected EntityTransaction tx;
 
+  /** The last modified by. */
+  private String lastModifiedBy = null;
+
+  /** The process lock. */
+  private static String processLock = "";
+
   /**
    * Instantiates an empty {@link RootServiceJpa}.
-   * 
-   * @throws Exception
+   *
+   * @throws Exception the exception
    */
   public RootServiceJpa() throws Exception {
     // created once or if the factory has closed
@@ -59,6 +71,7 @@ public abstract class RootServiceJpa implements RootService {
     tx = manager.getTransaction();
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -79,6 +92,7 @@ public abstract class RootServiceJpa implements RootService {
 
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -91,6 +105,7 @@ public abstract class RootServiceJpa implements RootService {
     }
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -103,6 +118,7 @@ public abstract class RootServiceJpa implements RootService {
     return transactionPerOperation;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -115,6 +131,7 @@ public abstract class RootServiceJpa implements RootService {
     this.transactionPerOperation = transactionPerOperation;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -134,6 +151,7 @@ public abstract class RootServiceJpa implements RootService {
     tx.begin();
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -156,6 +174,7 @@ public abstract class RootServiceJpa implements RootService {
     manager.clear();
   }
 
+  /* see superclass */
   @Override
   public void rollback() throws Exception {
 
@@ -173,11 +192,13 @@ public abstract class RootServiceJpa implements RootService {
     manager.clear();
   }
 
+  /* see superclass */
   @Override
   public void clear() throws Exception {
     manager.clear();
   }
 
+  /* see superclass */
   @Override
   public void close() throws Exception {
     if (manager.isOpen()) {
@@ -228,6 +249,7 @@ public abstract class RootServiceJpa implements RootService {
 
   }
 
+  /* see superclass */
   // this is called by REST layer and so needs to be exposed through RootService
   @Override
   public <T> List<T> applyPfsToList(List<T> list, Class<T> clazz, int[] totalCt,
@@ -332,4 +354,260 @@ public abstract class RootServiceJpa implements RootService {
   public EntityManager getEntityManager() {
     return manager;
   }
+
+  /**
+   * Returns the last modified by.
+   *
+   * @return the last modified by
+   */
+  @Override
+  public String getLastModifiedBy() {
+    return lastModifiedBy;
+  }
+
+  /**
+   * Sets the last modified by.
+   *
+   * @param lastModifiedBy the last modified by
+   */
+  @Override
+  public void setLastModifiedBy(String lastModifiedBy) {
+    this.lastModifiedBy = lastModifiedBy;
+  }
+
+  /* see superclass */
+  @Override
+  public LogEntry addLogEntry(final LogEntry logEntry) throws Exception {
+    // Use add object to bypass the last modified checks
+    logEntry.setLastModified(new Date());
+    return addObject(logEntry);
+  }
+
+  /* see superclass */
+  @Override
+  public void updateLogEntry(final LogEntry logEntry) throws Exception {
+    // Use add object to bypass the last modified checks
+    logEntry.setLastModified(new Date());
+    updateObject(logEntry);
+  }
+
+  /* see superclass */
+  @Override
+  public void removeLogEntry(final Long id) throws Exception {
+    // Use add object to bypass the last modified checks
+    removeObject(getObject(id, LogEntryJpa.class));
+  }
+
+  /* see superclass */
+  @Override
+  public LogEntry getLogEntry(final Long id) throws Exception {
+    return getHasLastModified(id, LogEntry.class);
+  }
+
+  /* see superclass */
+  @Override
+  public LogEntry addLogEntry(final String userName, final Long projectId,
+    final Long objectId, final String activityId, final String workId,
+    final String message) throws Exception {
+    final LogEntry entry = new LogEntryJpa();
+    entry.setLastModifiedBy(userName);
+    entry.setObjectId(objectId);
+    entry.setProjectId(projectId);
+    entry.setTimestamp(new Date());
+    entry.setActivityId(activityId);
+    entry.setWorkId(workId);
+    entry.setMessage(message);
+
+    // Add component
+    return addLogEntry(entry);
+
+  }
+
+  /* see superclass */
+  @Override
+  public LogEntry addLogEntry(final String userName, final String terminology,
+    final String version, final String activityId, final String workId,
+    final String message) throws Exception {
+    final LogEntry entry = new LogEntryJpa();
+    entry.setLastModifiedBy(userName);
+    entry.setTerminology(terminology);
+    entry.setVersion(version);
+    entry.setTimestamp(new Date());
+    entry.setMessage(message);
+    entry.setActivityId(activityId);
+    entry.setWorkId(workId);
+
+    // Add component
+    return addLogEntry(entry);
+
+  }
+
+  /* see superclass */
+  @Override
+  public LogEntry addLogEntry(final Long projectId, final String userName,
+    final String terminology, final String version, final String activityId,
+    final String workId, final String message) throws Exception {
+    final LogEntry entry = new LogEntryJpa();
+    entry.setProjectId(projectId);
+    entry.setLastModifiedBy(userName);
+    entry.setTerminology(terminology);
+    entry.setVersion(version);
+    entry.setTimestamp(new Date());
+    entry.setMessage(message);
+    entry.setActivityId(activityId);
+    entry.setWorkId(workId);
+
+    // Add component
+    return addLogEntry(entry);
+
+  }
+
+  /**
+   * Returns the checks for object.
+   *
+   * @param <T> the
+   * @param id the id
+   * @param clazz the clazz
+   * @return the checks for object
+   * @throws Exception the exception
+   */
+  protected <T extends Object> T getObject(final Long id, final Class<T> clazz)
+    throws Exception {
+    // Get transaction and object
+    tx = manager.getTransaction();
+    final T component = manager.find(clazz, id);
+    return component;
+  }
+
+  /**
+   * Adds the object.
+   *
+   * @param <T> the
+   * @param object the object
+   * @return the t
+   * @throws Exception the exception
+   */
+  protected <T extends Object> T addObject(final T object) throws Exception {
+    try {
+      // add
+      if (getTransactionPerOperation()) {
+        tx = manager.getTransaction();
+        tx.begin();
+        manager.persist(object);
+        tx.commit();
+      } else {
+        manager.persist(object);
+      }
+      return object;
+    } catch (Exception e) {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+      throw e;
+    }
+  }
+
+  /**
+   * Update object.
+   *
+   * @param <T> the
+   * @param object the object
+   * @throws Exception the exception
+   */
+  protected <T extends Object> void updateObject(final T object)
+    throws Exception {
+    try {
+      // update
+      if (getTransactionPerOperation()) {
+        tx = manager.getTransaction();
+        tx.begin();
+        manager.merge(object);
+        tx.commit();
+      } else {
+        manager.merge(object);
+      }
+    } catch (Exception e) {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+      throw e;
+    }
+  }
+
+  /**
+   * Removes the object.
+   *
+   * @param <T> the
+   * @param object the object
+   * @return the t
+   * @throws Exception the exception
+   */
+  protected <T extends Object> T removeObject(final T object) throws Exception {
+    try {
+      // Get transaction and object
+      tx = manager.getTransaction();
+      // Remove
+      if (getTransactionPerOperation()) {
+        // remove refset member
+        tx.begin();
+        if (manager.contains(object)) {
+          manager.remove(object);
+        } else {
+          manager.remove(manager.merge(object));
+        }
+        tx.commit();
+      } else {
+        if (manager.contains(object)) {
+          manager.remove(object);
+        } else {
+          manager.remove(manager.merge(object));
+        }
+      }
+      return object;
+    } catch (Exception e) {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+      throw e;
+    }
+  }
+
+  /**
+   * Returns the checks for last modified.
+   *
+   * @param <T> the
+   * @param id the id
+   * @param clazz the clazz
+   * @return the checks for last modified
+   * @throws Exception the exception
+   */
+  protected <T extends HasLastModified> T getHasLastModified(final Long id,
+    final Class<T> clazz) throws Exception {
+    if (id == null) {
+      return null;
+    }
+    // Get transaction and object
+    tx = manager.getTransaction();
+    final T component = manager.find(clazz, id);
+    return component;
+  }
+
+  public synchronized static void lockProcess(String processInfo)
+    throws Exception {
+    // If processLock is populated, return the existing processInfo as an
+    // Exception
+    if (!processLock.equals("")) {
+      throw new Exception(processLock);
+    }
+    // Otherwise, populate the processLock with the upcoming processes' info
+    else {
+      processLock = processInfo;
+    }
+  }
+
+  public synchronized static void unlockProcess() {
+    // clear out the processLock
+    processLock = "";
+  }
+
 }

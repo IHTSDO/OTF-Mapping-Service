@@ -24,8 +24,9 @@ angular
       '$location',
       '$anchorScroll',
       'localStorageService',
+      'gpService',
       function($scope, $window, $rootScope, $q, $http, $routeParams, $uibModal,
-        $location, $anchorScroll, localStorageService) {
+        $location, $anchorScroll, localStorageService, gpService) {
 
         // for this widget, the only local storage service variable used is
         // user
@@ -58,7 +59,7 @@ angular
             // compute relation and advice IFF a target or entry has
             // been set attempt to autocompute the map relation, then update the
             // entry
-            $scope.computeParameters(false);
+            // $scope.computeParameters(false);
 
           });
 
@@ -107,6 +108,7 @@ angular
         }
 
         $scope.setTarget = function(targetCode) {
+          
           $scope.getValidTargetError = '';
 
           // if target code is empty, compute parameters and return
@@ -117,7 +119,7 @@ angular
             return;
           }
 
-          $rootScope.glassPane++;
+          gpService.increment();
           $http(
             {
               url : root_mapping + 'project/id/' + $scope.project.id
@@ -128,13 +130,14 @@ angular
               }
             }).success(
             function(data) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               console.debug('  valid target = ', data)
               // if target found and valid
               if (data) {
+
                 $scope.entry.targetId = data.terminologyId;
                 $scope.entry.targetName = data.defaultPreferredName;
-
+                
                 // make sure that the mapEntry is up to date before computing advice and relations
                 for (var i = 0; i < $scope.record.mapEntry.length; i++) {
                     var entry = $scope.record.mapEntry[i];
@@ -149,21 +152,22 @@ angular
                 // attempt to autocompute the map relation, then update the
                 // entry
                 $scope.computeParameters(false);
+                
+                $scope.allowableMapRelations = getAllowableRelations($scope.entry,
+                    $scope.project.mapRelation);
 
               } else {
-
                 $scope.getValidTargetError = targetCode
                   + ' is not a valid target';
                 $scope.entry.targetName = null;
-
               }
 
             }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
 
             $rootScope.handleHttpError(data, status, headers, config);
           });
-        };
+        }; // end scope.setTarget
 
         // watch for concept selection from terminology browser
         $scope.$on('terminologyBrowser.selectConcept', function(event,
@@ -197,8 +201,7 @@ angular
           $scope.allowableAdvices = getAllowableAdvices($scope.entry,
             $scope.project.mapAdvice);
           sortByKey($scope.allowableAdvices, 'detail');
-          $scope.allowableMapRelations = getAllowableRelations($scope.entry,
-            $scope.project.mapRelation);
+          
         });
 
         $scope.clearTargetConcept = function(entry) {
@@ -229,6 +232,9 @@ angular
 
           // update the entry
           updateEntry($scope.entry);
+          
+          $scope.getValidTargetError = '';
+          $scope.mapRelationInput = '';
         };
 
         function computeRelation(entry) {
@@ -252,7 +258,7 @@ angular
             }
           }
 
-          $rootScope.glassPane++;
+          gpService.increment();
           $http({
             url : root_mapping + 'relation/compute',
             dataType : 'json',
@@ -286,16 +292,16 @@ angular
                     }
                   }
 
-                  $rootScope.glassPane--;
+                  gpService.decrement();
 
                   // return the promise
                   deferred.resolve(entry);
                 } else {
-                  $rootScope.glassPane--;
+                  gpService.decrement();
                   deferred.resolve(entry);
                 }
               }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
 
               // reject the promise
@@ -337,7 +343,7 @@ angular
             entry.mapAdvice = [];
           }
 
-          $rootScope.glassPane++;
+          gpService.increment();
 
           // var entryIsScopeEntry = matchingEntry(entry, $scope.entry);
 
@@ -386,11 +392,11 @@ angular
                     $scope.project.mapRelation);
                 }
               }
-              $rootScope.glassPane--;
+              gpService.decrement();
               deferred.resolve(entry);
 
             }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
             deferred.reject();
           });
@@ -651,7 +657,7 @@ angular
 
               if (lowerValueValid) {
                 $scope.rule += ruleText + ' | '
-                  + (ageRange.lowerInclusive ? '>=' : '>') + ' '
+                  + (ageRange.lowerInclusive === "true" ? '>=' : '>') + ' '
                   + parseFloat(ageRange.lowerValue, 10).toFixed(1) + ' '
                   + ageRange.lowerUnits;
               }
@@ -662,7 +668,7 @@ angular
 
               if (upperValueValid) {
                 $scope.rule += ruleText + ' | '
-                  + (ageRange.upperInclusive ? '<=' : '<') + ' '
+                  + (ageRange.upperInclusive === "true" ? '<=' : '<') + ' '
                   + parseFloat(ageRange.upperValue, 10).toFixed(1) + ' '
                   + ageRange.upperUnits;
 
@@ -783,12 +789,12 @@ angular
 
         $scope.setNullTarget = function() {
           // open glass pane (setNullTarget1)
-          $rootScope.glassPane++;
+          gpService.increment();
           $scope.entry.targetId = '';
           $scope.entry.targetName = 'No target';
           $scope.computeParameters(true);
           // close glass pane (setNullTarget1)
-          $rootScope.glassPane--;
+          gpService.decrement();
         };
 
         /**

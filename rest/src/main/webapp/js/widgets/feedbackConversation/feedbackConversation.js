@@ -18,7 +18,7 @@ angular
   .controller(
     'feedbackConversationCtrl',
     function($scope, $rootScope, $routeParams, $http, $location, $uibModal,
-      $sce, localStorageService) {
+      $sce, localStorageService, appConfig, gpService) {
 
       $scope.currentUser = null;
       $scope.currentRole = null;
@@ -61,6 +61,7 @@ angular
       // start note edit mode in off mode
       $scope.feedbackEditMode = false;
       $scope.feedbackEditId = null;
+      $scope.newFeedbackMessages = new Array();
       $scope.content = {
       	text : ''
       };
@@ -101,7 +102,7 @@ angular
 
       // function to retrieve the feedback conversation based on record id
       $scope.getFeedbackConversation = function() {
-        $rootScope.glassPane++;
+        gpService.increment();
         $http({
           url : root_workflow + 'conversation/id/' + $scope.recordId,
           dataType : 'json',
@@ -113,6 +114,7 @@ angular
           function(data) {
             $scope.conversation = data;
             $scope.markFeedbackViewed($scope.conversation, $scope.currentUser);
+            $scope.setIsMarkResolvedDisabled();
             initializeReturnRecipients($scope.conversation);
 
             $scope.record = null;
@@ -132,7 +134,7 @@ angular
               }).success(
               function(data) {
 
-                $rootScope.glassPane--;
+                gpService.decrement();
 
                 $scope.record = data;
 
@@ -142,7 +144,7 @@ angular
                 var originIds = $scope.record.originIds;
                 if (originIds != null && originIds.length > 0) {
 
-                  $rootScope.glassPane++;
+                  gpService.increment();
                   $http(
                     {
                       url : root_mapping + 'record/id/' + originIds[0]
@@ -156,12 +158,12 @@ angular
                     }).success(
                     function(data) {
 
-                      $rootScope.glassPane--;
+                      gpService.decrement();
 
                       $scope.record1 = data;
 
                       if (originIds != null && originIds.length == 2) {
-                        $rootScope.glassPane++;
+                        gpService.increment();
                         $http(
                           {
                             url : root_mapping + 'record/id/' + originIds[1]
@@ -173,32 +175,39 @@ angular
                               'Content-Type' : 'application/json'
                             }
                           }).success(function(data) {
-                          $rootScope.glassPane--;
+                          gpService.decrement();
                           $scope.record2 = data;
 
                           setDisplayRecords();
                         }).error(
                           function(data, status, headers, config) {
-                            $rootScope.glassPane--;
+                            gpService.decrement();
                             $rootScope.handleHttpError(data, status, headers,
                               config);
                           });
                       }
                     }).error(function(data, status, headers, config) {
-                    $rootScope.glassPane--;
+                    gpService.decrement();
                     $rootScope.handleHttpError(data, status, headers, config);
                   });
                 }
               }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
             });
           }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
 
+      $scope.isNewFeedback = function(feedback) {
+      	if($scope.newFeedbackMessages.includes(feedback.message)){
+      		return true;
+      	}
+      	return false;
+      }
+      
       $scope.editFeedback = function(feedback) {
           $scope.content.text = feedback.message;
           $scope.feedbackEditMode = true;
@@ -230,6 +239,7 @@ angular
             $scope.tinymceContent = null;
             
             updateFeedbackConversation($scope.conversation, true);
+            $scope.newFeedbackMessages.push(feedback);  
           }
         };
 
@@ -287,20 +297,46 @@ angular
         plugins : 'autolink link image charmap searchreplace',
         toolbar : 'undo redo | styleselect | bold italic underline strikethrough | charmap link image',
       };
+      
+      //default
+      $scope.isMarkResolvedDisabled = true;
+
+      $scope.setIsMarkResolvedDisabled = function(){
+        if ( $scope.conversation != null 
+            && (($scope.conversation.userName === $scope.currentUser.userName
+                || $scope.currentRole === 'Lead') &&
+                $scope.conversation.feedback && $scope.conversation.feedback.length > 0)) {
+              $scope.isMarkResolvedDisabled = false; 
+        } else {
+          $scope.isMarkResolvedDisabled = true;
+        }
+      }
 
       // send feedback on already started conversation
       $scope.sendFeedback = function(record, feedbackMessage, conversation,
         recipientList) {
 
+        if($scope.conversation.resolved){          
+          if (window.confirm('This feedback conversation is closed.  Please uncheck Mark resolved to submit feedback.')) {
+            $scope.isMarkResolvedDisabled = false;
+          }
+          return;
+        }        
         if (feedbackMessage == null || feedbackMessage == undefined
           || feedbackMessage === '') {
           window.alert('The feedback field cannot be blank. ');
           return;
         }
+        if (recipientList.length == 0) {
+            window.alert('At least one recipient must be selected. ');
+            return;
+        }
+        
         // figure out the return recipients based on previous feedback
         // in
         // conversation
         var localFeedback = conversation.feedback;
+        var localTimestamp = new Date().getTime();
 
         // copy recipient list
         var localRecipients = recipientList.slice(0);
@@ -316,17 +352,20 @@ angular
         var feedback = {
           'message' : feedbackMessage,
           'mapError' : '',
-          'timestamp' : new Date(),
+          'timestamp' : localTimestamp,
           'sender' : $scope.currentUser,
           'recipients' : newRecipients,
           'isError' : 'false',
           'viewedBy' : [ $scope.currentUser ]
         };
+               
 
         localFeedback.push(feedback);
         conversation.feedback = localFeedback;
 
         updateFeedbackConversation(conversation, true);
+        $scope.newFeedbackMessages.push(feedbackMessage);
+        $scope.content.text = '';
 
       };
 
@@ -381,15 +420,25 @@ angular
 
       // opens SNOMED CT browser
       $scope.getBrowserUrl = function() {
-        if ($scope.currentUser.userName === 'guest') {
-          return 'http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1='
-            + $scope.conversation.terminologyId + '&acceptLicense=true';
-        } else if ($scope.focusProject.sourceTerminology === 'SNOMEDCT_US') {
-          return 'https://dailybuild.ihtsdotools.org/us.html?perspective=full&conceptId1='
-            + $scope.conversation.terminologyId + '&acceptLicense=true';
-        } else {
-          return 'http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1='
-            + $scope.conversation.terminologyId + '&acceptLicense=true';
+        if (appConfig['deploy.snomed.browser.force']) {
+          return appConfig['deploy.snomed.browser.url'] + "&conceptId1="
+            + $scope.conversation.terminologyId;  
+        }
+        else {
+          if ($scope.currentUser.userName === 'guest') {
+            return appConfig['deploy.snomed.browser.url'] + "&conceptId1="
+              + $scope.conversation.terminologyId;
+          } else if ($scope.focusProject.sourceTerminology === 'SNOMEDCT_US') {
+            return appConfig['deploy.snomed.dailybuild.url.base']
+              + appConfig['deploy.snomed.dailybuild.url.us'] 
+              + "&conceptId1="
+              + $scope.conversation.terminologyId;
+          } else {
+            return appConfig['deploy.snomed.dailybuild.url.base']
+              + appConfig['deploy.snomed.dailybuild.url.other']
+              + "&conceptId1="
+              + $scope.conversation.terminologyId;
+          }
         }
 
       };
@@ -476,7 +525,7 @@ angular
         updateFeedbackConversation(conversation, refreshFlag);
       }
       function updateFeedbackConversation(conversation, refreshFlag) {
-        $rootScope.glassPane++;
+        gpService.increment();
 
         $http({
           url : root_workflow + 'conversation/update',
@@ -490,9 +539,9 @@ angular
           if (refreshFlag) {
             $scope.getFeedbackConversation();
           }
-          $rootScope.glassPane--;
+          gpService.decrement();
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $scope.recordError = 'Error updating feedback conversation.';
           $rootScope.handleHttpError(data, status, headers, config);
         });

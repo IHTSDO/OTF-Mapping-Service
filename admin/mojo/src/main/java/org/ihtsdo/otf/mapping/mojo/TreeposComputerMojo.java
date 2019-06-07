@@ -81,13 +81,13 @@ public class TreeposComputerMojo extends AbstractMojo {
           "Could not retrieve parameters from conf file");
     }
     String notificationRecipients =
-        config.getProperty("send.notification.recipients");
+        config.getProperty("send.notification.recipients.devops");
     if (!sendNotification) {
       getLog().info(
           "No notifications will be sent as a result of workflow computation.");
     }
     if (sendNotification
-        && config.getProperty("send.notification.recipients") == null) {
+        && config.getProperty("send.notification.recipients.devops") == null) {
       throw new MojoFailureException(
           "Email notification was requested, but no recipients were specified.");
     } else {

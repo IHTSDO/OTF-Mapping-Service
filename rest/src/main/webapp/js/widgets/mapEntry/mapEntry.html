@@ -31,9 +31,9 @@
             ng-show="entry.targetId == null || entry.targetId === ''"
             ng-click="setTarget(entry.targetId)">Set Empty Target</span>
           <span class="btn btn-xs btn-warning" ng-show="entry.targetId != null"
-            ng-click="clearTargetConcept(entry);mapRelationInput = null;getValidTargetError = null;">Clear</span>
+            ng-click="clearTargetConcept(entry);">Clear</span>
         </form>
-        <span style="color: red" ng-show="getValidTargetError != null">{{getValidTargetError}}</span>
+        <span style="color: red" ng-show="getValidTargetError != null || getValidTargetError != ''">{{getValidTargetError}}</span>
     </tr>
     <tr>
       <td

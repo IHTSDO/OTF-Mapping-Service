@@ -12,6 +12,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
+import org.ihtsdo.otf.mapping.helpers.MapAdviceListJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
@@ -49,6 +50,11 @@ public class DefaultProjectSpecificAlgorithmHandler
   @Override
   public MapAdviceList computeMapAdvice(MapRecord mapRecord, MapEntry mapEntry)
     throws Exception {
+    if(mapEntry != null && mapEntry.getMapAdvices() != null){
+      final List<MapAdvice> advices = new ArrayList<>(mapEntry.getMapAdvices());
+      MapAdviceList mapAdviceList = new MapAdviceListJpa();
+      mapAdviceList.setMapAdvices(advices);
+    }
     return null;
   }
 
@@ -56,6 +62,9 @@ public class DefaultProjectSpecificAlgorithmHandler
   @Override
   public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry)
     throws Exception {
+    if(mapEntry != null && mapEntry.getMapRelation() != null){
+      return mapEntry.getMapRelation();
+    }
     return null;
   }
 
@@ -967,10 +976,15 @@ public class DefaultProjectSpecificAlgorithmHandler
     throws Exception {
     return false;
   }
-
   @Override
   public String getReleaseFile3rdElement() throws Exception {
     // Default is "INT", for international releases.
     return "INT";
+  }
+
+  @Override
+  public boolean isMapRecordLineValid(String line) throws Exception {
+    // Default is to say line is valid
+    return true;
   }
 }
