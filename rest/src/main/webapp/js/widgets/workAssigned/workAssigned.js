@@ -13,7 +13,7 @@ angular
   })
   .controller(
     'workAssignedCtrl',
-    function($scope, $rootScope, $http, $location, $uibModal, $timeout, localStorageService) {
+    function($scope, $rootScope, $http, $location, $uibModal, $timeout, localStorageService, gpService) {
 
       // on initialization, explicitly assign to null and/or empty array
       $scope.currentUser = null;
@@ -31,31 +31,39 @@ angular
       $scope.focusProject = localStorageService.get('focusProject');
       $scope.currentUserToken = localStorageService.get('userToken');
       $scope.preferences = localStorageService.get('preferences');
-      $scope.assignedTab = localStorageService.get('assignedTab');
+      $scope.assignedTab = localStorageService.get('assignedTab');      
+      $scope.tabs = localStorageService.get('assignedWorkTabs');
       
-      // tab variables
-      $scope.tabs = [ {
-        id : 0,
-        title : 'Concepts',
-        active : true
-      }, {
-        id : 1,
-        title : 'Conflicts',
-        active : false
-      }, {
-        id : 2,
-        title : 'Review',
-        active : false
-      }, {
-        id : 3,
-        title : 'By User',
-        active : false
-      }, {
-        id : 4,
-        title : 'QA',
-        active : false
-      } ];
-
+      if ($scope.tabs == null || $scope.tabs === '') {
+        // tab variables
+        $scope.tabs = [ {
+          id : 0,
+          title : 'Concepts',
+          active : true,
+          selection : null
+        }, {
+          id : 1,
+          title : 'Conflicts',
+          active : false,
+          selection : null
+        }, {
+          id : 2,
+          title : 'Review',
+          active : false,
+          selection : null
+        }, {
+          id : 3,
+          title : 'By User',
+          active : false,
+          selection : null
+        }, {
+          id : 4,
+          title : 'QA',
+          active : false,
+          selection : null
+        } ];
+      }
+      
       // labels for QA filtering
       $scope.labelNames = [];
 
@@ -109,32 +117,12 @@ angular
             }
         }).success(function(data) {
           $scope.preferences.lastAssignedRadio = localStorageService.get('assignedRadio');
-          
-          if ($scope.preferences.lastAssignedRadio.includes('NEW')) {
-            $scope.assignedTypes.work = 'NEW';
-            $scope.assignedTypes.conflict = 'CONFLICT_NEW';
-            $scope.assignedTypes.review = 'REVIEW_NEW';
-            $scope.assignedTypes.forUser = 'NEW';
-          } else if ($scope.preferences.lastAssignedRadio.includes('ALL')) {
-            $scope.assignedTypes.work = 'ALL';
-            $scope.assignedTypes.conflict = 'ALL';
-            $scope.assignedTypes.review = 'ALL';
-            $scope.assignedTypes.forUser = 'ALL';
-            $scope.assignedTypes.qa = 'ALL'
-          } else if ($scope.preferences.lastAssignedRadio.includes('IN_PROGRESS')) {
-            $scope.assignedTypes.work = 'EDITING_IN_PROGRESS';
-            $scope.assignedTypes.conflict = 'CONFLICT_IN_PROGRESS';
-            $scope.assignedTypes.review = 'REVIEW_IN_PROGRESS';
-            $scope.assignedTypes.forUser = 'EDITING_IN_PROGRESS';
-            $scope.assignedTypes.qa = 'QA_IN_PROGRESS';
-          } else if ($scope.preferences.lastAssignedRadio.includes('RESOLVED') ||
-          		$scope.preferences.lastAssignedRadio.includes('DONE')) {
-            $scope.assignedTypes.work = 'EDITING_DONE';
-            $scope.assignedTypes.conflict = 'CONFLICT_RESOLVED';
-            $scope.assignedTypes.review = 'REVIEW_RESOLVED';
-            $scope.assignedTypes.forUser = 'EDITING_DONE';
-            $scope.assignedTypes.qa = 'QA_RESOLVED';
-          }         
+                    
+          $scope.assignedTypes.work = $scope.tabs[0].selection || 'ALL';
+          $scope.assignedTypes.conflict = $scope.tabs[1].selection || 'ALL';
+          $scope.assignedTypes.review = $scope.tabs[2].selection || 'ALL';
+          $scope.assignedTypes.forUser = $scope.tabs[3].selection || 'ALL';
+          $scope.assignedTypes.qa = $scope.tabs[4].selection || 'ALL';
           
           // update lists based on radio button selected when tab changes
           $scope.retrieveAssignedWork($scope.assignedWorkPage, null);
@@ -143,15 +131,19 @@ angular
           $scope.retrieveLabels();
           if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') { 
             $scope.retrieveAssignedReviewWork(1, null);
+            $scope.retrieveAssignedConflicts(1, null);
             $scope.retrieveAssignedWorkForUser(1, null, $scope.selected.mapUserViewed);
           }
         }); 
       }
       
-      $scope.setRadio = function(type) {
+      $scope.setRadio = function(tab, type) {
           // add the radio button to the local storage service for the next visit       
           $scope.preferences.lastAssignedRadio = type;
           localStorageService.add('assignedRadio', type);
+          
+          $scope.tabs[tab].selection = type;
+          localStorageService.add('assignedWorkTabs', $scope.tabs);
           
           // update the user preferences
           $http({
@@ -371,7 +363,7 @@ angular
           'queryRestriction' : $scope.assignedTypes.conflict
         };
 
-        $rootScope.glassPane++;
+        gpService.increment();
 
         $http(
           {
@@ -385,7 +377,7 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
 
           $scope.assignedConflictsPage = page;
           $scope.assignedConflicts = data.searchResult;
@@ -396,9 +388,10 @@ angular
 
           // set title
           $scope.tabs[1].title = 'Conflicts (' + data.totalCount + ')';
+          localStorageService.add('assignedWorkTabs', $scope.tabs);
 
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
 
           $rootScope.handleHttpError(data, status, headers, config);
         });
@@ -433,7 +426,7 @@ angular
           'queryRestriction' : $scope.assignedTypes.work
         };
 
-        $rootScope.glassPane++;
+        gpService.increment();
 
         $http(
           {
@@ -447,7 +440,7 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
 
           $scope.assignedWorkPage = page;
           $scope.assignedRecords = data.searchResult;
@@ -458,9 +451,10 @@ angular
 
           // set title
           $scope.tabs[0].title = 'Concepts (' + $scope.nAssignedRecords + ')';
+          localStorageService.add('assignedWorkTabs', $scope.tabs);
 
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
        
@@ -469,7 +463,7 @@ angular
 
       $scope.retrieveLabels = function() {
 
-        $rootScope.glassPane++;
+        gpService.increment();
         $http({
           url : root_reporting + 'qaLabel/qaLabels/' + $scope.focusProject.id,
           dataType : 'json',
@@ -478,13 +472,13 @@ angular
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           for (var i = 0; i < data.searchResult.length; i++) {
             $scope.labelNames.push(data.searchResult[i].value);
           }
 
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
@@ -517,7 +511,7 @@ angular
           'queryRestriction' : $scope.assignedTypes.qa
         };
 
-        $rootScope.glassPane++;
+        gpService.increment();
 
         $http(
           {
@@ -531,7 +525,7 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
 
           $scope.assignedQAWorkPage = page;
           $scope.assignedQAWork = data.searchResult;
@@ -542,6 +536,7 @@ angular
 
           // set title
           $scope.tabs[4].title = 'QA (' + $scope.nAssignedQAWork + ')';
+          localStorageService.add('assignedWorkTabs', $scope.tabs);
 
           // set labels
           for (var i = 0; i < $scope.assignedQAWork.length; i++) {
@@ -552,7 +547,7 @@ angular
           }
 
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
@@ -585,7 +580,7 @@ angular
           'queryRestriction' : $scope.assignedTypes.review
         };
 
-        $rootScope.glassPane++;
+        gpService.increment();
 
         $http(
           {
@@ -599,7 +594,7 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
 
           $scope.assignedReviewWorkPage = page;
           $scope.assignedReviewWork = data.searchResult;
@@ -610,10 +605,10 @@ angular
 
           // set title
           $scope.tabs[2].title = 'Review (' + $scope.nAssignedReviewWork + ')';
-
+          localStorageService.add('assignedWorkTabs', $scope.tabs);
 
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
@@ -661,7 +656,7 @@ angular
           'queryRestriction' : $scope.assignedTypes.forUser
         };
 
-        $rootScope.glassPane++;
+        gpService.increment();
 
         $http(
           {
@@ -674,7 +669,7 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
 
           $scope.assignedWorkForUserPage = page;
           $scope.assignedRecordsForUser = data.searchResult;
@@ -684,10 +679,10 @@ angular
           $scope.nAssignedRecordsForUser = data.totalCount;
 
           $scope.tabs[3].title = 'By User (' + data.totalCount + ')';
-
+          localStorageService.add('assignedWorkTabs', $scope.tabs);
 
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
 
@@ -716,7 +711,7 @@ angular
             return;
         }
 
-        $rootScope.glassPane++;
+        gpService.increment();
         $http(
           {
             url : root_workflow + 'unassign/project/id/' + $scope.focusProject.id + '/concept/id/'
@@ -727,7 +722,7 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
 
           // trigger reload of this type of work via broadcast
           // notification
@@ -747,7 +742,7 @@ angular
           // tab, re-retrieve
 
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
@@ -767,7 +762,7 @@ angular
 
         // get the full list of currently assigned work for this query and
         // workType
-        $rootScope.glassPane++;
+        gpService.increment();
         var pfsParameterObj = {
           'startIndex' : -1,
           'maxResults' : -1,
@@ -811,10 +806,10 @@ angular
           }
           unassignBatch(user, terminologyIds, workType);
 
-          $rootScope.glassPane--;
+          gpService.decrement();
 
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
 
@@ -826,7 +821,7 @@ angular
 
       var unassignBatch = function(mapUser, terminologyIds, workType, workStatus) {
 
-        $rootScope.glassPane++;
+        gpService.increment();
         $http(
           {
             url : root_workflow + 'unassign/project/id/' + $scope.focusProject.id + '/user/id/'
@@ -838,10 +833,10 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
 
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         }).then(function() {
 
@@ -912,7 +907,7 @@ angular
       // create JIRA issue ticket to send feedback to content author
       $scope.createJiraTicket = function(record) {
         // retrieve the list of authors
-        $rootScope.glassPane++;
+        gpService.increment();
         $http({
           url : root_mapping + 'authors/' + record.terminologyId,
           method : 'GET',
@@ -921,7 +916,7 @@ angular
           }
         }).success(
           function(data) {
-            $rootScope.glassPane--;
+            gpService.decrement();
 
             // only put valid authors on list
             var searchResults = data.searchResult;
@@ -937,7 +932,7 @@ angular
             $scope.openCreateJiraTicketModal(record);
 
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
           });
       };
@@ -1019,7 +1014,7 @@ angular
 
           var deferred = $q.defer();
 
-          $rootScope.glassPane++;
+          gpService.increment();
           // perform the retrieval call
           $http({
             url : root_mapping + 'record/id/' + $scope.record.id,
@@ -1028,12 +1023,12 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             // set scope record
             $scope.currentRecord = data;
 
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $scope.error = 'Could not retrieve record';
             deferred.reject('Could not retrieve record');
           });
@@ -1094,7 +1089,7 @@ angular
           'queryRestriction' : workflowStatus
         };
 
-        $rootScope.glassPane++;
+        gpService.increment();
         // set based on specified workflow status
         $http(
           {
@@ -1112,9 +1107,9 @@ angular
           if (data.searchResult.length > 0) {
             $scope.openFinishOrPublishModal(data.searchResult);
           }
-          $rootScope.glassPane--;
+          gpService.decrement();
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
 
@@ -1248,7 +1243,7 @@ angular
           // array
           // access)
           var recordId = $scope.records[$scope.index - 1].id;
-          $rootScope.glassPane++;
+          gpService.increment();
           // perform the retrieval call
           $http({
             url : root_mapping + 'record/id/' + recordId,
@@ -1310,11 +1305,11 @@ angular
                   'Content-Type' : 'application/json'
                 }
               }).success(function(data) {
-                $rootScope.glassPane--;
+                gpService.decrement();
                 $scope.validationResult = data;
                 deferred.resolve($scope.currentRecord);
               }).error(function(data, status, headers, config) {
-                $rootScope.glassPane--;
+                gpService.decrement();
                 $scope.validationResult = null;
                 $scope.recordError = 'Unexpected error reported by server.  Contact an admin.';
                 $rootScope.handleHttpError(data, status, headers, config);
@@ -1322,7 +1317,7 @@ angular
               });
 
             }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $scope.error = 'Could not retrieve record';
             deferred.reject('Could not retrieve record');
           });
@@ -1360,7 +1355,7 @@ angular
         function finishRecord(record) {
           var deferred = $q.defer();
 
-          $rootScope.glassPane++;
+          gpService.increment();
 
           $http({
             url : root_workflow + $scope.action, // api text is passed in
@@ -1373,11 +1368,11 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             deferred.resolve();
 
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             deferred.reject();
           });
 

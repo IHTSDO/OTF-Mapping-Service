@@ -27,8 +27,10 @@ angular
       '$uibModal',
       'localStorageService',
       'utilService',
+      'appConfig',
+      'gpService',
       function($scope, $window, $rootScope, $http, $routeParams, $location, $sce, $uibModal,
-        localStorageService, utilService) {
+        localStorageService, utilService, appConfig, gpService) {
 
         // ///////////////////////////////////
         // Map Record Controller Functions //
@@ -51,14 +53,15 @@ angular
         $scope.conversation = null;
         $scope.mapLeads = $scope.project.mapLead;
         organizeUsers($scope.mapLeads);
-
+        $scope.enableAuthoringHistoryButton = (appConfig["deploy.show.authoring.history.button"] === 'true') ? true : false;
+        
         $scope.returnRecipients = new Array();
         $scope.multiSelectSettings = {
           displayProp : 'name',
           scrollableHeight : '150',
           scrollable : true,
           showCheckAll : false,
-          showUncheckAll : false
+          showUncheckAll : true
         };
         $scope.multiSelectCustomTexts = {
           buttonDefaultText : 'Select Leads'
@@ -82,7 +85,7 @@ angular
         $scope.isNotesOpen = false;
         $scope.isFlagsOpen = false;
         $scope.groupOpen = new Array(10);
-        var i = 0;
+
         for (var i = 0; i < $scope.groupOpen.length; i++) {
           $scope.groupOpen[i] = true;
         }
@@ -217,7 +220,7 @@ angular
             // Validate the record immediately
             // this is good to show messages right away
             // if there are problems
-            $rootScope.glassPane++;
+            gpService.increment();
             console.debug('Validate record on select', $scope.record);
             $http({
               url : root_mapping + 'validation/record/validate',
@@ -229,10 +232,10 @@ angular
               }
             }).success(function(data) {
               console.debug('  validation data = ', data);
-              $rootScope.glassPane--;
+              gpService.decrement();
               $scope.validationResult = data;
             }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $scope.validationResult = null;
               $rootScope.handleHttpError(data, status, headers, config);
             });
@@ -310,8 +313,11 @@ angular
                 // used by selectRecord
                 $scope.record.workflowStatus = data.workflowStatus;
                 $scope.record.conceptId = data.conceptId;
-                $scope.record.owner = {};
-                $scope.record.owner.userName = data.owner.userName;
+                $scope.record.conceptName = data.conceptName;
+                $scope.record.owner = data.owner;
+                $scope.record.mapProjectId = data.mapProjectId;
+                $scope.record.id = data.id;
+                $scope.record.originIds = data.originIds;
               }
 
             }).error(function(data, status, headers, config) {
@@ -558,7 +564,7 @@ angular
           }
 
           // validate the record
-          $rootScope.glassPane++;
+          gpService.increment();
           console.debug('Validate on finish', $scope.record);
           $http({
             url : root_mapping + 'validation/record/validate',
@@ -571,11 +577,11 @@ angular
           })
             .success(function(data) {
               console.debug('  validation result = ' + data);
-              $rootScope.glassPane--;
+              gpService.decrement();
               $scope.validationResult = data;
             })
             .error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $scope.validationResult = null;
               $scope.recordError = 'Unexpected error reported by server.  Contact an admin.';
               $rootScope.handleHttpError(data, status, headers, config);
@@ -614,7 +620,7 @@ angular
                     // assign the current user to the lastModifiedBy field
                     $scope.record.lastModifiedBy = $scope.user;
 
-                    $rootScope.glassPane++;
+                    gpService.increment();
                     console.debug('Finish record', $scope.record);
                     $http({
                       url : root_workflow + 'finish',
@@ -634,12 +640,12 @@ angular
                         // longer 'dirty'
                         $rootScope.currentPageDirty = false;
 
-                        $rootScope.glassPane--;
+                        gpService.decrement();
                         $location.path($scope.role + '/dash');
                       })
                       .error(
                         function(data, status, headers, config) {
-                          $rootScope.glassPane--;
+                          gpService.decrement();
                           $scope.recordError = 'Unexpected server error.  Try saving your work for later, and contact an admin.';
                           $rootScope.handleHttpError(data, status, headers, config);
                           $scope.recordSuccess = '';
@@ -705,7 +711,7 @@ angular
             };
 
             // get the assigned work list
-            $rootScope.glassPane++;
+            gpService.increment();
             console.debug('Get assigned concepts', $scope.project.id);
             $http(
               {
@@ -721,7 +727,7 @@ angular
               }).success(
               function(data) {
                 console.debug('  assignedWork = ', data);
-                $rootScope.glassPane--;
+                gpService.decrement();
 
                 var assignedWork = data.searchResult;
 
@@ -748,7 +754,7 @@ angular
                 }
 
               }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
             });
 
@@ -766,7 +772,7 @@ angular
             };
 
             // get the assigned conflicts
-            $rootScope.glassPane++;
+            gpService.increment();
             console.debug('get assigned conflicts', $scope.project.id);
             $http(
               {
@@ -782,7 +788,7 @@ angular
               }).success(
               function(data) {
                 console.debug('  assigned work = ', data);
-                $rootScope.glassPane--;
+                gpService.decrement();
 
                 var assignedWork = data.searchResult;
 
@@ -809,7 +815,7 @@ angular
                 }
 
               }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
             });
 
@@ -831,7 +837,7 @@ angular
               'queryRestriction' : 'REVIEW_NEW'
             };
             // get the assigned review work
-            $rootScope.glassPane++;
+            gpService.increment();
             console.debug('get assigned review work', $scope.project.id);
             $http(
               {
@@ -847,7 +853,7 @@ angular
               }).success(
               function(data) {
                 console.debug('  assigned work = ', data);
-                $rootScope.glassPane--;
+                gpService.decrement();
 
                 var assignedWork = data.searchResult;
                 if (tooltipOnly == true) {
@@ -872,7 +878,7 @@ angular
                   }
                 }
               }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
             });
           } else if ($scope.record.workflowStatus === 'QA_NEW'
@@ -886,7 +892,7 @@ angular
               'queryRestriction' : 'QA_NEW'
             };
             // get the assigned review work
-            $rootScope.glassPane++;
+            gpService.increment();
             console.debug('get assigned qa work', $scope.project.id);
             $http(
               {
@@ -902,7 +908,7 @@ angular
               }).success(
               function(data) {
                 console.debug('  assigned work = ', data);
-                $rootScope.glassPane--;
+                gpService.decrement();
 
                 var assignedWork = data.searchResult;
                 if (tooltipOnly == true) {
@@ -927,7 +933,7 @@ angular
                   }
                 }
               }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
             });
           }
@@ -941,7 +947,7 @@ angular
             }
 
           }
-
+          
           // assign the current user to the lastModifiedBy field
           $scope.record.lastModifiedBy = $scope.user;
 
@@ -949,8 +955,8 @@ angular
           // if ($rootScope.currentPageDirty == false &&
           // !returnBack)
           // return;
-
-          $rootScope.glassPane++;
+          
+          gpService.increment();
           console.debug('save record', $scope.record);
           $http({
             url : root_workflow + 'save',
@@ -970,7 +976,7 @@ angular
             // $scope.record = data;
             $scope.recordSuccess = 'Record saved.';
             $scope.recordError = '';
-            $rootScope.glassPane--;
+            gpService.decrement();
             if (!returnBack) {
               $scope.resolveNextConcept(false);
 
@@ -978,7 +984,7 @@ angular
               $location.path($scope.role + '/dash');
             }
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $scope.recordError = 'Error saving record.';
             $rootScope.handleHttpError(data, status, headers, config);
             $scope.recordSuccess = '';
@@ -988,7 +994,7 @@ angular
         // discard changes
         $scope.cancelMapRecord = function() {
 
-          $rootScope.glassPane++;
+          gpService.increment();
           console.debug('cancel editing', $scope.record);
           $http({
             url : root_workflow + 'cancel',
@@ -1003,10 +1009,10 @@ angular
             // user has requested a cancel event, page is no
             // longer 'dirty'
             $rootScope.currentPageDirty = false;
-            $rootScope.glassPane--;
+            gpService.decrement();
             $location.path($scope.role + '/dash');
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
           });
 
@@ -1186,6 +1192,8 @@ angular
         };
 
         $scope.sendFeedback = function(record, feedbackMessage, recipientList) {
+          
+          console.debug("sendFeedback recipientList is ", recipientList);
 
           if (feedbackMessage == null || feedbackMessage == undefined || feedbackMessage === '') {
             window.alert('The feedback field cannot be blank. ');
@@ -1671,26 +1679,54 @@ angular
           return $sce.trustAsHtml(html_code);
         };
 
+        // opens SNOMED CT browser
         $scope.getBrowserUrl = function() {
-          if ($scope.project.sourceTerminology === 'SNOMEDCT_US') {
-            return 'https://dailybuild.ihtsdotools.org/us.html?perspective=full&conceptId1='
-              + $scope.record.conceptId + '&acceptLicense=true';
-          } else {
-            return 'http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1='
-              + $scope.record.conceptId + '&acceptLicense=true';
-          }
+            if (appConfig['deploy.snomed.browser.force']) {
+              if ($scope.project.sourceTerminology.includes("SNOMED")) {
+                return appConfig['deploy.snomed.browser.url'] + "&conceptId1="
+                  + $scope.record.conceptId;
+              }
+              else {
+                return appConfig['deploy.snomed.browser.url'];
+              }
+            }
+            else {
+              if ($scope.project.sourceTerminology === 'SNOMEDCT_US') {
+                return appConfig['deploy.snomed.dailybuild.url.base']
+                  + appConfig['deploy.snomed.dailybuild.url.us'] 
+                  + "&conceptId1="
+                  + $scope.record.conceptId;
+              } else {                
+                return appConfig['deploy.snomed.dailybuild.url.base']
+                  + appConfig['deploy.snomed.dailybuild.url.other']
+                  + "&conceptId1="
+                  + $scope.record.conceptId;
+              }
+            }
         };
-
+        
         $scope.openConceptBrowser = function() {
-          var myWindow = window.open($scope.getBrowserUrl(), 'browserWindow');
-          myWindow.focus();
+          window.open($scope.getBrowserUrl(), 'browserWindow');
         };
-
-        $scope.openTerminologyBrowser = function() {
-          var currentUrl = window.location.href;
-          var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
-          var newUrl = baseUrl + '/terminology/browser';
-          var myWindow = window.open(newUrl, 'terminologyBrowserWindow');
+        
+        $scope.openTerminologyBrowser = function(){
+          var browserUrl = appConfig['deploy.terminology.browser.url'];
+          if (browserUrl == null || browserUrl === "")
+          {
+            var currentUrl = window.location.href;
+            var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
+            var browserUrl = baseUrl + '/terminology/browser';
+            
+            if ($scope.project.sourceTerminology === 'SNOMEDCT' 
+                || $scope.project.sourceTerminology === 'SNOMEDCT_US') {
+              $scope.browserRequest = 'destination';
+            } else {
+              $scope.browserRequest = 'source';
+            }
+            localStorageService.add('browserRequest', $scope.browserRequest);
+          }
+          
+          var myWindow = window.open(browserUrl, 'terminologyBrowserWindow');
           myWindow.focus();
         }
 
@@ -2011,7 +2047,7 @@ angular
           $scope.retrieveAuthoringChanges = function(concept) {
             console.debug('AuthoringHistoryModalCtrl: retrieve Authoring Changes');
 
-            $rootScope.glassPane++;
+            gpService.increment();
             $http({
               url : root_mapping + 'changes/' + $scope.projectId + '/' + concept.terminologyId,
               dataType : 'json',
@@ -2048,10 +2084,10 @@ angular
                   $scope.edits.push(edit);
                 }
 
-                $rootScope.glassPane--;
+                gpService.decrement();
 
               }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
             });
           };
@@ -2063,5 +2099,32 @@ angular
           $scope.retrieveAuthoringChanges($scope.concept);
         }
 
+        // feedback groups functionality
+        var feedbackGroupConfig = appConfig["deploy.feedback.group.names"]; 
+        
+        $scope.feedbackGroups = (feedbackGroupConfig = null || typeof feedbackGroupConfig == 'undefined' || feedbackGroupConfig === '')
+        ? null : JSON.parse(feedbackGroupConfig);
+
+        
+        $scope.setGroupRecipients = function(groupId) {
+          var recipients = (appConfig["deploy.feedback.group.users." + groupId]).split(',');
+          $scope.returnRecipients = [];
+          var allUsers = $scope.project.mapLead.concat($scope.project.mapSpecialist);
+          recipients.forEach(function(r){
+            var fbr = findUser(r, allUsers);
+            if ((fbr) && fbr.id != null) {
+              $scope.returnRecipients.push({ id: fbr.id});
+            }
+          });
+          
+        }
+        
+        function findUser(userName, array) {
+          for (var i=0; i < array.length; i++)
+            if (array[i].userName === userName)
+                return array[i];
+        }
+        
+        
         //end
       } ]);

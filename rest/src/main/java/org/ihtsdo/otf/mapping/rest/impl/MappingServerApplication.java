@@ -1,5 +1,5 @@
-/**
- * 
+/*
+ *    Copyright 2016 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.rest.impl;
 
@@ -26,7 +26,7 @@ import io.swagger.util.Json;
  *
  */
 @ApplicationPath("/")
-public class MappingServerApplication extends Application { //ResourceConfig {
+public class MappingServerApplication extends Application {
 
 	/** The API_VERSION - also used in "swagger.htmL" */
 	public final static String API_VERSION = "1.0.0";
@@ -38,21 +38,30 @@ public class MappingServerApplication extends Application { //ResourceConfig {
 	 */
 	public MappingServerApplication() throws Exception {
 			
-		Logger.getLogger(getClass()).info("MAPPING SERVER APPLICATION START");
-			    
-	    // Instantiate bean config for Swagger
-	    BeanConfig beanConfig = new BeanConfig();
-	    beanConfig.setTitle("Term Server API");
-	    beanConfig.setDescription("RESTful calls for mapping server");
-	    beanConfig.setVersion(API_VERSION);
-	    final URL url = new URL(ConfigUtility.getConfigProperties().getProperty("base.url"));
-	    beanConfig.setBasePath(url.getHost() + ":" + url.getPort());
-	    beanConfig.setResourcePackage("org.ihtsdo.otf.mapping.rest.impl");
-	    beanConfig.setScan(true);
-
-
-	    // this makes Swagger honor JAXB annotations
-	    Json.mapper().registerModule(new JaxbAnnotationModule());
+	  Logger.getLogger(getClass()).info("MAPPING SERVER APPLICATION START");
+    
+    // Instantiate bean config for Swagger
+    BeanConfig beanConfig = new BeanConfig();
+    beanConfig.setTitle("Mapping Server API");
+    beanConfig.setDescription("RESTful calls for mapping server");
+    beanConfig.setVersion(API_VERSION);
+    
+    final URL url = new URL(ConfigUtility.getConfigProperties().getProperty("base.url"));
+    final String host = url.getHost() + ":" + url.getPort();
+    
+    if (new ConfigureServiceRestImpl().isConfigured()) {
+      beanConfig.setHost(host);
+      beanConfig.setBasePath(url.getPath());
+      beanConfig.setSchemes(new String[] {
+          url.getProtocol()
+      });
+      beanConfig.setResourcePackage("org.ihtsdo.otf.mapping.rest.impl");
+      beanConfig.setScan(true);
+      beanConfig.setPrettyPrint(true);
+    }     
+  
+    // this makes Swagger honor JAXB annotations
+    Json.mapper().registerModule(new JaxbAnnotationModule());
 
 	}
 	
@@ -61,12 +70,14 @@ public class MappingServerApplication extends Application { //ResourceConfig {
 	public Set<Class<?>> getClasses() {
 		final Set<Class<?>> classes = new HashSet<Class<?>>();
 	    classes.add(AdminServiceRestImpl.class);
+      classes.add(ConfigureServiceRestImpl.class);
 	    classes.add(ContentServiceRestImpl.class);
 	    classes.add(MappingServiceRestImpl.class);
 	    classes.add(MetadataServiceRestImpl.class);
 	    classes.add(ReportServiceRestImpl.class);
 	    classes.add(SecurityServiceRestImpl.class);
 	    classes.add(WorkflowServiceRestImpl.class);
+	    
 	    classes.add(io.swagger.jaxrs.listing.ApiListingResource.class);
 	    classes.add(io.swagger.jaxrs.listing.SwaggerSerializers.class);
 	    

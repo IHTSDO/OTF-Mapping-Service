@@ -7,7 +7,8 @@ mapProjectAppControllers.controller('LoginCtrl', [
   '$http',
   '$routeParams',
   'appConfig',
-  function($scope, localStorageService, $rootScope, $location, $http, $routeParams, appConfig) {
+  'gpService',
+  function($scope, localStorageService, $rootScope, $location, $http, $routeParams, appConfig, gpService) {
     $scope.appConfig = appConfig;
     $scope.page = 'login';
     $scope.mapUsers = [];
@@ -44,7 +45,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
         // turn on the glass pane during login process/authentication
         // turned off at each error stage or before redirecting to
         // dashboards
-        $rootScope.glassPane++;
+        gpService.increment();
 
         $http({
           url : query_url,
@@ -84,7 +85,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
               $scope.mapProjects = data.mapProject;
               
             }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
             }).then(
               function(data) {
@@ -124,7 +125,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
                     currentUser : $scope.mapUser
                   });
                 }).error(function(data, status, headers, config) {
-                  $rootScope.glassPane--;
+                  gpService.decrement();
                   $rootScope.handleHttpError(data, status, headers, config);
                 }).then(
                   function(data) {
@@ -211,7 +212,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
                       });
 
                     }).error(function(data, status, headers, config) {
-                      $rootScope.glassPane--;
+                      gpService.decrement();
                       $rootScope.handleHttpError(data, status, headers, config);
 
                     }).then(
@@ -243,7 +244,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
                           localStorageService.add('applicationRole', $scope.applicationRole);
 
                         }).error(function(data, status, headers, config) {
-                          $rootScope.glassPane--;
+                          gpService.decrement();
                           $rootScope.handleHttpError(data, status, headers, config);
                         }).then(
                       function(data) {
@@ -305,14 +306,14 @@ mapProjectAppControllers.controller('LoginCtrl', [
                             currentRole : $scope.role
                           });
 
-                          $rootScope.glassPane--;
+                          gpService.decrement();
 
                           // redirect
                           // page
                           $location.path(path);
 
                         }).error(function(data, status, headers, config) {
-                          $rootScope.glassPane--;
+                          gpService.decrement();
                           $rootScope.handleHttpError(data, status, headers, config);
                         });
 
@@ -321,7 +322,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
                   });
               });
           }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.globalError = data.replace(/"/g, '');
 
           $rootScope.handleHttpError(data, status, headers, config);

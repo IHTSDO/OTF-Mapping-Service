@@ -7,15 +7,15 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -153,6 +153,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    */
   private Set<Long> recentlyEditedRecords = new HashSet<>();
 
+  /** Concept ids read in from previous release file **/
+  private Set<String> conceptsFromReleaseFile = new HashSet<>();
+  
   /** The begin log. */
   private static Logger beginLog;
 
@@ -1019,6 +1022,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     filename = outputDir + "/der2_ssRefset_ModuleDependencyDelta_"+algorithmHandler.getReleaseFile3rdElement()+"_"
         + effectiveTime + ".txt";
     writer = new BufferedWriter(new FileWriter(filename));
+    
 
     // Write header
     writer.write(
@@ -1062,7 +1066,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     logger.info("  delta:  " + filename);
 
     // Write headers (subject to pattern)
-    writer = new BufferedWriter(new FileWriter(filename));
+   // writer = new BufferedWriter(new FileWriter(filename));
+    writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename), StandardCharsets.UTF_8));
+    
     writer.write(getHeader(mapProject));
     writer.write("\r\n");
 
@@ -1229,6 +1235,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             + mapProject.getDestinationTerminology().substring(1).toLowerCase();
     final String filename = outputDir + "/" + camelCaseName + "stats.txt";
     BufferedWriter statsWriter = new BufferedWriter(new FileWriter(filename));
+    
     List<String> statistics = new ArrayList<>(reportStatistics.keySet());
     Collections.sort(statistics);
     for (final String statistic : statistics) {
@@ -1261,7 +1268,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // write headers
     logger.info("  active snapshot:  " + filename);
 
-    writer = new BufferedWriter(new FileWriter(filename));
+    //writer = new BufferedWriter(new FileWriter(filename));
+    writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename), StandardCharsets.UTF_8));
+    
     writer.write(getHeader(mapProject));
     writer.write("\r\n");
 
@@ -1319,7 +1328,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // write headers
     logger.info("  snapshot file:  " + filename);
 
-    writer = new BufferedWriter(new FileWriter(filename));
+    //writer = new BufferedWriter(new FileWriter(filename));
+    writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename), StandardCharsets.UTF_8));
+    
     writer.write(getHeader(mapProject));
     writer.write("\r\n");
 
@@ -1434,8 +1445,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       // get the map relation name for the human readable file
       MapRelation mapRelation = null;
       for (final MapRelation mr : mapProject.getMapRelations()) {
-        if (mr.getTerminologyId()
-            .equals(member.getMapRelationId().toString())) {
+        if (mr.getTerminologyId() != null && member.getMapRelationId() != null && 
+            mr.getTerminologyId().equals(member.getMapRelationId().toString())) {
           mapRelation = mr;
         }
       }
@@ -2503,7 +2514,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       for (ComplexMapRefSetMember member : members
           .getComplexMapRefSetMembers()) {
         Concept sourceConcept = member.getConcept();
-        if (sourceConcept != null && sourceConcept.isActive()
+        if (member.isActive() && sourceConcept != null && sourceConcept.isActive()
             && !conceptMapRecordCountMap
                 .containsKey(member.getConcept().getTerminologyId())) {
           this.addReportError(report, mapProject,
@@ -2539,9 +2550,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       // Commit the new report either way
       reportService.commit();
-
-    // Commit the new report either way
-    reportService.commit();     
 
       // way to override the errors if we want to proceed with a release anyway
       if (!testModeFlag) {
@@ -2628,6 +2636,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       logger.info("Starting " + (testModeFlag ? "Preview Finish Release" : "Finish Release"));
       logger.info("transactionPerOperation " + mappingService.getTransactionPerOperation());
+    Logger.getLogger(getClass())
+    .info("transactionPerOperation " + mappingService.getTransactionPerOperation());
 
       // instantiate required services
       /*final MappingService mappingService = new MappingServiceJpa();
@@ -2682,8 +2692,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           // since
           // the publication date
           else if (record
-              .getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION
-              && recentlyEditedRecords.contains(record.getId())) {
+              .getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION &&
+                		recentlyEditedRecords.contains(record.getId()) &&
+                		conceptsFromReleaseFile.contains(record.getConceptId())) {
             logger.info("  Record not updated to PUBLISHED for "
                 + record.getConceptId() + " " + record.getConceptName());
 
@@ -2691,7 +2702,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           // Mark record as PUBLISHED if READY FOR PUBLICATION and in scope
           else if (record
               .getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION
-              && !recentlyEditedRecords.contains(record.getId())) {
+              && !recentlyEditedRecords.contains(record.getId())
+              && conceptsFromReleaseFile.contains(record.getConceptId())) {
             logger.info("  Update record to PUBLISHED for "
                 + record.getConceptId() + " " + record.getConceptName());
             pubCt++;
@@ -2863,6 +2875,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           contentService.commit();
           contentService.clear();
           contentService.beginTransaction();
+          contentService.commit();
+          contentService.clear();
+          contentService.beginTransaction();
         }
 
         if (concept != null) {
@@ -2989,13 +3004,52 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           member.setMapRelationId(null);
         }
 
+        // Skip concept exclusion rules
+        if (member.getMapRule() != null
+            && member.getMapRule().matches("IFA.*")) {
+          if (member.getMapAdvice()
+              .contains("MAP IS CONTEXT DEPENDENT FOR GENDER")
+              && !member.getMapRule().contains("AND IFA")) {
+            // unless simple gender rule, then keep
+          } else if (member.getMapRule().matches(
+              "IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*AND IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*")
+              && !member.getMapRule().matches(".*AND IFA.*AND IFA.*")) {
+            // unless 2-part age rule, then keep
+          } else if (member.getMapRule()
+              .matches("IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*")
+              && !member.getMapRule().contains("AND IFA")) {
+            // unless simple age rule without compound clause, then keep
+          } else {
+            // else skip
+            Logger.getLogger(MappingServiceJpa.class)
+                .debug("    Skipping refset member exclusion rule "
+                    + member.getTerminologyId());
+            continue;
+          }
+        }
+        
+        
+        
+        
         List<ComplexMapRefSetMember> members =
             conceptRefSetMap.get(member.getConcept().getTerminologyId());
         if (members == null) {
           members = new ArrayList<>();
         }
+        
+        // if we get a TRUE/MAP SOURCE CONCEPT CANNOT BE CLASSIFIED WITH AVAILABLE DATA member
+        // AND we've already seen a TRUE member
+        // AND it's not in the same map group as an allowed IFA member
+        // skip this member.  It is due to up-propagation and shouldn't be compared.
+        if (member.getMapRule().equals("TRUE") && 
+            member.getMapAdvice().equals("MAP SOURCE CONCEPT CANNOT BE CLASSIFIED WITH AVAILABLE DATA") &&
+            containsTrueMember(members) && !containsIFAMember(members, member.getMapGroup())) {
+          continue;
+        }
+        
         members.add(member);
         conceptRefSetMap.put(member.getConcept().getTerminologyId(), members);
+        conceptsFromReleaseFile.add(member.getConcept().getTerminologyId());
       }
     }
 
@@ -3206,6 +3260,24 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
   }
 
+  
+  private boolean containsTrueMember(List<ComplexMapRefSetMember> members) {
+    for (ComplexMapRefSetMember m : members) {
+      if (m.getMapRule().equals("TRUE")) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  private boolean containsIFAMember(List<ComplexMapRefSetMember> members, int mapGroup) {
+    for (ComplexMapRefSetMember m : members) {
+      if (m.getMapRule().matches("IFA.*") && m.getMapGroup() == mapGroup) {
+        return true;
+      }
+    }
+    return false;
+  }
   /**
    * Update statistic max.
    *
