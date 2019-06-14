@@ -22,7 +22,8 @@ mapProjectApp
       '$location',
       '$anchorScroll',
       '$http',
-      function($rootScope, $window, $location, $anchorScroll, $http) {
+      'gpService',
+      function($rootScope, $window, $location, $anchorScroll, $http, gpService) {
         console.debug('configure utilService');
         // declare the error
         this.error = {
@@ -85,7 +86,7 @@ mapProjectApp
         this.initializeTerminologyNotes = function(projectId) {
           // Skip if no auth header yet
           if ($http.defaults.headers.common.Authorization) {
-            $rootScope.glassPane++;
+            gpService.increment();
             $http.get(root_mapping + 'mapProject/' + projectId + '/notes').then(
             // Success
             function(response) {
@@ -95,11 +96,11 @@ mapProjectApp
                 list[entry.key] = entry.value;
               }
               notes[projectId] = list;
-              $rootScope.glassPane--;
+              gpService.decrement();
             },
             // Error
             function(response) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               handleError(response.data);
             });
           }
@@ -395,7 +396,7 @@ mapProjectApp
 mapProjectApp.service('gpService', [ '$rootScope', function($rootScope) {
   console.debug('configure gpService');
 
-  // model: $rootScope.glassPane;
+  $rootScope.glassPane = 0;
 
   this.isGlassPaneSet = function() {
     return $rootScope.glassPane > 0;
@@ -413,6 +414,35 @@ mapProjectApp.service('gpService', [ '$rootScope', function($rootScope) {
   // Decrements glass pane counter
   this.decrement = function(message) {
     $rootScope.glassPane--;
+    if ($rootScope.glassPane < 0) {
+      console.log("The Glass Pane activity indicator may not be functioning correctly.");
+      $rootScope.glassPane = 0;
+    }
   };
 
-} ]);
+}]);
+
+mapProjectApp.service('userService', [ '$rootScope', '$window', '$location', '$http', 'localStorageService',
+    'gpService', function($rootScope, $window, $location, $http, localStorageService, gpService) {
+      console.debug('user service');
+      var user = localStorageService.get('currentUser');
+      this.logout = function() {
+        $http({
+          url : root_security + 'logout/user/id/' + user.userName,
+          method : 'POST',
+          headers : {
+            'Content-Type' : 'text/plain'
+          // save userToken from authentication
+          }
+        }).success(function(data) {
+          gpService.decrement();
+          console.debug("logout out", data);
+          localStorageService.clearAll();
+          $window.location.href = data;
+        }).error(function(data, status, headers, config) {
+          gpService.decrement();
+          $location.path('/');
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
+      };
+    } ]);

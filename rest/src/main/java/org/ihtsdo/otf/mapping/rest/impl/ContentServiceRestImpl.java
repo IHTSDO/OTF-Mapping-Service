@@ -49,6 +49,7 @@ import org.ihtsdo.otf.mapping.helpers.TerminologyVersionList;
 import org.ihtsdo.otf.mapping.jpa.algo.ClamlLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.GmdnDownloadAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.GmdnLoaderAlgorithm;
+import org.ihtsdo.otf.mapping.jpa.algo.MapRecordRf2ComplexMapAppenderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.MapRecordRf2ComplexMapLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.MapRecordRf2SimpleMapLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.RefsetmemberRemoverAlgorithm;
@@ -671,6 +672,44 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
   }
+  
+  /* see superclass */
+  @Override
+  @PUT
+  @Path("/map/record/rf2/complex/append")
+  @Consumes(MediaType.TEXT_PLAIN)
+  @ApiOperation(value = "Append entries onto existing complex RF2 map record data", notes = "Append complex map data.")
+  public void appendMapRecordRf2ComplexMap(
+    @ApiParam(value = "RF2 input file", required = true) String inputFile,
+    @ApiParam(value = "Refset id", required = false) @QueryParam("refsetId") String refsetId,
+    @ApiParam(value = "Workflow status", required = true) @QueryParam("workflowStatus") String workflowStatus,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("RESTful call (Content): /map/record/rf2/complex/append");
+
+    // Track system level information
+    long startTimeOrig = System.nanoTime();
+
+    authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "append map record",
+        securityService);
+
+    try (final MapRecordRf2ComplexMapAppenderAlgorithm algo =
+        new MapRecordRf2ComplexMapAppenderAlgorithm(inputFile, refsetId, workflowStatus);) {
+
+      algo.compute();
+
+      Logger.getLogger(getClass())
+          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+
+    } catch (Exception e) {
+      handleException(e, "trying to append complex map record");
+
+    } finally {
+      securityService.close();
+    }
+  }  
 
   /* see superclass */
   @Override
@@ -1121,13 +1160,13 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   public void loadTerminologySimple(
     @ApiParam(value = "Terminology, e.g. UMLS", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Version, e.g. latest", required = true) @PathParam("version") String version,
-    @ApiParam(value = "Full path to input file", required = true) String inputFile,
+    @ApiParam(value = "Full path to input files", required = true) String inputDir,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(getClass())
-        .info("RESTful call (Content): /terminology/load/simple/ " + terminology
-            + ", " + version + " from input file " + inputFile + " and parent/child file");
+	  Logger.getLogger(getClass())
+        .info("RESTful call (Content): /terminology/load/simple " + terminology
+            + ", " + version + " from input directory " + inputDir);
 
     // Track system level information
     long startTimeOrig = System.nanoTime();
@@ -1145,7 +1184,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         "load simple terminology", securityService);
 
     try (final SimpleLoaderAlgorithm algo = new SimpleLoaderAlgorithm(
-        localTerminology, localVersion, inputFile, null);) {
+        localTerminology, localVersion, inputDir);) {
 
       algo.compute();
 
@@ -1900,26 +1939,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         FileUtils.copyInputStreamToFile(inputStream, downloadedFile);
         inputStream.close();
 
-        // Remove any inactive rows
-        File filteredFile = new File(placementDir,
-            awsFileName.substring(awsFileName.lastIndexOf('/') + 1)
-                + "_ActiveOnly");
-        BufferedReader fileReader =
-            new BufferedReader(new FileReader(downloadedFile));
-        BufferedWriter fileWriter =
-            new BufferedWriter(new FileWriter(filteredFile));
-        String input;
-        while ((input = fileReader.readLine()) != null) {
-          String[] fields = input.split("\\t");
-          if (fields[2].equals("1")) {
-            fileWriter.write(input);
-            fileWriter.newLine();
-          }
-        }
-        fileReader.close();
-        fileWriter.close();
-
-        inputFile = filteredFile.getAbsolutePath();
+        inputFile = downloadedFile.getAbsolutePath();
 
         // Load extended or simple maps using downloaded AWS file
         if (awsFileName.contains("ExtendedMapSnapshot")) {

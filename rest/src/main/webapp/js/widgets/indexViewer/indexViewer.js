@@ -14,7 +14,7 @@ angular
   .controller(
     'indexViewerCtrl',
     function($scope, $rootScope, $sce, $http, $location, $anchorScroll, $q, $templateCache,
-      $timeout, localStorageService, utilService) {
+      $timeout, localStorageService, utilService, gpService) {
 
       // the index domains, domain = { name : '', active : '', pages : ''}
       $scope.domains = [];
@@ -156,7 +156,7 @@ angular
           + (subSearchField ? subSearchField : 'undefined') + '/subSubSearch/'
           + (subSubSearchField ? subSubSearchField : 'undefined') + '/' + searchAllLevels;
 
-        $rootScope.glassPane++;
+        gpService.increment();
         $http({
           url : url,
           dataType : 'json',
@@ -182,10 +182,10 @@ angular
             }
             deferred.reject('no results');
           }
-          $rootScope.glassPane--;
+          gpService.decrement();
 
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $scope.searchResults = null;
           $rootScope.handleHttpError(data, status, headers, config);
           deferred.reject();
@@ -210,6 +210,11 @@ angular
         // parse the new search result to determine page
         var page = result.value.charAt(0);
 
+        // ICD10CM-specific fix: if page is "#", change to "Num"
+        if (page == "#"){
+        	page = "Num";
+        }
+        
         // change the page
         $scope.changeTab(page);
 
@@ -322,10 +327,12 @@ angular
 
         console
           .debug('testing details retrieval', $scope.focusProject, $scope.selectedDomain, link);
+        // Some indexes have number-signs, which need to be sanitized before sent as a URL
+        var cleanlink = link.replace("#","%23");        
         $http.get(
           root_content + 'index/' + $scope.focusProject.destinationTerminology + '/'
             + $scope.focusProject.destinationTerminologyVersion + '/' + $scope.selectedDomain.name
-            + '/details/' + link, {
+            + '/details/' + cleanlink, {
             transformResponse : [ function(data) {
               // Response is plain text at this point
               return data;
@@ -338,7 +345,7 @@ angular
           },
           // Error
           function(response) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(response.data, response.status, response.headers,
               response.config);
             deferred.resolve(null);
@@ -372,7 +379,7 @@ angular
       // Initializes all domains
       $scope.getDomains = function() {
 
-        $rootScope.glassPane++;
+        gpService.increment();
         $http.get(
           root_content + 'index/' + $scope.focusProject.destinationTerminology + '/'
             + $scope.focusProject.destinationTerminologyVersion)
@@ -380,7 +387,7 @@ angular
         // on success
         .success(function(domainNames) {
 
-          $rootScope.glassPane--;
+          gpService.decrement();
 
           // get the pages
           angular.forEach(domainNames.searchResult, function(searchResult) {
@@ -415,7 +422,7 @@ angular
           });
 
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
@@ -424,14 +431,14 @@ angular
       $scope.getDomainPages = function(domainName) {
         var deferred = $q.defer();
 
-        $rootScope.glassPane++;
+        gpService.increment();
         $http.get(
           root_content + 'index/' + $scope.focusProject.destinationTerminology + '/'
             + $scope.focusProject.destinationTerminologyVersion + '/' + domainName)
 
         // success
         .success(function(searchResults) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           var domainPages = searchResults.searchResult.map(function(searchResult) {
             return searchResult.value;
           });
@@ -442,7 +449,7 @@ angular
 
         // failure
         .error(function() {
-          $rootScope.glassPane--;
+          gpService.decrement();
           deferred.reject('Could not load domain pages for domain ' + domainName);
         });
         return deferred.promise;
@@ -460,20 +467,20 @@ angular
 
           var url = $scope.getPageUrl(domain.name, page);
 
-          $rootScope.glassPane++;
+          gpService.increment();
           $http.get(url, {
             cache : $templateCache
           }).then(
           // Success
           function(response) {
             $templateCache.put(url, response);
-            $rootScope.glassPane--;
+            gpService.decrement();
           },
 
           // Error
           function(response) {
             utilService.handleError('Error caching urls');
-            $rootScope.glassPane--;
+            gpService.decrement();
           });
 
         });

@@ -18,7 +18,7 @@ angular
   .controller(
     'compareRecordsCtrl',
     function($scope, $rootScope, $http, $routeParams, $location, $timeout,
-      localStorageService, $sce, $window) {
+      localStorageService, $sce, $window, gpService, appConfig) {
 
       // ///////////////////////////////////
       // Map Record Controller Functions //
@@ -47,6 +47,7 @@ angular
 
       $scope.leadRecord = null;
       $scope.leadConversation = null;
+      $scope.historicalConversation = null;
       $scope.newLeadFeedbackMessages = new Array();
 
       // initialize accordion variables
@@ -56,6 +57,11 @@ angular
       $scope.isNotesOpen = true;
       $scope.isReportOpen = true;
       $scope.isGroupFeedbackOpen = false;
+      $scope.isFeedbackHistoryOpen = false;
+      
+      $scope.isReview = $window.location.hash.includes('review');
+      $scope.isConflict = $window.location.hash.includes('conflicts');
+      $scope.showFeedbackHistory = $scope.isReview;
       $scope.returnRecipients = new Array();
       $scope.allUsers = new Array();
       $scope.multiSelectSettings = {
@@ -70,12 +76,12 @@ angular
       };
       
       // start note edit mode in off mode
-            $scope.feedbackEditMode = false;
-            $scope.feedbackEditId = null;
-            $scope.content = {
-             text : ''
-            };
-
+      $scope.feedbackEditMode = false;
+      $scope.feedbackEditId = null;
+      $scope.content = {
+          text : ''
+      };
+      
       $scope.errorMessages = $scope.project.errorMessages;
       $scope.errorMessages.sort();
       $scope.errorMessages.unshift('None');
@@ -101,14 +107,14 @@ angular
           // if first visit, retrieve the records to be compared
           if ($scope.leadRecord == null) {
 
-        	// Set up "all users"
+          // Set up "all users"
             $scope.allUsers = $scope.project.mapSpecialist
               .concat($scope.project.mapLead);
             organizeUsers($scope.allUsers);
             
             $scope.getRecordsInConflict();
 
-            $rootScope.glassPane++;
+            gpService.increment();
             $http(
               {
                 url : root_workflow + 'record/id/' + $routeParams.recordId
@@ -119,10 +125,10 @@ angular
                   'Content-Type' : 'application/json'
                 }
               }).success(function(data) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $scope.isFalseConflict = data === 'true' ? true : false;
             }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
             });
 
@@ -146,16 +152,16 @@ angular
       });
       
       $scope.isNewFeedback = function(feedback, conversationLocation) {
-    	  if(conversationLocation == '1'){
-    		  return $scope.newFeedbackMessages1.includes(feedback.message);
-    	  }
-    	  if(conversationLocation == '2'){
-    		  return $scope.newFeedbackMessages2.includes(feedback.message);
-    	  }
-    	  if(conversationLocation == 'lead'){
-    		  return $scope.newLeadFeedbackMessages.includes(feedback.message);
-    	  }
-    	  
+        if(conversationLocation == '1'){
+          return $scope.newFeedbackMessages1.includes(feedback.message);
+        }
+        if(conversationLocation == '2'){
+          return $scope.newFeedbackMessages2.includes(feedback.message);
+        }
+        if(conversationLocation == 'lead'){
+          return $scope.newLeadFeedbackMessages.includes(feedback.message);
+        }
+        
       }
             
       $scope.editFeedback = function(feedback) {
@@ -214,7 +220,7 @@ angular
                   'Content-Type' : 'application/json'
                 }
               }).success(function(data) {
-            	$scope.newFeedbackMessages1.push(feedback);
+              $scope.newFeedbackMessages1.push(feedback);
                 $scope.conversation1 = data;
 
               });
@@ -229,7 +235,7 @@ angular
                   'Content-Type' : 'application/json'
                 }
               }).success(function(data) {
-              	$scope.newFeedbackMessages2.push(feedback);
+                $scope.newFeedbackMessages2.push(feedback);
                 $scope.conversation2 = data;
 
               });
@@ -254,7 +260,7 @@ angular
             }
 
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $scope.recordError = 'Error updating feedback conversation.';
             $rootScope.handleHttpError(data, status, headers, config);
           });
@@ -268,7 +274,7 @@ angular
         var leadRecordId = $routeParams.recordId;
 
         // get the lead record (do everything else inside the "then")
-        $rootScope.glassPane++;
+        gpService.increment();
         $http({
           url : root_mapping + 'record/id/' + leadRecordId,
           dataType : 'json',
@@ -277,15 +283,15 @@ angular
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $scope.leadRecord = data;
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
           // obtain the record concept - id from leadRecord
         }).then(
           function(data) {
-            $rootScope.glassPane++;
+            gpService.increment();
             $http(
               {
                 url : root_content + 'concept/id/'
@@ -299,17 +305,17 @@ angular
                 }
               }).success(
               function(data) {
-                $rootScope.glassPane--;
+                gpService.decrement();
                 $scope.concept = data;
                 setAccordianTitle($scope.concept.terminologyId,
                   $scope.concept.defaultPreferredName);
               }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
               $rootScope.handleHttpError(data, status, headers, config);
             });
 
         // get the conflict records
-        $rootScope.glassPane++;
+        gpService.increment();
         $http(
           {
             url : root_mapping + 'record/id/' + $routeParams.recordId
@@ -321,7 +327,7 @@ angular
             }
           }).success(
           function(data) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             if (data.totalCount == 1) {
               $scope.record1 = data.mapRecord[0];
               $scope.record1.displayName = data.mapRecord[0].owner.name;
@@ -364,7 +370,7 @@ angular
             }
 
             if ($scope.record1 != null) {
-              $rootScope.glassPane++;
+              gpService.increment();
               $http({
                 url : root_workflow + 'conversation/id/' + $scope.record1.id,
                 dataType : 'json',
@@ -373,16 +379,16 @@ angular
                   'Content-Type' : 'application/json'
                 }
               }).success(function(data) {
-                $rootScope.glassPane--;
+                gpService.decrement();
                 $scope.conversation1 = data;
               }).error(function(data, status, headers, config) {
-                $rootScope.glassPane--;
+                gpService.decrement();
                 $rootScope.handleHttpError(data, status, headers, config);
               });
             }
 
             if ($scope.record2 != null) {
-              $rootScope.glassPane++;
+              gpService.increment();
               $http({
                 url : root_workflow + 'conversation/id/' + $scope.record2.id,
                 dataType : 'json',
@@ -391,16 +397,16 @@ angular
                   'Content-Type' : 'application/json'
                 }
               }).success(function(data) {
-                $rootScope.glassPane--;
+                gpService.decrement();
                 $scope.conversation2 = data;
               }).error(function(data, status, headers, config) {
-                $rootScope.glassPane--;
+                gpService.decrement();
                 $rootScope.handleHttpError(data, status, headers, config);
               });
             }
 
             if ($scope.leadRecord != null) {
-              $rootScope.glassPane++;
+              gpService.increment();
               $http(
                 {
                   url : root_workflow + 'conversation/id/'
@@ -412,11 +418,11 @@ angular
                   }
                 }).success(
                 function(data) {
-                  $rootScope.glassPane--;
+                  gpService.decrement();
                   $scope.leadConversation = data;
 
                   // if no prior conversation, initialize with the specialists
-                  if (!$scope.leadConversation) {
+                  if (!$scope.leadConversation && !$scope.isReview) {
 
                     if ($scope.record1 != null)
                       $scope.returnRecipients.push($scope.record1.owner);
@@ -425,17 +431,19 @@ angular
                       $scope.returnRecipients.push($scope.record2.owner);
 
                     // otherwise initialize with recipients on prior feedback
+                  } else if($scope.isReview){
+                    $scope.getUsersForConceptHistorical();
                   } else {
                     initializeReturnRecipients($scope.leadConversation);
                   }
                 }).error(function(data, status, headers, config) {
-                $rootScope.glassPane--;
+                gpService.decrement();
                 $rootScope.handleHttpError(data, status, headers, config);
               });
             }
 
           }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         }).then(
           function(data) {
@@ -449,7 +457,7 @@ angular
 
             // obtain the validationResults from compareRecords
             if ($scope.record2 != null) {
-              $rootScope.glassPane++;
+              gpService.increment();
               $http(
                 {
                   url : root_mapping + 'validation/record/id/'
@@ -462,7 +470,7 @@ angular
                   }
                 }).success(
                 function(data) {
-                  $rootScope.glassPane--;
+                  gpService.decrement();
                   for (var i = 0; i < data.errors.length; i++) {
                     if ($scope.record1 != null)
                       data.errors[i] = data.errors[i].replace('Specialist 1',
@@ -474,7 +482,7 @@ angular
                   }
                   $scope.validationResult = data;
                 }).error(function(data, status, headers, config) {
-                $rootScope.glassPane--;
+                gpService.decrement();
                 $rootScope.handleHttpError(data, status, headers, config);
               });
             }
@@ -705,7 +713,7 @@ angular
         
         // broadcast to the map record widget
         console.debug(
-          'broadcastcompareRecordsWidget.notification.selectRecord = ',
+          'broadcast compareRecordsWidget.notification.selectRecord = ',
           $scope.leadRecord);
         $rootScope.$broadcast('compareRecordsWidget.notification.selectRecord',
           {
@@ -810,7 +818,7 @@ angular
               $scope.conversation2 = data;
         }
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $scope.recordError = 'Error adding new feedback conversation.';
             $rootScope.handleHttpError(data, status, headers, config);
           });
@@ -876,7 +884,7 @@ angular
             }
 
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $scope.recordError = 'Error updating feedback conversation.';
             $rootScope.handleHttpError(data, status, headers, config);
           });
@@ -1008,7 +1016,7 @@ angular
               })
             .error(
               function(data, status, headers, config) {
-                $rootScope.glassPane--;
+                gpService.decrement();
                 $scope.recordError = 'Error updating feedback conversation for group feedback.';
                 $rootScope.handleHttpError(data, status, headers, config);
               });
@@ -1043,7 +1051,7 @@ angular
             $scope.conversation1 = data;
           });
           }
-          if(recordType == 'record2'){
+          if(recordType === 'record2'){
           $http({
             url : root_workflow + 'conversation/id/'+ $scope.record2.id,
             dataType : 'json',
@@ -1055,7 +1063,7 @@ angular
             $scope.conversation2 = data;
           });
           }
-          if(recordType == 'leadRecord'){
+          if(recordType === 'leadRecord'){
             $http({
               url : root_workflow + 'conversation/id/'+ $scope.leadRecord.id,
               dataType : 'json',
@@ -1072,8 +1080,34 @@ angular
         $rootScope.handleHttpError(data, status, headers, config);
       });
     }
+           
+      // function to retrieve the feedback conversation based on record id
+      $scope.getFeedbackConversation = function(record) {
+        $scope.feedbackRecord = record;
+        gpService.increment();
+        $http({
+          url : root_workflow + 'conversation/project/id/' + record.mapProjectId + '/concept/id/' + record.conceptId,
+          dataType : 'json',
+          method : 'GET',
+          headers : {
+            'Content-Type' : 'application/json'
+          }
+        }).success(
+          function(data) {
+           
+            $scope.historicalConversation = data;
+            //$scope.markFeedbackViewed($scope.conversation, $scope.currentUser);
+
+            gpService.decrement();
+          }).error(function(data, status, headers, config) {
+          gpService.decrement();
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
+      };
       
-      
+      $scope.$on('compareRecordsWidget.notification.selectRecord', function(event, parameters) {
+        $scope.getFeedbackConversation(parameters.record);
+      });      
 
       function recordToText(record) {
 
@@ -1270,11 +1304,11 @@ angular
       };
       
       $scope.tinymceOptionsForGroupFeedback = {
-    	menubar : false,
-    	statusbar : false,
-    	plugins : 'autolink link image charmap searchreplace',
-    	toolbar : 'undo redo | styleselect | bold italic underline strikethrough | charmap link image',
-    	height : "300"
+      menubar : false,
+      statusbar : false,
+      plugins : 'autolink link image charmap searchreplace',
+      toolbar : 'undo redo | styleselect | bold italic underline strikethrough | charmap link image',
+      height : "300"
       };
 
       $scope.tinymceOptionsForGroupFeedback = {
@@ -1303,7 +1337,7 @@ angular
         }
 
         if (needToUpdate == true) {
-          $rootScope.glassPane++;
+          gpService.increment();
           $http({
             url : root_workflow + 'conversation/update',
             dataType : 'json',
@@ -1313,9 +1347,9 @@ angular
               'Content-Type' : 'application/json'
             }
           }).success(function(data) {
-            $rootScope.glassPane--;
+            gpService.decrement();
           }).error(function(data, status, headers, config) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $scope.recordError = 'Error updating feedback conversation.';
             $rootScope.handleHttpError(data, status, headers, config);
           });
@@ -1374,5 +1408,62 @@ angular
           return ((x < y) ? -1 : ((x > y) ? 1 : 0));
         });
       }
+      
+      // feedback groups functionality
+      var feedbackGroupConfig = appConfig["deploy.feedback.group.names"]; 
+      
+      $scope.feedbackGroups = (feedbackGroupConfig = null || typeof feedbackGroupConfig == 'undefined' || feedbackGroupConfig === '')
+      ? null : JSON.parse(feedbackGroupConfig);
+
+      
+      $scope.setGroupRecipients = function(groupId) {
+        var recipients = (appConfig["deploy.feedback.group.users." + groupId]).split(',');
+        $scope.returnRecipients = [];
+        var allUsers = $scope.project.mapLead.concat($scope.project.mapSpecialist);
+        recipients.forEach(function(r){
+          var fbr = findUser(r, allUsers);
+          if ((fbr) && fbr.id != null) {
+            $scope.returnRecipients.push({ id: fbr.id});
+          }
+        });
+      }
+      
+      function findUser(userName, array) {
+        for (var i=0; i < array.length; i++)
+          if (array[i].userName === userName)
+              return array[i];
+      }
+      
+      $scope.getUsersForConceptHistorical = function() {
+        // retrieve all records with this concept id
+        gpService.increment();
+        $http(
+          {
+            url : root_mapping + 'record/concept/id/' + $scope.leadRecord.conceptId 
+              + '/project/id/' + $scope.project.id + '/users',
+            dataType : 'json',
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            var users = [];
+            var map = new Map();
+            if (data.mapUser) {
+              for (const user of data.mapUser) {
+                if(!map.has(user.id)){
+                    map.set(user.id, true);
+                    users.push(user);
+                }
+              }
+            }
+            $scope.returnRecipients = users;
+            gpService.decrement();
+        }).error(function(data, status, headers, config) {
+          $rootScope.handleHttpError(data, status, headers, config);
+          gpService.decrement();
+        }).then(function() {          
+        });
+      };
 
     });

@@ -88,6 +88,7 @@ import org.ihtsdo.otf.mapping.rf2.jpa.ComplexMapRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
+import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.json.JSONObject;
 
@@ -1921,6 +1922,8 @@ public class MappingServiceJpa extends RootServiceJpa
     Map<String, MapRelation> mapRelationIdMap = new HashMap<>();
     for (final MapRelation mapRelation : getMapRelations().getIterable()) {
       mapRelationIdMap.put(mapRelation.getTerminologyId(), mapRelation);
+      relationIdNameMap.put(mapRelation.getTerminologyId(),
+          mapRelation.getName());
     }
 
     boolean prevTransactionPerOperationSetting = getTransactionPerOperation();
@@ -2111,8 +2114,9 @@ public class MappingServiceJpa extends RootServiceJpa
         if (refSetMember.getMapAdvice() != null
             && !refSetMember.getMapAdvice().equals("")) {
           for (final MapAdvice ma : mapAdvices.getIterable()) {
-            if (refSetMember.getMapAdvice().indexOf(ma.getName()) != -1 && !ma
-                .getName().toUpperCase().equals(relationName.toUpperCase())) {
+            if (refSetMember.getMapAdvice().indexOf(ma.getName()) != -1
+                && !ma.getName().toUpperCase().equals(
+                    relationName == null ? "" : relationName.toUpperCase())) {
               mapEntry.addMapAdvice(ma);
               Logger.getLogger(getClass()).debug("    " + ma.getName());
             }
@@ -2127,6 +2131,281 @@ public class MappingServiceJpa extends RootServiceJpa
             + samplingRecordsCreated + " records set to " + workflowStatus);
         Logger.getLogger(MappingServiceJpa.class).info(
             "    " + samplingRecordsPublished + " records set to PUBLISHED");
+      }
+
+      commit();
+      contentService.close();
+      metadataService.close();
+    } catch (Exception e) {
+      setTransactionPerOperation(prevTransactionPerOperationSetting);
+      throw e;
+    }
+    setTransactionPerOperation(prevTransactionPerOperationSetting);
+
+  }
+
+  @Override
+  public void appendEntriesToMapRecordsForProject(Long mapProjectId,
+    MapUser mapUser, List<ComplexMapRefSetMember> complexMapRefSetMembers,
+    WorkflowStatus workflowStatus) throws Exception {
+
+    MapProject mapProject = getMapProject(mapProjectId);
+    Logger.getLogger(MappingServiceJpa.class)
+        .info("  Append map entries to existing map records for map project - "
+            + mapProject.getName() + ", assigning workflow status "
+            + workflowStatus.toString());
+
+    List<String> notReadyForPubList = new ArrayList<>();
+
+    // Verify application is letting the service manage transactions
+    if (!getTransactionPerOperation()) {
+      throw new IllegalStateException(
+          "The application must let the service manage transactions for this method");
+    }
+
+    // Setup content service
+    ContentService contentService = new ContentServiceJpa();
+
+    // Setup workflow service
+    WorkflowService workflowService = new WorkflowServiceJpa();
+
+    // Get map relation id->name mapping
+    MetadataService metadataService = new MetadataServiceJpa();
+
+    Map<String, String> relationIdNameMap =
+        metadataService.getMapRelations(mapProject.getSourceTerminology(),
+            mapProject.getSourceTerminologyVersion());
+    Logger.getLogger(MappingServiceJpa.class)
+        .debug("    relationIdNameMap = " + relationIdNameMap);
+
+    // use the map relation id->name mapping to construct a hash set of
+    // MapRelations
+    Map<String, MapRelation> mapRelationIdMap = new HashMap<>();
+    for (final MapRelation mapRelation : getMapRelations().getIterable()) {
+      mapRelationIdMap.put(mapRelation.getTerminologyId(), mapRelation);
+      relationIdNameMap.put(mapRelation.getTerminologyId(),
+          mapRelation.getName());
+    }
+
+    // keep track of each concept's original highest Group value.
+    // This will allow us to bump up the incoming map groups if neccesary so
+    // they don't overwrite existing map groups/entries
+    Map<String, Integer> conceptIdOrigMaxGroup = new HashMap<>();
+    Map<String, Boolean> conceptIdNeedsBumping = new HashMap<>();
+
+    boolean prevTransactionPerOperationSetting = getTransactionPerOperation();
+    setTransactionPerOperation(false);
+    beginTransaction();
+    MapAdviceList mapAdvices = getMapAdvices();
+    int mapPriorityCt = 0;
+    int prevMapGroup = 0;
+
+    try {
+      MapRecord mapRecord = null;
+      int ct = 0;
+
+      if (mapUser == null) {
+        metadataService.close();
+        contentService.close();
+        throw new Exception("Loader user could not be found");
+      }
+
+      for (final ComplexMapRefSetMember refSetMember : complexMapRefSetMembers) {
+
+        // Handling the below cases is out of scope for intended use of this
+        // function
+        // But keeping the code here just in case we want to add again later
+        // // Skip inactive cases
+        // if (!refSetMember.isActive()) {
+        // Logger.getLogger(MappingServiceJpa.class).debug(
+        // "Skipping refset member " + refSetMember.getTerminologyId());
+        // continue;
+        // }
+        //
+        // // Skip concept exclusion rules
+        // if (refSetMember.getMapRule() != null
+        // && refSetMember.getMapRule().matches("IFA.*")) {
+        // if (refSetMember.getMapAdvice()
+        // .contains("MAP IS CONTEXT DEPENDENT FOR GENDER")
+        // && !refSetMember.getMapRule().contains("AND IFA")) {
+        // // unless simple gender rule, then keep
+        // } else if (refSetMember.getMapRule().matches(
+        // "IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*AND
+        // IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*")
+        // && !refSetMember.getMapRule().matches(".*AND IFA.*AND IFA.*")) {
+        // // unless 2-part age rule, then keep
+        // } else if (refSetMember.getMapRule()
+        // .matches("IFA\\s\\d*\\s\\|\\s.*\\s\\|\\s[<>].*")
+        // && !refSetMember.getMapRule().contains("AND IFA")) {
+        // // unless simple age rule without compund clause, then keep
+        // } else {
+        // // else skip
+        // Logger.getLogger(MappingServiceJpa.class)
+        // .debug(" Skipping refset member exclusion rule "
+        // + refSetMember.getTerminologyId());
+        // continue;
+        // }
+        // }
+
+        // retrieve the concept
+        Logger.getLogger(MappingServiceJpa.class)
+            .debug("    Get refset member concept");
+        Concept concept = refSetMember.getConcept();
+
+        // if no concept for this ref set member, skip
+        if (concept == null) {
+          continue;
+        }
+
+        // Identifying max group for each concept prior to starting of this run
+        if (!conceptIdOrigMaxGroup.keySet()
+            .contains(concept.getTerminologyId())) {
+          Logger.getLogger(MappingServiceJpa.class)
+              .debug("    Identifying max Group value for "
+                  + concept.getTerminologyId());
+
+          mapRecord = getMapRecordsForProjectAndConcept(mapProjectId,
+              concept.getTerminologyId()).getMapRecords().get(0);
+
+          // Skip if member is for a concept that has a map record that are not
+          // READY_FOR_PUBLICATION or PUBLISHED
+          if (!mapRecord.getWorkflowStatus()
+              .equals(WorkflowStatus.READY_FOR_PUBLICATION)
+              && !mapRecord.getWorkflowStatus()
+                  .equals(WorkflowStatus.PUBLISHED)) {
+            notReadyForPubList.add(refSetMember.toString());
+            continue;
+          }
+
+          List<MapEntry> mapEntries = mapRecord.getMapEntries();
+
+          int maxGroupCount = 0;
+          for (MapEntry mapEntry : mapEntries) {
+            if (mapEntry.getMapGroup() > maxGroupCount) {
+              maxGroupCount = mapEntry.getMapGroup();
+            }
+          }
+
+          conceptIdOrigMaxGroup.put(concept.getTerminologyId(), maxGroupCount);
+        }
+
+        // check if target is in desired terminology; if so, create
+        // entry
+        String targetName = null;
+
+        if (!refSetMember.getMapTarget().equals("")) {
+          Concept c = contentService.getConcept(refSetMember.getMapTarget(),
+              mapProject.getDestinationTerminology(),
+              mapProject.getDestinationTerminologyVersion());
+          if (c == null) {
+            targetName = "Target name could not be determined";
+          } else {
+            targetName = c.getDefaultPreferredName();
+          }
+          Logger.getLogger(getClass())
+              .debug("      Setting target name " + targetName);
+        } else {
+          targetName = "No target";
+        }
+
+        // Set map relation id as well from the cache
+        String relationName = null;
+        if (refSetMember.getMapRelationId() != null) {
+          relationName =
+              relationIdNameMap.get(refSetMember.getMapRelationId().toString());
+          Logger.getLogger(getClass())
+              .debug("      Look up relation name = " + relationName);
+        }
+
+        if (prevMapGroup != refSetMember.getMapGroup()) {
+          mapPriorityCt = 0;
+          prevMapGroup = refSetMember.getMapGroup();
+        }
+        // Skip no-target mappings for first mapPriority entry on mapGroups > 1
+        if (refSetMember.getMapGroup() > 1 && mapPriorityCt == 0
+            && refSetMember.getMapTarget().isEmpty()) {
+          continue;
+        }
+
+        // Check to see if this concept' new entry is going to require map group
+        // value bumping to avoid overwriting an existing entry
+        // Only check once per concept
+        if (!conceptIdNeedsBumping
+            .containsKey(refSetMember.getConcept().getTerminologyId())) {
+          if (refSetMember.getMapGroup() <= (conceptIdOrigMaxGroup
+              .get(refSetMember.getConcept().getTerminologyId()))) {
+            conceptIdNeedsBumping
+                .put(refSetMember.getConcept().getTerminologyId(), true);
+          } else {
+            conceptIdNeedsBumping
+                .put(refSetMember.getConcept().getTerminologyId(), false);
+          }
+        }
+
+        Logger.getLogger(getClass()).debug("      Create map entry");
+        MapEntry mapEntry = new MapEntryJpa();
+        mapEntry.setTargetId(refSetMember.getMapTarget() == null ? ""
+            : refSetMember.getMapTarget());
+        mapEntry.setTargetName(targetName);
+        mapEntry.setMapRecord(mapRecord);
+        mapEntry.setMapRelation(
+            mapRelationIdMap.get(refSetMember.getMapRelationId().toString()));
+        String rule = refSetMember.getMapRule();
+        if (rule != null && rule.equals("OTHERWISE TRUE"))
+          rule = "TRUE";
+        mapEntry.setRule(rule);
+        mapEntry.setMapBlock(refSetMember.getMapBlock());
+
+        // Bump up the refsetMember's map group value, if it has been previously
+        // determined to need it
+        int mapGroupValue = refSetMember.getMapGroup();
+        if (conceptIdNeedsBumping
+            .get(refSetMember.getConcept().getTerminologyId())) {
+          mapGroupValue = mapGroupValue + conceptIdOrigMaxGroup
+              .get(refSetMember.getConcept().getTerminologyId());
+        }
+        mapEntry.setMapGroup(mapGroupValue);
+
+        // Increment map priority as we go through records
+        mapEntry.setMapPriority(refSetMember.getMapPriority());
+
+        mapRecord.addMapEntry(mapEntry);
+
+        // Update the mapRecord workflow status, if necessary
+        if (!mapRecord.getWorkflowStatus().equals(workflowStatus)) {
+          mapRecord.setWorkflowStatus(workflowStatus);
+          updateMapRecord(mapRecord);
+        }
+
+        // Add support for advices - and there can be multiple map
+        // advice values
+        // Only add advice if it is an allowable value and doesn't
+        // match relation name
+        // This should automatically exclude IFA/ALWAYS advice
+        Logger.getLogger(getClass()).debug("      Setting map advice");
+        if (refSetMember.getMapAdvice() != null
+            && !refSetMember.getMapAdvice().equals("")) {
+          for (final MapAdvice ma : mapAdvices.getIterable()) {
+            if (refSetMember.getMapAdvice().indexOf(ma.getName()) != -1
+                && !ma.getName().toUpperCase().equals(
+                    relationName == null ? "" : relationName.toUpperCase())) {
+              mapEntry.addMapAdvice(ma);
+              Logger.getLogger(getClass()).debug("    " + ma.getName());
+            }
+          }
+        }
+        ct++;
+      }
+
+      Logger.getLogger(MappingServiceJpa.class)
+          .info("    " + ct + " records updated");
+
+      if (notReadyForPubList.size() > 0) {
+        Logger.getLogger(MappingServiceJpa.class).warn(
+            "The following members were skipped because they were associated with concepts that were currently in the workflow being edited.");
+        for (String message : notReadyForPubList) {
+          Logger.getLogger(MappingServiceJpa.class).warn(message);
+        }
       }
 
       commit();
@@ -3408,6 +3687,80 @@ public class MappingServiceJpa extends RootServiceJpa
           releaseFileNames.substring(0, releaseFileNames.length() - 1);
     }
     return releaseFileNames;
+  }
+
+  /* see superclass */
+  public Map<String, String> getTargetCodeForReadyForPublication(
+    Long mapProjectId) throws Exception {
+
+    final String sql = "" + " SELECT  " + "     b.targetId, mu.team " + " FROM "
+    /*
+     * Find all historical map records for each MedDRA sourceId that maps to a
+     * current SNOMED targetId
+     */
+        + "     (SELECT  " + "         a.targetId, "
+        + "             a.conceptId, " + "             mra.workflowStatus, "
+        + "             mra.lastModifiedBy_id, " + "             mra.REV "
+        + "     FROM " + "         map_records_AUD mra " + "     JOIN  "
+        /*
+         * For each SNOMEDCT target Id, identify all of the MedDRA sourceIds
+         * that map to it
+         */
+        + "     (SELECT DISTINCT " + "         me2.targetId, mr.conceptId "
+        + "     FROM " + "         map_records mr, map_entries me2 "
+        + "     WHERE " + "         mr.mapProjectId = :mapProjectId "
+        + "         AND mr.id = me2.mapRecord_Id " + "             AND EXISTS "
+        /* Get target Ids for all CURRENT finished map records */
+        + "             (SELECT  " + "                 me.targetId "
+        + "             FROM "
+        + "                 map_records mr, map_entries me "
+        + "             WHERE "
+        + "                 mr.mapProjectId = :mapProjectId "
+        + "                     AND me2.targetId = me.targetId "
+        + "                     AND me.targetID IS NOT NULL "
+        + "                     AND targetId != '' "
+        + "                     AND me.mapRecord_id = mr.id "
+        + "                     AND mr.workflowStatus IN ('READY_FOR_PUBLICATION' , 'REVISION') "
+        + "              ) " + "      ) a ON a.conceptId = mra.conceptId "
+        /*
+         * Only look at the historical map record entries for when they were
+         * finished
+         */
+        + "     WHERE " + "         mra.mapProjectId = :mapProjectId "
+        + "         AND mra.workflowStatus IN ('READY_FOR_PUBLICATION') "
+        /*
+         * Order by REV, so the earliest 'READY_FOR_PUBLICATION' historical map
+         * record is on top
+         */
+        + "     ORDER BY mra.REV) b " + "         JOIN "
+        /* Get the user that finished each map record */
+        + "     map_users mu ON b.lastModifiedBy_id = mu.id "
+        /*
+         * Group by targetId to collapse all of the historical map records,
+         * leaving only the first time it was finished
+         */
+        + " GROUP BY b.targetId; ";
+
+    Map<String, String> list = new HashMap<>();
+
+    try {
+      javax.persistence.Query query = manager.createNativeQuery(sql);
+      query.setParameter("mapProjectId", mapProjectId);
+
+      List<Object[]> objects = query.getResultList();
+
+      for (Object[] array : objects) {
+        list.put((String) array[0], (String) array[1]);
+      }
+
+    } catch (Exception e) {
+      Logger.getLogger(getClass()).error(
+          "ERROR IN getTargetCodeForReadyForPublication " + e.getMessage(), e);
+      throw e;
+    }
+
+    return list;
+
   }
 
 }

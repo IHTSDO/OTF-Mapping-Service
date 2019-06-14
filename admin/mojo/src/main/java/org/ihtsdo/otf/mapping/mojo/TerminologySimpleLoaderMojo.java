@@ -2,7 +2,6 @@ package org.ihtsdo.otf.mapping.mojo;
 
 import java.text.SimpleDateFormat;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.rest.client.ContentClientRest;
 import org.ihtsdo.otf.mapping.rest.impl.ContentServiceRestImpl;
@@ -33,19 +32,12 @@ public class TerminologySimpleLoaderMojo extends AbstractTerminologyLoaderMojo {
 	private boolean server = false;
 	
 	/**
-	 * The input file.
+	 * Input directory.
 	 *
 	 * @parameter
 	 * @required
 	 */
-	private String inputFile;
-
-	/**
-	 * The par/chd rels file.
-	 *
-	 * @parameter
-	 */
-	private String parChdFile;
+	private String inputDir;
 
 	/**
 	 * Name of terminology to be loaded.
@@ -81,11 +73,11 @@ public class TerminologySimpleLoaderMojo extends AbstractTerminologyLoaderMojo {
 	@Override
 	public void execute() throws MojoFailureException {
 		
-		getLog().info("Starting loading simple data");
-		getLog().info("  inputFile   = " + inputFile);
-		getLog().info("  parChdFile  = " + parChdFile);
-		getLog().info("  terminology = " + terminology);
-		getLog().info("  version     = " + version);
+        getLog().info("Simple Terminology Loader called via mojo.");
+	    getLog().info("  Terminology        : " + terminology);
+	    getLog().info("  Version            : " + version);
+	    getLog().info("  Input directory    : " + inputDir);
+	    getLog().info("  Expect server up   : " + server);
 
 		try {
 
@@ -95,19 +87,19 @@ public class TerminologySimpleLoaderMojo extends AbstractTerminologyLoaderMojo {
 			// throws exception if server is required but not running.
 			// or if server is not required but running.
 			validateServerStatus(server);
-
+			
 			if (serverRunning != null && !serverRunning) {
 				getLog().info("Running directly");
-
+					
 				ContentServiceRestImpl service = new ContentServiceRestImpl();
-				service.loadTerminologySimple(terminology, version, inputFile, getAuthToken());
+				service.loadTerminologySimple(terminology, version, inputDir, getAuthToken());
 
 			} else {
 				getLog().info("Running against server");
 
 				// invoke the client
 				ContentClientRest client = new ContentClientRest(properties);
-				client.loadTerminologySimple(terminology, version,inputFile, getAuthToken());
+				client.loadTerminologySimple(terminology, version, inputDir, getAuthToken());
 			}
 
 		} catch (Exception e) {

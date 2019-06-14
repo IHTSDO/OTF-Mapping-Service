@@ -215,5 +215,19 @@ public interface TrackingRecord {
    */
   public void addUserAndWorkflowStatusPair(String userName,
     String workflowStatus);
+  
+  /**
+   * Gets the name of the assigned team
+   * 
+   * @return the assigned team name
+   */
+  public String getAssignedTeamName();
+  
+  /**
+   * Sets a team name
+   * 
+   * @param assignedTeamName name of the team
+   */
+  public void setAssignedTeamName(String assignedTeamName);
 
 }

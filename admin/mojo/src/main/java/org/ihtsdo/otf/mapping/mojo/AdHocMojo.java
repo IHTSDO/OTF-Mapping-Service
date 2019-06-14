@@ -23,6 +23,7 @@ import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
+import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -85,9 +86,14 @@ public class AdHocMojo extends AbstractMojo {
       if (mode != null && mode.equals("remove-bogus-map-records")) {
         removeBogusMapRecords(workflowService, contentService, mappingService);
       }
-      
-      if (mode != null && mode.equals("unassign-map-records")){
+
+      if (mode != null && mode.equals("unassign-map-records")) {
         unassignMapRecords(workflowService, contentService, mappingService);
+      }
+
+      if (mode != null && mode.equals("icd11-code-suffixes")) {
+        handleIcd11CodeSuffixes(workflowService, contentService,
+            mappingService);
       }
 
     } catch (Exception e) {
@@ -117,7 +123,7 @@ public class AdHocMojo extends AbstractMojo {
       }
     }
   }
- 
+
   private void unassignMapRecords(WorkflowService workflowService,
     ContentService contentService, MappingService mappingService)
     throws Exception {
@@ -136,13 +142,17 @@ public class AdHocMojo extends AbstractMojo {
       if (mapRecord != null) {
         System.out.println("Unassigning map record: " + mapRecord.getId());
         MapUser mapUser = mapRecord.getOwner();
-        MapProject mapProject = mappingService.getMapProject(mapRecord.getMapProjectId());
-        Concept concept = contentService.getConcept(mapRecord.getConceptId(), mapProject.getSourceTerminology(), mapProject.getSourceTerminologyVersion());
-        workflowService.processWorkflowAction(mapProject, concept, mapUser, mapRecord, WorkflowAction.UNASSIGN);
+        MapProject mapProject =
+            mappingService.getMapProject(mapRecord.getMapProjectId());
+        Concept concept = contentService.getConcept(mapRecord.getConceptId(),
+            mapProject.getSourceTerminology(),
+            mapProject.getSourceTerminologyVersion());
+        workflowService.processWorkflowAction(mapProject, concept, mapUser,
+            mapRecord, WorkflowAction.UNASSIGN);
       }
     }
-  }  
-  
+  }
+
   /**
    * Handle icd 11.
    *
@@ -267,6 +277,53 @@ public class AdHocMojo extends AbstractMojo {
             mapRecord, WorkflowAction.FINISH_EDITING);
       }
     }
+  }
+
+  /**
+   * Handle icd 11 code suffixes.
+   *
+   * @param workflowService the workflow service
+   * @param contentService the content service
+   * @param mappingService the mapping service
+   * @throws Exception the exception
+   */
+  private void handleIcd11CodeSuffixes(WorkflowService workflowService,
+    ContentService contentService, MappingService mappingService)
+    throws Exception {
+
+    // When updating the ICD11 Pilot Project from ICD version 2017 -> version
+    // 2019, many of the codes suffixes were altered in the following way:
+    // 1121640777/morbidity/unspecified ->
+    // 1121640777/unspecified
+    // And
+    // 850824593/morbidity/other ->
+    // 850824593/other
+    // Instead of making the mappers update them all manually, just programatically remove
+    // "morbidity/" from any map entry that contains it.
+
+    // Load the map project
+    final Map<String, MapProject> mapProjectMap = new HashMap<>();
+    for (MapProject project : mappingService.getMapProjects().getIterable()) {
+      mapProjectMap.put(project.getRefSetId(), project);
+    }
+    final MapProject project = mapProjectMap.get(refsetId);
+
+    // Get map records for the project
+    final MapRecordList list =
+        mappingService.getMapRecordsForMapProject(project.getId());
+    for (final MapRecord record : list.getMapRecords()) {
+      boolean mapEntryUpdated = false;
+      for (final MapEntry mapEntry : record.getMapEntries()) {
+        if (mapEntry.getTargetId().contains("morbidity/")) {
+          mapEntry.setTargetId(mapEntry.getTargetId().replace("morbidity/", ""));
+          mapEntryUpdated = true;
+        }
+      }    
+      if(mapEntryUpdated){
+        workflowService.updateMapRecord(record);
+      }
+    }
+
   }
 
   /**

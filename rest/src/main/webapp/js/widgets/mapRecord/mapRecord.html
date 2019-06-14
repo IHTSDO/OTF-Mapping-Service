@@ -20,7 +20,7 @@
       <a title='Open Index Viewer' ng-show="indexViewerExists == true">
         <i ng-click="openIndexViewer()" class="glyphicon glyphicon-book"></i>
       </a>
-      <a title="Open Authoring History">
+      <a title="Open Authoring History" ng-if="enableAuthoringHistoryButton == true">
         <i ng-click="openAuthoringHistory(concept)" class="glyphicon glyphicon-inbox"></i>
       </a>
     </td>
@@ -221,6 +221,11 @@ review<br>
     <hr>
   </div>
   <!--  tinymce text area --> <span>
+    
+    <div class="btn-group" role="group" aria-label="Feedback Group" ng-if="feedbackGroups">
+        <button ng-repeat="group in feedbackGroups" class="btn btn-xs btn-primary" 
+          ng-click="setGroupRecipients(group.id);">{{group.displayName}}</button>
+    </div>
     <div ng-dropdown-multiselect="" options="project.mapLead"
       selected-model="returnRecipients" extra-settings="multiSelectSettings"
       translation-texts="multiSelectCustomTexts"></div>

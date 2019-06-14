@@ -89,6 +89,9 @@ public class TrackingRecordJpa implements TrackingRecord {
   @Column(nullable = false)
   private int assignedUserCount = 0;
 
+  @Column(nullable = true)
+  private String assignedTeamName;
+  
   /**
    * {@inheritDoc}
    */
@@ -307,6 +310,17 @@ public class TrackingRecordJpa implements TrackingRecord {
     }
   }
 
+  @Override
+  public void setAssignedTeamName(String assignedTeamName) {
+    this.assignedTeamName = assignedTeamName;
+  }
+  
+  @Override
+  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  public String getAssignedTeamName() {
+    return this.assignedTeamName;
+  }
+  
   @Override
   public String toString() {
 		return "TrackingRecordJpa [id=" + id + ", mapProjectId=" + mapProjectId + ", terminology=" + terminology

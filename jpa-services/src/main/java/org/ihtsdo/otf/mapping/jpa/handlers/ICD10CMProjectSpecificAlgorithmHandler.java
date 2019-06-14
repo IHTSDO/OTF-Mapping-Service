@@ -315,7 +315,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       //
       // PREDICATE: All codes in range S00-T88, except T36-T65, unless
       // there is
-      // a second map group with codes in this chapter External causes of
+      // an additional map group with codes in this chapter External causes of
       // morbidity
       // (V00-Y99) and does not have the
       // advice "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE"
@@ -323,7 +323,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       //
       boolean found = false;
       for (MapEntry entry : mapRecord.getMapEntries()) {
-        if (entry.getMapGroup() == 2 && entry.getTargetId() != null
+        if (entry.getMapGroup() > 1 && entry.getTargetId() != null
             && entry.getTargetId().matches("(V..|W..|X..|Y..).*")) {
           found = true;
           break;
@@ -331,8 +331,8 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       }
       final String adviceP01 =
           "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE";
-      if (!found && mapEntry.getTargetId().matches("(S[0-9].|T[0-8][0-8]).*")
-          && !mapEntry.getTargetId().matches("(T[3-9][6-9].|T[6-9][0-5]).*")) {
+      if (!found && mapEntry.getTargetId().matches("(S[0-9].|T[0-7][0-9].|T[8][0-8]).*")
+          && !mapEntry.getTargetId().matches("(T3[6-9].|T4[0-9].|T5[0-9].|T6[0-5]).*")) {
         if (!TerminologyUtility.hasAdvice(mapEntry, adviceP01)) {
           advices.add(TerminologyUtility.getAdvice(mapProject, adviceP01));
         }
@@ -392,7 +392,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
 
       //
       // PREDICATE: All target codes with these prefixes: O31, O32,
-      // O33.3-O33.6, O35,
+      // O33.3-O33.7, O35,
       // O36, O40, O41, O60.1-O60.2, O64, O69; and ending with the 7th
       // character= 0 (‘fetus unspecified’)
       // and does not have the advice
@@ -403,7 +403,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
           "CONSIDER WHICH FETUS IS AFFECTED BY THE MATERNAL CONDITION";
       if ((mapEntry.getTargetId().startsWith("O31")
           || mapEntry.getTargetId().startsWith("O32")
-          || mapEntry.getTargetId().matches("(O33.[3-6]).*")
+          || mapEntry.getTargetId().matches("(O33.[3-7]).*")
           || mapEntry.getTargetId().startsWith("O35")
           || mapEntry.getTargetId().startsWith("O36")
           || mapEntry.getTargetId().startsWith("O40")
@@ -483,10 +483,11 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       // ACTION: add the advice
       //
       final String adviceP09 = "CONSIDER STAGE OF GLAUCOMA SPECIFICATION";
-      if (mapEntry.getTargetId().startsWith("H40.20")
+      if ((mapEntry.getTargetId().startsWith("H40.20")
           || mapEntry.getTargetId().startsWith("H40.22")
-          || mapEntry.getTargetId().matches("(^H40.1).*")
-          || mapEntry.getTargetId().matches("(^H40.[3-6]).*")) {
+          || mapEntry.getTargetId().matches("(^H40.1[0-4]).*")
+          || mapEntry.getTargetId().matches("(^H40.[3-6]).*")) 
+          && mapEntry.getTargetName().contains("stage unspecified")) {
         if (!TerminologyUtility.hasAdvice(mapEntry, adviceP09)) {
           advices.add(TerminologyUtility.getAdvice(mapProject, adviceP09));
         }
@@ -519,7 +520,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       // ACTION: add the advice
       //
       final String adviceP11 = "CONSIDER TIME OF COMA SCALE SPECIFICATION";
-      if (mapEntry.getTargetId().startsWith("R40.2")) {
+      if (mapEntry.getTargetId().startsWith("R40.2") && !mapEntry.getTargetId().equals("R40.20")) {
         if (!TerminologyUtility.hasAdvice(mapEntry, adviceP11)) {
           advices.add(TerminologyUtility.getAdvice(mapProject, adviceP11));
         }

@@ -14,7 +14,7 @@ angular
   .controller(
     'recordConceptCtrl',
     function($scope, $rootScope, $http, $routeParams, $location, $uibModal, localStorageService, $sce,
-      appConfig, utilService) {
+      appConfig, utilService, gpService) {
 
       // scope variables
       $scope.appConfig = appConfig;
@@ -43,6 +43,17 @@ angular
       $scope.preferences = localStorageService.get('preferences');
       $scope.userToken = localStorageService.get('userToken');
 
+      var deployBrowserLabel = appConfig['deploy.terminology.browser.label']; 
+      
+      $scope.focusProject.terminologyButtonText =
+        ($scope.focusProject.sourceTerminology !== 'SNOMEDCT' && $scope.focusProject.sourceTerminology !== 'SNOMEDCT_US')
+            ? (deployBrowserLabel = null || typeof deployBrowserLabel == 'undefined' || deployBrowserLabel === '' )
+                  ? $scope.focusProject.sourceTerminology
+                  : deployBrowserLabel
+      : (deployBrowserLabel = null || typeof deployBrowserLabel == 'undefined' || deployBrowserLabel === '' ) 
+                  ? $scope.focusProject.destinationTerminology
+                  : deployBrowserLabel;      
+      
       // flag indicating if index viewer is available for dest terminology
       $scope.indexViewerExists = false;
 
@@ -178,7 +189,7 @@ angular
 
       function validateRecord(record) {
 
-        $rootScope.glassPane++;
+        gpService.increment();
         $http({
           url : root_mapping + 'validation/record/validate',
           dataType : 'json',
@@ -188,11 +199,11 @@ angular
             'Content-Type' : 'application/json'
           }
         }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           record.errors = data.errors;
           record.warnings = data.warnings;
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
 
@@ -323,7 +334,7 @@ angular
         } else {
 
           // assign the record along the QA_PATH
-          $rootScope.glassPane++;
+          gpService.increment();
 
           // remove advices if this is a RELATIONSHIP_STYLE project
           // (these
@@ -370,24 +381,24 @@ angular
                         'Content-Type' : 'application/json'
                       }
                     }).success(function(data) {
-                    $rootScope.glassPane--;
+                    gpService.decrement();
 
                     // open the record edit view
                     $location.path('/record/review/' + data.id);
                   }).error(function(data, status, headers, config) {
-                    $rootScope.glassPane--;
+                    gpService.decrement();
 
                     $rootScope.handleHttpError(data, status, headers, config);
                   });
 
                 }).error(function(data, status, headers, config) {
-                  $rootScope.glassPane--;
+                  gpService.decrement();
 
                   $rootScope.handleHttpError(data, status, headers, config);
                 });
 
               }).error(function(data, status, headers, config) {
-              $rootScope.glassPane--;
+              gpService.decrement();
 
               $rootScope.handleHttpError(data, status, headers, config);
             });
@@ -494,7 +505,7 @@ angular
       // record
       $scope.changeFocusProjectByRecord = function(record) {
         for (var i = 0; i < $scope.mapProjects.length; i++) {
-          if ($scope.mapProjects[i].id = record.mapProjectId) {
+          if ($scope.mapProjects[i].id == record.mapProjectId) {
 
             $scope.changeFocusProject($scope.mapProjects[i]);
             break;
@@ -503,7 +514,7 @@ angular
       };
 
       $scope.logout = function() {
-        $rootScope.glassPane++;
+        gpService.increment();
         $http({
           url : root_security + 'logout/user/id/' + $scope.currentUser.userName,
           method : 'POST',
@@ -512,10 +523,10 @@ angular
           // save userToken from authentication
           }
         }).success(function(data) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $location.path(data);
         }).error(function(data, status, headers, config) {
-          $rootScope.glassPane--;
+          gpService.decrement();
           $location.path('/');
           $rootScope.handleHttpError(data, status, headers, config);
         });
@@ -578,15 +589,25 @@ angular
 
       // opens SNOMED CT browser
       $scope.getBrowserUrl = function() {
-        if ($scope.currentUser.userName === 'guest') {
-          return 'http://browser.ihtsdotools.org/index.html?perspective=full&conceptId1='
-            + $scope.conceptId + '&acceptLicense=true';
-        } else if ($scope.focusProject.sourceTerminology === 'SNOMEDCT_US') {
-          return 'https://dailybuild.ihtsdotools.org/us.html?perspective=full&conceptId1='
-            + $scope.conceptId + '&acceptLicense=true';
-        } else {
-          return 'http://dailybuild.ihtsdotools.org/index.html?perspective=full&conceptId1='
-            + $scope.conceptId + '&acceptLicense=true';
+        if (appConfig['deploy.snomed.browser.force']) {
+          return appConfig['deploy.snomed.browser.url'] + "&conceptId1="
+            + $scope.conceptId;  
+        }
+        else {
+          if ($scope.currentUser.userName === 'guest') {
+            return appConfig['deploy.snomed.browser.url'] + "&conceptId1="
+            + $scope.conceptId;
+          } else if ($scope.focusProject.sourceTerminology === 'SNOMEDCT_US') {
+            return appConfig['deploy.snomed.dailybuild.url.base']
+              + appConfig['deploy.snomed.dailybuild.url.us'] 
+              + "&conceptId1="
+              + $scope.conceptId;
+          } else {
+            return appConfig['deploy.snomed.dailybuild.url.base']
+              + appConfig['deploy.snomed.dailybuild.url.other']
+              + "&conceptId1="
+              + $scope.conceptId;;
+          }
         }
       };
 
@@ -676,7 +697,7 @@ angular
           var sList = [ name, email, record.conceptId, record.conceptName, $scope.project.refSetId,
             feedbackMessage ];
 
-          $rootScope.glassPane++;
+          gpService.increment();
           $http({
             url : root_workflow + 'message',
             dataType : 'json',
@@ -687,12 +708,12 @@ angular
             }
 
           }).success(function(data) {
-            $rootScope.glassPane--;
+            gpService.decrement();
             $uibModalInstance.close();
           }).error(function(data, status, headers, config) {
             $uibModalInstance.close();
             $scope.recordError = 'Error sending feedback email.';
-            $rootScope.glassPane--;
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
           });
 
