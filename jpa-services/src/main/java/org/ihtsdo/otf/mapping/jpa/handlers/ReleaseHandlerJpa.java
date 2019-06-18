@@ -3041,8 +3041,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         // AND we've already seen a TRUE member
         // AND it's not in the same map group as an allowed IFA member
         // skip this member.  It is due to up-propagation and shouldn't be compared.
-        if (member.getMapRule().equals("TRUE") && 
-            member.getMapAdvice().equals("MAP SOURCE CONCEPT CANNOT BE CLASSIFIED WITH AVAILABLE DATA") &&
+        if (member.getMapRule() != null && member.getMapRule().equals("TRUE") && 
+        	member.getMapAdvice() != null && member.getMapAdvice().equals("MAP SOURCE CONCEPT CANNOT BE CLASSIFIED WITH AVAILABLE DATA") &&
             containsTrueMember(members) && !containsIFAMember(members, member.getMapGroup())) {
           continue;
         }
