@@ -1,5 +1,5 @@
 /*
- *    Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.mojo;
 
@@ -8,17 +8,15 @@ import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.helpers.MapRefsetPattern;
-import org.ihtsdo.otf.mapping.helpers.MapUserList;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.RelationStyle;
+import org.ihtsdo.otf.mapping.helpers.ReportDefinitionList;
 import org.ihtsdo.otf.mapping.helpers.ReportFrequency;
 import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultType;
@@ -39,25 +37,31 @@ import org.ihtsdo.otf.mapping.model.MapPrinciple;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.mojo.ConfigModels.MapProjectConfiguration;
 import org.ihtsdo.otf.mapping.reports.ReportDefinition;
 import org.ihtsdo.otf.mapping.reports.ReportDefinitionJpa;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.ReportService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Mojo for generating sample data for a demo of map application.
+ * Mojo for generating loading map project configuration data into a new
+ * instance.
  * 
  * See admin/loader/pom.xml for a sample execution.
  * 
  * @goal load-app-config-data
  */
 public class LoadAppConfigDataMojo extends AbstractMojo {
+
+  /**
+   * File path root for config files
+   * 
+   * @parameter
+   */
+  private String configFileRoot = null;
 
   /**
    * Advice Config Load file
@@ -129,7 +133,7 @@ public class LoadAppConfigDataMojo extends AbstractMojo {
   }
 
   /**
-   * Load sample data.
+   * Load configuration data.
    *
    * @throws Exception
    *           the exception
@@ -140,1168 +144,487 @@ public class LoadAppConfigDataMojo extends AbstractMojo {
       throw new IllegalArgumentException(
           "Mapping Project Configuration file not specified.  Please check configuration file.");
 
-    if (!Files.exists(Paths.get(projectConfigFile)))
+    if (!Files.exists(Paths.get(configFileRoot + projectConfigFile)))
       throw new FileNotFoundException(String.format(
           "Mapping Project Configuration file does not exist.  Please check file path %s.",
           projectConfigFile));
 
     if (reportConfigFile == null)
-      Logger.getLogger(getClass())
-          .info("ReportConfigFile is not provided.  Not loading reports.");
-    else if (!Files.exists(Paths.get(reportConfigFile)))
+      getLog().info("ReportConfigFile is not provided.  Not loading reports.");
+    else if (!Files.exists(Paths.get(configFileRoot + reportConfigFile)))
       throw new FileNotFoundException(String.format(
           "Report Configuration file does not exist.  Please check file path %s.",
-          reportConfigFile));
-
-    LoadUser[] usersConfig = new LoadUser[] {};
-    LoadPrinciple[] principlesConfig = new LoadPrinciple[] {};
-    LoadAdvice[] advicesConfig = new LoadAdvice[] {};
-    LoadAgeRange[] ageRangesConfig = new LoadAgeRange[] {};
-    LoadRelation[] relationsConfig = new LoadRelation[] {};
-    LoadReportDefinition[] reportsConfig = new LoadReportDefinition[] {};
-    LoadMapProject[] mapProjectsConfig = new LoadMapProject[] {};
+          configFileRoot + reportConfigFile));
 
     // verify all files can be parsed before calling load
-    if (userConfigFile != null && Files.exists(Paths.get(userConfigFile))) {
-      usersConfig = mapper.readValue(new File(userConfigFile),
-          LoadUser[].class);
+    if (userConfigFile != null
+        && Files.exists(Paths.get(configFileRoot + userConfigFile))) {
+      getLog().info("  loading " + configFileRoot + userConfigFile);
+      MapUser[] usersConfig = mapper.readValue(
+          new File(configFileRoot + userConfigFile), MapUserJpa[].class);
+      loadUsers(usersConfig);
     }
 
     if (principleConfigFile != null
-        && Files.exists(Paths.get(principleConfigFile))) {
-      principlesConfig = mapper.readValue(new File(principleConfigFile),
-          LoadPrinciple[].class);
+        && Files.exists(Paths.get(configFileRoot + principleConfigFile))) {
+      getLog().info("  loading " + configFileRoot + principleConfigFile);
+      MapPrinciple[] principles = mapper.readValue(
+          new File(configFileRoot + principleConfigFile),
+          MapPrincipleJpa[].class);
+      loadPrinciples(principles);
     }
 
-    if (adviceConfigFile != null && Files.exists(Paths.get(adviceConfigFile))) {
-      advicesConfig = mapper.readValue(new File(adviceConfigFile),
-          LoadAdvice[].class);
+    if (adviceConfigFile != null
+        && Files.exists(Paths.get(configFileRoot + adviceConfigFile))) {
+      getLog().info("  loading " + configFileRoot + adviceConfigFile);
+      MapAdvice[] advices = mapper.readValue(
+          new File(configFileRoot + adviceConfigFile), MapAdviceJpa[].class);
+      loadAdvice(advices);
     }
 
     if (ageRangeConfigFile != null
-        && Files.exists(Paths.get(ageRangeConfigFile))) {
-      ageRangesConfig = mapper.readValue(new File(ageRangeConfigFile),
-          LoadAgeRange[].class);
+        && Files.exists(Paths.get(configFileRoot + ageRangeConfigFile))) {
+      getLog().info("  loading " + configFileRoot + ageRangeConfigFile);
+      MapAgeRange[] ageRanges = mapper.readValue(
+          new File(configFileRoot + ageRangeConfigFile),
+          MapAgeRangeJpa[].class);
+      loadAgeRange(ageRanges);
     }
 
     if (relationConfigFile != null
-        && Files.exists(Paths.get(relationConfigFile))) {
-      relationsConfig = mapper.readValue(new File(relationConfigFile),
-          LoadRelation[].class);
+        && Files.exists(Paths.get(configFileRoot + relationConfigFile))) {
+      getLog().info("  loading " + configFileRoot + relationConfigFile);
+      MapRelation[] relations = mapper.readValue(
+          new File(configFileRoot + relationConfigFile),
+          MapRelationJpa[].class);
+      loadRelation(relations);
     }
 
-    if (reportConfigFile != null && Files.exists(Paths.get(reportConfigFile))) {
-      reportsConfig = mapper.readValue(new File(reportConfigFile),
-          LoadReportDefinition[].class);
-
+    if (reportConfigFile != null
+        && Files.exists(Paths.get(configFileRoot + reportConfigFile))) {
+      getLog().info("  loading " + configFileRoot + reportConfigFile);
+      ReportDefinition[] reportsConfig = mapper.readValue(
+          new File(configFileRoot + reportConfigFile),
+          ReportDefinitionJpa[].class);
+      loadReports(reportsConfig);
     }
 
     if (projectConfigFile != null
-        && Files.exists(Paths.get(projectConfigFile))) {
-      mapProjectsConfig = mapper.readValue(new File(projectConfigFile),
-          LoadMapProject[].class);
+        && Files.exists(Paths.get(configFileRoot + projectConfigFile))) {
+      getLog().info(" loading " + configFileRoot + projectConfigFile);
+      MapProjectConfiguration[] mapProjectsConfig = mapper.readValue(
+          new File(configFileRoot + projectConfigFile),
+          MapProjectConfiguration[].class);
+      loadProjects(mapProjectsConfig);
     }
-
-    loadUsers(usersConfig);
-    loadPrinciples(principlesConfig);
-    loadAdvice(advicesConfig);
-    loadAgeRange(ageRangesConfig);
-    loadRelation(relationsConfig);
-    loadReports(reportsConfig);
-    loadProjects(mapProjectsConfig);
 
   }
 
   // Mapping Projects
-  private void loadProjects(LoadMapProject[] mapProjectsConfig)
+  private void loadProjects(MapProjectConfiguration[] mapProjectsConfig)
       throws Exception {
+
     try (MappingService mappingService = new MappingServiceJpa();
         ReportService reportService = new ReportServiceJpa()) {
 
       mappingService.setTransactionPerOperation(false);
 
-      final List<ReportDefinition> existingReports = reportService
-          .getReportDefinitions().getReportDefinitions();
+      final ReportDefinitionList existingReports = reportService
+          .getReportDefinitions();
+      final List<MapProject> mapProjects = mappingService.getMapProjects()
+          .getMapProjects();
 
-      for (LoadMapProject mapProject : mapProjectsConfig) {
-        Logger.getLogger(getClass()).info("Map Project json:" + mapper
+      for (MapProjectConfiguration mapProject : mapProjectsConfig) {
+        getLog().info("Map Project json:" + mapper
             .writerWithDefaultPrettyPrinter().writeValueAsString(mapProject));
 
-        MapProject project = new MapProjectJpa();
-        project.setName(mapProject.getName());
-        project
-            .setDestinationTerminology(mapProject.getDestinationTerminology());
-        project.setDestinationTerminologyVersion(
-            mapProject.getDestinationTerminologyVersion());
-        project.setGroupStructure(mapProject.getGroupStructure());
+        if (!containsMapProject(mapProjects, mapProject.getName())) {
+          MapProject project = new MapProjectJpa();
+          project.setName(mapProject.getName());
+          project.setDestinationTerminology(
+              mapProject.getDestinationTerminology());
+          project.setDestinationTerminologyVersion(
+              mapProject.getDestinationTerminologyVersion());
+          project.setGroupStructure(mapProject.getGroupStructure());
 
-        if (mapProject.getMapRefsetPattern() != null)
-          project.setMapRefsetPattern(
-              MapRefsetPattern.valueOf(mapProject.getMapRefsetPattern()));
+          if (mapProject.getMapRefsetPattern() != null)
+            project.setMapRefsetPattern(
+                MapRefsetPattern.valueOf(mapProject.getMapRefsetPattern()));
 
-        project.setProjectSpecificAlgorithmHandlerClass(
-            mapProject.getProjectSpecificAlgorithmHandlerClass());
-        project.setPropagatedFlag(mapProject.getPropagatedFlag());
-        project.setPublic(mapProject.getIsPublic());
-        project.setTeamBased(mapProject.getIsTeamBased());
-        project.setRefSetId(mapProject.getRefSetId());
-        project.setRefSetName(mapProject.getRefSetName());
-        project.setSourceTerminology(mapProject.getSourceTerminology());
-        project.setSourceTerminologyVersion(
-            mapProject.getSourceTerminologyVersion());
+          project.setProjectSpecificAlgorithmHandlerClass(
+              mapProject.getProjectSpecificAlgorithmHandlerClass());
+          project.setPropagatedFlag(mapProject.getPropagatedFlag());
+          project.setPublic(mapProject.getIsPublic());
+          project.setTeamBased(mapProject.getIsTeamBased());
+          project.setRefSetId(mapProject.getRefSetId());
+          project.setRefSetName(mapProject.getRefSetName());
+          project.setSourceTerminology(mapProject.getSourceTerminology());
+          project.setSourceTerminologyVersion(
+              mapProject.getSourceTerminologyVersion());
 
-        if (mapProject.getWorkflowType() != null)
-          project.setWorkflowType(
-              WorkflowType.valueOf(mapProject.getWorkflowType()));
+          if (mapProject.getWorkflowType() != null)
+            project.setWorkflowType(
+                WorkflowType.valueOf(mapProject.getWorkflowType()));
 
-        if (mapProject.getMapRelationStyle() != null)
-          project.setMapRelationStyle(
-              RelationStyle.valueOf(mapProject.getMapRelationStyle()));
+          if (mapProject.getMapRelationStyle() != null)
+            project.setMapRelationStyle(
+                RelationStyle.valueOf(mapProject.getMapRelationStyle()));
 
-        project.setScopeDescendantsFlag(mapProject.getScopeDescendantsFlag());
-        if (mapProject.getIncludeScopeConcepts() != null
-            && !mapProject.getIncludeScopeConcepts().isEmpty()) {
-          for (String concept : mapProject.getIncludeScopeConcepts()) {
-            project.getScopeConcepts().add(concept);
-          }
-        }
-
-        if (mapProject.getExcludeScopeConcepts() != null
-            && !mapProject.getExcludeScopeConcepts().isEmpty()) {
-          for (String concept : mapProject.getExcludeScopeConcepts()) {
-            project.getScopeExcludedConcepts().add(concept);
-          }
-        }
-        
-        if (mapProject.getEditingCycleBeginDate() != null) {
-          final SimpleDateFormat dateFormat = new SimpleDateFormat(
-              mapProject.getDateFormat());
-          project.setEditingCycleBeginDate(
-              dateFormat.parse(mapProject.getEditingCycleBeginDate()));
-        }
-
-        mappingService.beginTransaction();
-
-        MapUser mapUser;
-        // add users to map project
-        try (SecurityService securityService = new SecurityServiceJpa()) {
-          for (String username : mapProject.getLeads()) {
-            mapUser = securityService.getMapUser(username);
-            if (mapUser != null) {
-              project.getMapLeads().add(mapUser);
-            } else {
-              Logger.getLogger(getClass())
-                  .warn(String.format(
-                      "Username %s does not exist. Cannot add as lead to project.",
-                      username));
+          project.setScopeDescendantsFlag(mapProject.getScopeDescendantsFlag());
+          if (mapProject.getIncludeScopeConcepts() != null
+              && !mapProject.getIncludeScopeConcepts().isEmpty()) {
+            for (String concept : mapProject.getIncludeScopeConcepts()) {
+              project.getScopeConcepts().add(concept);
             }
           }
-          mapUser = null;
-          for (String username : mapProject.getSpecialists()) {
-            mapUser = securityService.getMapUser(username);
-            if (mapUser != null) {
-              project.getMapSpecialists().add(mapUser);
-            } else {
-              Logger.getLogger(getClass())
-                  .warn(String.format(
-                      "Username %s does not exist. Cannot add as specialist to project.",
-                      username));
+
+          if (mapProject.getExcludeScopeConcepts() != null
+              && !mapProject.getExcludeScopeConcepts().isEmpty()) {
+            for (String concept : mapProject.getExcludeScopeConcepts()) {
+              project.getScopeExcludedConcepts().add(concept);
             }
           }
-        }
 
-        for (String reportName : mapProject.getReports()) {
-          for (ReportDefinition rd : existingReports) {
-            if (rd.getName().equals(reportName)) {
-              Logger.getLogger(getClass()).info("adding report to project: "
-                  + reportName + " to " + project.getName());
-              project.getReportDefinitions().add(rd);
-              break;
+          if (mapProject.getEditingCycleBeginDate() != null) {
+            final SimpleDateFormat dateFormat = new SimpleDateFormat(
+                mapProject.getDateFormat());
+            project.setEditingCycleBeginDate(
+                dateFormat.parse(mapProject.getEditingCycleBeginDate()));
+          }
+
+          mappingService.beginTransaction();
+
+          MapUser mapUser;
+          // add users to map project
+          try (SecurityService securityService = new SecurityServiceJpa()) {
+            for (String username : mapProject.getLeads()) {
+              mapUser = securityService.getMapUser(username);
+              if (mapUser != null) {
+                project.getMapLeads().add(mapUser);
+              } else {
+                getLog().warn(String.format(
+                    "Username %s does not exist. Cannot add as lead to project.",
+                    username));
+              }
+            }
+            mapUser = null;
+            for (String username : mapProject.getSpecialists()) {
+              mapUser = securityService.getMapUser(username);
+              if (mapUser != null) {
+                project.getMapSpecialists().add(mapUser);
+              } else {
+                getLog().warn(String.format(
+                    "Username %s does not exist. Cannot add as specialist to project.",
+                    username));
+              }
             }
           }
-        }
-        
-        for (String errorMessage : mapProject.getErrorMessages()) {
-          project.getErrorMessages().add(errorMessage);
-        }
 
-        mappingService.addMapProject(project);
-        mappingService.commit();
+          for (String reportName : mapProject.getReports()) {
+            for (ReportDefinition rd : existingReports.getReportDefinitions()) {
+              if (rd.getName().equals(reportName)) {
+                getLog().info("adding report to project: " + reportName + " to "
+                    + project.getName());
+                project.getReportDefinitions().add(rd);
+                break;
+              }
+            }
+          }
+
+          for (String errorMessage : mapProject.getErrorMessages()) {
+            project.getErrorMessages().add(errorMessage);
+          }
+
+          mappingService.addMapProject(project);
+          mappingService.commit();
+
+        } else {
+          getLog().info(
+              " Map Project '" + mapProject.getName() + "' already exists.");
+        }
       }
     }
   }
 
   // Principles
-  private void loadPrinciples(LoadPrinciple[] principlesConfig)
-      throws Exception {
+  private void loadPrinciples(MapPrinciple[] principles) throws Exception {
     try (MappingService mappingService = new MappingServiceJpa();) {
-      Logger.getLogger(getClass()).info("  loading PrincipleConfigFile");
+      getLog().info("  loading PrincipleConfigFile");
 
-      for (LoadPrinciple principleDef : principlesConfig) {
-        Logger.getLogger(getClass()).info("MapPrinciple json:" + mapper
+      List<MapPrinciple> mapPrinciples = mappingService.getMapPrinciples()
+          .getMapPrinciples();
+
+      for (MapPrinciple principleDef : principles) {
+        getLog().info("MapPrinciple json:" + mapper
             .writerWithDefaultPrettyPrinter().writeValueAsString(principleDef));
+        if (!containsMapPrinciple(mapPrinciples, principleDef.getName())) {
+          MapPrinciple principle = new MapPrincipleJpa();
+          principle.setName(principleDef.getName());
+          principle.setDetail(principleDef.getDetail());
+          principle.setSectionRef(principleDef.getSectionRef());
+          principle.setPrincipleId(principleDef.getPrincipleId());
 
-        MapPrinciple principle = new MapPrincipleJpa();
-        principle.setName(principleDef.getName());
-        principle.setDetail(principleDef.getDetail());
-        principle.setSectionRef(principleDef.getSectionRef());
-        principle.setPrincipleId(principleDef.getPrinicpleId());
-
-        mappingService.getMapPrinciples().addMapPrinciple(principle);
+          mappingService.getMapPrinciples().addMapPrinciple(principle);
+        } else {
+          getLog().info(" Map Principle '" + principleDef.getName()
+              + "' already exists.");
+        }
       }
     }
   }
 
   // Reports
-  private void loadReports(LoadReportDefinition[] reportsConfig)
-      throws Exception {
+  private void loadReports(ReportDefinition[] reports) throws Exception {
     try (ReportService reportService = new ReportServiceJpa()) {
       reportService.setTransactionPerOperation(false);
 
-      Logger.getLogger(getClass()).info("  loading ReportDefinitionConfig");
+      getLog().info("  loading ReportDefinitionConfig");
 
-      for (LoadReportDefinition reportDef : reportsConfig) {
-        Logger.getLogger(getClass()).info("ReportDefinition json:" + mapper
+      List<ReportDefinition> reportDefinitions = reportService
+          .getReportDefinitions().getReportDefinitions();
+
+      for (ReportDefinition reportDef : reports) {
+        getLog().info("ReportDefinition json:" + mapper
             .writerWithDefaultPrettyPrinter().writeValueAsString(reportDef));
+        if (!containsReportDefintion(reportDefinitions, reportDef.getName())) {
+          ReportDefinition report = new ReportDefinitionJpa();
+          report.setDescription(reportDef.getDescription());
+          report.setDiffReportDefinitionName(
+              reportDef.getDiffReportDefinitionName());
 
-        ReportDefinition report = new ReportDefinitionJpa();
-        report.setDescription(reportDef.getDescription());
-        report.setDiffReportDefinitionName(
-            reportDef.getDiffReportDefinitionName());
+          if (reportDef.getFrequency() != null)
+            report.setFrequency(
+                ReportFrequency.valueOf(reportDef.getFrequency().name()));
 
-        if (reportDef.getFrequency() != null)
-          report
-              .setFrequency(ReportFrequency.valueOf(reportDef.getFrequency()));
+          report.setDiffReport(reportDef.isDiffReport());
+          report.setQACheck(reportDef.isQACheck());
+          report.setName(reportDef.getName());
+          report.setQuery(reportDef.getQuery());
 
-        report.setDiffReport(reportDef.getIsDiffReport());
-        report.setQACheck(reportDef.getIsQACheck());
-        report.setName(reportDef.getName());
-        report.setQuery(reportDef.getQuery());
+          if (reportDef.getQueryType() != null)
+            report.setQueryType(
+                ReportQueryType.valueOf(reportDef.getQueryType().name()));
 
-        if (reportDef.getQueryType() != null)
-          report
-              .setQueryType(ReportQueryType.valueOf(reportDef.getQueryType()));
+          if (reportDef.getResultType() != null)
+            report.setResultType(
+                ReportResultType.valueOf(reportDef.getResultType().name()));
 
-        if (reportDef.getResultType() != null)
-          report.setResultType(
-              ReportResultType.valueOf(reportDef.getResultType()));
+          if (reportDef.getRoleRequired() != null)
+            report.setRoleRequired(
+                MapUserRole.valueOf(reportDef.getRoleRequired().name()));
 
-        if (reportDef.getRoleRequired() != null)
-          report.setRoleRequired(
-              MapUserRole.valueOf(reportDef.getRoleRequired()));
+          if (reportDef.getTimePeriod() != null)
+            report.setTimePeriod(
+                ReportTimePeriod.valueOf(reportDef.getTimePeriod().name()));
 
-        if (reportDef.getTimePeriod() != null)
-          report.setTimePeriod(
-              ReportTimePeriod.valueOf(reportDef.getTimePeriod()));
-
-        reportService.beginTransaction();
-        reportService.addReportDefinition(report);
-        reportService.commit();
-
+          reportService.beginTransaction();
+          reportService.addReportDefinition(report);
+          reportService.commit();
+        } else {
+          getLog()
+              .info(" Report '" + reportDef.getName() + "' already exists.");
+        }
       }
     }
   }
 
   // Users
-  private void loadUsers(LoadUser[] usersConfig) throws Exception {
+  private void loadUsers(MapUser[] users) throws Exception {
     try (SecurityService securityService = new SecurityServiceJpa()) {
-      Logger.getLogger(getClass()).info("  loading UserDefinitionConfig");
+      getLog().info("  loading UserDefinitionConfig");
 
-      MapUserList userList = securityService.getMapUsers();
-      
-      for (LoadUser user : usersConfig) {
+      for (MapUser userDef : users) {
         // if does not exists, add, otherwise skip
-        Logger.getLogger(getClass()).info("MapPrinciple json:" + mapper
-            .writerWithDefaultPrettyPrinter().writeValueAsString(usersConfig));
-        
-        MapUser mapUser = securityService.getMapUser(user.getUsername());
+        MapUser mapUser = securityService.getMapUser(userDef.getUserName());
+
         if (mapUser == null) {
           mapUser = new MapUserJpa();
-          mapUser.setUserName(user.getUsername());
-          mapUser.setName(user.getName());
-          mapUser.setEmail(user.getEmail());
-          mapUser.setTeam(user.getTeam());
+          mapUser.setUserName(userDef.getUserName());
+          mapUser.setName(userDef.getName());
+          mapUser.setEmail(userDef.getEmail());
+          mapUser.setTeam(userDef.getTeam());
           mapUser.setApplicationRole(
-              MapUserRole.valueOf(user.getApplicationRole()));
-          if (!userList.contains(mapUser)) {
-            Logger.getLogger(getClass()).info("ADDING USER " + user.getUsername());
-            securityService.addMapUser(mapUser);
-          }
-          else {
-            Logger.getLogger(getClass()).info("SKIPPING user already exists: " + user.getUsername());
-          }
+              MapUserRole.valueOf(userDef.getApplicationRole().name()));
+
+          getLog().info("ADDING USER " + userDef.getUserName());
+          securityService.addMapUser(mapUser);
+
+        } else {
+          getLog()
+              .info("SKIPPING user already exists: " + userDef.getUserName());
         }
       }
     }
   }
 
   // Advice
-  private void loadAdvice(LoadAdvice[] advicesConfig) throws Exception {
+  private void loadAdvice(MapAdvice[] advices) throws Exception {
     try (MappingService mappingService = new MappingServiceJpa();) {
-      Logger.getLogger(getClass()).info("  loading AdviceConfigFile");
+      getLog().info("  loading AdviceConfigFile");
 
-      for (LoadAdvice adviceDef : advicesConfig) {
-        Logger.getLogger(getClass()).info("MapAdvice json:" + mapper
+      List<MapAdvice> mapAdvices = mappingService.getMapAdvices()
+          .getMapAdvices();
+
+      for (MapAdvice adviceDef : advices) {
+        getLog().info("MapAdvice json:" + mapper
             .writerWithDefaultPrettyPrinter().writeValueAsString(adviceDef));
+        if (!containsMapAdvice(mapAdvices, adviceDef.getName())) {
+          MapAdvice advice = new MapAdviceJpa();
+          advice.setName(adviceDef.getName());
+          advice.setDetail(adviceDef.getDetail());
+          advice
+              .setAllowableForNullTarget(adviceDef.isAllowableForNullTarget());
+          advice.setComputed(adviceDef.isComputed());
 
-        MapAdvice advice = new MapAdviceJpa();
-        advice.setName(adviceDef.getName());
-        advice.setDetail(adviceDef.getDetail());
-        advice.setAllowableForNullTarget(adviceDef.isAllowableForNullTarget());
-        advice.setComputed(adviceDef.isComputed());
-
-        mappingService.getMapAdvices().addMapAdvice(advice);
+          mappingService.getMapAdvices().addMapAdvice(advice);
+        } else {
+          getLog().info(
+              " Map Advice '" + adviceDef.getName() + "' already exists.");
+        }
       }
     }
   }
 
   // Relation
-  private void loadRelation(LoadRelation[] relationsConfig) throws Exception {
+  private void loadRelation(MapRelation[] relations) throws Exception {
     try (MappingService mappingService = new MappingServiceJpa();) {
-      Logger.getLogger(getClass()).info("  loading RelationConfigFile");
+      getLog().info("  loading RelationConfigFile");
 
-      for (LoadRelation relationDef : relationsConfig) {
-        Logger.getLogger(getClass()).info("MapRelation json:" + mapper
+      List<MapRelation> mapRelations = mappingService.getMapRelations()
+          .getMapRelations();
+
+      for (MapRelation relationDef : relations) {
+        getLog().info("MapRelation json:" + mapper
             .writerWithDefaultPrettyPrinter().writeValueAsString(relationDef));
+        if (!containsMapRelation(mapRelations, relationDef.getName())) {
+          MapRelation relation = new MapRelationJpa();
+          relation.setName(relationDef.getName());
+          relation.setAbbreviation(relationDef.getAbbreviation());
+          relation.setTerminologyId(relationDef.getTerminologyId());
+          relation.setAllowableForNullTarget(
+              relationDef.isAllowableForNullTarget());
+          relation.setComputed(relationDef.isComputed());
 
-        MapRelation relation = new MapRelationJpa();
-        relation.setName(relationDef.getName());
-        relation.setAbbreviation(relationDef.getAbbreviation());
-        relation.setTerminologyId(relationDef.getTerminologyId());
-        relation
-            .setAllowableForNullTarget(relationDef.isAllowableForNullTarget());
-        relation.setComputed(relationDef.isComputed());
-
-        mappingService.getMapRelations().addMapRelation(relation);
+          mappingService.getMapRelations().addMapRelation(relation);
+        } else {
+          getLog().info(
+              " Map Relation '" + relationDef.getName() + "' already exists.");
+        }
       }
     }
   }
 
   // Age Range
-  private void loadAgeRange(LoadAgeRange[] ageRangesConfig) throws Exception {
+  private void loadAgeRange(MapAgeRange[] ageRanges) throws Exception {
     try (MappingService mappingService = new MappingServiceJpa();) {
-      Logger.getLogger(getClass()).info("  loading AgeRangeConfigFile");
+      getLog().info("  loading AgeRangeConfigFile");
 
-      for (LoadAgeRange ageRangeDef : ageRangesConfig) {
-        Logger.getLogger(getClass()).info("MapAgeRange json:" + mapper
+      List<MapAgeRange> mapAgeRanges = mappingService.getMapAgeRanges()
+          .getMapAgeRanges();
+
+      for (MapAgeRange ageRangeDef : ageRanges) {
+        getLog().info("MapAgeRange json:" + mapper
             .writerWithDefaultPrettyPrinter().writeValueAsString(ageRangeDef));
+        if (!containsMapAgeRange(mapAgeRanges, ageRangeDef.getName())) {
+          MapAgeRange ageRange = new MapAgeRangeJpa();
+          ageRange.setName(ageRangeDef.getName());
+          ageRange.setLowerInclusive(ageRangeDef.getLowerInclusive());
+          ageRange.setLowerUnits(ageRangeDef.getLowerUnits());
+          ageRange.setLowerValue(ageRangeDef.getLowerValue());
+          ageRange.setUpperInclusive(ageRangeDef.getUpperInclusive());
+          ageRange.setUpperUnits(ageRangeDef.getUpperUnits());
+          ageRange.setUpperValue(ageRangeDef.getUpperValue());
 
-        MapAgeRange ageRange = new MapAgeRangeJpa();
-        ageRange.setName(ageRangeDef.getName());
-        ageRange.setLowerInclusive(ageRangeDef.isLowerInclusive());
-        ageRange.setLowerUnits(ageRangeDef.getLowerUnits());
-        ageRange.setLowerValue(ageRangeDef.getLowerValue());
-        ageRange.setUpperInclusive(ageRangeDef.isUpperInclusive());
-        ageRange.setUpperUnits(ageRangeDef.getUpperUnits());
-        ageRange.setUpperValue(ageRangeDef.getUpperValue());
-
-        mappingService.getMapAgeRanges().addMapAgeRange(ageRange);
+          mappingService.getMapAgeRanges().addMapAgeRange(ageRange);
+        } else {
+          getLog().info(
+              " Map AgeRange '" + ageRangeDef.getName() + "' already exists.");
+        }
       }
     }
   }
 
-  @SuppressWarnings("unused")
-  @JsonIgnoreProperties(ignoreUnknown = true)
-  private static class LoadMapProject {
-    private String destinationTerminology;
-    private String destinationTerminologyVersion;
-    private Boolean groupStructure;
-    private String mapRefsetPattern;
-    private String name;
-    private String projectSpecificAlgorithmHandlerClass;
-    private Boolean propagatedFlag;
-    private Boolean isPublic;
-    private Boolean isTeamBased;
-    private String refSetId;
-    private String refSetName;
-    private String sourceTerminology;
-    private String sourceTerminologyVersion;
-    private String workflowType;
-    private String mapRelationStyle;
-    private Boolean scopeDescendantsFlag;
-    private String dateFormat;
-    private String editingCycleBeginDate;
-    private List<String> includeScopeConcepts = new ArrayList<>();
-    private List<String> excludeScopeConcepts = new ArrayList<>();
-    private List<String> reports = new ArrayList<>();
-    private List<String> leads = new ArrayList<>();
-    private List<String> specialists = new ArrayList<>();
-    private List<String> errorMessages = new ArrayList<>();
-
-    /**
-     * No args constructor for use in serialization
-     * 
-     */
-    public LoadMapProject() {
+  private boolean containsMapPrinciple(List<MapPrinciple> mapPrinciples,
+      String mapPrincipleName) {
+    if (mapPrinciples == null || mapPrincipleName == null) {
+      return false;
+    } else {
+      for (MapPrinciple mapPrinciple : mapPrinciples) {
+        if (mapPrincipleName.equals(mapPrinciple.getName())) {
+          return true;
+        }
+      }
     }
-
-    /**
-     * 
-     * @param dateFormat
-     * @param destinationTerminology
-     * @param destinationTerminologyVersion
-     * @param editingCycleBeginDate
-     * @param groupStructure
-     * @param mapRefsetPattern
-     * @param name
-     * @param projectSpecificAlgorithmHandlerClass
-     * @param propagatedFlag
-     * @param isPublic
-     * @param isTeamBased
-     * @param refSetId
-     * @param refSetName
-     * @param sourceTerminology
-     * @param sourceTerminologyVersion
-     * @param workflowType
-     * @param mapRelationStyle
-     * @param scopeDescendantsFlag
-     * @param scopeConcepts
-     * @param reports
-     * @param leads
-     * @param specialists
-     */
-    @JsonCreator
-    public LoadMapProject(@JsonProperty("dateFormat") String dateFormat,
-        @JsonProperty("destinationTerminology") String destinationTerminology,
-        @JsonProperty("destinationTerminologyVersion") String destinationTerminologyVersion,
-        @JsonProperty("editingCycleBeginDate") String editingCycleBeginDate,
-        @JsonProperty("groupStructure") Boolean groupStructure,
-        @JsonProperty("mapRefsetPattern") String mapRefsetPattern,
-        @JsonProperty("name") String name,
-        @JsonProperty("projectSpecificAlgorithmHandlerClass") String projectSpecificAlgorithmHandlerClass,
-        @JsonProperty("propagatedFlag") Boolean propagatedFlag,
-        @JsonProperty("isPublic") Boolean isPublic,
-        @JsonProperty("isTeamBased") Boolean isTeamBased,
-        @JsonProperty("refSetId") String refSetId,
-        @JsonProperty("refSetName") String refSetName,
-        @JsonProperty("sourceTerminology") String sourceTerminology,
-        @JsonProperty("sourceTerminologyVersion") String sourceTerminologyVersion,
-        @JsonProperty("workflowType") String workflowType,
-        @JsonProperty("mapRelationStyle") String mapRelationStyle,
-        @JsonProperty("scopeDescendantsFlag") Boolean scopeDescendantsFlag,
-        @JsonProperty("includeScopeConcepts") List<String> includeScopeConcepts,
-        @JsonProperty("excludeScopeConcepts") List<String> excludeScopeConcepts,
-        @JsonProperty("reports") List<String> reports,
-        @JsonProperty("leads") List<String> leads,
-        @JsonProperty("specialists") List<String> specialists,
-        @JsonProperty("errorMessages") List<String> errorMessages) {
-      super();
-      this.dateFormat = dateFormat;
-      this.destinationTerminology = destinationTerminology;
-      this.destinationTerminologyVersion = destinationTerminologyVersion;
-      this.editingCycleBeginDate = editingCycleBeginDate;
-      this.groupStructure = groupStructure;
-      this.mapRefsetPattern = mapRefsetPattern;
-      this.name = name;
-      this.projectSpecificAlgorithmHandlerClass = projectSpecificAlgorithmHandlerClass;
-      this.propagatedFlag = propagatedFlag;
-      this.isPublic = isPublic;
-      this.isTeamBased = isTeamBased;
-      this.refSetId = refSetId;
-      this.refSetName = refSetName;
-      this.sourceTerminology = sourceTerminology;
-      this.sourceTerminologyVersion = sourceTerminologyVersion;
-      this.workflowType = workflowType;
-      this.mapRelationStyle = mapRelationStyle;
-      this.scopeDescendantsFlag = scopeDescendantsFlag;
-      this.includeScopeConcepts = includeScopeConcepts;
-      this.excludeScopeConcepts = excludeScopeConcepts;
-      this.reports = reports;
-      this.leads = leads;
-      this.specialists = specialists;
-      this.errorMessages = errorMessages;
-    }
-
-    public String getDateFormat() {
-      return dateFormat;
-    }
-
-    public void setDateFormat(String dateFormat) {
-      this.dateFormat = dateFormat;
-    }
-
-    public String getDestinationTerminology() {
-      return destinationTerminology;
-    }
-
-    public void setDestinationTerminology(String destinationTerminology) {
-      this.destinationTerminology = destinationTerminology;
-    }
-
-    public String getDestinationTerminologyVersion() {
-      return destinationTerminologyVersion;
-    }
-
-    public void setDestinationTerminologyVersion(
-        String destinationTerminologyVersion) {
-      this.destinationTerminologyVersion = destinationTerminologyVersion;
-    }
-
-    public String getEditingCycleBeginDate() {
-      return editingCycleBeginDate;
-    }
-
-    public void setEditingCycleBeginDate(String editingCycleBeginDate) {
-      this.editingCycleBeginDate = editingCycleBeginDate;
-    }
-
-    public Boolean getGroupStructure() {
-      return groupStructure;
-    }
-
-    public void setGroupStructure(Boolean groupStructure) {
-      this.groupStructure = groupStructure;
-    }
-
-    public String getMapRefsetPattern() {
-      return mapRefsetPattern;
-    }
-
-    public void setMapRefsetPattern(String mapRefsetPattern) {
-      this.mapRefsetPattern = mapRefsetPattern;
-    }
-
-    public String getName() {
-      return name;
-    }
-
-    public void setName(String name) {
-      this.name = name;
-    }
-
-    public String getProjectSpecificAlgorithmHandlerClass() {
-      return projectSpecificAlgorithmHandlerClass;
-    }
-
-    public void setProjectSpecificAlgorithmHandlerClass(
-        String projectSpecificAlgorithmHandlerClass) {
-      this.projectSpecificAlgorithmHandlerClass = projectSpecificAlgorithmHandlerClass;
-    }
-
-    public Boolean getPropagatedFlag() {
-      return propagatedFlag;
-    }
-
-    public void setPropagatedFlag(Boolean propagatedFlag) {
-      this.propagatedFlag = propagatedFlag;
-    }
-
-    public Boolean getIsPublic() {
-      return isPublic;
-    }
-
-    public void setIsPublic(Boolean isPublic) {
-      this.isPublic = isPublic;
-    }
-
-    public Boolean getIsTeamBased() {
-      return isTeamBased;
-    }
-
-    public void setIsTeamBased(Boolean isTeamBased) {
-      this.isTeamBased = isTeamBased;
-    }
-
-    public String getRefSetId() {
-      return refSetId;
-    }
-
-    public void setRefSetId(String refSetId) {
-      this.refSetId = refSetId;
-    }
-
-    public String getRefSetName() {
-      return refSetName;
-    }
-
-    public void setRefSetName(String refSetName) {
-      this.refSetName = refSetName;
-    }
-
-    public String getSourceTerminology() {
-      return sourceTerminology;
-    }
-
-    public void setSourceTerminology(String sourceTerminology) {
-      this.sourceTerminology = sourceTerminology;
-    }
-
-    public String getSourceTerminologyVersion() {
-      return sourceTerminologyVersion;
-    }
-
-    public void setSourceTerminologyVersion(String sourceTerminologyVersion) {
-      this.sourceTerminologyVersion = sourceTerminologyVersion;
-    }
-
-    public String getWorkflowType() {
-      return workflowType;
-    }
-
-    public void setWorkflowType(String workflowType) {
-      this.workflowType = workflowType;
-    }
-
-    public String getMapRelationStyle() {
-      return mapRelationStyle;
-    }
-
-    public void setMapRelationStyle(String mapRelationStyle) {
-      this.mapRelationStyle = mapRelationStyle;
-    }
-
-    public Boolean getScopeDescendantsFlag() {
-      return scopeDescendantsFlag;
-    }
-
-    public void setScopeDescendantsFlag(Boolean scopeDescendantsFlag) {
-      this.scopeDescendantsFlag = scopeDescendantsFlag;
-    }
-
-    public List<String> getIncludeScopeConcepts() {
-      return includeScopeConcepts;
-    }
-
-    public void setIncludeScopeConcepts(List<String> includeScopeConcepts) {
-      this.includeScopeConcepts = includeScopeConcepts;
-    }
-    
-    public List<String> getExcludeScopeConcepts() {
-      return excludeScopeConcepts;
-    }
-
-    public void setExcludeScopeConcepts(List<String> excludeScopeConcepts) {
-      this.excludeScopeConcepts = excludeScopeConcepts;
-    }
-
-    public List<String> getReports() {
-      return reports;
-    }
-
-    public void setReports(List<String> reports) {
-      this.reports = reports;
-    }
-
-    public List<String> getLeads() {
-      return leads;
-    }
-
-    public void setLeads(List<String> leads) {
-      this.leads = leads;
-    }
-
-    public List<String> getSpecialists() {
-      return specialists;
-    }
-
-    public void setSpecialists(List<String> specialists) {
-      this.specialists = specialists;
-    }
-    
-    public List<String> getErrorMessages() {
-      return errorMessages;
-    }
-
-    public void setErrorMessages(List<String> errorMessages) {
-      this.errorMessages = errorMessages;
-    }
-
+    return false;
   }
 
-  @SuppressWarnings("unused")
-  @JsonIgnoreProperties(ignoreUnknown = true)
-  private static class LoadReportDefinition {
-    private String description;
-    private String diffReportDefinitionName;
-    private String frequency;
-    private Boolean isDiffReport;
-    private Boolean isQACheck;
-    private String name;
-    private String query;
-    private String queryType;
-    private String resultType;
-    private String roleRequired;
-    private String timePeriod;
-
-    /**
-     * Default constructor.
-     */
-    public LoadReportDefinition() {
+  private boolean containsMapAdvice(List<MapAdvice> mapAdvices,
+      String mapAdviceName) {
+    if (mapAdvices == null || mapAdviceName == null) {
+      return false;
+    } else {
+      for (MapAdvice mapAdvice : mapAdvices) {
+        if (mapAdviceName.equals(mapAdvice.getName())) {
+          return true;
+        }
+      }
     }
-
-    /**
-     * 
-     * @param description
-     * @param diffReportDefinitionName
-     * @param frequency
-     * @param isDiffReport
-     * @param isQACheck
-     * @param name
-     * @param query
-     * @param queryType
-     * @param resultType
-     * @param roleRequired
-     * @param timePeriod
-     */
-    @JsonCreator
-    public LoadReportDefinition(@JsonProperty("description") String description,
-        @JsonProperty("diffReportDefinitionName") String diffReportDefinitionName,
-        @JsonProperty("frequency") String frequency,
-        @JsonProperty("isDiffReport") Boolean isDiffReport,
-        @JsonProperty("isQACheck") Boolean isQACheck,
-        @JsonProperty("name") String name, @JsonProperty("query") String query,
-        @JsonProperty("queryType") String queryType,
-        @JsonProperty("resultType") String resultType,
-        @JsonProperty("roleRequired") String roleRequired,
-        @JsonProperty("timePeriod") String timePeriod) {
-      super();
-      this.description = description;
-      this.diffReportDefinitionName = diffReportDefinitionName;
-      this.frequency = frequency;
-      this.isDiffReport = isDiffReport;
-      this.isQACheck = isQACheck;
-      this.name = name;
-      this.query = query;
-      this.queryType = queryType;
-      this.resultType = resultType;
-      this.roleRequired = roleRequired;
-      this.timePeriod = timePeriod;
-    }
-
-    public String getDescription() {
-      return description;
-    }
-
-    public void setDescription(String description) {
-      this.description = description;
-    }
-
-    public String getDiffReportDefinitionName() {
-      return diffReportDefinitionName;
-    }
-
-    public void setDiffReportDefinitionName(String diffReportDefinitionName) {
-      this.diffReportDefinitionName = diffReportDefinitionName;
-    }
-
-    public String getFrequency() {
-      return frequency;
-    }
-
-    public void setFrequency(String frequency) {
-      this.frequency = frequency;
-    }
-
-    public Boolean getIsDiffReport() {
-      return isDiffReport;
-    }
-
-    public void setIsDiffReport(Boolean isDiffReport) {
-      this.isDiffReport = isDiffReport;
-    }
-
-    public Boolean getIsQACheck() {
-      return isQACheck;
-    }
-
-    public void setIsQACheck(Boolean isQACheck) {
-      this.isQACheck = isQACheck;
-    }
-
-    public String getName() {
-      return name;
-    }
-
-    public void setName(String name) {
-      this.name = name;
-    }
-
-    public String getQuery() {
-      return query;
-    }
-
-    public void setQuery(String query) {
-      this.query = query;
-    }
-
-    public String getQueryType() {
-      return queryType;
-    }
-
-    public void setQueryType(String queryType) {
-      this.queryType = queryType;
-    }
-
-    public String getResultType() {
-      return resultType;
-    }
-
-    public void setResultType(String resultType) {
-      this.resultType = resultType;
-    }
-
-    public String getRoleRequired() {
-      return roleRequired;
-    }
-
-    public void setRoleRequired(String roleRequired) {
-      this.roleRequired = roleRequired;
-    }
-
-    public String getTimePeriod() {
-      return timePeriod;
-    }
-
-    public void setTimePeriod(String timePeriod) {
-      this.timePeriod = timePeriod;
-    }
-
+    return false;
   }
 
-  @SuppressWarnings("unused")
-  @JsonIgnoreProperties(ignoreUnknown = true)
-  private static class LoadUser {
-    private String username;
-    private String name;
-    private String email;
-    private String applicationRole;
-    private String team;
-
-    /**
-     * No args constructor for use in serialization
-     * 
-     */
-    public LoadUser() {
+  private boolean containsMapRelation(List<MapRelation> mapRelations,
+      String mapRelationName) {
+    if (mapRelations == null || mapRelationName == null) {
+      return false;
+    } else {
+      for (MapRelation mapRelation : mapRelations) {
+        if (mapRelationName.equals(mapRelation.getName())) {
+          return true;
+        }
+      }
     }
-
-    /**
-     * 
-     * @param username
-     * @param email
-     * @param name
-     * @param applicationRole
-     */
-    @JsonCreator
-    public LoadUser(@JsonProperty("username") String username,
-        @JsonProperty("name") String name, @JsonProperty("email") String email,
-        @JsonProperty("applicationRole") String applicationRole,
-        @JsonProperty("team") String team) {
-      super();
-      this.username = username;
-      this.name = name;
-      this.email = email;
-      this.applicationRole = applicationRole;
-      this.team = team;
-    }
-
-    public String getUsername() {
-      return username;
-    }
-
-    public void setUsername(String username) {
-      this.username = username;
-    }
-
-    public String getName() {
-      return name;
-    }
-
-    public void setName(String name) {
-      this.name = name;
-    }
-
-    public String getEmail() {
-      return email;
-    }
-
-    public void setEmail(String email) {
-      this.email = email;
-    }
-
-    public String getApplicationRole() {
-      return applicationRole;
-    }
-
-    public void setApplicationRole(String applicationRole) {
-      this.applicationRole = applicationRole;
-    }
-
-    public String getTeam() {
-      return team;
-    }
-
-    public void setTeam(String team) {
-      this.team = team;
-    }
-
+    return false;
   }
 
-  @SuppressWarnings("unused")
-  @JsonIgnoreProperties(ignoreUnknown = true)
-  private static class LoadPrinciple {
-    private String name;
-    private String detail;
-    private String sectionRef;
-    private String prinicpleId;
-
-    public LoadPrinciple() {
+  private boolean containsMapAgeRange(List<MapAgeRange> mapAgeRanges,
+      String mapAgeRangeName) {
+    if (mapAgeRanges == null || mapAgeRangeName == null) {
+      return false;
+    } else {
+      for (MapAgeRange mapAgeRange : mapAgeRanges) {
+        if (mapAgeRangeName.equals(mapAgeRange.getName())) {
+          return true;
+        }
+      }
     }
-
-    /**
-     * 
-     * @param name
-     * @param detail
-     * @param sectionRef
-     * @param principleId
-     */
-    @JsonCreator
-    public LoadPrinciple(@JsonProperty("name") String name,
-        @JsonProperty("detail") String detail,
-        @JsonProperty("sectionRef") String sectionRef,
-        @JsonProperty("principleId") String principleId) {
-      super();
-      this.name = name;
-      this.detail = detail;
-      this.sectionRef = sectionRef;
-      this.prinicpleId = principleId;
-    }
-
-    public String getName() {
-      return name;
-    }
-
-    public void setName(String name) {
-      this.name = name;
-    }
-
-    public String getDetail() {
-      return detail;
-    }
-
-    public void setDetail(String detail) {
-      this.detail = detail;
-    }
-
-    public String getSectionRef() {
-      return sectionRef;
-    }
-
-    public void setSectionRef(String sectionRef) {
-      this.sectionRef = sectionRef;
-    }
-
-    public String getPrinicpleId() {
-      return prinicpleId;
-    }
-
-    public void setPrinicpleId(String prinicpleId) {
-      this.prinicpleId = prinicpleId;
-    }
-
+    return false;
   }
 
-  @SuppressWarnings("unused")
-  @JsonIgnoreProperties(ignoreUnknown = true)
-  private static class LoadAdvice {
-    private String name;
-    private String detail;
-    private boolean isAllowableForNullTarget;
-    private boolean isComputed;
-
-    public LoadAdvice() {
+  private boolean containsReportDefintion(
+      List<ReportDefinition> reportDefintions, String reportName) {
+    if (reportDefintions == null || reportName == null) {
+      return false;
+    } else {
+      for (ReportDefinition reportDefintion : reportDefintions) {
+        if (reportName.equals(reportDefintion.getName())) {
+          return true;
+        }
+      }
     }
-
-    public LoadAdvice(@JsonProperty("name") String name,
-        @JsonProperty("detail") String detail,
-        @JsonProperty("isAllowableForNullTarget") boolean isAllowableForNullTarget,
-        @JsonProperty("isComputed") boolean isComputed) {
-
-    }
-
-    public String getName() {
-      return name;
-    }
-
-    public void setName(String name) {
-      this.name = name;
-    }
-
-    public String getDetail() {
-      return detail;
-    }
-
-    public void setDetail(String detail) {
-      this.detail = detail;
-    }
-
-    public boolean isAllowableForNullTarget() {
-      return isAllowableForNullTarget;
-    }
-
-    public void setAllowableForNullTarget(boolean isAllowableForNullTarget) {
-      this.isAllowableForNullTarget = isAllowableForNullTarget;
-    }
-
-    public boolean isComputed() {
-      return isComputed;
-    }
-
-    public void setComputed(boolean isComputed) {
-      this.isComputed = isComputed;
-    }
+    return false;
   }
 
-  @SuppressWarnings("unused")
-  @JsonIgnoreProperties(ignoreUnknown = true)
-  private static class LoadRelation {
-    private String name;
-    private String abbreviation;
-    private String terminologyId;
-    private boolean isAllowableForNullTarget;
-    private boolean isComputed;
-
-    public LoadRelation() {
+  private boolean containsMapProject(List<MapProject> mapProjects,
+      String mapProjectName) {
+    if (mapProjectName == null || mapProjects == null) {
+      return false;
+    } else {
+      for (MapProject mapProject : mapProjects) {
+        if (mapProjectName.equals(mapProject.getName())) {
+          return true;
+        }
+      }
     }
-
-    public LoadRelation(@JsonProperty("name") String name,
-        @JsonProperty("abbreviation") String abbreviation,
-        @JsonProperty("terminologyId") String terminologyId,
-        @JsonProperty("isAllowableForNullTarget") boolean isAllowableForNullTarget,
-        @JsonProperty("isComputed") boolean isComputed) {
-      this.name = name;
-      this.abbreviation = abbreviation;
-      this.terminologyId = terminologyId;
-      this.isAllowableForNullTarget = isAllowableForNullTarget;
-      this.isComputed = isComputed;
-    }
-
-    public String getName() {
-      return name;
-    }
-
-    public void setName(String name) {
-      this.name = name;
-    }
-
-    public String getAbbreviation() {
-      return abbreviation;
-    }
-
-    public void setAbbreviation(String abbreviation) {
-      this.abbreviation = abbreviation;
-    }
-
-    public String getTerminologyId() {
-      return terminologyId;
-    }
-
-    public void setTerminologyId(String terminologyId) {
-      this.terminologyId = terminologyId;
-    }
-
-    public boolean isAllowableForNullTarget() {
-      return isAllowableForNullTarget;
-    }
-
-    public void setAllowableForNullTarget(boolean isAllowableForNullTarget) {
-      this.isAllowableForNullTarget = isAllowableForNullTarget;
-    }
-
-    public boolean isComputed() {
-      return isComputed;
-    }
-
-    public void setComputed(boolean isComputed) {
-      this.isComputed = isComputed;
-    }
-
-  }
-
-  @SuppressWarnings("unused")
-  @JsonIgnoreProperties(ignoreUnknown = true)
-  private static class LoadAgeRange {
-    private String name;
-    private boolean lowerInclusive;
-    private String lowerUnits;
-    private Integer lowerValue;
-    private boolean upperInclusive;
-    private String upperUnits;
-    private Integer upperValue;
-
-    public LoadAgeRange() {
-    }
-
-    public LoadAgeRange(@JsonProperty("name") String name,
-        @JsonProperty("lowerInclusive") boolean lowerInclusive,
-        @JsonProperty("lowerUnits") String lowerUnits,
-        @JsonProperty("lowerValue") Integer lowerValue,
-        @JsonProperty("upperInclusive") boolean upperInclusive,
-        @JsonProperty("upperUnits") String upperUnits,
-        @JsonProperty("upperValue") Integer upperValue) {
-      this.name = name;
-      this.lowerInclusive = lowerInclusive;
-      this.lowerUnits = lowerUnits;
-      this.lowerValue = lowerValue;
-      this.upperInclusive = upperInclusive;
-      this.upperUnits = upperUnits;
-      this.upperValue = upperValue;
-    }
-
-    public String getName() {
-      return name;
-    }
-
-    public void setName(String name) {
-      this.name = name;
-    }
-
-    public boolean isLowerInclusive() {
-      return lowerInclusive;
-    }
-
-    public void setLowerInclusive(boolean lowerInclusive) {
-      this.lowerInclusive = lowerInclusive;
-    }
-
-    public String getLowerUnits() {
-      return lowerUnits;
-    }
-
-    public void setLowerUnits(String lowerUnits) {
-      this.lowerUnits = lowerUnits;
-    }
-
-    public Integer getLowerValue() {
-      return lowerValue;
-    }
-
-    public void setLowerValue(Integer lowerValue) {
-      this.lowerValue = lowerValue;
-    }
-
-    public boolean isUpperInclusive() {
-      return upperInclusive;
-    }
-
-    public void setUpperInclusive(boolean upperInclusive) {
-      this.upperInclusive = upperInclusive;
-    }
-
-    public String getUpperUnits() {
-      return upperUnits;
-    }
-
-    public void setUpperUnits(String upperUnits) {
-      this.upperUnits = upperUnits;
-    }
-
-    public Integer getUpperValue() {
-      return upperValue;
-    }
-
-    public void setUpperValue(Integer upperValue) {
-      this.upperValue = upperValue;
-    }
-
+    return false;
   }
 }
