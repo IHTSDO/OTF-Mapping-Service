@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.6.4</version>
+    <version>1.6.5</version>
     <relativePath>../../parent</relativePath>
   </parent>
 
@@ -56,6 +56,16 @@
     <target.map.project.name></target.map.project.name>
     
     <report.map.project.ids></report.map.project.ids>
+    
+    <maven.executer.config.file></maven.executer.config.file>
+    <config.file.root></config.file.root>    
+    <advice.config.file></advice.config.file>
+    <ageRange.config.file></ageRange.config.file>
+    <principle.config.file></principle.config.file>
+    <project.config.file></project.config.file>
+    <relation.config.file></relation.config.file>
+    <report.config.file></report.config.file>
+    <user.config.file></user.config.file>
     
   </properties>
 
@@ -587,6 +597,95 @@
                 <goals>
                   <goal>generate-demo-data</goal>
                 </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    
+    <!-- Generate demo data -Drun.config=.. must also be specified. -->
+    <profile>
+      <id>SetupApplication</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>maven-mojo-executor</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>maven-mojo-executor</goal>
+                </goals>
+                <configuration>
+					<mavenExecuterConfigFile>${maven.executer.config.file}</mavenExecuterConfigFile>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    
+    <!-- Generate demo data -Drun.config=.. must also be specified. -->
+    <profile>
+      <id>LoadAppConfigDataMojo</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>load-app-config-data</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>load-app-config-data</goal>
+                </goals>
+                <configuration>
+                	<configFileRoot>${config.file.root}</configFileRoot>
+                	<adviceConfigFile>${advice.config.file}</adviceConfigFile>
+                	<ageRangeConfigFile>${ageRange.config.file}</ageRangeConfigFile>
+                	<principleConfigFile>${principle.config.file}</principleConfigFile>
+                	<projectConfigFile>${project.config.file}</projectConfigFile>
+                	<relationConfigFile>${relation.config.file}</relationConfigFile>
+                	<reportConfigFile>${report.config.file}</reportConfigFile>
+                	<userConfigFile>${user.config.file}</userConfigFile>
+				</configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    
+    <!-- Generate demo data -Drun.config=.. must also be specified. -->
+    <profile>
+      <id>ExportAppConfigDataMojo</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>export-app-config-data</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>export-app-config-data</goal>
+                </goals>
+                <configuration>
+                	<configFileRoot>${config.file.root}</configFileRoot>
+                	<adviceConfigFile>${advice.config.file}</adviceConfigFile>
+                	<ageRangeConfigFile>${ageRange.config.file}</ageRangeConfigFile>
+                	<principleConfigFile>${principle.config.file}</principleConfigFile>
+                	<projectConfigFile>${project.config.file}</projectConfigFile>
+                	<relationConfigFile>${relation.config.file}</relationConfigFile>
+                	<reportConfigFile>${report.config.file}</reportConfigFile>
+                	<userConfigFile>${user.config.file}</userConfigFile>
+				</configuration>
               </execution>
             </executions>
           </plugin>

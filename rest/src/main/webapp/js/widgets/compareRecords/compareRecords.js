@@ -272,7 +272,7 @@ angular
       $scope.getRecordsInConflict = function() {
         // initialize local variables
         var leadRecordId = $routeParams.recordId;
-
+        
         // get the lead record (do everything else inside the "then")
         gpService.increment();
         $http({
@@ -451,7 +451,7 @@ angular
             // get the groups
             if ($scope.project.groupStructure == true)
               getGroups();
-
+            
             // initialize the entries
             initializeEntries();
 
@@ -1436,7 +1436,7 @@ angular
       
       $scope.getUsersForConceptHistorical = function() {
         // retrieve all records with this concept id
-        gpService.increment();
+        //gpService.increment();
         $http(
           {
             url : root_mapping + 'record/concept/id/' + $scope.leadRecord.conceptId 
@@ -1458,10 +1458,10 @@ angular
               }
             }
             $scope.returnRecipients = users;
-            gpService.decrement();
+            //gpService.decrement();
         }).error(function(data, status, headers, config) {
           $rootScope.handleHttpError(data, status, headers, config);
-          gpService.decrement();
+          //gpService.decrement();
         }).then(function() {          
         });
       };
