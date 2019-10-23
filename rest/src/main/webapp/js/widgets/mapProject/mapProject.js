@@ -247,7 +247,7 @@ angular
       $scope.openConceptBrowser = function() {
         var myWindow = null;
 
-        if (appConfig['deploy.snomed.browser.force']) {
+        if (appConfig['deploy.snomed.browser.force'] === 'true') {
          myWindow = window.open(appConfig['deploy.snomed.browser.url']); 
         }
         else {

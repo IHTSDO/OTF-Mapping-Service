@@ -718,7 +718,7 @@ angular
           if ($scope.searchParameters.targetName
             && $scope.searchParameters.targetName.length > 0) {
             queryRestrictions.push('mapEntries.targetName:'
-              + $scope.searchParameters.targetName);
+              + '"' + $scope.searchParameters.targetName + '"');
           }
 
           // check map advices
