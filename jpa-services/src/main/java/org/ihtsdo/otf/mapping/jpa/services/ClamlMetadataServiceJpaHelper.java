@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.util.HashMap;
@@ -17,8 +20,8 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
  * Implementation of {@link MetadataService} for ClaML based terminologies.
  * 
  */
-public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
-    MetadataService {
+public class ClamlMetadataServiceJpaHelper extends RootServiceJpa
+    implements MetadataService {
 
   /**
    * Instantiates an empty {@link ClamlMetadataServiceJpaHelper}.
@@ -67,25 +70,27 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
   @Override
   public Map<String, String> getModules(String terminology, String version)
     throws Exception {
-    ContentService contentService = new ContentServiceJpa();
-    String rootId = null;
-    SearchResultList results =
-        contentService.findConceptsForQuery("Module", new PfsParameterJpa());
-    for (SearchResult result : results.getSearchResults()) {
-      if (result.getTerminology().equals(terminology)
-          && result.getTerminologyVersion().equals(version)
-          && result.getValue().equals("Module")) {
-        rootId = result.getTerminologyId();
-        break;
-      }
-    }
-    if (rootId == null)
-      throw new Exception("Module concept cannot be found.");
 
-    Map<String, String> result =
-        getDescendantMap(contentService, rootId, terminology, version);
-    contentService.close();
-    return result;
+    try (ContentService contentService = new ContentServiceJpa();) {
+      String rootId = null;
+      SearchResultList results =
+          contentService.findConceptsForQuery("Module", new PfsParameterJpa());
+      for (SearchResult result : results.getSearchResults()) {
+        if (result.getTerminology().equals(terminology)
+            && result.getTerminologyVersion().equals(version)
+            && result.getValue().equals("Module")) {
+          rootId = result.getTerminologyId();
+          break;
+        }
+      }
+      if (rootId == null)
+        throw new Exception("Module concept cannot be found.");
+
+      Map<String, String> result =
+          getDescendantMap(contentService, rootId, terminology, version);
+      return result;
+    }
+
   }
 
   /* see superclass */
@@ -119,28 +124,30 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public Map<String, String> getSimpleRefSets(String terminology, String version)
-    throws NumberFormatException, Exception {
-    ContentService contentService = new ContentServiceJpa();
-    String rootId = null;
-    SearchResultList results =
-        contentService.findConceptsForQuery("Simple refsets",
-            new PfsParameterJpa());
-    for (SearchResult result : results.getSearchResults()) {
-      if (result.getTerminology().equals(terminology)
-          && result.getTerminologyVersion().equals(version)
-          && result.getValue().equals("Simple refsets")) {
-        rootId = result.getTerminologyId();
-        break;
-      }
-    }
-    if (rootId == null)
-      throw new Exception("Simple refsets concept cannot be found for " + terminology + " " + version + ".\n" + results.getSearchResults());
+  public Map<String, String> getSimpleRefSets(String terminology,
+    String version) throws NumberFormatException, Exception {
 
-    Map<String, String> result =
-        getDescendantMap(contentService, rootId, terminology, version);
-    contentService.close();
-    return result;
+    try (ContentService contentService = new ContentServiceJpa();) {
+      String rootId = null;
+      SearchResultList results = contentService
+          .findConceptsForQuery("Simple refsets", new PfsParameterJpa());
+      for (SearchResult result : results.getSearchResults()) {
+        if (result.getTerminology().equals(terminology)
+            && result.getTerminologyVersion().equals(version)
+            && result.getValue().equals("Simple refsets")) {
+          rootId = result.getTerminologyId();
+          break;
+        }
+      }
+      if (rootId == null)
+        throw new Exception("Simple refsets concept cannot be found for "
+            + terminology + " " + version + ".\n" + results.getSearchResults());
+
+      Map<String, String> result =
+          getDescendantMap(contentService, rootId, terminology, version);
+
+      return result;
+    }
   }
 
   /* see superclass */
@@ -154,172 +161,182 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
   @Override
   public Map<String, String> getDefinitionStatuses(String terminology,
     String version) throws NumberFormatException, Exception {
-    ContentService contentService = new ContentServiceJpa();
-    String rootId = null;
-    SearchResultList results =
-        contentService.findConceptsForQuery("Definition status",
-            new PfsParameterJpa());
-    for (SearchResult result : results.getSearchResults()) {
-      if (result.getTerminology().equals(terminology)
-          && result.getTerminologyVersion().equals(version)
-          && result.getValue().equals("Definition status")) {
-        rootId = result.getTerminologyId();
-        break;
-      }
-    }
-    if (rootId == null)
-      throw new Exception("Definition status concept cannot be found.");
 
-    Map<String, String> result =
-        getDescendantMap(contentService, rootId, terminology, version);
-    contentService.close();
-    return result;
+    try (ContentService contentService = new ContentServiceJpa();) {
+      String rootId = null;
+      SearchResultList results = contentService
+          .findConceptsForQuery("Definition status", new PfsParameterJpa());
+      for (SearchResult result : results.getSearchResults()) {
+        if (result.getTerminology().equals(terminology)
+            && result.getTerminologyVersion().equals(version)
+            && result.getValue().equals("Definition status")) {
+          rootId = result.getTerminologyId();
+          break;
+        }
+      }
+      if (rootId == null)
+        throw new Exception("Definition status concept cannot be found.");
+
+      Map<String, String> result =
+          getDescendantMap(contentService, rootId, terminology, version);
+
+      return result;
+    }
   }
 
   /* see superclass */
   @Override
   public Map<String, String> getDescriptionTypes(String terminology,
     String version) throws NumberFormatException, Exception {
-    ContentService contentService = new ContentServiceJpa();
-    String rootId = null;
-    SearchResultList results =
-        contentService.findConceptsForQuery("Description type",
-            new PfsParameterJpa());
-    for (SearchResult result : results.getSearchResults()) {
-      if (result.getTerminology().equals(terminology)
-          && result.getTerminologyVersion().equals(version)
-          && result.getValue().equals("Description type")) {
-        rootId = result.getTerminologyId();
-        break;
+
+    try (ContentService contentService = new ContentServiceJpa();) {
+      String rootId = null;
+      SearchResultList results = contentService
+          .findConceptsForQuery("Description type", new PfsParameterJpa());
+      for (SearchResult result : results.getSearchResults()) {
+        if (result.getTerminology().equals(terminology)
+            && result.getTerminologyVersion().equals(version)
+            && result.getValue().equals("Description type")) {
+          rootId = result.getTerminologyId();
+          break;
+        }
       }
+      if (rootId == null)
+        throw new Exception("Description type concept cannot be found.");
+      Map<String, String> result =
+          getDescendantMap(contentService, rootId, terminology, version);
+
+      return result;
     }
-    if (rootId == null)
-      throw new Exception("Description type concept cannot be found.");
-    Map<String, String> result =
-        getDescendantMap(contentService, rootId, terminology, version);
-    contentService.close();
-    return result;
   }
 
   /* see superclass */
   @Override
   public Map<String, String> getCaseSignificances(String terminology,
     String version) throws NumberFormatException, Exception {
-    ContentService contentService = new ContentServiceJpa();
-    String rootId = null;
-    SearchResultList results =
-        contentService.findConceptsForQuery("Case significance",
-            new PfsParameterJpa());
-    for (SearchResult result : results.getSearchResults()) {
-      if (result.getTerminology().equals(terminology)
-          && result.getTerminologyVersion().equals(version)
-          && result.getValue().equals("Case significance")) {
-        rootId = result.getTerminologyId();
-        break;
-      }
-    }
-    if (rootId == null)
-      throw new Exception("Case significance concept cannot be found.");
 
-    Map<String, String> result =
-        getDescendantMap(contentService, rootId, terminology, version);
-    contentService.close();
-    return result;
+    try (ContentService contentService = new ContentServiceJpa();) {
+      String rootId = null;
+      SearchResultList results = contentService
+          .findConceptsForQuery("Case significance", new PfsParameterJpa());
+      for (SearchResult result : results.getSearchResults()) {
+        if (result.getTerminology().equals(terminology)
+            && result.getTerminologyVersion().equals(version)
+            && result.getValue().equals("Case significance")) {
+          rootId = result.getTerminologyId();
+          break;
+        }
+      }
+      if (rootId == null)
+        throw new Exception("Case significance concept cannot be found.");
+
+      Map<String, String> result =
+          getDescendantMap(contentService, rootId, terminology, version);
+
+      return result;
+    }
   }
 
   /* see superclass */
   @Override
   public Map<String, String> getRelationshipTypes(String terminology,
     String version) throws NumberFormatException, Exception {
-    // find all active descendants of 106237007
-    ContentService contentService = new ContentServiceJpa();
-    String rootId = null;
-    SearchResultList results =
-        contentService.findConceptsForQuery("Relationship type",
-            new PfsParameterJpa());
-    for (SearchResult result : results.getSearchResults()) {
-      if (result.getTerminology().equals(terminology)
-          && result.getTerminologyVersion().equals(version)
-          && result.getValue().equals("Relationship type")) {
-        rootId = result.getTerminologyId();
-        break;
-      }
-    }
-    if (rootId == null)
-      throw new Exception("Relationship type concept cannot be found.");
 
-    Map<String, String> result =
-        getDescendantMap(contentService, rootId, terminology, version);
-    contentService.close();
-    return result;
+    // find all active descendants of 106237007
+    try (ContentService contentService = new ContentServiceJpa();) {
+      String rootId = null;
+      SearchResultList results = contentService
+          .findConceptsForQuery("Relationship type", new PfsParameterJpa());
+      for (SearchResult result : results.getSearchResults()) {
+        if (result.getTerminology().equals(terminology)
+            && result.getTerminologyVersion().equals(version)
+            && result.getValue().equals("Relationship type")) {
+          rootId = result.getTerminologyId();
+          break;
+        }
+      }
+      if (rootId == null)
+        throw new Exception("Relationship type concept cannot be found.");
+
+      Map<String, String> result =
+          getDescendantMap(contentService, rootId, terminology, version);
+
+      return result;
+    }
   }
 
   /* see superclass */
   @Override
   public Map<String, String> getHierarchicalRelationshipTypes(
-    String terminology, String version) throws NumberFormatException, Exception {
+    String terminology, String version)
+    throws NumberFormatException, Exception {
     Map<String, String> map = new HashMap<>();
 
     // find all active descendants of isa
-    ContentService contentService = new ContentServiceJpa();
-    Concept isaRel =
-        contentService.getConcept(getIsaRelationshipType(terminology, version)
-            .toString(), terminology, version);
-    map.put(new String(isaRel.getTerminologyId()),
-        isaRel.getDefaultPreferredName());
-    contentService.close();
-    return map;
+    try (ContentService contentService = new ContentServiceJpa();) {
+      Concept isaRel = contentService.getConcept(
+          getIsaRelationshipType(terminology, version).toString(), terminology,
+          version);
+      map.put(new String(isaRel.getTerminologyId()),
+          isaRel.getDefaultPreferredName());
+
+      return map;
+    }
   }
 
   /* see superclass */
   @Override
   public Map<String, String> getRelationshipCharacteristicTypes(
-    String terminology, String version) throws NumberFormatException, Exception {
-    ContentService contentService = new ContentServiceJpa();
-    String rootId = null;
-    SearchResultList results =
-        contentService.findConceptsForQuery("Characteristic type",
-            new PfsParameterJpa());
-    for (SearchResult result : results.getSearchResults()) {
-      if (result.getTerminology().equals(terminology)
-          && result.getTerminologyVersion().equals(version)
-          && result.getValue().equals("Characteristic type")) {
-        rootId = result.getTerminologyId();
-        break;
-      }
-    }
-    if (rootId == null)
-      throw new Exception("Characteristic type concept cannot be found.");
+    String terminology, String version)
+    throws NumberFormatException, Exception {
 
-    Map<String, String> result =
-        getDescendantMap(contentService, rootId, terminology, version);
-    contentService.close();
-    return result;
+    try (ContentService contentService = new ContentServiceJpa();) {
+      String rootId = null;
+      SearchResultList results = contentService
+          .findConceptsForQuery("Characteristic type", new PfsParameterJpa());
+      for (SearchResult result : results.getSearchResults()) {
+        if (result.getTerminology().equals(terminology)
+            && result.getTerminologyVersion().equals(version)
+            && result.getValue().equals("Characteristic type")) {
+          rootId = result.getTerminologyId();
+          break;
+        }
+      }
+      if (rootId == null)
+        throw new Exception("Characteristic type concept cannot be found.");
+
+      Map<String, String> result =
+          getDescendantMap(contentService, rootId, terminology, version);
+
+      return result;
+    }
   }
 
   /* see superclass */
   @Override
   public Map<String, String> getRelationshipModifiers(String terminology,
     String version) throws NumberFormatException, Exception {
-    ContentService contentService = new ContentServiceJpa();
-    String rootId = null;
-    SearchResultList results =
-        contentService.findConceptsForQuery("Modifier", new PfsParameterJpa());
-    for (SearchResult result : results.getSearchResults()) {
-      if (result.getTerminology().equals(terminology)
-          && result.getTerminologyVersion().equals(version)
-          && result.getValue().equals("Modifier")) {
-        rootId = result.getTerminologyId();
-        break;
-      }
-    }
-    if (rootId == null)
-      throw new Exception("Modifier concept cannot be found.");
 
-    Map<String, String> result =
-        getDescendantMap(contentService, rootId, terminology, version);
-    contentService.close();
-    return result;
+    try (ContentService contentService = new ContentServiceJpa();) {
+      String rootId = null;
+      SearchResultList results = contentService.findConceptsForQuery("Modifier",
+          new PfsParameterJpa());
+      for (SearchResult result : results.getSearchResults()) {
+        if (result.getTerminology().equals(terminology)
+            && result.getTerminologyVersion().equals(version)
+            && result.getValue().equals("Modifier")) {
+          rootId = result.getTerminologyId();
+          break;
+        }
+      }
+      if (rootId == null)
+        throw new Exception("Modifier concept cannot be found.");
+
+      Map<String, String> result =
+          getDescendantMap(contentService, rootId, terminology, version);
+
+      return result;
+    }
   }
 
   /* see superclass */
@@ -362,10 +379,11 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa implements
     // no-op - this is just helper class
     return null;
   }
-  
+
   /* see superclass */
   @Override
-  public Boolean checkTerminologyVersionExists(String terminology, String version) {
+  public Boolean checkTerminologyVersionExists(String terminology,
+    String version) {
     // no-op - this is just helper class
     return null;
   }

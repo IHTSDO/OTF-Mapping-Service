@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
 import org.apache.log4j.Logger;
@@ -15,68 +18,64 @@ import org.ihtsdo.otf.mapping.rest.impl.AdminServiceRestImpl;
  */
 public class LuceneReindexMojo extends AbstractTerminologyLoaderMojo {
 
-	/**
-	 * Whether to run this mojo against an active server.
-	 * @parameter 
-	 */
-	private boolean server = false;
-	
-	/**
-	 * The specified objects to index
-	 * @parameter 
-	 */
-	private String indexedObjects;
+  /**
+   * Whether to run this mojo against an active server.
+   * @parameter
+   */
+  private boolean server = false;
 
-	/**
-	 * Instantiates a {@link LuceneReindexMojo} from the specified parameters.
-	 */
-	public LuceneReindexMojo() {
-		super();
-		// do nothing
-	}
+  /**
+   * The specified objects to index
+   * @parameter
+   */
+  private String indexedObjects;
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.apache.maven.plugin.Mojo#execute()
-	 */
-	@Override
-	public void execute() throws MojoFailureException {
+  /**
+   * Instantiates a {@link LuceneReindexMojo} from the specified parameters.
+   */
+  public LuceneReindexMojo() {
+    super();
+    // do nothing
+  }
 
-		getLog().info("Lucene reindexing called via mojo.");
-		getLog().info("  Indexed objects  = " + indexedObjects);
-		getLog().info("  Expect server up = " + server);
+  /** see superclass */
+  @Override
+  public void execute() throws MojoFailureException {
 
-		try {
+    getLog().info("Lucene reindexing called via mojo.");
+    getLog().info("  Indexed objects  = " + indexedObjects);
+    getLog().info("  Expect server up = " + server);
 
-			// Track system level information
-			setProcessStartTime();
+    try {
 
-			// throws exception if server is required but not running.
-			// or if server is not required but running.
-			Logger.getLogger(getClass()).info("server is:" + this.server);
-			validateServerStatus(server);
+      // Track system level information
+      setProcessStartTime();
 
-			if (serverRunning != null && !serverRunning) {
-				getLog().info("Running directly");
+      // throws exception if server is required but not running.
+      // or if server is not required but running.
+      Logger.getLogger(getClass()).info("server is:" + this.server);
+      validateServerStatus(server);
 
-				AdminServiceRestImpl service = new AdminServiceRestImpl();
-				service.luceneReindex(indexedObjects, getAuthToken());
+      if (serverRunning != null && !serverRunning) {
+        getLog().info("Running directly");
 
-			} else {
-				getLog().info("Running against server");
+        AdminServiceRestImpl service = new AdminServiceRestImpl();
+        service.luceneReindex(indexedObjects, getAuthToken());
 
-				// invoke the client
-				AdminClientRest client = new AdminClientRest(properties);
-				client.luceneReindex(indexedObjects, getAuthToken());
-			}
+      } else {
+        getLog().info("Running against server");
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new MojoFailureException("Unexpected exception:", e);
-		} finally {
-			getLog().info("      elapsed time = " + getTotalElapsedTimeStr());
-			getLog().info("done ...");
-		}
-	}
-	}
+        // invoke the client
+        AdminClientRest client = new AdminClientRest(properties);
+        client.luceneReindex(indexedObjects, getAuthToken());
+      }
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new MojoFailureException("Unexpected exception:", e);
+    } finally {
+      getLog().info("      elapsed time = " + getTotalElapsedTimeStr());
+      getLog().info("done ...");
+    }
+  }
+}

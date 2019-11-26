@@ -1,22 +1,8 @@
-/**
- * Copyright (c) 2012 International Health Terminology Standards Development
- * Organisation
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.mojo;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
@@ -39,7 +25,7 @@ import org.ihtsdo.otf.mapping.services.ReportService;
  * @goal remove-map-projects
  * @phase package
  */
-public class MapProjectDataRemoverMojo extends AbstractMojo {
+public class MapProjectDataRemoverMojo extends AbstractOtfMappingMojo {
 
   /**
    * Instantiates a {@link MapProjectDataRemoverMojo} from the specified
@@ -50,6 +36,7 @@ public class MapProjectDataRemoverMojo extends AbstractMojo {
     // Do nothing
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -59,10 +46,8 @@ public class MapProjectDataRemoverMojo extends AbstractMojo {
   public void execute() throws MojoFailureException {
     getLog().info("Starting removing map project data");
 
-    try {
-
-      MappingService mappingService = new MappingServiceJpa();
-      ReportService reportService = new ReportServiceJpa();
+    try (MappingService mappingService = new MappingServiceJpa();
+        ReportService reportService = new ReportServiceJpa();) {
 
       // Remove map projects
       for (MapProject p : mappingService.getMapProjects().getIterable()) {
@@ -127,8 +112,6 @@ public class MapProjectDataRemoverMojo extends AbstractMojo {
         reportService.removeReportDefinition(def.getId());
       }
 
-      mappingService.close();
-      reportService.close();
       getLog().info("done ...");
     } catch (Exception e) {
       e.printStackTrace();

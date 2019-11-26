@@ -1,6 +1,9 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
-import org.apache.maven.plugin.AbstractMojo;
+
 import org.apache.maven.plugin.MojoExecutionException;
 import org.ihtsdo.otf.mapping.jpa.handlers.ReleaseHandlerJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
@@ -17,7 +20,7 @@ import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
  * @goal begin-release
  * @phase package
  */
-public class ReleaseBeginMojo extends AbstractMojo {
+public class ReleaseBeginMojo extends AbstractOtfMappingMojo {
 
   /**
    * The refSet id.
@@ -51,9 +54,8 @@ public class ReleaseBeginMojo extends AbstractMojo {
           "You must specify only a single ref set id");
     }
 
-    try {
+    try (final MappingService mappingService = new MappingServiceJpa();) {
 
-      MappingService mappingService = new MappingServiceJpa();
       MapProject mapProject = null;
 
       for (MapProject project : mappingService.getMapProjects().getIterable()) {
@@ -65,9 +67,8 @@ public class ReleaseBeginMojo extends AbstractMojo {
 
       // Begin the release
       ReleaseHandler releaseHandler = new ReleaseHandlerJpa(testModeFlag);
-      getLog().info(
-          "  Handle project " + mapProject.getName() + ", "
-              + mapProject.getId());
+      getLog().info("  Handle project " + mapProject.getName() + ", "
+          + mapProject.getId());
       releaseHandler.setMapProject(mapProject);
       releaseHandler.beginRelease();
 

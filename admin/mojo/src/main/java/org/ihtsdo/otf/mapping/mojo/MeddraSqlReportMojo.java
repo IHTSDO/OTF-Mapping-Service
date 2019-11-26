@@ -1,15 +1,13 @@
 /*
- *    Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -22,7 +20,6 @@ import java.util.zip.ZipOutputStream;
 
 import javax.persistence.EntityManager;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
@@ -39,17 +36,16 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
  * 
  * @goal run-meddra-sql-report
  */
-public class MeddraSqlReportMojo extends AbstractMojo {
+public class MeddraSqlReportMojo extends AbstractOtfMappingMojo {
 
   /**
-   * 
-   * Comma delimited list of project ids
-   * 
+   * Comma delimited list of project ids.
+   *
    * @parameter
    * @required
    */
-  private String projectIds; 
-  
+  private String projectIds;
+
   /** The manager. */
   EntityManager manager;
 
@@ -63,56 +59,56 @@ public class MeddraSqlReportMojo extends AbstractMojo {
       getLog().error("Parameter projectIds is empty.");
       throw new MojoExecutionException("Parameter projectIds is empty.");
     }
-    
+
     try {
       // pass in report id list
       final StringTokenizer st = new StringTokenizer(this.projectIds, ",");
-      
-      while(st.hasMoreTokens())
-      {
+
+      while (st.hasMoreTokens()) {
         long project = Long.parseLong(st.nextToken());
-        runReport(project);  
+        runReport(project);
       }
-      
+
     } catch (Exception e) {
       getLog().error("Error running MedDRA SQLReport Mojo.", e);
     }
   }
 
+  /**
+   * Run report.
+   *
+   * @param mapProjectId the map project id
+   * @throws Exception the exception
+   */
   private void runReport(long mapProjectId) throws Exception {
-    try (ContentService service = new ContentServiceJpa()
-        {{
-          MeddraSqlReportMojo.this.manager = manager;
-        }};
-        MappingService mappingService = new MappingServiceJpa();
-        ) {
+    try (ContentService service = new ContentServiceJpa() {
+      {
+        MeddraSqlReportMojo.this.manager = manager;
+      }
+    }; MappingService mappingService = new MappingServiceJpa();) {
 
       // Run the SQL report
       final javax.persistence.Query query = manager.createNativeQuery(
-                " SELECT DISTINCT "
-              + " mr.conceptId AS referencedComponentId "
+          " SELECT DISTINCT " + " mr.conceptId AS referencedComponentId "
               + " , mr.conceptName AS referencedComponentName "
-              + " , mapGroup AS mapGroup "
-              + " , mapPriority AS mapPriority "
+              + " , mapGroup AS mapGroup " + " , mapPriority AS mapPriority "
               + " , me.targetId AS mapTarget "
               + " , me.targetName AS mapTargetName "
-              + " , rel.name AS mapRelation "
-              + " FROM map_records mr "
+              + " , rel.name AS mapRelation " + " FROM map_records mr "
               + " LEFT OUTER JOIN map_entries me ON mr.id = me.mapRecord_id "
               + " LEFT OUTER JOIN map_relations rel ON me.mapRelation_id = rel.id "
               + " WHERE mr.mapProjectId = :MAP_PROJECT_ID "
               + " AND EXISTS (SELECT 1 FROM map_records_AUD mra, map_records_labels_AUD mrla "
-                  + " WHERE mra.id = mrla.id AND mra.mapProjectId = :MAP_PROJECT_ID "
-                  + " AND mrla.labels = 'Final QA Check MSSO'   AND mr.conceptId = mra.conceptId) "
+              + " WHERE mra.id = mrla.id AND mra.mapProjectId = :MAP_PROJECT_ID "
+              + " AND mrla.labels = 'Final QA Check MSSO'   AND mr.conceptId = mra.conceptId) "
               + " AND EXISTS (SELECT 1 FROM map_records_AUD mra, map_records_labels_AUD mrla "
-                  + " WHERE mra.id = mrla.id AND mra.mapProjectId = :MAP_PROJECT_ID "
-                  + " AND mrla.labels = 'Final QA Check SNOMED' AND mr.conceptId = mra.conceptId) "
+              + " WHERE mra.id = mrla.id AND mra.mapProjectId = :MAP_PROJECT_ID "
+              + " AND mrla.labels = 'Final QA Check SNOMED' AND mr.conceptId = mra.conceptId) "
               + " AND mr.workflowStatus = 'READY_FOR_PUBLICATION' "
-              + " ORDER BY 2; "
-      );
+              + " ORDER BY 2; ");
 
       query.setParameter("MAP_PROJECT_ID", mapProjectId);
-      
+
       @SuppressWarnings("unchecked")
       List<Object[]> objects = query.getResultList();
 
@@ -138,8 +134,8 @@ public class MeddraSqlReportMojo extends AbstractMojo {
       final String filename = "/sqlReport_"
           + mapProject.getName().replace(" ", "") + "_" + dateStamp;
 
-      File resultFile = new File(
-          System.getProperty("java.io.tmpdir") + filename + ".txt");
+      File resultFile =
+          new File(System.getProperty("java.io.tmpdir") + filename + ".txt");
       getLog().info("Created result file: " + resultFile.getAbsolutePath());
 
       try (FileWriter writer = new FileWriter(resultFile);) {
@@ -150,12 +146,12 @@ public class MeddraSqlReportMojo extends AbstractMojo {
       }
 
       // Zip results file
-      File zipFile = new File(System.getProperty("java.io.tmpdir")
-          + filename + ".zip");
+      File zipFile =
+          new File(System.getProperty("java.io.tmpdir") + filename + ".zip");
 
       try (FileOutputStream fos = new FileOutputStream(zipFile);
-          ZipOutputStream zipOut = new ZipOutputStream(
-              new BufferedOutputStream(fos));
+          ZipOutputStream zipOut =
+              new ZipOutputStream(new BufferedOutputStream(fos));
           FileInputStream fis = new FileInputStream(resultFile);) {
 
         ZipEntry ze = new ZipEntry(resultFile.getName());
@@ -181,6 +177,12 @@ public class MeddraSqlReportMojo extends AbstractMojo {
     }
   }
 
+  /**
+   * Send email.
+   *
+   * @param fileName the file name
+   * @throws Exception the exception
+   */
   private void sendEmail(String fileName) throws Exception {
 
     Properties config;
@@ -189,12 +191,14 @@ public class MeddraSqlReportMojo extends AbstractMojo {
     } catch (Exception e1) {
       throw new MojoExecutionException("Failed to retrieve config properties");
     }
-    String notificationRecipients = config
-        .getProperty("sqlreport.send.notification.recipients.meddra." + getClass().getSimpleName());
+    String notificationRecipients =
+        config.getProperty("sqlreport.send.notification.recipients.meddra."
+            + getClass().getSimpleName());
     String notificationMessage = "";
     getLog().info("Request to send notification email to recipients: "
         + notificationRecipients);
-    notificationMessage += "Hello,\n\nThe weekly SQL report has been generated.";
+    notificationMessage +=
+        "Hello,\n\nThe weekly SQL report has been generated.";
 
     String from;
     if (config.containsKey("mail.smtp.from")) {

@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.util.ArrayList;
@@ -5,7 +8,6 @@ import java.util.List;
 
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
-import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.services.ContentService;
 
@@ -27,9 +29,9 @@ public class IcdoProjectSpecificAlgorithmHandler
     try {
       // behavior code may be different and not in the source
       // so we just check that the base code is in the source
-      SearchResultList list = contentService.findConceptsForQuery(
-          "terminologyId:" + terminologyId.substring(0,4) + "* AND terminology:ICDO",
-          null);
+      SearchResultList list =
+          contentService.findConceptsForQuery("terminologyId:"
+              + terminologyId.substring(0, 4) + "* AND terminology:ICDO", null);
 
       return list.getSearchResults().size() > 0;
 
@@ -39,19 +41,18 @@ public class IcdoProjectSpecificAlgorithmHandler
       contentService.close();
     }
   }
-  
+
   /* see superclass */
   @Override
   public boolean isMapRecordLineValid(String line) throws Exception {
-    
+
     // Keep only morphology codes (with '/')
     if (!line.contains("/")) {
       return false;
-    }
-    else{
+    } else {
       return true;
     }
-  }  
+  }
 
   /* see superclass */
   @Override

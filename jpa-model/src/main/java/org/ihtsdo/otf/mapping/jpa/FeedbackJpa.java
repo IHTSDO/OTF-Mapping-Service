@@ -4,11 +4,13 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
@@ -67,7 +69,8 @@ public class FeedbackJpa implements Feedback {
 
   /** The users receiving feedback. */
   @ManyToMany(targetEntity = MapUserJpa.class, fetch = FetchType.LAZY)
-  @JoinTable(name = "feedback_recipients")
+  //@JoinTable(name = "feedback_recipients")
+  @CollectionTable(name="feedback_recipients", joinColumns = @JoinColumn(name="feedbacks_id"))
   @IndexedEmbedded(targetElement = MapUserJpa.class)
   private Set<MapUser> recipients = new HashSet<>();
 
@@ -82,7 +85,8 @@ public class FeedbackJpa implements Feedback {
 
   /** The users who have viewed this feedback item. */
   @ManyToMany(targetEntity = MapUserJpa.class, fetch = FetchType.LAZY)
-  @JoinTable(name = "feedback_viewers")
+  //@JoinTable(name = "feedback_viewers")
+  @CollectionTable(name="feedback_viewers", joinColumns = @JoinColumn(name="feedbacks_id"))
   @IndexedEmbedded(targetElement = MapUserJpa.class)
   private Set<MapUser> viewedBy = new HashSet<>();
 

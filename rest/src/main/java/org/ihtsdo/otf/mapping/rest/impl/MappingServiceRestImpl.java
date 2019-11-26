@@ -1,5 +1,5 @@
 /*
- *    Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.rest.impl;
 
@@ -27,7 +27,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -2780,7 +2779,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
   }
-  
+
   /*
    * (non-Javadoc)
    * 
@@ -2791,12 +2790,11 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
   @Override
   @GET
   @Path("/record/concept/id/{conceptId}/project/id/{id:[0-9][0-9]*}/users")
-  @ApiOperation(value = "Get map users by concept id", 
-    notes = "Gets map users for all map records with given concept id.", response = MapUserListJpa.class)
+  @ApiOperation(value = "Get map users by concept id", notes = "Gets map users for all map records with given concept id.", response = MapUserListJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public MapUserListJpa getMapRecordsForConceptIdHistoricalMapUsers (
+  public MapUserListJpa getMapRecordsForConceptIdHistoricalMapUsers(
     @ApiParam(value = "Concept id", required = true) @PathParam("conceptId") String conceptId,
     @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
@@ -2807,9 +2805,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
             + "/project/id/" + mapProjectId + "/users");
 
     String user = null;
-    
-    try (final MappingService mappingService = new MappingServiceJpa())
-    {
+
+    try (final MappingService mappingService = new MappingServiceJpa()) {
       // authorize call
       user = authorizeApp(authToken, MapUserRole.VIEWER,
           "get map records for historical concept", securityService);
@@ -2818,14 +2815,13 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
           .getMapRecordRevisionsForConcept(conceptId, mapProjectId);
 
       MapUserListJpa mapUserList = new MapUserListJpa();
-      
-      for(MapRecord mr : mapRecordList.getMapRecords())
-      {
+
+      for (MapRecord mr : mapRecordList.getMapRecords()) {
         Hibernate.initialize(mr.getOwner());
         mapUserList.addMapUser(mr.getOwner());
       }
       return mapUserList;
-      
+
     } catch (Exception e) {
       handleException(e,
           "trying to find historical records by the given concept id", user, "",
@@ -3138,9 +3134,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
           securityService.getMapProjectRoleForToken(authToken, mapRecordId);
       user = securityService.getUsernameForToken(authToken);
       if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
-        throw new WebApplicationException(Response.status(401)
-            .entity(
-                "User does not have permissions to get the map record revisions.")
+        throw new WebApplicationException(Response.status(401).entity(
+            "User does not have permissions to get the map record revisions.")
             .build());
 
       final MapRecordList revisions =
@@ -3583,7 +3578,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
   }
-  
+
   // /////////////////////////////////////////////////////
   // Tree Position Routines for Terminology Browser
   // /////////////////////////////////////////////////////
@@ -3611,7 +3606,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
 
     Logger.getLogger(MappingServiceRestImpl.class)
         .info("RESTful call (Mapping): /treePosition/project/id/"
-            + mapProjectId.toString() + "/concept/id/" + terminologyId + "/source");
+            + mapProjectId.toString() + "/concept/id/" + terminologyId
+            + "/source");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
@@ -3625,22 +3621,23 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
           securityService);
 
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
-      
+
       final MapProjectList allProjects = mappingService.getMapProjects();
       MapProject assoicatedMapProject = null;
-      for(MapProject project : allProjects.getIterable()) {
+      for (MapProject project : allProjects.getIterable()) {
 
-    	  if (mapProject.getSourceTerminology().equalsIgnoreCase(
-    			  project.getDestinationTerminology())
-    	   && mapProject.getSourceTerminologyVersion().equalsIgnoreCase(
-    			   project.getDestinationTerminologyVersion()) ) {
-    		  assoicatedMapProject = project;
-    		  break;
-    	  }
+        if (mapProject.getSourceTerminology()
+            .equalsIgnoreCase(project.getDestinationTerminology())
+            && mapProject.getSourceTerminologyVersion()
+                .equalsIgnoreCase(project.getDestinationTerminologyVersion())) {
+          assoicatedMapProject = project;
+          break;
+        }
       }
-      
-      if(assoicatedMapProject == null) {
-    	  throw new Exception("Project " + mapProject.getName() + " does not have a reversed project.");
+
+      if (assoicatedMapProject == null) {
+        throw new Exception("Project " + mapProject.getName()
+            + " does not have a reversed project.");
       }
 
       // get the local tree positions from content service
@@ -3669,13 +3666,13 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
 
       // Determine whether code is valid (e.g. whether it should be a
       // link)
-      final ProjectSpecificAlgorithmHandler handler =
-          mappingService.getProjectSpecificAlgorithmHandler(assoicatedMapProject);
-      mappingService.setTreePositionValidCodes(assoicatedMapProject, treePositions,
-          handler);
+      final ProjectSpecificAlgorithmHandler handler = mappingService
+          .getProjectSpecificAlgorithmHandler(assoicatedMapProject);
+      mappingService.setTreePositionValidCodes(assoicatedMapProject,
+          treePositions, handler);
       // Compute any additional project specific handler info
-      mappingService.setTreePositionTerminologyNotes(assoicatedMapProject, treePositions,
-          handler);
+      mappingService.setTreePositionTerminologyNotes(assoicatedMapProject,
+          treePositions, handler);
 
       return treePositions;
     } catch (Exception e) {
@@ -3888,9 +3885,9 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
         for (final String word : query.split("\\s")) {
           qb.append("+").append(word).append(" ");
         }
-      }  else if (query.matches(".[0-9].*[A-Z]")) {
+      } else if (query.matches(".[0-9].*[A-Z]")) {
         qb.append("\"").append(query).append("\"");
-      }  else {
+      } else {
         qb.append(query);
       }
 
@@ -3964,7 +3961,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
   }
-  
+
   /*
    * (non-Javadoc)
    * 
@@ -3988,8 +3985,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     throws Exception {
 
     Logger.getLogger(getClass())
-        .info("RESTful call (Mapping): /treePosition/project/id/" + mapProjectId + "/source"
-            + " " + query);
+        .info("RESTful call (Mapping): /treePosition/project/id/" + mapProjectId
+            + "/source" + " " + query);
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
@@ -4001,22 +3998,23 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
           "get tree position graphs for query", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
-      
+
       final MapProjectList allProjects = mappingService.getMapProjects();
       MapProject assoicatedMapProject = null;
-      for(MapProject project : allProjects.getIterable()) {
+      for (MapProject project : allProjects.getIterable()) {
 
-    	  if (mapProject.getSourceTerminology().equalsIgnoreCase(
-    			  project.getDestinationTerminology())
-    	   && mapProject.getSourceTerminologyVersion().equalsIgnoreCase(
-    			   project.getDestinationTerminologyVersion()) ) {
-    		  assoicatedMapProject = project;
-    		  break;
-    	  }
+        if (mapProject.getSourceTerminology()
+            .equalsIgnoreCase(project.getDestinationTerminology())
+            && mapProject.getSourceTerminologyVersion()
+                .equalsIgnoreCase(project.getDestinationTerminologyVersion())) {
+          assoicatedMapProject = project;
+          break;
+        }
       }
-      
-      if(assoicatedMapProject == null) {
-    	  throw new Exception("Project " + mapProject.getName() + " does not have a reversed project.");
+
+      if (assoicatedMapProject == null) {
+        throw new Exception("Project " + mapProject.getName()
+            + " does not have a reversed project.");
       }
 
       // formulate an "and" search from the query if it doesn't use
@@ -4046,8 +4044,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       // get the tree positions from concept service
       TreePositionList treePositions = contentService
           .getTreePositionGraphForQuery(mapProject.getSourceTerminology(),
-              mapProject.getSourceTerminologyVersion(), qb.toString(),
-              pfs);
+              mapProject.getSourceTerminologyVersion(), qb.toString(), pfs);
       Logger.getLogger(getClass())
           .info("  treepos count = " + treePositions.getTotalCount());
       if (treePositions.getCount() == 0) {
@@ -4072,8 +4069,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
           metadataService.getRelationshipTypes(terminology, terminologyVersion);
 
       // set the valid codes using mapping service
-      final ProjectSpecificAlgorithmHandler handler =
-          mappingService.getProjectSpecificAlgorithmHandler(assoicatedMapProject);
+      final ProjectSpecificAlgorithmHandler handler = mappingService
+          .getProjectSpecificAlgorithmHandler(assoicatedMapProject);
 
       // Limit tree positions
       treePositions.setTreePositions(
@@ -4082,10 +4079,10 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       contentService.computeTreePositionInformation(treePositions, descTypes,
           relTypes);
 
-      mappingService.setTreePositionValidCodes(assoicatedMapProject, treePositions,
-          handler);
-      mappingService.setTreePositionTerminologyNotes(assoicatedMapProject, treePositions,
-          handler);
+      mappingService.setTreePositionValidCodes(assoicatedMapProject,
+          treePositions, handler);
+      mappingService.setTreePositionTerminologyNotes(assoicatedMapProject,
+          treePositions, handler);
 
       // TODO: if there are too many tree positions, then chop the tree
       // off (2
@@ -4144,7 +4141,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
 
       final MapRecordListJpa recordList =
           (MapRecordListJpa) mappingService.getRecentlyEditedMapRecords(
-              new Long(mapProjectId), username, pfsParameter);
+              Long.valueOf(mapProjectId), username, pfsParameter);
       return recordList;
     } catch (Exception e) {
       handleException(e, "trying to get the recently edited map records", user,
@@ -4375,7 +4372,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
           mappingService.getProjectSpecificAlgorithmHandler(mapProject);
       boolean isValid = algorithmHandler.isTargetCodeValid(terminologyId);
 
-      //not all algorithmHandler return true or false.  some default to true
+      // not all algorithmHandler return true or false. some default to true
       if (isValid) {
         Concept c = contentService.getConcept(terminologyId,
             mapProject.getDestinationTerminology(),
@@ -4409,8 +4406,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
           c.setDescriptions(new HashSet<Description>());
           c.setRelationships(new HashSet<Relationship>());
           return c;
-        }
-        else {
+        } else {
           // if c is null, the concept was not found
           return null;
         }
@@ -4477,7 +4473,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
 
       // compose the name of the stored file
       final MapProject mapProject =
-          mappingService.getMapProject(new Long(mapProjectId));
+          mappingService.getMapProject(Long.valueOf(mapProjectId));
       final SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd");
       final String date = dt.format(new Date());
       String extension = "";
@@ -4698,7 +4694,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
             for (LanguageRefSetMember language : description
                 .getLanguageRefSetMembers()) {
               // If prefrred and has correct refset
-              if (new Long(language.getRefSetId()).equals(dpnrefsetId)
+              if (Long.valueOf(language.getRefSetId()).equals(dpnrefsetId)
                   && language.isActive()
                   && language.getAcceptabilityId().equals(dpnAcceptabilityId)) {
                 // print warning for multiple names found
@@ -4859,9 +4855,9 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       // process information as an Exception
       // If not, obtain the processLock
       try {
-        RootServiceJpa.lockProcess(
-            user + " is currently running process = Begin Release for map project "
-                + mapProject.getName());
+        RootServiceJpa.lockProcess(user
+            + " is currently running process = Begin Release for map project "
+            + mapProject.getName());
       } catch (Exception e) {
         return e.getMessage();
       } finally {
@@ -5011,9 +5007,9 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       // process information as an Exception
       // If not, obtain the processLock
       try {
-        RootServiceJpa.lockProcess(
-            user + " is currently running process = Process Release for map project "
-                + mapProject.getName());
+        RootServiceJpa.lockProcess(user
+            + " is currently running process = Process Release for map project "
+            + mapProject.getName());
       } catch (Exception e) {
         return e.getMessage();
       } finally {
@@ -5133,13 +5129,13 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       // If not, obtain the processLock
       try {
         if (testModeFlag) {
-          RootServiceJpa.lockProcess(
-              user + " is currently running process = Create Release Finalization QA Report for map project "
-                  + mapProject.getName());
+          RootServiceJpa.lockProcess(user
+              + " is currently running process = Create Release Finalization QA Report for map project "
+              + mapProject.getName());
         } else {
-          RootServiceJpa.lockProcess(
-              user + " is currently running process = Finishing Release for map project "
-                  + mapProject.getName());
+          RootServiceJpa.lockProcess(user
+              + " is currently running process = Finishing Release for map project "
+              + mapProject.getName());
         }
       } catch (Exception e) {
         return e.getMessage();
@@ -5163,12 +5159,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       String relPath = "";
       if (mapProject.getSourceTerminology().equals("SNOMEDCT_US")) {
         relPath = "/der2_" + handler.getPatternForType(mapProject)
-          + mapProject.getMapRefsetPattern() + "ActiveSnapshot_US1000124_"
-          + effectiveTime + ".txt";
+            + mapProject.getMapRefsetPattern() + "ActiveSnapshot_US1000124_"
+            + effectiveTime + ".txt";
       } else {
         relPath = "/der2_" + handler.getPatternForType(mapProject)
-          + mapProject.getMapRefsetPattern() + "ActiveSnapshot_INT_"
-          + effectiveTime + ".txt";
+            + mapProject.getMapRefsetPattern() + "ActiveSnapshot_INT_"
+            + effectiveTime + ".txt";
       }
       String mapFilePath = releaseDirPath + relPath;
 
@@ -5290,9 +5286,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       String jiraProject = config.getProperty("jira.project");
 
       if (jiraAuthHeader == null || jiraUrl == null || jiraProject == null) {
-        this.handleException(
-            new Exception(
-                "create a JIRA issue. JIRA properties must be in configuration file"),
+        this.handleException(new Exception(
+            "create a JIRA issue. JIRA properties must be in configuration file"),
             "create a JIRA issue . JIRA properties must be in configuration file",
             "", "", "");
       }
@@ -5307,13 +5302,15 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       mapRecordContents.append("Map Entries").append("\\\\\\\\");
       final Comparator<MapEntry> entriesComparator =
           new Comparator<MapEntry>() {
+            
+            /* see superclass */
             @Override
             public int compare(MapEntry o1, MapEntry o2) {
-              Integer mapGroup1 = new Integer(o1.getMapGroup());
-              Integer mapGroup2 = new Integer(o2.getMapGroup());
+              Integer mapGroup1 = Integer.valueOf(o1.getMapGroup());
+              Integer mapGroup2 = Integer.valueOf(o2.getMapGroup());
               if (mapGroup1 == mapGroup2) {
-                Integer mapPriority1 = new Integer(o1.getMapPriority());
-                Integer mapPriority2 = new Integer(o2.getMapPriority());
+                Integer mapPriority1 = Integer.valueOf(o1.getMapPriority());
+                Integer mapPriority2 = Integer.valueOf(o2.getMapPriority());
                 return mapPriority1.compareTo(mapPriority2);
               }
               return mapGroup1.compareTo(mapGroup2);
@@ -5422,7 +5419,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       authorizeApp(authToken, MapUserRole.VIEWER, "get log", securityService);
 
       final MapProject mapProject =
-          mappingService.getMapProject(new Long(projectId).longValue());
+          mappingService.getMapProject(Long.valueOf(projectId).longValue());
 
       // look for logs either in the project log dir, second in the
       // remover/loader log dir
@@ -5587,9 +5584,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       final String authoringUrl = config.getProperty("authoring.defaultUrl");
 
       if (authoringAuthHeader == null || authoringUrl == null) {
-        this.handleException(
-            new Exception(
-                "retrieve concept authors. Authoring properties must be in configuration file"),
+        this.handleException(new Exception(
+            "retrieve concept authors. Authoring properties must be in configuration file"),
             "retrieve concept authors. Authoring properties must be in configuration file",
             "", "", "");
       }
@@ -5655,6 +5651,15 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     }
   }
 
+  /**
+   * Returns the concept authoring changes.
+   *
+   * @param projectId the project id
+   * @param conceptId the concept id
+   * @param authToken the auth token
+   * @return the concept authoring changes
+   * @throws Exception the exception
+   */
   /*
    * (non-Javadoc)
    * 
@@ -5686,7 +5691,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
           "get concept authoring changes", securityService);
 
       final MapProject mapProject =
-          mappingService.getMapProject(new Long(projectId).longValue());
+          mappingService.getMapProject(Long.valueOf(projectId).longValue());
 
       final Date editingCycleBeginDate = mapProject.getEditingCycleBeginDate();
       Logger.getLogger(MappingServiceRestImpl.class)
@@ -5698,9 +5703,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       final String authoringUrl = config.getProperty("authoring.defaultUrl");
 
       if (authoringAuthHeader == null || authoringUrl == null) {
-        this.handleException(
-            new Exception(
-                "retrieve authoring history. Authoring properties must be in configuration file"),
+        this.handleException(new Exception(
+            "retrieve authoring history. Authoring properties must be in configuration file"),
             "retrieve authoring history. Authoring properties must be in configuration file",
             "", "", "");
       }
@@ -5991,6 +5995,17 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
     }
   }
 
+  /**
+   * Compare extended map files.
+   *
+   * @param data1 the data 1
+   * @param data2 the data 2
+   * @param mapProject the map project
+   * @param files the files
+   * @param notes the notes
+   * @return the input stream
+   * @throws Exception the exception
+   */
   private InputStream compareExtendedMapFiles(InputStream data1,
     InputStream data2, MapProject mapProject, List<String> files,
     List<String> notes) throws Exception {
@@ -6025,12 +6040,15 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       }
       i++;
       // if refCompId already in map, just add new effectiveTime/TargetId&Active
-      if (key1Map.containsKey(tokens1[5] + ":" + tokens1[6] + ":" + tokens1[7])) {
-        key1Map.get(tokens1[5] + ":" + tokens1[6] + ":" + tokens1[7]).add(new ExtendedLine(line1));
+      if (key1Map
+          .containsKey(tokens1[5] + ":" + tokens1[6] + ":" + tokens1[7])) {
+        key1Map.get(tokens1[5] + ":" + tokens1[6] + ":" + tokens1[7])
+            .add(new ExtendedLine(line1));
       } else {
         Set<ExtendedLine> setOfLines = new HashSet<>();
         setOfLines.add(new ExtendedLine(line1));
-        key1Map.put(tokens1[5] + ":" + tokens1[6] + ":" + tokens1[7], setOfLines);
+        key1Map.put(tokens1[5] + ":" + tokens1[6] + ":" + tokens1[7],
+            setOfLines);
       }
     }
     Logger.getLogger(MappingServiceRestImpl.class)
@@ -6046,18 +6064,23 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       }
       i++;
       // populate key2Map with key2 and lineData (no UUID)
-      if (key2Map.containsKey(tokens2[5] + ":" + tokens2[6] + ":" + tokens2[7])) {
-        key2Map.get(tokens2[5] + ":" + tokens2[6] + ":" + tokens2[7]).add(new ExtendedLine(line2));
+      if (key2Map
+          .containsKey(tokens2[5] + ":" + tokens2[6] + ":" + tokens2[7])) {
+        key2Map.get(tokens2[5] + ":" + tokens2[6] + ":" + tokens2[7])
+            .add(new ExtendedLine(line2));
       } else {
         Set<ExtendedLine> setOfLines = new HashSet<>();
         setOfLines.add(new ExtendedLine(line2));
-        key2Map.put(tokens2[5] + ":" + tokens2[6] + ":" + tokens2[7], setOfLines);
+        key2Map.put(tokens2[5] + ":" + tokens2[6] + ":" + tokens2[7],
+            setOfLines);
       }
 
       // if key1Map has key2, this record is not new - either it hasn't changed
       // or it has been updated
-      if (key1Map.containsKey(tokens2[5] + ":" + tokens2[6] + ":" + tokens2[7])) {
-        Set<ExtendedLine> entries = key1Map.get(tokens2[5] + ":" + tokens2[6] + ":" + tokens2[7]);
+      if (key1Map
+          .containsKey(tokens2[5] + ":" + tokens2[6] + ":" + tokens2[7])) {
+        Set<ExtendedLine> entries =
+            key1Map.get(tokens2[5] + ":" + tokens2[6] + ":" + tokens2[7]);
         // effectiveTime, target, and active all static?
         boolean noChange = false;
         boolean inactivated = false;
@@ -6083,7 +6106,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
           // inactivated?, check if active is the only thing that isn't equal
           for (ExtendedLine lineData : entries) {
             if (lineData.getTargetId().equals(tokens2[10])
-                && lineData.isActive() != new Boolean(tokens2[2])
+                && lineData.isActive() != Boolean.valueOf(tokens2[2])
                 && tokens2[3].equals(lineData.getModuleId())
                 && tokens2[4].equals(lineData.getRefsetId())
                 && tokens2[6].equals(lineData.getMapGroup())
@@ -6135,7 +6158,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
       if (!tokens1[4].equals(mapProject.getRefSetId())) {
         continue;
       }
-      if (!key2Map.containsKey(tokens1[5] + ":" + tokens1[6] + ":" + tokens1[7])) {
+      if (!key2Map
+          .containsKey(tokens1[5] + ":" + tokens1[6] + ":" + tokens1[7])) {
         removedList.add(line1);
       }
     }
@@ -6245,7 +6269,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
           // inactivated?, check if active is the only thing that isn't equal
           for (SimpleLine lineData : entries) {
             if (lineData.getTargetId().equals(tokens2[6])
-                && lineData.isActive() != new Boolean(tokens2[2])
+                && lineData.isActive() != Boolean.valueOf(tokens2[2])
             /* && lineData.getEffectiveTime().equals(tokens2[1]) */) {
               inactivatedList.add(line2);
               inactivated = true;
@@ -6566,7 +6590,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl
           "get file list from amazon s3", securityService);
 
       final MapProject mapProject =
-          mappingService.getMapProject(new Long(mapProjectId).longValue());
+          mappingService.getMapProject(Long.valueOf(mapProjectId).longValue());
       return amazonS3Service.getFileListFromAmazonS3(mapProject);
 
     } catch (Exception e) {

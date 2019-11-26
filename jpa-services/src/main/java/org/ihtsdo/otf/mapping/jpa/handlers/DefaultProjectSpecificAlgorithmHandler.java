@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.util.ArrayList;
@@ -50,7 +53,7 @@ public class DefaultProjectSpecificAlgorithmHandler
   @Override
   public MapAdviceList computeMapAdvice(MapRecord mapRecord, MapEntry mapEntry)
     throws Exception {
-    if(mapEntry != null && mapEntry.getMapAdvices() != null){
+    if (mapEntry != null && mapEntry.getMapAdvices() != null) {
       final List<MapAdvice> advices = new ArrayList<>(mapEntry.getMapAdvices());
       MapAdviceList mapAdviceList = new MapAdviceListJpa();
       mapAdviceList.setMapAdvices(advices);
@@ -62,7 +65,7 @@ public class DefaultProjectSpecificAlgorithmHandler
   @Override
   public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry)
     throws Exception {
-    if(mapEntry != null && mapEntry.getMapRelation() != null){
+    if (mapEntry != null && mapEntry.getMapRelation() != null) {
       return mapEntry.getMapRelation();
     }
     return null;
@@ -161,6 +164,13 @@ public class DefaultProjectSpecificAlgorithmHandler
     return new ValidationResultJpa();
   }
 
+  /**
+   * Compare map records.
+   *
+   * @param record1 the record 1
+   * @param record2 the record 2
+   * @return the validation result
+   */
   /* see superclass */
   @Override
   public ValidationResult compareMapRecords(MapRecord record1,
@@ -281,8 +291,10 @@ public class DefaultProjectSpecificAlgorithmHandler
     // for each group
     for (int i = 1; i < Math.max(groupToMapEntryList1.size(),
         groupToMapEntryList2.size()) + 1; i++) {
-      final List<MapEntry> entries1 = groupToMapEntryList1.get(new Integer(i));
-      final List<MapEntry> entries2 = groupToMapEntryList2.get(new Integer(i));
+      final List<MapEntry> entries1 =
+          groupToMapEntryList1.get(Integer.valueOf(i));
+      final List<MapEntry> entries2 =
+          groupToMapEntryList2.get(Integer.valueOf(i));
 
       // error if different numbers of entries
       if (entries1 == null) {
@@ -346,8 +358,8 @@ public class DefaultProjectSpecificAlgorithmHandler
                             : entries1.get(d).getMapRelation().getName())
                         + " vs. "
                         + (entries2.get(f).getMapRelation() == null
-                            ? "No relation specified" : entries2.get(f)
-                                .getMapRelation().getName()));
+                            ? "No relation specified"
+                            : entries2.get(f).getMapRelation().getName()));
 
             validationResult.addConciseError("Map relation is different");
           }
@@ -373,14 +385,15 @@ public class DefaultProjectSpecificAlgorithmHandler
           if (isRulesEqual(entries1.get(d), entries2.get(f))
               && !isTargetIdsEqual(entries1.get(d), entries2.get(f))) {
 
-            validationResult.addError("Target code is different: "
-                + (entries1.get(d).getTargetId() == null
-                    || entries1.get(d).getTargetId().equals("") ? "No target"
-                        : entries1.get(d).getTargetId())
-                + " vs. "
-                + (entries2.get(f).getTargetId() == null
-                    || entries2.get(f).getTargetId().equals("") ? "No target"
-                        : entries2.get(f).getTargetId()));
+            validationResult
+                .addError("Target code is different: "
+                    + (entries1.get(d).getTargetId() == null
+                        || entries1.get(d).getTargetId().equals("")
+                            ? "No target" : entries1.get(d).getTargetId())
+                    + " vs. "
+                    + (entries2.get(f).getTargetId() == null
+                        || entries2.get(f).getTargetId().equals("")
+                            ? "No target" : entries2.get(f).getTargetId()));
             validationResult.addConciseError("Target code is different");
           }
         }
@@ -976,6 +989,7 @@ public class DefaultProjectSpecificAlgorithmHandler
     throws Exception {
     return false;
   }
+
   @Override
   public String getReleaseFile3rdElement() throws Exception {
     // Default is "INT", for international releases.

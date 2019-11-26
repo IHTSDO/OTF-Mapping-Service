@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
@@ -27,7 +26,7 @@ import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
  * @goal compute-workflow
  * @phase package
  */
-public class ComputeWorkflowLoaderMojo extends AbstractMojo {
+public class ComputeWorkflowLoaderMojo extends AbstractOtfMappingMojo {
 
   /**
    * The refSet id.

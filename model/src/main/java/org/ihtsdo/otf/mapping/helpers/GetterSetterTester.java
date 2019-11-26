@@ -262,17 +262,17 @@ public class GetterSetterTester {
     if (type == String.class)
       return "";
     if (type == Boolean.class || type == boolean.class)
-      return new Boolean(false);
+      return Boolean.valueOf(false);
     if (type == Integer.class || type == int.class)
-      return new Integer(0);
+      return Integer.valueOf(0);
     if (type == Long.class || type == long.class)
-      return new Long(0);
+      return Long.valueOf(0);
     if (type == Double.class || type == double.class)
-      return new Double(0);
+      return Double.valueOf(0);
     if (type == Float.class || type == float.class)
-      return new Float(0);
+      return Float.valueOf(0);
     if (type == Character.class || type == char.class)
-      return new Character('x');
+      return Character.valueOf('x');
     if (type == BigDecimal.class)
       return new BigDecimal("0");
     if (type == Set.class)

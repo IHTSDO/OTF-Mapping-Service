@@ -3,7 +3,6 @@
  */
 package org.ihtsdo.otf.mapping.mojo;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.helpers.ConceptList;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
@@ -21,7 +20,7 @@ import org.ihtsdo.otf.mapping.services.ContentService;
  * 
  * @phase package
  */
-public class ComputeDefaultPreferredNameMojo extends AbstractMojo {
+public class ComputeDefaultPreferredNameMojo extends AbstractOtfMappingMojo {
 
   /**
    * Name of terminology.
@@ -123,7 +122,7 @@ public class ComputeDefaultPreferredNameMojo extends AbstractMojo {
           for (LanguageRefSetMember language : description
               .getLanguageRefSetMembers()) {
             // If prefrred and has correct refset
-            if (new Long(language.getRefSetId()).equals(dpnRefsetId)
+            if (Long.valueOf(language.getRefSetId()).equals(dpnRefsetId)
                 && language.isActive()
                 && language.getAcceptabilityId().equals(dpnAcceptabilityId)) {
               // print warning for multiple names found

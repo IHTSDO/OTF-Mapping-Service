@@ -1,6 +1,8 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.handlers.BeginEditingCycleHandlerJpa;
@@ -19,7 +21,7 @@ import org.ihtsdo.otf.mapping.services.helpers.BeginEditingCycleHandler;
  * 
  * @phase package
  */
-public class EditingCycleBeginMojo extends AbstractMojo {
+public class EditingCycleBeginMojo extends AbstractOtfMappingMojo {
 
   /**
    * The refSet id.
@@ -35,6 +37,7 @@ public class EditingCycleBeginMojo extends AbstractMojo {
     // do nothing
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -54,9 +57,8 @@ public class EditingCycleBeginMojo extends AbstractMojo {
           "You must specify only a single ref set id");
     }
 
-    try {
-
-      MappingService mappingService = new MappingServiceJpa();
+    try (final MappingService mappingService = new MappingServiceJpa();) {
+      
       MapProject mapProject = null;
       for (MapProject project : mappingService.getMapProjects().getIterable()) {
         if (project.getRefSetId().equals(refsetId)) {

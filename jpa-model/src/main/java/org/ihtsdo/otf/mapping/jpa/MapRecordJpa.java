@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.jpa;
 
 import java.util.ArrayList;
@@ -27,9 +30,9 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.apache.solr.analysis.LowerCaseFilterFactory;
-import org.apache.solr.analysis.StandardFilterFactory;
-import org.apache.solr.analysis.StandardTokenizerFactory;
+import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
+import org.apache.lucene.analysis.standard.StandardFilterFactory;
+import org.apache.lucene.analysis.standard.StandardTokenizerFactory;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
@@ -120,10 +123,12 @@ public class MapRecordJpa implements MapRecord {
 
   /** The map notes. */
   @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity = MapNoteJpa.class)
+  @CollectionTable(name="map_records_map_notes", joinColumns = @JoinColumn(name="map_records_id"))
   private Set<MapNote> mapNotes = new HashSet<>();
 
   /** The map principles. */
   @ManyToMany(targetEntity = MapPrincipleJpa.class, fetch = FetchType.LAZY)
+  @CollectionTable(name="map_records_map_principles", joinColumns = @JoinColumn(name="map_records_id"))
   @IndexedEmbedded(targetElement = MapPrincipleJpa.class)
   private Set<MapPrinciple> mapPrinciples = new HashSet<>();
 
@@ -251,6 +256,11 @@ public class MapRecordJpa implements MapRecord {
     return id.toString();
   }
 
+  /**
+   * Returns the owner.
+   *
+   * @return the owner
+   */
   /* see superclass */
   @Override
   @XmlElement(type = MapUserJpa.class, name = "owner")
@@ -258,24 +268,44 @@ public class MapRecordJpa implements MapRecord {
     return owner;
   }
 
+  /**
+   * Sets the owner.
+   *
+   * @param owner the owner
+   */
   /* see superclass */
   @Override
   public void setOwner(MapUser owner) {
     this.owner = owner;
   }
 
+  /**
+   * Returns the timestamp.
+   *
+   * @return the timestamp
+   */
   /* see superclass */
   @Override
   public Long getTimestamp() {
     return timestamp;
   }
 
+  /**
+   * Sets the timestamp.
+   *
+   * @param timestamp the timestamp
+   */
   /* see superclass */
   @Override
   public void setTimestamp(Long timestamp) {
     this.timestamp = timestamp;
   }
 
+  /**
+   * Returns the last modified by.
+   *
+   * @return the last modified by
+   */
   /* see superclass */
   @Override
   @XmlElement(type = MapUserJpa.class, name = "lastModifiedBy")
@@ -283,24 +313,44 @@ public class MapRecordJpa implements MapRecord {
     return lastModifiedBy;
   }
 
+  /**
+   * Sets the last modified by.
+   *
+   * @param mapUser the last modified by
+   */
   /* see superclass */
   @Override
   public void setLastModifiedBy(MapUser mapUser) {
     this.lastModifiedBy = mapUser;
   }
 
+  /**
+   * Returns the last modified.
+   *
+   * @return the last modified
+   */
   /* see superclass */
   @Override
   public Long getLastModified() {
     return this.lastModified;
   }
 
+  /**
+   * Sets the last modified.
+   *
+   * @param lastModified the last modified
+   */
   /* see superclass */
   @Override
   public void setLastModified(Long lastModified) {
     this.lastModified = lastModified;
   }
 
+  /**
+   * Returns the map project id.
+   *
+   * @return the map project id
+   */
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
@@ -308,12 +358,22 @@ public class MapRecordJpa implements MapRecord {
     return mapProjectId;
   }
 
+  /**
+   * Sets the map project id.
+   *
+   * @param mapProjectId the map project id
+   */
   /* see superclass */
   @Override
   public void setMapProjectId(Long mapProjectId) {
     this.mapProjectId = mapProjectId;
   }
 
+  /**
+   * Returns the concept id.
+   *
+   * @return the concept id
+   */
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
@@ -321,12 +381,22 @@ public class MapRecordJpa implements MapRecord {
     return conceptId;
   }
 
+  /**
+   * Sets the concept id.
+   *
+   * @param conceptId the concept id
+   */
   /* see superclass */
   @Override
   public void setConceptId(String conceptId) {
     this.conceptId = conceptId;
   }
 
+  /**
+   * Returns the concept name.
+   *
+   * @return the concept name
+   */
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
@@ -335,12 +405,22 @@ public class MapRecordJpa implements MapRecord {
     return this.conceptName;
   }
 
+  /**
+   * Sets the concept name.
+   *
+   * @param conceptName the concept name
+   */
   /* see superclass */
   @Override
   public void setConceptName(String conceptName) {
     this.conceptName = conceptName;
   }
 
+  /**
+   * Returns the map notes.
+   *
+   * @return the map notes
+   */
   /* see superclass */
   @Override
   @XmlElement(type = MapNoteJpa.class, name = "mapNote")
@@ -350,24 +430,44 @@ public class MapRecordJpa implements MapRecord {
     return mapNotes;
   }
 
+  /**
+   * Sets the map notes.
+   *
+   * @param mapNotes the map notes
+   */
   /* see superclass */
   @Override
   public void setMapNotes(Set<MapNote> mapNotes) {
     this.mapNotes = mapNotes;
   }
 
+  /**
+   * Adds the map note.
+   *
+   * @param mapNote the map note
+   */
   /* see superclass */
   @Override
   public void addMapNote(MapNote mapNote) {
     mapNotes.add(mapNote);
   }
 
+  /**
+   * Removes the map note.
+   *
+   * @param mapNote the map note
+   */
   /* see superclass */
   @Override
   public void removeMapNote(MapNote mapNote) {
     mapNotes.remove(mapNote);
   }
 
+  /**
+   * Returns the map entries.
+   *
+   * @return the map entries
+   */
   /* see superclass */
   @Override
   @XmlElement(type = MapEntryJpa.class, name = "mapEntry")
@@ -377,6 +477,11 @@ public class MapRecordJpa implements MapRecord {
     return mapEntries;
   }
 
+  /**
+   * Sets the map entries.
+   *
+   * @param mapEntries the map entries
+   */
   /* see superclass */
   @Override
   public void setMapEntries(List<MapEntry> mapEntries) {
@@ -386,6 +491,11 @@ public class MapRecordJpa implements MapRecord {
       this.mapEntries = mapEntries;
   }
 
+  /**
+   * Adds the map entry.
+   *
+   * @param mapEntry the map entry
+   */
   /* see superclass */
   @Override
   public void addMapEntry(MapEntry mapEntry) {
@@ -408,12 +518,22 @@ public class MapRecordJpa implements MapRecord {
 
   }
 
+  /**
+   * Removes the map entry.
+   *
+   * @param mapEntry the map entry
+   */
   /* see superclass */
   @Override
   public void removeMapEntry(MapEntry mapEntry) {
     mapEntries.remove(mapEntry);
   }
 
+  /**
+   * Returns the map principles.
+   *
+   * @return the map principles
+   */
   /* see superclass */
   @Override
   @XmlElement(type = MapPrincipleJpa.class, name = "mapPrinciple")
@@ -421,48 +541,88 @@ public class MapRecordJpa implements MapRecord {
     return mapPrinciples;
   }
 
+  /**
+   * Sets the map principles.
+   *
+   * @param mapPrinciples the map principles
+   */
   /* see superclass */
   @Override
   public void setMapPrinciples(Set<MapPrinciple> mapPrinciples) {
     this.mapPrinciples = mapPrinciples;
   }
 
+  /**
+   * Adds the map principle.
+   *
+   * @param mapPrinciple the map principle
+   */
   /* see superclass */
   @Override
   public void addMapPrinciple(MapPrinciple mapPrinciple) {
     mapPrinciples.add(mapPrinciple);
   }
 
+  /**
+   * Removes the map principle.
+   *
+   * @param mapPrinciple the map principle
+   */
   /* see superclass */
   @Override
   public void removeMapPrinciple(MapPrinciple mapPrinciple) {
     mapPrinciples.remove(mapPrinciple);
   }
 
+  /**
+   * Returns the origin ids.
+   *
+   * @return the origin ids
+   */
   /* see superclass */
   @Override
   public Set<Long> getOriginIds() {
     return originIds;
   }
 
+  /**
+   * Sets the origin ids.
+   *
+   * @param originIds the origin ids
+   */
   /* see superclass */
   @Override
   public void setOriginIds(Set<Long> originIds) {
     this.originIds = originIds;
   }
 
+  /**
+   * Adds the origin.
+   *
+   * @param origin the origin
+   */
   /* see superclass */
   @Override
   public void addOrigin(Long origin) {
     this.originIds.add(origin);
   }
 
+  /**
+   * Removes the origin.
+   *
+   * @param origin the origin
+   */
   /* see superclass */
   @Override
   public void removeOrigin(Long origin) {
     originIds.remove(origin);
   }
 
+  /**
+   * Indicates whether or not flag for map lead review is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
@@ -470,12 +630,22 @@ public class MapRecordJpa implements MapRecord {
     return flagForMapLeadReview;
   }
 
+  /**
+   * Sets the flag for map lead review.
+   *
+   * @param flag the flag for map lead review
+   */
   /* see superclass */
   @Override
   public void setFlagForMapLeadReview(boolean flag) {
     flagForMapLeadReview = flag;
   }
 
+  /**
+   * Indicates whether or not flag for editorial review is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
@@ -483,12 +653,22 @@ public class MapRecordJpa implements MapRecord {
     return flagForEditorialReview;
   }
 
+  /**
+   * Sets the flag for editorial review.
+   *
+   * @param flag the flag for editorial review
+   */
   /* see superclass */
   @Override
   public void setFlagForEditorialReview(boolean flag) {
     flagForEditorialReview = flag;
   }
 
+  /**
+   * Indicates whether or not flag for consensus review is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
@@ -496,12 +676,23 @@ public class MapRecordJpa implements MapRecord {
     return flagForConsensusReview;
   }
 
+  /**
+   * Sets the flag for consensus review.
+   *
+   * @param flag the flag for consensus review
+   */
   /* see superclass */
   @Override
   public void setFlagForConsensusReview(boolean flag) {
     flagForConsensusReview = flag;
   }
 
+  /**
+   * Indicates whether or not equivalent is the case.
+   *
+   * @param mapRecord the map record
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
   /* see superclass */
   @Override
   public boolean isEquivalent(MapRecord mapRecord) {
@@ -588,12 +779,22 @@ public class MapRecordJpa implements MapRecord {
 
   }
 
+  /**
+   * Sets the workflow status.
+   *
+   * @param workflowStatus the workflow status
+   */
   /* see superclass */
   @Override
   public void setWorkflowStatus(WorkflowStatus workflowStatus) {
     this.workflowStatus = workflowStatus;
   }
 
+  /**
+   * Returns the workflow status.
+   *
+   * @return the workflow status
+   */
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
@@ -601,12 +802,22 @@ public class MapRecordJpa implements MapRecord {
     return workflowStatus;
   }
 
+  /**
+   * Adds the origins.
+   *
+   * @param origins the origins
+   */
   /* see superclass */
   @Override
   public void addOrigins(Set<Long> origins) {
     originIds.addAll(origins);
   }
 
+  /**
+   * Indicates whether or not discrepancy review is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
@@ -614,6 +825,11 @@ public class MapRecordJpa implements MapRecord {
     return isDiscrepancyReview;
   }
 
+  /**
+   * Sets the discrepancy review.
+   *
+   * @param isDiscrepancyReview the discrepancy review
+   */
   /* see superclass */
   @Override
   public void setDiscrepancyReview(boolean isDiscrepancyReview) {
@@ -641,18 +857,33 @@ public class MapRecordJpa implements MapRecord {
     this.labels = labels;
   }
 
+  /**
+   * Adds the label.
+   *
+   * @param label the label
+   */
   /* see superclass */
   @Override
   public void addLabel(String label) {
     labels.add(label);
   }
 
+  /**
+   * Removes the label.
+   *
+   * @param label the label
+   */
   /* see superclass */
   @Override
   public void removeLabel(String label) {
     labels.remove(label);
   }
 
+  /**
+   * Returns the reasons for conflict.
+   *
+   * @return the reasons for conflict
+   */
   /* see superclass */
   @Field(bridge = @FieldBridge(impl = CollectionToCSVBridge.class))
   @Override
@@ -660,24 +891,44 @@ public class MapRecordJpa implements MapRecord {
     return reasonsForConflict;
   }
 
+  /**
+   * Sets the reasons for conflict.
+   *
+   * @param reasons the reasons for conflict
+   */
   /* see superclass */
   @Override
   public void setReasonsForConflict(Set<String> reasons) {
     this.reasonsForConflict = reasons;
   }
 
+  /**
+   * Adds the reason for conflict.
+   *
+   * @param reason the reason
+   */
   /* see superclass */
   @Override
   public void addReasonForConflict(String reason) {
     reasonsForConflict.add(reason);
   }
 
+  /**
+   * Removes the reason for conflict.
+   *
+   * @param reason the reason
+   */
   /* see superclass */
   @Override
   public void removeReasonForConflict(String reason) {
     reasonsForConflict.remove(reason);
   }
 
+  /**
+   * Hash code.
+   *
+   * @return the int
+   */
   /* see superclass */
   @Override
   public int hashCode() {
@@ -710,6 +961,12 @@ public class MapRecordJpa implements MapRecord {
     return result;
   }
 
+  /**
+   * Equals.
+   *
+   * @param obj the obj
+   * @return true, if successful
+   */
   /* see superclass */
   @Override
   public boolean equals(Object obj) {
@@ -791,6 +1048,11 @@ public class MapRecordJpa implements MapRecord {
     return true;
   }
 
+  /**
+   * To string.
+   *
+   * @return the string
+   */
   /* see superclass */
   @Override
   public String toString() {

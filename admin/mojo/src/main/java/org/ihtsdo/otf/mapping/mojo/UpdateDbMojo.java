@@ -1,6 +1,5 @@
 package org.ihtsdo.otf.mapping.mojo;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 
@@ -13,7 +12,7 @@ import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
  * 
  * @phase package
  */
-public class UpdateDbMojo extends AbstractMojo {
+public class UpdateDbMojo extends AbstractOtfMappingMojo {
 
   /**
    * Instantiates a {@link UpdateDbMojo} from the specified parameters.

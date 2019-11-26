@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.MapNoteJpa;
@@ -28,7 +27,7 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  * @goal load-map-notes
  * @phase package
  */
-public class MapNoteRf2LoaderMojo extends AbstractMojo {
+public class MapNoteRf2LoaderMojo extends AbstractOtfMappingMojo {
 
   /**
    * The input file of RF2 notes

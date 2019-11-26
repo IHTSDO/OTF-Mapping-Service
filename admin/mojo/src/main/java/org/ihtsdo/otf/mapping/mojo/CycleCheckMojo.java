@@ -2,7 +2,6 @@ package org.ihtsdo.otf.mapping.mojo;
 
 import java.util.Map;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
@@ -18,7 +17,7 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
  * 
  * @phase package
  */
-public class CycleCheckMojo extends AbstractMojo {
+public class CycleCheckMojo extends AbstractOtfMappingMojo {
 
   /**
    * Name of terminology to be loaded.

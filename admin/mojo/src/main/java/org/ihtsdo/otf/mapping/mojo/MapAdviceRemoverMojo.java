@@ -1,6 +1,8 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
@@ -14,7 +16,7 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  * @goal remove-map-advice
  * @phase package
  */
-public class MapAdviceRemoverMojo extends AbstractMojo {
+public class MapAdviceRemoverMojo extends AbstractOtfMappingMojo {
 
   /**
    * The refSet id
@@ -37,9 +39,8 @@ public class MapAdviceRemoverMojo extends AbstractMojo {
           "You must specify the full name of the map advice.");
     }
 
-    try {
+    try (final MappingService mappingService = new MappingServiceJpa();) {
 
-      MappingService mappingService = new MappingServiceJpa();
       MapAdvice mapAdvice = null;
       for (MapAdvice ma : mappingService.getMapAdvices().getIterable()) {
         if (ma.getName().equals(mapAdviceName))
@@ -49,13 +50,11 @@ public class MapAdviceRemoverMojo extends AbstractMojo {
         throw new MojoExecutionException(
             "The map advice to be removed does not exist");
 
-      getLog().info(
-          "Found map advice to remove (id = " + mapAdvice.getId() + ")");
+      getLog()
+          .info("Found map advice to remove (id = " + mapAdvice.getId() + ")");
 
       // Remove the advice
       mappingService.removeMapAdviceFromEnvironment(mapAdvice);
-
-      mappingService.close();
 
       getLog().info("Done ...");
     } catch (Exception e) {

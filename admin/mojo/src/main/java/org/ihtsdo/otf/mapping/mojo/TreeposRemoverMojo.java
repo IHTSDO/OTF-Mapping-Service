@@ -16,7 +16,6 @@
  */
 package org.ihtsdo.otf.mapping.mojo;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 
@@ -29,7 +28,7 @@ import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
  * 
  * @phase package
  */
-public class TreeposRemoverMojo extends AbstractMojo {
+public class TreeposRemoverMojo extends AbstractOtfMappingMojo {
 
   /**
    * Name of terminology to be removed.

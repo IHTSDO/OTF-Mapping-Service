@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.jpa.algo;
 
@@ -28,7 +28,8 @@ import org.reflections.Reflections;
 /**
  * Implementation of an algorithm to reindex all classes annotated with @Indexed
  */
-public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm {
+public class LuceneReindexAlgorithm extends RootServiceJpa
+    implements Algorithm {
 
   /** Listeners. */
   private List<ProgressListener> listeners = new ArrayList<>();
@@ -41,7 +42,7 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
 
   /** The full text entity manager. */
   private FullTextEntityManager fullTextEntityManager;
-  
+
   /** The log. */
   private static Logger log;
 
@@ -54,20 +55,19 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
    */
   public LuceneReindexAlgorithm() throws Exception {
     super();
-    
-    
-    //initialize logger
+
+    // initialize logger
     String rootPath = ConfigUtility.getConfigProperties()
-          .getProperty("map.principle.source.document.dir");
+        .getProperty("map.principle.source.document.dir");
     if (!rootPath.endsWith("/") && !rootPath.endsWith("\\")) {
       rootPath += "/";
     }
     rootPath += "logs";
     File logDirectory = new File(rootPath);
     if (!logDirectory.exists()) {
-        logDirectory.mkdir();
+      logDirectory.mkdir();
     }
-    
+
     logFile = new File(logDirectory, "reindex.log");
     LoggerUtility.setConfiguration("reindex", logFile.getAbsolutePath());
     this.log = LoggerUtility.getLogger("reindex");
@@ -85,12 +85,12 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
   /* see superclass */
   @Override
   public void compute() throws Exception {
-    
+
     // clear log before starting process
     PrintWriter writer = new PrintWriter(logFile);
     writer.print("");
-    writer.close(); 
-   
+    writer.close();
+
     if (fullTextEntityManager == null) {
       fullTextEntityManager = Search.getFullTextEntityManager(manager);
     }
@@ -116,76 +116,73 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
    */
   private void computeLuceneIndexes(String indexedObjects) throws Exception {
     try {
-    // set of objects to be re-indexed
-    final Set<String> objectsToReindex = new HashSet<>();
-    final Map<String, Class<?>> reindexMap = new HashMap<>();
-    final Reflections reflections = new Reflections("org.ihtsdo.otf");
-    for (final Class<?> clazz : reflections
-        .getTypesAnnotatedWith(Indexed.class)) {
-      reindexMap.put(clazz.getSimpleName(), clazz);
-    }
+      // set of objects to be re-indexed
+      final Set<String> objectsToReindex = new HashSet<>();
+      final Map<String, Class<?>> reindexMap = new HashMap<>();
+      final Reflections reflections = new Reflections("org.ihtsdo.otf");
+      for (final Class<?> clazz : reflections
+          .getTypesAnnotatedWith(Indexed.class)) {
+        reindexMap.put(clazz.getSimpleName(), clazz);
+      }
 
-    // if no parameter specified, re-index all objects
-    if (indexedObjects == null || indexedObjects.isEmpty()) {
+      // if no parameter specified, re-index all objects
+      if (indexedObjects == null || indexedObjects.isEmpty()) {
 
-      // Add all class names
-      for (final String className : reindexMap.keySet()) {
-        if (objectsToReindex.contains(className)) {
-          // This restriction can be removed by using full class names
-          // however, then calling the mojo is more complicated
-          throw new Exception(
-              "Reindex process assumes simple class names are different.");
+        // Add all class names
+        for (final String className : reindexMap.keySet()) {
+          if (objectsToReindex.contains(className)) {
+            // This restriction can be removed by using full class names
+            // however, then calling the mojo is more complicated
+            throw new Exception(
+                "Reindex process assumes simple class names are different.");
+          }
+          objectsToReindex.add(className);
         }
-        objectsToReindex.add(className);
+
+        // otherwise, construct set of indexed objects
+      } else {
+
+        // remove white-space and split by comma
+        String[] objects = indexedObjects.replaceAll(" ", "").split(",");
+
+        // add each value to the set
+        for (String object : objects)
+          objectsToReindex.add(object);
+
       }
 
-      // otherwise, construct set of indexed objects
-    } else {
-
-      // remove white-space and split by comma
-      String[] objects = indexedObjects.replaceAll(" ", "").split(",");
-
-      // add each value to the set
-      for (String object : objects)
-        objectsToReindex.add(object);
-
-    }
-
-    Logger.getLogger(getClass()).info("Starting reindexing for:");
-    for (String objectToReindex : objectsToReindex) {
-      Logger.getLogger(getClass()).info("  " + objectToReindex);
-    }
-
-    // Reindex each object
-    for (final String key : reindexMap.keySet()) {
-      // Concepts
-      if (objectsToReindex.contains(key)) {
-        Logger.getLogger(getClass()).info("  Creating indexes for " + key);
-        fullTextEntityManager.purgeAll(reindexMap.get(key));
-        fullTextEntityManager.flushToIndexes();
-//        if (key.contains("MapRecordJpa")) {
-//        	fullTextEntityManager.setProperty(ROLE, ROLE);
-//        }
-        fullTextEntityManager.createIndexer(reindexMap.get(key))
-            .batchSizeToLoadObjects(100)
-            .cacheMode(CacheMode.NORMAL)
-            .threadsToLoadObjects(4)
-            .threadsForSubsequentFetching(8)
-            .startAndWait();
-
-        objectsToReindex.remove(key);
+      Logger.getLogger(getClass()).info("Starting reindexing for:");
+      for (String objectToReindex : objectsToReindex) {
+        Logger.getLogger(getClass()).info("  " + objectToReindex);
       }
-    }
 
-    if (objectsToReindex.size() != 0) {
-      throw new Exception(
-          "The following objects were specified for re-indexing, but do not exist as indexed objects: "
-              + objectsToReindex.toString());
-    }
+      // Reindex each object
+      for (final String key : reindexMap.keySet()) {
+        // Concepts
+        if (objectsToReindex.contains(key)) {
+          Logger.getLogger(getClass()).info("  Creating indexes for " + key);
+          fullTextEntityManager.purgeAll(reindexMap.get(key));
+          fullTextEntityManager.flushToIndexes();
+          // if (key.contains("MapRecordJpa")) {
+          // fullTextEntityManager.setProperty(ROLE, ROLE);
+          // }
+          fullTextEntityManager.createIndexer(reindexMap.get(key))
+              .batchSizeToLoadObjects(5000).cacheMode(CacheMode.NORMAL)
+              .threadsToLoadObjects(8).startAndWait();
 
-    // Cleanup
-    Logger.getLogger(getClass()).info("done ...");
-    } catch(Exception e) {
+          objectsToReindex.remove(key);
+        }
+      }
+
+      if (objectsToReindex.size() != 0) {
+        throw new Exception(
+            "The following objects were specified for re-indexing, but do not exist as indexed objects: "
+                + objectsToReindex.toString());
+      }
+
+      // Cleanup
+      Logger.getLogger(getClass()).info("done ...");
+    } catch (Exception e) {
       log.error(e.getMessage(), e);
       throw new Exception(e);
     }
@@ -236,11 +233,11 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
     requestCancel = true;
   }
 
-//  /* see superclass */
-//  @Override
-//  public void refreshCaches() throws Exception {
-//    // n/a
-//  }
+  // /* see superclass */
+  // @Override
+  // public void refreshCaches() throws Exception {
+  // // n/a
+  // }
 
   @Override
   public void checkPreconditions() throws Exception {

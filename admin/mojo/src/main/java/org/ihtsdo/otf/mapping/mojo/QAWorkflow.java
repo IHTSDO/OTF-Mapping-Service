@@ -1,10 +1,12 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
@@ -19,7 +21,7 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
  * @goal qa-workflow
  * @phase package
  */
-public class QAWorkflow extends AbstractMojo {
+public class QAWorkflow extends AbstractOtfMappingMojo {
 
   /**
    * The refSet id.
@@ -46,9 +48,7 @@ public class QAWorkflow extends AbstractMojo {
     getLog().info("  refsetId = " + refsetId);
     getLog().info("  sendNotification = " + sendNotification);
 
-    try {
-
-      final WorkflowService workflowService = new WorkflowServiceJpa();
+    try (final WorkflowService workflowService = new WorkflowServiceJpa();) {
       List<MapProject> mapProjects = new ArrayList<>();
 
       if (refsetId == null) {
@@ -67,7 +67,6 @@ public class QAWorkflow extends AbstractMojo {
       List<String> errors = new ArrayList<>();
 
       // Perform the QA checks
-
       for (MapProject mapProject : mapProjects) {
         getLog().info("Checking workflow for " + mapProject.getName() + ", "
             + mapProject.getId());

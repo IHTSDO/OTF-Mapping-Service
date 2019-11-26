@@ -1,25 +1,11 @@
-/**
- * Copyright (c) 2012 International Health Terminology Standards Development
- * Organisation
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
@@ -35,7 +21,7 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  * 
  * @phase package
  */
-public class MapNoteRemoverMojo extends AbstractMojo {
+public class MapNoteRemoverMojo extends AbstractOtfMappingMojo {
 
   /**
    * The specified refsetId
@@ -52,6 +38,7 @@ public class MapNoteRemoverMojo extends AbstractMojo {
     // Do nothing
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -62,9 +49,8 @@ public class MapNoteRemoverMojo extends AbstractMojo {
     getLog().info("Starting removing map notes");
     getLog().info("  refsetId = " + refsetId);
 
-    try {
+    try (final MappingService mappingService = new MappingServiceJpa();) {
 
-      MappingService mappingService = new MappingServiceJpa();
       Set<MapProject> mapProjects = new HashSet<>();
 
       getLog().info("Start removing map notes for project - " + refsetId);
@@ -90,7 +76,8 @@ public class MapNoteRemoverMojo extends AbstractMojo {
         for (MapRecord record : mappingService
             .getMapRecordsForMapProject(project.getId()).getMapRecords()) {
           if (record.getMapNotes().size() > 0) {
-            final MapRecord record2 = mappingService.getMapRecord(record.getId());
+            final MapRecord record2 =
+                mappingService.getMapRecord(record.getId());
             getLog().debug(
                 "    Remove map record notes from record - " + record2.getId());
             record2.getMapNotes().clear();
@@ -105,7 +92,6 @@ public class MapNoteRemoverMojo extends AbstractMojo {
         }
       }
       mappingService.commit();
-      mappingService.close();
 
       getLog().info("Done ...");
     } catch (Exception e) {

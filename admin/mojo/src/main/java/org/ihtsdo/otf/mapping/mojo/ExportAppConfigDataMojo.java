@@ -11,7 +11,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
@@ -45,7 +44,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * 
  * @goal export-app-config-data
  */
-public class ExportAppConfigDataMojo extends AbstractMojo {
+public class ExportAppConfigDataMojo extends AbstractOtfMappingMojo {
 
   /**
    * File path root for config files

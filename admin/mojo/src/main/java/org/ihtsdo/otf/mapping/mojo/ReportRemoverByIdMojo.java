@@ -1,6 +1,5 @@
 package org.ihtsdo.otf.mapping.mojo;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
@@ -15,7 +14,7 @@ import org.ihtsdo.otf.mapping.services.ReportService;
  * @goal remove-reports-id
  * @phase package
  */
-public class ReportRemoverByIdMojo extends AbstractMojo {
+public class ReportRemoverByIdMojo extends AbstractOtfMappingMojo {
 
 
   /**

@@ -13,8 +13,8 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 /**
  * The Class ICD10ProjectSpecificAlgorithmHandler.
  */
-public class ICD9CMProjectSpecificAlgorithmHandler extends
-    DefaultProjectSpecificAlgorithmHandler {
+public class ICD9CMProjectSpecificAlgorithmHandler
+    extends DefaultProjectSpecificAlgorithmHandler {
 
   /**
    * For ICD9, a target code is valid if: - Concept exists - Concept is a leaf
@@ -29,81 +29,79 @@ public class ICD9CMProjectSpecificAlgorithmHandler extends
     throws Exception {
 
     ValidationResult validationResult = new ValidationResultJpa();
-    ContentService contentService = new ContentServiceJpa();
+    try (ContentService contentService = new ContentServiceJpa();) {
 
-    // first check if there is a SNOMED CT SOURCE CODE NOT MAPPABLE TO
-    // TARGET CODING SCHEME relation present
-    // if present, there should be only one map entry
-    for (MapEntry mapEntry : mapRecord.getMapEntries()) {
-      if (mapEntry.getMapRelation() != null) {
+      // first check if there is a SNOMED CT SOURCE CODE NOT MAPPABLE TO
+      // TARGET CODING SCHEME relation present
+      // if present, there should be only one map entry
+      for (MapEntry mapEntry : mapRecord.getMapEntries()) {
+        if (mapEntry.getMapRelation() != null) {
 
-        if (mapEntry.getMapRelation().getTerminologyId().equals("447556008")) {
-          // if more than one entry is present, add an error
-          if (mapRecord.getMapEntries().size() > 1) {
-            validationResult
-                .addError("Cannot assign NOT MAPPABLE map relation to an entry when other entries are present");
-            return validationResult;
-            // otherwise, this record is fine
-          } else
-            return validationResult;
-        }
-      }
-    }
-
-    // otherwise, validate the target codes
-    for (MapEntry mapEntry : mapRecord.getMapEntries()) {
-
-      // add an error if neither relation nor target are set
-      if (mapEntry.getMapRelation() == null
-          && (mapEntry.getTargetId() == null || mapEntry.getTargetId().equals(
-              ""))) {
-
-        validationResult
-            .addError("A relation indicating the reason must be selected when no target is assigned.");
-
-      } else {
-        // get concept
-        Concept concept =
-            contentService.getConcept(mapEntry.getTargetId(),
-                mapProject.getDestinationTerminology(),
-                mapProject.getDestinationTerminologyVersion());
-
-        // verify that concept exists
-        if (concept == null) {
-          validationResult.addError("Target code "
-              + mapEntry.getTargetId()
-              + " not found in database!"
-              + " Entry:"
-              + (mapProject.isGroupStructure() ? " group "
-                  + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-              + " map priority " + Integer.toString(mapEntry.getMapPriority()));
-
-          // if concept exists, verify that it is a leaf node (no
-          // children)
-        } else {
-          if (!isTargetCodeValid(mapEntry.getTargetId())) {
-
-            validationResult.addError("Target "
-                + mapEntry.getTargetId()
-                + " is not a leaf node!"
-                + " Entry:"
-                + (mapProject.isGroupStructure() ? " group "
-                    + Integer.toString(mapEntry.getMapGroup()) + "," : "")
-                + " map priority "
-                + Integer.toString(mapEntry.getMapPriority()));
-
+          if (mapEntry.getMapRelation().getTerminologyId()
+              .equals("447556008")) {
+            // if more than one entry is present, add an error
+            if (mapRecord.getMapEntries().size() > 1) {
+              validationResult.addError(
+                  "Cannot assign NOT MAPPABLE map relation to an entry when other entries are present");
+              return validationResult;
+              // otherwise, this record is fine
+            } else
+              return validationResult;
           }
         }
       }
-    }
 
-    contentService.close();
+      // otherwise, validate the target codes
+      for (MapEntry mapEntry : mapRecord.getMapEntries()) {
+
+        // add an error if neither relation nor target are set
+        if (mapEntry.getMapRelation() == null && (mapEntry.getTargetId() == null
+            || mapEntry.getTargetId().equals(""))) {
+
+          validationResult.addError(
+              "A relation indicating the reason must be selected when no target is assigned.");
+
+        } else {
+          // get concept
+          Concept concept = contentService.getConcept(mapEntry.getTargetId(),
+              mapProject.getDestinationTerminology(),
+              mapProject.getDestinationTerminologyVersion());
+
+          // verify that concept exists
+          if (concept == null) {
+            validationResult
+                .addError("Target code " + mapEntry.getTargetId()
+                    + " not found in database!" + " Entry:"
+                    + (mapProject.isGroupStructure() ? " group "
+                        + Integer.toString(mapEntry.getMapGroup()) + "," : "")
+                    + " map priority "
+                    + Integer.toString(mapEntry.getMapPriority()));
+
+            // if concept exists, verify that it is a leaf node (no
+            // children)
+          } else {
+            if (!isTargetCodeValid(mapEntry.getTargetId())) {
+
+              validationResult.addError("Target " + mapEntry.getTargetId()
+                  + " is not a leaf node!" + " Entry:"
+                  + (mapProject.isGroupStructure() ? " group "
+                      + Integer.toString(mapEntry.getMapGroup()) + "," : "")
+                  + " map priority "
+                  + Integer.toString(mapEntry.getMapPriority()));
+
+            }
+          }
+        }
+      }
+
+    }
     return validationResult;
 
   }
 
   @Override
-  public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry) {
+  public MapRelation computeMapRelation(MapRecord mapRecord,
+    MapEntry mapEntry) {
 
     // if null code
     if (mapEntry.getTargetId() == null || mapEntry.getTargetId().equals("")) {
@@ -123,8 +121,8 @@ public class ICD9CMProjectSpecificAlgorithmHandler extends
       // if a relation is specified and is not the cannot match relation,
       // return
       // unchanged
-      if (mapEntry.getMapRelation() != null
-          && !mapEntry.getMapRelation().getTerminologyId().equals("447556008")) {
+      if (mapEntry.getMapRelation() != null && !mapEntry.getMapRelation()
+          .getTerminologyId().equals("447556008")) {
 
         return mapEntry.getMapRelation();
 
@@ -150,10 +148,9 @@ public class ICD9CMProjectSpecificAlgorithmHandler extends
     ContentService contentService = new ContentServiceJpa();
 
     // get concept
-    Concept concept =
-        contentService.getConcept(terminologyId,
-            mapProject.getDestinationTerminology(),
-            mapProject.getDestinationTerminologyVersion());
+    Concept concept = contentService.getConcept(terminologyId,
+        mapProject.getDestinationTerminology(),
+        mapProject.getDestinationTerminologyVersion());
 
     // verify that concept exists
     if (concept == null) {

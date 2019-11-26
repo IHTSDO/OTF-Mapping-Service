@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.util.Arrays;
@@ -427,6 +430,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
     return result;
   }
 
+  /* see superclass */
   @Override
   public Set<MapRecord> processWorkflowAction(TrackingRecord trackingRecord,
     WorkflowAction workflowAction, MapProject mapProject, MapUser mapUser,
@@ -466,7 +470,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
           ProjectSpecificAlgorithmHandler handler =
               (ProjectSpecificAlgorithmHandler) Class
                   .forName(mapProject.getProjectSpecificAlgorithmHandlerClass())
-                  .newInstance();
+                  .getDeclaredConstructor().newInstance();
           handler.setMapProject(mapProject);
           newRecord.setLastModifiedBy(mapUser);
           handler.computeIdentifyAlgorithms(newRecord);
@@ -482,7 +486,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
           ProjectSpecificAlgorithmHandler handler =
               (ProjectSpecificAlgorithmHandler) Class
                   .forName(mapProject.getProjectSpecificAlgorithmHandlerClass())
-                  .newInstance();
+                  .getDeclaredConstructor().newInstance();
           handler.setMapProject(mapProject);
 
           MapRecord mapRecord1 = (MapRecord) mapRecords.toArray()[0];
@@ -577,7 +581,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
                 (ProjectSpecificAlgorithmHandler) Class
                     .forName(
                         mapProject.getProjectSpecificAlgorithmHandlerClass())
-                    .newInstance();
+                    .getDeclaredConstructor().newInstance();
             handler.setMapProject(mapProject);
 
             // TODO Decide how to do comparisons
@@ -679,7 +683,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
           ProjectSpecificAlgorithmHandler handler =
               (ProjectSpecificAlgorithmHandler) Class
                   .forName(mapProject.getProjectSpecificAlgorithmHandlerClass())
-                  .newInstance();
+                  .getDeclaredConstructor().newInstance();
           handler.setMapProject(mapProject);
 
           // TODO Another comparison call using default project specific
@@ -834,7 +838,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
           // Only include tracking records assigned to my team
           sb.append(" AND assignedTeamName:" + mapUser.getTeam());
         }
-        
+
         sb.append(" AND NOT assignedUserNames:" + mapUser.getUserName());
         sb.append(" AND userAndWorkflowStatusPairs:CONFLICT_DETECTED_*");
         sb.append(" AND NOT (" + "userAndWorkflowStatusPairs:CONFLICT_NEW_* OR "

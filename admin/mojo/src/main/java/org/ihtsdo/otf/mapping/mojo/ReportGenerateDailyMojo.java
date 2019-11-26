@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.text.DateFormat;
@@ -6,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
@@ -25,7 +27,7 @@ import org.ihtsdo.otf.mapping.services.helpers.OtfErrorHandler;
  * 
  * @phase package
  */
-public class ReportGenerateDailyMojo extends AbstractMojo {
+public class ReportGenerateDailyMojo extends AbstractOtfMappingMojo {
 
   /**
    * Name of terminology to be loaded.
@@ -58,6 +60,7 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
     // do nothing
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -70,11 +73,9 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
     getLog().info("  startDate = " + startDate);
     getLog().info("  endDate = " + endDate);
 
-    ReportService reportService = null;
     MapUser mapUser = null;
-    try {
-
-      reportService = new ReportServiceJpa();
+    try (final ReportService reportService = new ReportServiceJpa();
+        final MappingService mappingService = new MappingServiceJpa();) {
 
       if (startDate == null) {
         throw new MojoFailureException("You must specify a start date");
@@ -88,8 +89,6 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
       getLog().info("Parsed start date: " + start.toString());
       getLog().info("Parsed end date:   " + end.toString());
 
-      MappingService mappingService = new MappingServiceJpa();
-
       // Determine map projects to generate reports for
       List<MapProject> mapProjects = new ArrayList<>();
       if (refsetId != null) {
@@ -98,9 +97,8 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
         // retrieve the map project objects
         for (String id : refsetIds) {
           MapProject mapProject = mappingService.getMapProjectForRefSetId(id);
-          getLog().info(
-              "  Found project " + mapProject.getId() + " "
-                  + mapProject.getName());
+          getLog().info("  Found project " + mapProject.getId() + " "
+              + mapProject.getName());
           mapProjects.add(mapProject);
         }
       } else {
@@ -122,8 +120,6 @@ public class ReportGenerateDailyMojo extends AbstractMojo {
       }
 
       // Cleanup and end
-      mappingService.close();
-      reportService.close();
       getLog().info("Done ...");
 
     } catch (Exception e) {
