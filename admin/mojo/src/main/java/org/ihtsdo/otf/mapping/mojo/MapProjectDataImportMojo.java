@@ -14,7 +14,6 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
@@ -44,7 +43,7 @@ import org.ihtsdo.otf.mapping.services.ReportService;
  * 
  * @phase package
  */
-public class MapProjectDataImportMojo extends AbstractMojo {
+public class MapProjectDataImportMojo extends AbstractOtfMappingMojo {
 
   /**
    * The input dir

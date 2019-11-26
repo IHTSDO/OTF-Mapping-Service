@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
@@ -32,7 +31,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * 
  * @goal maven-mojo-executor
  */
-public class MavenExecuterMojo extends AbstractMojo {
+public class MavenExecuterMojo extends AbstractOtfMappingMojo {
 
   /**
    * Maven Mojo Config file

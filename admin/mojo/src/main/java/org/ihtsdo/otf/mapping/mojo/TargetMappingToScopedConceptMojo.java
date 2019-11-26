@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.helpers.MapProjectList;
@@ -25,7 +24,7 @@ import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
  *
  * @goal target-to-scope-concept
  */
-public class TargetMappingToScopedConceptMojo extends AbstractMojo {
+public class TargetMappingToScopedConceptMojo extends AbstractOtfMappingMojo {
 
   /**
    * Name of source mapping project to retrieve targets

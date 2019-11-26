@@ -161,6 +161,7 @@ public class MapProjectJpa implements MapProject {
 
   /** The preset age ranges. */
   @ManyToMany(targetEntity = MapAgeRangeJpa.class, fetch = FetchType.LAZY)
+  @CollectionTable(name="map_projects_map_age_ranges", joinColumns = @JoinColumn(name="map_projects_id"))
   private Set<MapAgeRange> presetAgeRanges = new HashSet<>();
 
   /** The map leads. */
@@ -177,21 +178,25 @@ public class MapProjectJpa implements MapProject {
 
   /** The allowable map principles for this MapProject. */
   @ManyToMany(targetEntity = MapPrincipleJpa.class, fetch = FetchType.LAZY)
+  @CollectionTable(name="map_projects_map_principles", joinColumns = @JoinColumn(name="map_projects_id"))
   @IndexedEmbedded(targetElement = MapPrincipleJpa.class)
   private Set<MapPrinciple> mapPrinciples = new HashSet<>();
 
   /** The allowable map advices for this MapProject. */
   @ManyToMany(targetEntity = MapAdviceJpa.class, fetch = FetchType.LAZY)
+  @CollectionTable(name="map_projects_map_advices", joinColumns = @JoinColumn(name="map_projects_id"))
   @IndexedEmbedded(targetElement = MapAdviceJpa.class)
   private Set<MapAdvice> mapAdvices = new HashSet<>();
 
   /** The allowable map relations for this MapProject. */
   @ManyToMany(targetEntity = MapRelationJpa.class, fetch = FetchType.LAZY)
+  @CollectionTable(name="map_projects_map_relations", joinColumns = @JoinColumn(name="map_projects_id"))
   @IndexedEmbedded(targetElement = MapRelationJpa.class)
   private Set<MapRelation> mapRelations = new HashSet<>();
 
   /** The allowable report definitions for this MapProject. */
   @ManyToMany(targetEntity = ReportDefinitionJpa.class, fetch = FetchType.LAZY)
+  @CollectionTable(name="map_projects_report_definitions", joinColumns = @JoinColumn(name="map_projects_id"))
   @IndexedEmbedded(targetElement = ReportDefinitionJpa.class)
   private Set<ReportDefinition> reportDefinitions = new HashSet<>();
 

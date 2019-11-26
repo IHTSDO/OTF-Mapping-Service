@@ -3,7 +3,6 @@ package org.ihtsdo.otf.mapping.mojo;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
@@ -22,7 +21,7 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
  * 
  * @phase package
  */
-public class TreeposComputerMojo extends AbstractMojo {
+public class TreeposComputerMojo extends AbstractOtfMappingMojo {
 
   /**
    * Name of terminology to be loaded.

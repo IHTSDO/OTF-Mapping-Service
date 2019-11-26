@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.test.jpa;
 
 import java.util.Map;
@@ -53,66 +56,67 @@ public class GmdnTreePositionTest {
    */
   @Test
   public void testTreeposLookup() throws Exception {
-    ContentService contentService = new ContentServiceJpa();
-    MetadataService metadataService = new MetadataServiceJpa();
-    MappingService mappingService = new MappingServiceJpa();
-    TreePositionList treePositions =
-        contentService.getTreePositionsWithChildren("61690", "GMDN", "16_1");
-    Logger.getLogger(getClass()).info(
-        "  treepos count = " + treePositions.getTotalCount());
 
-    String terminology =
-        treePositions.getTreePositions().get(0).getTerminology();
-    String terminologyVersion =
-        treePositions.getTreePositions().get(0).getTerminologyVersion();
-    Map<String, String> descTypes =
-        metadataService.getDescriptionTypes(terminology, terminologyVersion);
-    Map<String, String> relTypes =
-        metadataService.getRelationshipTypes(terminology, terminologyVersion);
+    try (ContentService contentService = new ContentServiceJpa();
+        MetadataService metadataService = new MetadataServiceJpa();
+        MappingService mappingService = new MappingServiceJpa();) {
+      TreePositionList treePositions =
+          contentService.getTreePositionsWithChildren("61690", "GMDN", "16_1");
+      Logger.getLogger(getClass())
+          .info("  treepos count = " + treePositions.getTotalCount());
 
-    // Calculate info for tree position information panel
-    contentService.computeTreePositionInformation(treePositions, descTypes,
-        relTypes);
+      String terminology =
+          treePositions.getTreePositions().get(0).getTerminology();
+      String terminologyVersion =
+          treePositions.getTreePositions().get(0).getTerminologyVersion();
+      Map<String, String> descTypes =
+          metadataService.getDescriptionTypes(terminology, terminologyVersion);
+      Map<String, String> relTypes =
+          metadataService.getRelationshipTypes(terminology, terminologyVersion);
 
-    // Determine whether code is valid (e.g. whether it should be a
-    // link)
-    final ProjectSpecificAlgorithmHandler handler =
-        new GmdnProjectSpecificAlgorithmHandler();
-    MapProject mp = new MapProjectJpa();
-    mp.setDestinationTerminology("GMDN");
-    mp.setDestinationTerminologyVersion("16_1");
-    handler.setMapProject(mp);
+      // Calculate info for tree position information panel
+      contentService.computeTreePositionInformation(treePositions, descTypes,
+          relTypes);
 
-    // Compute any additional project specific handler info
-    mappingService.setTreePositionValidCodes(null, treePositions, handler);
-    mappingService
-        .setTreePositionTerminologyNotes(null, treePositions, handler);
+      // Determine whether code is valid (e.g. whether it should be a
+      // link)
+      final ProjectSpecificAlgorithmHandler handler =
+          new GmdnProjectSpecificAlgorithmHandler();
+      MapProject mp = new MapProjectJpa();
+      mp.setDestinationTerminology("GMDN");
+      mp.setDestinationTerminologyVersion("16_1");
+      handler.setMapProject(mp);
 
-    // Second
-    treePositions =
-        contentService.getTreePositionGraphForQuery("GMDN", "16_1", "61690",
-            new PfsParameterJpa());
-    Logger.getLogger(getClass()).info(
-        "  treepos count = " + treePositions.getTotalCount());
+      // Compute any additional project specific handler info
+      mappingService.setTreePositionValidCodes(null, treePositions, handler);
+      mappingService.setTreePositionTerminologyNotes(null, treePositions,
+          handler);
 
-    terminology = treePositions.getTreePositions().get(0).getTerminology();
-    terminologyVersion =
-        treePositions.getTreePositions().get(0).getTerminologyVersion();
-    descTypes =
-        metadataService.getDescriptionTypes(terminology, terminologyVersion);
-    relTypes =
-        metadataService.getRelationshipTypes(terminology, terminologyVersion);
+      // Second
+      treePositions = contentService.getTreePositionGraphForQuery("GMDN",
+          "16_1", "61690", new PfsParameterJpa());
+      Logger.getLogger(getClass())
+          .info("  treepos count = " + treePositions.getTotalCount());
 
-    // Limit tree positions
-    treePositions.setTreePositions(handler.limitTreePositions(treePositions
-        .getTreePositions()));
+      terminology = treePositions.getTreePositions().get(0).getTerminology();
+      terminologyVersion =
+          treePositions.getTreePositions().get(0).getTerminologyVersion();
+      descTypes =
+          metadataService.getDescriptionTypes(terminology, terminologyVersion);
+      relTypes =
+          metadataService.getRelationshipTypes(terminology, terminologyVersion);
 
-    contentService.computeTreePositionInformation(treePositions, descTypes,
-        relTypes);
+      // Limit tree positions
+      treePositions.setTreePositions(
+          handler.limitTreePositions(treePositions.getTreePositions()));
 
-    mappingService.setTreePositionValidCodes(null, treePositions, handler);
-    mappingService
-        .setTreePositionTerminologyNotes(null, treePositions, handler);
+      contentService.computeTreePositionInformation(treePositions, descTypes,
+          relTypes);
+
+      mappingService.setTreePositionValidCodes(null, treePositions, handler);
+      mappingService.setTreePositionTerminologyNotes(null, treePositions,
+          handler);
+    }
 
   }
 

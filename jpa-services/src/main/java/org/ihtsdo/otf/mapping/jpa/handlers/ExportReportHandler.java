@@ -105,7 +105,7 @@ public class ExportReportHandler {
                 // Count
                 cell = row.createCell(cellnum++);
                 cell.setCellStyle(style);
-                cell.setCellValue(createHelper.createRichTextString(new Long(result.getCt()).toString()));
+                cell.setCellValue(createHelper.createRichTextString(Long.valueOf(result.getCt()).toString()));
 
                 // Value
                 cell = row.createCell(cellnum++);
@@ -133,7 +133,7 @@ public class ExportReportHandler {
                 // Count
                 cell = row.createCell(cellnum++);
                 cell.setCellStyle(style);
-                cell.setCellValue(createHelper.createRichTextString(new Long(result.getCt()).toString()));
+                cell.setCellValue(createHelper.createRichTextString(Long.valueOf(result.getCt()).toString()));
 
                 // Value
                 cell = row.createCell(cellnum++);

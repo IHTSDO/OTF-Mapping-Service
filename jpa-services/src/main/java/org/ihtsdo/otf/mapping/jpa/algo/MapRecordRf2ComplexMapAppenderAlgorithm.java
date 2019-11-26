@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.jpa.algo;
 
 import java.io.BufferedReader;
@@ -420,70 +423,72 @@ public class MapRecordRf2ComplexMapAppenderAlgorithm extends RootServiceJpa
     File complexMapFile, Map<String, MapProject> mapProjectMap)
     throws Exception {
 
-    // Open reader and service
-    BufferedReader complexMapReader =
-        new BufferedReader(new FileReader(complexMapFile));
-    ContentService contentService = new ContentServiceJpa();
-
     // Set up sets for any map records we encounter
     String line = null;
     List<ComplexMapRefSetMember> members = new ArrayList<>();
 
-    final SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd");
-    while ((line = complexMapReader.readLine()) != null) {
-      line = line.replace("\r", "");
-      String fields[] = line.split("\t");
-      ComplexMapRefSetMember member = new ComplexMapRefSetMemberJpa();
+    // Open reader and service
+    try (
+        BufferedReader complexMapReader =
+            new BufferedReader(new FileReader(complexMapFile));
+        ContentService contentService = new ContentServiceJpa();) {
 
-      if (!fields[0].equals("id")) { // header
+      final SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd");
+      while ((line = complexMapReader.readLine()) != null) {
+        line = line.replace("\r", "");
+        String fields[] = line.split("\t");
+        ComplexMapRefSetMember member = new ComplexMapRefSetMemberJpa();
 
-        // ComplexMap attributes
-        member.setTerminologyId(fields[0]);
-        member.setEffectiveTime(dt.parse(fields[1]));
-        member.setActive(fields[2].equals("1"));
-        member.setModuleId(Long.valueOf(fields[3]));
-        final String refsetId = fields[4];
-        member.setRefSetId(refsetId);
-        member.setMapGroup(Integer.parseInt(fields[6]));
-        member.setMapPriority(Integer.parseInt(fields[7]));
-        member.setMapRule(fields[8]);
-        member.setMapAdvice(fields[9]);
-        member.setMapTarget(fields[10]);
+        if (!fields[0].equals("id")) { // header
 
-        // handle complex vs. extended maps -- extended maps have mapCategory as
-        // well as correlationId
-        member.setMapRelationId(
-            Long.valueOf(fields[fields.length == 13 ? 12 : 11]));
+          // ComplexMap attributes
+          member.setTerminologyId(fields[0]);
+          member.setEffectiveTime(dt.parse(fields[1]));
+          member.setActive(fields[2].equals("1"));
+          member.setModuleId(Long.valueOf(fields[3]));
+          final String refsetId = fields[4];
+          member.setRefSetId(refsetId);
+          member.setMapGroup(Integer.parseInt(fields[6]));
+          member.setMapPriority(Integer.parseInt(fields[7]));
+          member.setMapRule(fields[8]);
+          member.setMapAdvice(fields[9]);
+          member.setMapTarget(fields[10]);
 
-        // BLOCK is unused
-        member.setMapBlock(0); // default value
-        member.setMapBlockRule(null); // no default
-        member.setMapBlockAdvice(null); // no default
+          // handle complex vs. extended maps -- extended maps have mapCategory
+          // as
+          // well as correlationId
+          member.setMapRelationId(
+              Long.valueOf(fields[fields.length == 13 ? 12 : 11]));
 
-        // Terminology attributes
-        member
-            .setTerminology(mapProjectMap.get(refsetId).getSourceTerminology());
-        member.setTerminologyVersion(
-            mapProjectMap.get(refsetId).getSourceTerminologyVersion());
+          // BLOCK is unused
+          member.setMapBlock(0); // default value
+          member.setMapBlockRule(null); // no default
+          member.setMapBlockAdvice(null); // no default
 
-        // set Concept
-        Concept concept = contentService.getConcept(fields[5], // referencedComponentId
-            mapProjectMap.get(refsetId).getSourceTerminology(),
-            mapProjectMap.get(refsetId).getSourceTerminologyVersion());
+          // Terminology attributes
+          member.setTerminology(
+              mapProjectMap.get(refsetId).getSourceTerminology());
+          member.setTerminologyVersion(
+              mapProjectMap.get(refsetId).getSourceTerminologyVersion());
 
-        if (concept != null) {
-          member.setConcept(concept);
-          // don't persist, non-published shouldn't be in the db
-          members.add(member);
-        } else {
-          complexMapReader.close();
-          throw new IllegalStateException("member " + member.getTerminologyId()
-              + " references non-existent concept " + fields[5]);
+          // set Concept
+          Concept concept = contentService.getConcept(fields[5], // referencedComponentId
+              mapProjectMap.get(refsetId).getSourceTerminology(),
+              mapProjectMap.get(refsetId).getSourceTerminologyVersion());
+
+          if (concept != null) {
+            member.setConcept(concept);
+            // don't persist, non-published shouldn't be in the db
+            members.add(member);
+          } else {
+            complexMapReader.close();
+            throw new IllegalStateException(
+                "member " + member.getTerminologyId()
+                    + " references non-existent concept " + fields[5]);
+          }
         }
       }
     }
-    contentService.close();
-    complexMapReader.close();
 
     return members;
   }

@@ -1,18 +1,5 @@
-/**
- * Copyright (c) 2012 International Health Terminology Standards Development
- * Organisation
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.mojo;
 
@@ -22,7 +9,6 @@ import java.io.FileReader;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
@@ -38,7 +24,7 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  * 
  * @phase package
  */
-public class MapRecordRemoverMojo extends AbstractMojo {
+public class MapRecordRemoverMojo extends AbstractOtfMappingMojo {
 
   /**
    * The specified refsetId
@@ -62,14 +48,14 @@ public class MapRecordRemoverMojo extends AbstractMojo {
     // Do nothing
   }
 
+  /* see superclass */
   @Override
   public void execute() throws MojoExecutionException {
     getLog().info("Starting removing map records for project");
     getLog().info("  refsetId = " + refsetId);
 
-    try {
+    try (final MappingService mappingService = new MappingServiceJpa();) {
 
-      final MappingService mappingService = new MappingServiceJpa();
       mappingService.setTransactionPerOperation(false);
       mappingService.beginTransaction();
       final Set<MapProject> mapProjects = new HashSet<>();
@@ -127,7 +113,6 @@ public class MapRecordRemoverMojo extends AbstractMojo {
         }
       }
       mappingService.commit();
-      mappingService.close();
       getLog().info("Done ...");
     } catch (Exception e) {
       e.printStackTrace();

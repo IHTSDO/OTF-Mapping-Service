@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.handlers.ReleaseHandlerJpa;
@@ -28,7 +27,7 @@ import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
  * @goal release
  * @phase package
  */
-public class ReleaseProcessingMojo extends AbstractMojo {
+public class ReleaseProcessingMojo extends AbstractOtfMappingMojo {
 
   /**
    * The refSet id

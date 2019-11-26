@@ -1,5 +1,5 @@
 /*
- *    Copyright 2017 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.jpa.services;
 
@@ -19,11 +19,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import javax.persistence.Entity;
 import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
-import org.apache.lucene.util.Version;
 import org.hibernate.CacheMode;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
@@ -223,9 +221,8 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     MapProject mapProject, Concept concept) {
 
     try {
-      return (TrackingRecord) manager
-          .createQuery(
-              "select tr from TrackingRecordJpa tr where mapProjectId = :mapProjectId and terminology = :terminology and terminologyVersion = :terminologyVersion and terminologyId = :terminologyId")
+      return (TrackingRecord) manager.createQuery(
+          "select tr from TrackingRecordJpa tr where mapProjectId = :mapProjectId and terminology = :terminology and terminologyVersion = :terminologyVersion and terminologyId = :terminologyId")
           .setParameter("mapProjectId", mapProject.getId())
           .setParameter("terminology", concept.getTerminology())
           .setParameter("terminologyVersion", concept.getTerminologyVersion())
@@ -243,9 +240,8 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     MapProject mapProject, String terminologyId) {
 
     try {
-      return (TrackingRecord) manager
-          .createQuery(
-              "select tr from TrackingRecordJpa tr where mapProjectId = :mapProjectId and terminology = :terminology and terminologyVersion = :terminologyVersion and terminologyId = :terminologyId")
+      return (TrackingRecord) manager.createQuery(
+          "select tr from TrackingRecordJpa tr where mapProjectId = :mapProjectId and terminology = :terminology and terminologyVersion = :terminologyVersion and terminologyId = :terminologyId")
           .setParameter("mapProjectId", mapProject.getId())
           .setParameter("terminology", mapProject.getSourceTerminology())
           .setParameter("terminologyVersion",
@@ -264,9 +260,8 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     MapProject mapProject) throws Exception {
 
     TrackingRecordListJpa trackingRecordList = new TrackingRecordListJpa();
-    javax.persistence.Query query = manager
-        .createQuery(
-            "select tr from TrackingRecordJpa tr where mapProjectId = :mapProjectId")
+    javax.persistence.Query query = manager.createQuery(
+        "select tr from TrackingRecordJpa tr where mapProjectId = :mapProjectId")
         .setParameter("mapProjectId", mapProject.getId());
 
     trackingRecordList.setTrackingRecords(query.getResultList());
@@ -279,18 +274,17 @@ public class WorkflowServiceJpa extends MappingServiceJpa
   public TrackingRecord getTrackingRecord(MapProject mapProject,
     String terminologyId) throws Exception {
 
-    javax.persistence.Query query = manager
-        .createQuery(
-            "select tr from TrackingRecordJpa tr where mapProjectId = :mapProjectId and terminologyId = :terminologyId")
+    javax.persistence.Query query = manager.createQuery(
+        "select tr from TrackingRecordJpa tr where mapProjectId = :mapProjectId and terminologyId = :terminologyId")
         .setParameter("mapProjectId", mapProject.getId())
         .setParameter("terminologyId", terminologyId);
 
     List results = query.getResultList();
     Object foundObject = null;
-    if(!results.isEmpty()){
-        foundObject = results.get(0);
+    if (!results.isEmpty()) {
+      foundObject = results.get(0);
     }
-    
+
     return (TrackingRecord) foundObject;
   }
 
@@ -358,10 +352,9 @@ public class WorkflowServiceJpa extends MappingServiceJpa
   public WorkflowException getWorkflowException(MapProject mapProject,
     String terminologyId) {
 
-    final javax.persistence.Query query = manager
-        .createQuery(
-            "select we from WorkflowExceptionJpa we where mapProjectId = :mapProjectId"
-                + " and terminology = :terminology and terminologyVersion = :terminologyVersion and terminologyId = :terminologyId")
+    final javax.persistence.Query query = manager.createQuery(
+        "select we from WorkflowExceptionJpa we where mapProjectId = :mapProjectId"
+            + " and terminology = :terminology and terminologyVersion = :terminologyVersion and terminologyId = :terminologyId")
         .setParameter("mapProjectId", mapProject.getId())
         .setParameter("terminology", mapProject.getSourceTerminology())
         .setParameter("terminologyVersion",
@@ -467,14 +460,13 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     ProjectSpecificAlgorithmHandler algorithmHandler =
         (ProjectSpecificAlgorithmHandler) Class
             .forName(mapProject.getProjectSpecificAlgorithmHandlerClass())
-            .newInstance();
+            .getDeclaredConstructor().newInstance();
     algorithmHandler.setMapProject(mapProject);
 
     // locate any existing workflow tracking records for this project and
     // concept
     // NOTE: Exception handling deliberate, since tracking record may or may
-    // not exist
-    // depending on workflow path
+    // not exist depending on workflow path
     TrackingRecord trackingRecord = null;
     try {
       trackingRecord =
@@ -532,7 +524,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
         handler = (AbstractWorkflowPathHandler) Class
             .forName(ConfigUtility.getConfigProperties()
                 .getProperty("workflow.path.handler.QA_PATH.class"))
-            .newInstance();
+            .getDeclaredConstructor().newInstance();
         trackingRecord.setWorkflowPath(WorkflowPath.QA_PATH);
       }
 
@@ -541,7 +533,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
         handler = (AbstractWorkflowPathHandler) Class
             .forName(ConfigUtility.getConfigProperties()
                 .getProperty("workflow.path.handler.FIX_ERROR_PATH.class"))
-            .newInstance();
+            .getDeclaredConstructor().newInstance();
         trackingRecord.setWorkflowPath(WorkflowPath.FIX_ERROR_PATH);
       }
 
@@ -552,12 +544,11 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       Logger.getLogger(WorkflowServiceJpa.class)
           .debug("  Tracking Record: " + trackingRecord.toString());
 
-      handler =
-          (AbstractWorkflowPathHandler) Class
-              .forName(ConfigUtility.getConfigProperties()
-                  .getProperty("workflow.path.handler."
-                      + trackingRecord.getWorkflowPath() + ".class"))
-              .newInstance();
+      handler = (AbstractWorkflowPathHandler) Class
+          .forName(ConfigUtility.getConfigProperties()
+              .getProperty("workflow.path.handler."
+                  + trackingRecord.getWorkflowPath() + ".class"))
+          .getDeclaredConstructor().newInstance();
 
     }
 
@@ -880,6 +871,12 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     return null;
   }
 
+  /**
+   * Compute workflow.
+   *
+   * @param mapProject the map project
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public void computeWorkflow(MapProject mapProject) throws Exception {
@@ -894,19 +891,26 @@ public class WorkflowServiceJpa extends MappingServiceJpa
 
     final Map<String, String> teamAssignedConcepts = new HashMap<>();
     if (mapProject.isTeamBased()) {
-      //put into config - option to implement team based
-      //key = ProjectId-ConceptId, value = team name
-      TrackingRecordList trackingRecords = getTrackingRecordsForMapProject(mapProject);    
-      
-      if(trackingRecords != null){
-        Logger.getLogger(getClass()).info("Total number of tracking records: " + trackingRecords.getCount());
+      // put into config - option to implement team based
+      // key = ProjectId-ConceptId, value = team name
+      TrackingRecordList trackingRecords =
+          getTrackingRecordsForMapProject(mapProject);
+
+      if (trackingRecords != null) {
+        Logger.getLogger(getClass()).info(
+            "Total number of tracking records: " + trackingRecords.getCount());
         for (final TrackingRecord tr : trackingRecords.getIterable()) {
-          Logger.getLogger(getClass()).info("Workflow: build list of key:" + tr.getMapProjectId() + "||" + tr.getTerminologyId() + " teamName:" + tr.getAssignedTeamName());
-          teamAssignedConcepts.put(tr.getMapProjectId() + "||" + tr.getTerminologyId(), tr.getAssignedTeamName());
+          Logger.getLogger(getClass())
+              .info("Workflow: build list of key:" + tr.getMapProjectId() + "||"
+                  + tr.getTerminologyId() + " teamName:"
+                  + tr.getAssignedTeamName());
+          teamAssignedConcepts.put(
+              tr.getMapProjectId() + "||" + tr.getTerminologyId(),
+              tr.getAssignedTeamName());
         }
       }
     }
-    
+
     // Clear the workflow for this project
     Logger.getLogger(WorkflowServiceJpa.class).info("  Clear old workflow");
     clearWorkflowForMapProject(mapProject);
@@ -938,14 +942,13 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     // get the concepts in scope
     SearchResultList conceptsInScope =
         findConceptsInScope(mapProject.getId(), null);
-    
+
     // construct a hashset of concepts in scope
     Set<String> conceptIds = new HashSet<>();
     for (final SearchResult sr : conceptsInScope.getIterable()) {
       conceptIds.add(sr.getTerminologyId());
     }
-    
-    
+
     Logger.getLogger(WorkflowServiceJpa.class)
         .info("  Concept ids put into hash set: " + conceptIds.size());
 
@@ -1052,13 +1055,15 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       trackingRecord.setTerminologyVersion(concept.getTerminologyVersion());
       trackingRecord.setDefaultPreferredName(concept.getDefaultPreferredName());
       trackingRecord.setSortKey(sortKey);
-      
+
       if (mapProject.isTeamBased() && !teamAssignedConcepts.isEmpty()) {
-        String team = teamAssignedConcepts.get(mapProject.getId() + "||"+ concept.getTerminologyId());
-        if (!StringUtils.isNullOrEmpty(team)){
-          
-          Logger.getLogger(getClass()).info("Tracking record set team name:" + team + " for: " + trackingRecord.getTerminologyId());
-          
+        String team = teamAssignedConcepts
+            .get(mapProject.getId() + "||" + concept.getTerminologyId());
+        if (!StringUtils.isNullOrEmpty(team)) {
+
+          Logger.getLogger(getClass()).info("Tracking record set team name:"
+              + team + " for: " + trackingRecord.getTerminologyId());
+
           trackingRecord.setAssignedTeamName(team);
         }
       }
@@ -1169,7 +1174,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     // instantiate the full text eneity manager and set version
     FullTextEntityManager fullTextEntityManager =
         Search.getFullTextEntityManager(manager);
-    fullTextEntityManager.setProperty("Version", Version.LUCENE_36);
+    // fullTextEntityManager.setProperty("Version", Version.LUCENE_CURRENT);
 
     // create the indexes
     Logger.getLogger(WorkflowServiceJpa.class)
@@ -1178,7 +1183,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     fullTextEntityManager.flushToIndexes();
     fullTextEntityManager.createIndexer(TrackingRecordJpa.class)
         .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
-        .threadsToLoadObjects(4).threadsForSubsequentFetching(8).startAndWait();
+        .threadsToLoadObjects(4).startAndWait();
 
     fullTextEntityManager.detach(manager);
     Logger.getLogger(WorkflowServiceJpa.class).info("Done.");
@@ -1587,10 +1592,9 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     Long mapProjectId, String terminologyId) throws Exception {
 
     final MapProject mapProject = getMapProject(mapProjectId);
-    final javax.persistence.Query query = manager
-        .createQuery(
-            "select m from FeedbackConversationJpa m where terminology = :terminology and"
-                + " terminologyVersion = :terminologyVersion and terminologyId = :terminologyId")
+    final javax.persistence.Query query = manager.createQuery(
+        "select m from FeedbackConversationJpa m where terminology = :terminology and"
+            + " terminologyVersion = :terminologyVersion and terminologyId = :terminologyId")
         .setParameter("terminology", mapProject.getSourceTerminology())
         .setParameter("terminologyVersion",
             mapProject.getSourceTerminologyVersion())
@@ -1649,10 +1653,11 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       sb.append(" AND ").append("mapProjectId:").append(mapProject.getId());
     }
 
-    // MapProjectId is already used - no reason to look for terminology and version
-//    sb.append(" AND terminology:").append(mapProject.getSourceTerminology());
-//    sb.append(" AND terminologyVersion:")
-//        .append(mapProject.getSourceTerminologyVersion());
+    // MapProjectId is already used - no reason to look for terminology and
+    // version
+    // sb.append(" AND terminology:").append(mapProject.getSourceTerminology());
+    // sb.append(" AND terminologyVersion:")
+    // .append(mapProject.getSourceTerminologyVersion());
 
     // if simplest query, just get most recent 12 months of results, to make
     // expedient
@@ -1813,9 +1818,8 @@ public class WorkflowServiceJpa extends MappingServiceJpa
   public FeedbackConversationList getFeedbackConversationsForRecord(
     Long mapRecordId) throws Exception {
 
-    javax.persistence.Query query = manager
-        .createQuery(
-            "select m from FeedbackConversationJpa m where mapRecordId=:mapRecordId")
+    javax.persistence.Query query = manager.createQuery(
+        "select m from FeedbackConversationJpa m where mapRecordId=:mapRecordId")
         .setParameter("mapRecordId", mapRecordId);
 
     List<FeedbackConversation> feedbackConversations = query.getResultList();
@@ -1851,16 +1855,15 @@ public class WorkflowServiceJpa extends MappingServiceJpa
   public FeedbackConversationList getFeedbackConversationsForMapProject(
     Long mapProjectId) throws Exception {
 
-    javax.persistence.Query query = manager
-        .createQuery(
-            "select m from FeedbackConversationJpa m where mapProjectId=:mapProjectId")
+    javax.persistence.Query query = manager.createQuery(
+        "select m from FeedbackConversationJpa m where mapProjectId=:mapProjectId")
         .setParameter("mapProjectId", mapProjectId);
 
-    List<FeedbackConversation> feedbackConversations = query.getResultList();    
+    List<FeedbackConversation> feedbackConversations = query.getResultList();
     for (final FeedbackConversation feedbackConversation : feedbackConversations) {
       handleFeedbackConversationLazyInitialization(feedbackConversation);
-    }     
-    
+    }
+
     // set the total count
     FeedbackConversationListJpa feedbackConversationList =
         new FeedbackConversationListJpa();
@@ -1871,7 +1874,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
 
     return feedbackConversationList;
   }
-  
+
   /* see superclass */
   @Override
   public FeedbackList getFeedbackErrorsForRecord(MapRecord mapRecord)
@@ -2080,7 +2083,8 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     String handlerClass = ConfigUtility.getConfigProperties()
         .getProperty("workflow.path.handler." + name + ".class");
 
-    return (WorkflowPathHandler) Class.forName(handlerClass).newInstance();
+    return (WorkflowPathHandler) Class.forName(handlerClass)
+        .getDeclaredConstructor().newInstance();
   }
 
   @Override
@@ -2099,7 +2103,17 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     }
   }
 
+  /**
+   * Convert to map.
+   *
+   * @param tokenizedString the tokenized string
+   * @param firstToken the first token
+   * @param secondToken the second token
+   * @return the map
+   * @throws Exception the exception
+   */
   // parse query restrictions
+  @SuppressWarnings("unused")
   private Map<String, String> convertToMap(String tokenizedString,
     String firstToken, String secondToken) throws Exception {
 

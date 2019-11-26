@@ -2,7 +2,6 @@ package org.ihtsdo.otf.mapping.mojo;
 
 import javax.persistence.NoResultException;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.ihtsdo.otf.mapping.helpers.MapProjectList;
 import org.ihtsdo.otf.mapping.helpers.MapRefsetPattern;
@@ -24,7 +23,7 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  * @goal create-new-project
  * @phase package
  */
-public class CreateMapAdministratorMojo extends AbstractMojo {
+public class CreateMapAdministratorMojo extends AbstractOtfMappingMojo {
 
   /**
    * The user name to set as administrator

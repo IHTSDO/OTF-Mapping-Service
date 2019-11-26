@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.helpers.MapRefsetPattern;
@@ -46,7 +45,7 @@ import org.ihtsdo.otf.mapping.services.WorkflowService;
  * 
  * @goal generate-demo-data
  */
-public class GenerateDemoDataMojo extends AbstractMojo {
+public class GenerateDemoDataMojo extends AbstractOtfMappingMojo {
 
   /** The security service. */
   SecurityService securityService = null;

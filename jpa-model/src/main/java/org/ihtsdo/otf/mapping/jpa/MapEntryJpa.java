@@ -3,11 +3,13 @@ package org.ihtsdo.otf.mapping.jpa;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
@@ -56,6 +58,7 @@ public class MapEntryJpa implements MapEntry {
 
   /** The map advices. */
   @ManyToMany(targetEntity = MapAdviceJpa.class, fetch = FetchType.LAZY)
+  @CollectionTable(name="map_entries_map_advices", joinColumns = @JoinColumn(name="map_entries_id"))
   @IndexedEmbedded(targetElement = MapAdviceJpa.class)
   private Set<MapAdvice> mapAdvices  = new HashSet<>();
 

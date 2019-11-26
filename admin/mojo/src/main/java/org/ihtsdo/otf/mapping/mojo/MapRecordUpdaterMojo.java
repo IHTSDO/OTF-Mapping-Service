@@ -19,7 +19,6 @@ package org.ihtsdo.otf.mapping.mojo;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
@@ -40,7 +39,7 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  * 
  * @phase package
  */
-public class MapRecordUpdaterMojo extends AbstractMojo {
+public class MapRecordUpdaterMojo extends AbstractOtfMappingMojo {
 
   /**
    * The specified refsetId
@@ -62,10 +61,9 @@ public class MapRecordUpdaterMojo extends AbstractMojo {
     getLog().info("Starting updating map records for project");
     getLog().info("  refsetId = " + refsetId);
 
-    try {
-
-      final MappingService mappingService = new MappingServiceJpa();
-      final ContentService contentService = new ContentServiceJpa();
+    try (final MappingService mappingService = new MappingServiceJpa();
+        final ContentService contentService = new ContentServiceJpa();) {
+      
       mappingService.setTransactionPerOperation(false);
       mappingService.beginTransaction();
       final Set<MapProject> mapProjects = new HashSet<>();
@@ -144,8 +142,6 @@ public class MapRecordUpdaterMojo extends AbstractMojo {
         }
       }
       mappingService.commit();
-      mappingService.close();
-      contentService.close();
       getLog().info("Done ...");
     } catch (Exception e) {
       e.printStackTrace();

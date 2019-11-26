@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.test.other;
 
 import static org.junit.Assert.assertEquals;
@@ -14,10 +17,9 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 
 import org.apache.log4j.Logger;
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.util.Version;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.search.SearchFactory;
@@ -116,12 +118,12 @@ public class MapProjectJpaTest {
   @BeforeClass
   public static void init() throws Exception {
 
-    Logger.getLogger(MapProjectJpaTest.class).info(
-        "Ensuring test database is empty");
+    Logger.getLogger(MapProjectJpaTest.class)
+        .info("Ensuring test database is empty");
     cleanUp();
 
-    Logger.getLogger(MapProjectJpaTest.class).info(
-        "Initializing EditMappingServiceJpa");
+    Logger.getLogger(MapProjectJpaTest.class)
+        .info("Initializing EditMappingServiceJpa");
 
     // load test objects
     EntityTransaction tx = manager.getTransaction();
@@ -186,8 +188,8 @@ public class MapProjectJpaTest {
         .setMapPrincipleSourceDocumentName("mapPrincipleSourceDocument1");
     mapProject1.setRuleBased(true);
     mapProject1.setMapRefsetPattern(MapRefsetPattern.ComplexMap);
-    mapProject1
-        .setProjectSpecificAlgorithmHandlerClass("projectSpecificAlgorithmHandlerClass1");
+    mapProject1.setProjectSpecificAlgorithmHandlerClass(
+        "projectSpecificAlgorithmHandlerClass1");
     mapProject1.setScopeDescendantsFlag(true);
     mapProject1.setScopeExcludedDescendantsFlag(true);
     manager.persist(mapProject1);
@@ -211,8 +213,8 @@ public class MapProjectJpaTest {
         .setMapPrincipleSourceDocumentName("mapPrincipleSourceDocument3");
     mapProject3.setRuleBased(true);
     mapProject3.setMapRefsetPattern(MapRefsetPattern.ComplexMap);
-    mapProject3
-        .setProjectSpecificAlgorithmHandlerClass("projectSpecificAlgorithmHandlerClass3");
+    mapProject3.setProjectSpecificAlgorithmHandlerClass(
+        "projectSpecificAlgorithmHandlerClass3");
     mapProject3.setScopeDescendantsFlag(true);
     mapProject3.setScopeExcludedDescendantsFlag(true);
 
@@ -251,9 +253,8 @@ public class MapProjectJpaTest {
    */
   @SuppressWarnings("static-method")
   private void confirmLoad() {
-    javax.persistence.Query query =
-        manager
-            .createQuery("select m from MapProjectJpa m where refSetId = :refSetId");
+    javax.persistence.Query query = manager.createQuery(
+        "select m from MapProjectJpa m where refSetId = :refSetId");
 
     // Try to retrieve the single expected result
     // If zero or more than one result are returned, log error and set
@@ -287,9 +288,8 @@ public class MapProjectJpaTest {
 
     SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
 
-    QueryParser queryParser =
-        new QueryParser(Version.LUCENE_36, "summary",
-            searchFactory.getAnalyzer(MapProjectJpa.class));
+    QueryParser queryParser = new QueryParser("summary",
+        searchFactory.getAnalyzer(MapProjectJpa.class));
 
     // test index on refSetId
     Query luceneQuery = queryParser.parse("refSetId:" + testRefSetId);
@@ -311,9 +311,8 @@ public class MapProjectJpaTest {
     assertTrue("results.size() " + results.size(), results.size() > 0);
 
     // test index on source terminology version
-    luceneQuery =
-        queryParser.parse("sourceTerminologyVersion:"
-            + testSourceTerminologyVersion);
+    luceneQuery = queryParser
+        .parse("sourceTerminologyVersion:" + testSourceTerminologyVersion);
     fullTextQuery = fullTextEntityManager.createFullTextQuery(luceneQuery);
     results = fullTextQuery.getResultList();
     for (MapProject mapProject : results) {
@@ -322,9 +321,8 @@ public class MapProjectJpaTest {
     assertTrue("results.size() " + results.size(), results.size() > 0);
 
     // test index on destination terminology version
-    luceneQuery =
-        queryParser.parse("destinationTerminologyVersion:"
-            + testDestinationTerminologyVersion);
+    luceneQuery = queryParser.parse(
+        "destinationTerminologyVersion:" + testDestinationTerminologyVersion);
     fullTextQuery = fullTextEntityManager.createFullTextQuery(luceneQuery);
     results = fullTextQuery.getResultList();
     for (MapProject mapProject : results) {
@@ -333,9 +331,8 @@ public class MapProjectJpaTest {
     assertTrue("results.size() " + results.size(), results.size() > 0);
 
     // test index on destination terminology
-    luceneQuery =
-        queryParser.parse("destinationTerminology:"
-            + testDestinationTerminology);
+    luceneQuery = queryParser
+        .parse("destinationTerminology:" + testDestinationTerminology);
     fullTextQuery = fullTextEntityManager.createFullTextQuery(luceneQuery);
     results = fullTextQuery.getResultList();
     for (MapProject mapProject : results) {
@@ -363,16 +360,16 @@ public class MapProjectJpaTest {
   @Test
   public void testMapProjectAuditReader() {
 
-    Logger.getLogger(MapProjectJpaTest.class).info(
-        "testMapProjectAuditReader()...");
+    Logger.getLogger(MapProjectJpaTest.class)
+        .info("testMapProjectAuditReader()...");
     // create audit reader for history records
     reader = AuditReaderFactory.get(manager);
 
     // report initial number of revisions on MapProject object
     List<Number> revNumbers = reader.getRevisions(MapProjectJpa.class, 1L);
     assertTrue(revNumbers.size() == 1);
-    Logger.getLogger(MapProjectJpaTest.class).info(
-        "MapProject: " + 1L + " - Versions: " + revNumbers.toString());
+    Logger.getLogger(MapProjectJpaTest.class)
+        .info("MapProject: " + 1L + " - Versions: " + revNumbers.toString());
 
     // make a change to MapProject
     EntityTransaction tx = manager.getTransaction();
@@ -390,8 +387,8 @@ public class MapProjectJpaTest {
     // report incremented number of revisions on MapProject object
     revNumbers = reader.getRevisions(MapProjectJpa.class, 1L);
     assertTrue(revNumbers.size() == 2);
-    Logger.getLogger(MapProjectJpaTest.class).info(
-        "MapProject: " + 1L + " - Versions: " + revNumbers.toString());
+    Logger.getLogger(MapProjectJpaTest.class)
+        .info("MapProject: " + 1L + " - Versions: " + revNumbers.toString());
 
     // revert change to MapProject
     tx = manager.getTransaction();
@@ -405,15 +402,16 @@ public class MapProjectJpaTest {
 
   /**
    * Clean up.
-   * @throws Exception
+   *
+   * @throws Exception the exception
    */
   public static void cleanUp() throws Exception {
     Logger.getLogger(MapProjectJpaTest.class).info("Cleaning up.");
 
     // create new database connection
     String configFileName = System.getProperty("run.config.test");
-    Logger.getLogger(MapProjectJpaTest.class).info(
-        "  run.config.test = " + configFileName);
+    Logger.getLogger(MapProjectJpaTest.class)
+        .info("  run.config.test = " + configFileName);
     Properties config = new Properties();
     FileReader in = new FileReader(new File(configFileName));
     config.load(in);
@@ -445,9 +443,8 @@ public class MapProjectJpaTest {
     query.executeUpdate();
     query = manager.createNativeQuery("DELETE FROM map_projects_map_leads_aud");
     query.executeUpdate();
-    query =
-        manager
-            .createNativeQuery("DELETE FROM map_projects_map_specialists_aud");
+    query = manager
+        .createNativeQuery("DELETE FROM map_projects_map_specialists_aud");
     query.executeUpdate();
     query = manager.createNativeQuery("DELETE FROM map_projects_aud");
     query.executeUpdate();

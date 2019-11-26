@@ -1,6 +1,8 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.handlers.ReleaseHandlerJpa;
@@ -19,7 +21,7 @@ import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
  * 
  * @phase package
  */
-public class ReleaseFinishMojo extends AbstractMojo {
+public class ReleaseFinishMojo extends AbstractOtfMappingMojo {
 
   /**
    * The refSet id.
@@ -48,6 +50,7 @@ public class ReleaseFinishMojo extends AbstractMojo {
     // do nothing
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -73,9 +76,8 @@ public class ReleaseFinishMojo extends AbstractMojo {
       throw new MojoExecutionException("You must specify an input file");
     }
 
-    try {
+    try (final MappingService mappingService = new MappingServiceJpa();) {
 
-      MappingService mappingService = new MappingServiceJpa();
       MapProject mapProject = null;
       for (MapProject project : mappingService.getMapProjects().getIterable()) {
         if (project.getRefSetId().equals(refsetId)) {
@@ -84,7 +86,8 @@ public class ReleaseFinishMojo extends AbstractMojo {
         }
       }
       if (mapProject == null) {
-        throw new Exception("Unable to find map project for refset " + refsetId);
+        throw new Exception(
+            "Unable to find map project for refset " + refsetId);
       }
 
       //
@@ -95,9 +98,8 @@ public class ReleaseFinishMojo extends AbstractMojo {
 
       // Begin the release
       ReleaseHandler releaseHandler = new ReleaseHandlerJpa(testModeFlag);
-      getLog().info(
-          "  Handle project " + mapProject.getName() + ", "
-              + mapProject.getId());
+      getLog().info("  Handle project " + mapProject.getName() + ", "
+          + mapProject.getId());
       releaseHandler.setMapProject(mapProject);
       releaseHandler.setInputFile(inputFile);
       releaseHandler.finishRelease();

@@ -585,6 +585,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
    * @return
    * @throws Exception
    */
+  @SuppressWarnings("unused")
   private boolean isMatchingDescriptionNote(Concept concept) throws Exception {
     for (Description description : concept.getDescriptions()) {
       if (description.getTerm().toLowerCase().startsWith("use_additional")

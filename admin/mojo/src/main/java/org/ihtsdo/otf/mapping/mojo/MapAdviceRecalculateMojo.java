@@ -1,9 +1,8 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
@@ -11,18 +10,19 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 
 /**
  * Recalculates the map advices for all PUBLISHED and READY_FOR_PUBLICIATION map
- * records for a specific project.
- * Perform at release time for projects that require it (e.g. SNOMEDCT_US to ICD10CM)
+ * records for a specific project. Perform at release time for projects that
+ * require it (e.g. SNOMEDCT_US to ICD10CM)
  * 
  * See admin/release/pom.xml for a sample execution.
  * 
  * @goal recalculate-map-advice
  * @phase package
  */
-public class MapAdviceRecalculateMojo extends AbstractMojo {
+public class MapAdviceRecalculateMojo extends AbstractOtfMappingMojo {
 
   /**
-   * The refSet id
+   * The refSet id.
+   *
    * @parameter refsetId
    */
   private String refsetId = null;
@@ -49,10 +49,10 @@ public class MapAdviceRecalculateMojo extends AbstractMojo {
 
       for (final MapProject mp : mappingService.getMapProjects()
           .getIterable()) {
-          if (mp.getRefSetId().equals(refsetId)) {
-            mapProject = mp;
-            break;
-          }
+        if (mp.getRefSetId().equals(refsetId)) {
+          mapProject = mp;
+          break;
+        }
       }
 
       if (mapProject == null) {

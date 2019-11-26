@@ -10,7 +10,6 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.helpers.MapRefsetPattern;
@@ -54,7 +53,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * 
  * @goal load-app-config-data
  */
-public class LoadAppConfigDataMojo extends AbstractMojo {
+public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
 
   /**
    * File path root for config files

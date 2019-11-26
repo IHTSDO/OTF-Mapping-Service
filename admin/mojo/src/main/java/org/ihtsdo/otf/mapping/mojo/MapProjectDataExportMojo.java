@@ -9,7 +9,6 @@ import java.util.HashSet;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.MapProjectJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
@@ -25,7 +24,7 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  * 
  * @phase package
  */
-public class MapProjectDataExportMojo extends AbstractMojo {
+public class MapProjectDataExportMojo extends AbstractOtfMappingMojo {
 
   /**
    * The output dir

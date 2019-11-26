@@ -2,13 +2,12 @@ package org.ihtsdo.otf.mapping.mojo;
 
 import java.util.Properties;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
-public abstract class AbstractTerminologyLoaderMojo extends AbstractMojo {
+public abstract class AbstractTerminologyLoaderMojo extends AbstractOtfMappingMojo {
 
 	/**
 	 * Indicate if server is running (true) or not (false);

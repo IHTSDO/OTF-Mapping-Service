@@ -3,7 +3,6 @@ package org.ihtsdo.otf.mapping.mojo;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
@@ -18,7 +17,7 @@ import org.ihtsdo.otf.mapping.services.MappingService;
  * @goal create-map-records-from-complex-map
  * @phase package
  */
-public class MapRecordComplexMapLoaderMojo extends AbstractMojo {
+public class MapRecordComplexMapLoaderMojo extends AbstractOtfMappingMojo {
 
   /**
    * The refSet id

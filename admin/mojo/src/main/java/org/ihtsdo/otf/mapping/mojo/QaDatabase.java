@@ -9,7 +9,6 @@ import java.util.Properties;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
@@ -25,7 +24,7 @@ import org.ihtsdo.otf.mapping.services.helpers.OtfErrorHandler;
  * @goal qa-database
  * @phase package
  */
-public class QaDatabase extends AbstractMojo {
+public class QaDatabase extends AbstractOtfMappingMojo {
 
   /**
    * The queries

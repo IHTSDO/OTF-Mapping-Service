@@ -17,7 +17,6 @@ import nu.xom.Elements;
 import nu.xom.Serializer;
 
 import org.apache.log4j.Logger;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 
@@ -28,7 +27,7 @@ import org.apache.maven.plugin.MojoFailureException;
  * 
  * @goal convert-to-xml
  */
-public class AscToXmlMojo extends AbstractMojo {
+public class AscToXmlMojo extends AbstractOtfMappingMojo {
 
   /**
    * The input ASC file.

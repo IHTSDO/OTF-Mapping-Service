@@ -1,5 +1,5 @@
 /*
- *    Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.mojo;
 
@@ -21,7 +21,6 @@ import java.util.zip.ZipOutputStream;
 
 import javax.persistence.EntityManager;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
@@ -35,7 +34,7 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
  * 
  * @goal run-icd10cm-sql-report
  */
-public class ICD10CMSQLReportMojo extends AbstractMojo {
+public class ICD10CMSQLReportMojo extends AbstractOtfMappingMojo {
 
   /** The manager. */
   EntityManager manager;
@@ -45,14 +44,13 @@ public class ICD10CMSQLReportMojo extends AbstractMojo {
   public void execute() throws MojoExecutionException, MojoFailureException {
     getLog().info("Start ICD10CM SQLReport Mojo");
 
-    try {
+    try (final ContentService service = new ContentServiceJpa() {
+      {
+        ICD10CMSQLReportMojo.this.manager = manager;
+      }
+    };) {
 
       // Obtain an entity manager;
-      ContentService service = new ContentServiceJpa() {
-        {
-          ICD10CMSQLReportMojo.this.manager = manager;
-        }
-      };
 
       // Run the SQL report
       final javax.persistence.Query query = manager.createNativeQuery(
@@ -74,10 +72,11 @@ public class ICD10CMSQLReportMojo extends AbstractMojo {
       List<Object[]> objects = query.getResultList();
 
       List<String> results = new ArrayList<>();
-      //Add header row
-      results.add("id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\tsctNname\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\ticdName\tmapCategoryId\tmapCategoryValue");
+      // Add header row
+      results.add(
+          "id\teffectiveTime\tactive\tmoduleId\trefSetId\treferencedComponentId\tsctNname\tmapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\ticdName\tmapCategoryId\tmapCategoryValue");
 
-      //Add result rows
+      // Add result rows
       for (Object[] array : objects) {
         StringBuilder sb = new StringBuilder();
         for (Object o : array) {
@@ -89,53 +88,45 @@ public class ICD10CMSQLReportMojo extends AbstractMojo {
       // Add results to file
       final DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
       final String dateStamp = dateFormat.format(new Date());
-      
-      File resultFile = new File(System.getProperty("java.io.tmpdir") + "/sqlReport_" + dateStamp + ".txt");
-      System.out.println("Created result file: "+resultFile.getAbsolutePath());
 
-      FileWriter writer = new FileWriter(resultFile); 
-      for(String str: results) {
+      File resultFile = new File(System.getProperty("java.io.tmpdir")
+          + "/sqlReport_" + dateStamp + ".txt");
+      System.out
+          .println("Created result file: " + resultFile.getAbsolutePath());
+
+      FileWriter writer = new FileWriter(resultFile);
+      for (String str : results) {
         writer.write(str);
         writer.write(System.getProperty("line.separator"));
       }
       writer.close();
-      
+
       // Zip results file
-      File zipFile = new File(System.getProperty("java.io.tmpdir") + "/sqlReport_" + dateStamp + ".zip");
+      File zipFile = new File(System.getProperty("java.io.tmpdir")
+          + "/sqlReport_" + dateStamp + ".zip");
 
-      FileOutputStream fos = null;
-      ZipOutputStream zipOut = null;
-      FileInputStream fis = null;
-      try {
-          fos = new FileOutputStream(zipFile);
-          zipOut = new ZipOutputStream(new BufferedOutputStream(fos));
+      try (FileOutputStream fos = new FileOutputStream(zipFile);
+          ZipOutputStream zipOut =
+              new ZipOutputStream(new BufferedOutputStream(fos));
+          FileInputStream fis = new FileInputStream(resultFile);) {
 
-          fis = new FileInputStream(resultFile);
-          ZipEntry ze = new ZipEntry(resultFile.getName());
-          System.out.println("Zipping the file: "+resultFile.getName());
-          zipOut.putNextEntry(ze);
-          byte[] tmp = new byte[4*1024];
-          int size = 0;
-          while((size = fis.read(tmp)) != -1){
-              zipOut.write(tmp, 0, size);
-          }
-          zipOut.flush();
-          zipOut.close();
+        ZipEntry ze = new ZipEntry(resultFile.getName());
+        System.out.println("Zipping the file: " + resultFile.getName());
+        zipOut.putNextEntry(ze);
+        byte[] tmp = new byte[4 * 1024];
+        int size = 0;
+        while ((size = fis.read(tmp)) != -1) {
+          zipOut.write(tmp, 0, size);
+        }
+        zipOut.flush();
       } catch (FileNotFoundException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
+        // TODO Auto-generated catch block
+        e.printStackTrace();
       } catch (IOException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
-      } finally{
-          try{
-              if(fos != null) fos.close();
-              if(fis != null) fis.close();
-          } catch(Exception ex){
-               
-          }
-      }      
-      
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+
       // Send file to recipients
       sendEmail(zipFile.getAbsolutePath());
 
@@ -159,7 +150,8 @@ public class ICD10CMSQLReportMojo extends AbstractMojo {
     String notificationMessage = "";
     getLog().info("Request to send notification email to recipients: "
         + notificationRecipients);
-    notificationMessage += "Hello,\n\nThe weekly SQL report has been generated.";
+    notificationMessage +=
+        "Hello,\n\nThe weekly SQL report has been generated.";
 
     String from;
     if (config.containsKey("mail.smtp.from")) {

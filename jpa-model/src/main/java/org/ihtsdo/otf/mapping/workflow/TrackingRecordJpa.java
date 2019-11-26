@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.workflow;
 
 import java.util.HashSet;
@@ -16,7 +19,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-import org.apache.lucene.analysis.WhitespaceAnalyzer;
+import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.Field;
@@ -31,8 +34,9 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
  */
 @Entity
 @Indexed
-@Table(name = "tracking_records", uniqueConstraints = @UniqueConstraint(columnNames = { "terminologyId", "terminology",
-		"terminologyVersion", "mapProjectId" }) )
+@Table(name = "tracking_records", uniqueConstraints = @UniqueConstraint(columnNames = {
+    "terminologyId", "terminology", "terminologyVersion", "mapProjectId"
+}))
 public class TrackingRecordJpa implements TrackingRecord {
 
   /** The id. */
@@ -77,7 +81,7 @@ public class TrackingRecordJpa implements TrackingRecord {
 
   /** The map record ids. */
   @ElementCollection
-	@CollectionTable(name = "tracking_records_map_records", joinColumns = @JoinColumn(name = "id") )
+  @CollectionTable(name = "tracking_records_map_records", joinColumns = @JoinColumn(name = "id"))
   @Column(nullable = true)
   private Set<Long> mapRecordIds = new HashSet<>();
 
@@ -89,9 +93,10 @@ public class TrackingRecordJpa implements TrackingRecord {
   @Column(nullable = false)
   private int assignedUserCount = 0;
 
+  /** The assigned team name. */
   @Column(nullable = true)
   private String assignedTeamName;
-  
+
   /**
    * {@inheritDoc}
    */
@@ -108,12 +113,22 @@ public class TrackingRecordJpa implements TrackingRecord {
     this.id = id;
   }
 
+  /**
+   * Returns the map project id.
+   *
+   * @return the map project id
+   */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public Long getMapProjectId() {
     return this.mapProjectId;
   }
 
+  /**
+   * Sets the map project id.
+   *
+   * @param mapProjectId the map project id
+   */
   @Override
   public void setMapProjectId(Long mapProjectId) {
     this.mapProjectId = mapProjectId;
@@ -151,67 +166,124 @@ public class TrackingRecordJpa implements TrackingRecord {
     this.terminology = terminology;
   }
 
+  /**
+   * Returns the terminology id.
+   *
+   * @return the terminology id
+   */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getTerminologyId() {
     return terminologyId;
   }
 
+  /**
+   * Sets the terminology id.
+   *
+   * @param terminologyId the terminology id
+   */
   @Override
   public void setTerminologyId(String terminologyId) {
     this.terminologyId = terminologyId;
   }
 
+  /**
+   * Sets the default preferred name.
+   *
+   * @param defaultPreferredName the default preferred name
+   */
   @Override
   public void setDefaultPreferredName(String defaultPreferredName) {
     this.defaultPreferredName = defaultPreferredName;
   }
 
+  /**
+   * Returns the default preferred name.
+   *
+   * @return the default preferred name
+   */
   @Override
   @Fields({
-    @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
-    @Field(name = "defaultPreferredNameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+      @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(name = "defaultPreferredNameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   })
   @Analyzer(definition = "noStopWord")
   public String getDefaultPreferredName() {
     return defaultPreferredName;
   }
 
+  /**
+   * Sets the sort key.
+   *
+   * @param sortKey the sort key
+   */
   @Override
   public void setSortKey(String sortKey) {
     this.sortKey = sortKey;
   }
 
+  /**
+   * Returns the sort key.
+   *
+   * @return the sort key
+   */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getSortKey() {
     return sortKey;
   }
 
+  /**
+   * Returns the workflow path.
+   *
+   * @return the workflow path
+   */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public WorkflowPath getWorkflowPath() {
     return workflowPath;
   }
 
+  /**
+   * Sets the workflow path.
+   *
+   * @param workflowPath the workflow path
+   */
   @Override
   public void setWorkflowPath(WorkflowPath workflowPath) {
     this.workflowPath = workflowPath;
   }
 
+  /**
+   * Returns the user and workflow status pairs.
+   *
+   * @return the user and workflow status pairs
+   */
   @Override
-	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO, analyzer = @Analyzer(impl = WhitespaceAnalyzer.class) )
+  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO, analyzer = @Analyzer(impl = WhitespaceAnalyzer.class))
   public String getUserAndWorkflowStatusPairs() {
     return userAndWorkflowStatusPairs;
   }
 
+  /**
+   * Sets the user and workflow status pairs.
+   *
+   * @param userAndWorkflowStatusPairs the user and workflow status pairs
+   */
   @Override
   public void setUserAndWorkflowStatusPairs(String userAndWorkflowStatusPairs) {
     this.userAndWorkflowStatusPairs = userAndWorkflowStatusPairs;
   }
 
+  /**
+   * Adds the user and workflow status pair.
+   *
+   * @param userName the user name
+   * @param workflowStatus the workflow status
+   */
   @Override
-	public void addUserAndWorkflowStatusPair(String userName, String workflowStatus) {
+  public void addUserAndWorkflowStatusPair(String userName,
+    String workflowStatus) {
     String pair = workflowStatus + "_" + userName;
     if (this.userAndWorkflowStatusPairs == null)
       this.userAndWorkflowStatusPairs = pair;
@@ -220,31 +292,59 @@ public class TrackingRecordJpa implements TrackingRecord {
     }
   }
 
+  /**
+   * Removes the user and workflow status pair.
+   *
+   * @param userName the user name
+   * @param workflowStatus the workflow status
+   */
   @Override
-	public void removeUserAndWorkflowStatusPair(String userName, String workflowStatus) {
+  public void removeUserAndWorkflowStatusPair(String userName,
+    String workflowStatus) {
     String pair = workflowStatus + "_" + userName;
 
     if (this.userAndWorkflowStatusPairs.indexOf(pair) != -1) {
-			userAndWorkflowStatusPairs = userAndWorkflowStatusPairs.replaceAll(pair, "").replace("  ", " ").trim();
+      userAndWorkflowStatusPairs = userAndWorkflowStatusPairs
+          .replaceAll(pair, "").replace("  ", " ").trim();
     }
   }
 
+  /**
+   * Returns the map record ids.
+   *
+   * @return the map record ids
+   */
   @Override
   public Set<Long> getMapRecordIds() {
     return mapRecordIds;
   }
 
+  /**
+   * Sets the map record ids.
+   *
+   * @param mapRecordIds the map record ids
+   */
   @Override
   public void setMapRecordIds(Set<Long> mapRecordIds) {
     this.mapRecordIds = mapRecordIds;
   }
 
+  /**
+   * Returns the assigned user names.
+   *
+   * @return the assigned user names
+   */
   @Override
   @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   public String getAssignedUserNames() {
     return assignedUserNames;
   }
 
+  /**
+   * Returns the assigned user count.
+   *
+   * @return the assigned user count
+   */
   @Override
   @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   public int getAssignedUserCount() {
@@ -257,6 +357,11 @@ public class TrackingRecordJpa implements TrackingRecord {
     return this.assignedUserCount;
   }
 
+  /**
+   * Sets the assigned user names.
+   *
+   * @param assignedUserNames the assigned user names
+   */
   @Override
   public void setAssignedUserNames(String assignedUserNames) {
     this.assignedUserNames = assignedUserNames;
@@ -265,6 +370,11 @@ public class TrackingRecordJpa implements TrackingRecord {
     this.getAssignedUserCount();
   }
 
+  /**
+   * Adds the assigned user name.
+   *
+   * @param name the name
+   */
   @Override
   public void addAssignedUserName(String name) {
     // if string list is null, set it to name
@@ -280,14 +390,20 @@ public class TrackingRecordJpa implements TrackingRecord {
 
   }
 
+  /**
+   * Removes the assigned user name.
+   *
+   * @param name the name
+   */
   @Override
   public void removeAssignedUserName(String name) {
     if (this.assignedUserNames.indexOf(name) != -1) {
 
-			// remove the name, tighten any double spaces remaining, and trim
-			// the
+      // remove the name, tighten any double spaces remaining, and trim
+      // the
       // string
-			this.assignedUserNames = this.assignedUserNames.replace(name, "").replace("  ", " ").trim();
+      this.assignedUserNames =
+          this.assignedUserNames.replace(name, "").replace("  ", " ").trim();
 
       // call the count function
       this.getAssignedUserCount();
@@ -296,6 +412,11 @@ public class TrackingRecordJpa implements TrackingRecord {
 
   }
 
+  /**
+   * Adds the map record id.
+   *
+   * @param mapRecordId the map record id
+   */
   @Override
   public void addMapRecordId(Long mapRecordId) {
     if (this.mapRecordIds == null)
@@ -303,6 +424,11 @@ public class TrackingRecordJpa implements TrackingRecord {
     this.mapRecordIds.add(mapRecordId);
   }
 
+  /**
+   * Removes the map record id.
+   *
+   * @param mapRecordId the map record id
+   */
   @Override
   public void removeMapRecordId(Long mapRecordId) {
     if (this.mapRecordIds != null) {
@@ -310,45 +436,82 @@ public class TrackingRecordJpa implements TrackingRecord {
     }
   }
 
+  /**
+   * Sets the assigned team name.
+   *
+   * @param assignedTeamName the assigned team name
+   */
   @Override
   public void setAssignedTeamName(String assignedTeamName) {
     this.assignedTeamName = assignedTeamName;
   }
-  
+
+  /**
+   * Returns the assigned team name.
+   *
+   * @return the assigned team name
+   */
   @Override
   @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   public String getAssignedTeamName() {
     return this.assignedTeamName;
   }
-  
+
+  /**
+   * To string.
+   *
+   * @return the string
+   */
   @Override
   public String toString() {
-		return "TrackingRecordJpa [id=" + id + ", mapProjectId=" + mapProjectId + ", terminology=" + terminology
-				+ ", terminologyId=" + terminologyId + ", terminologyVersion=" + terminologyVersion
-				+ ", defaultPreferredName=" + defaultPreferredName + ", sortKey=" + sortKey + ", workflowPath="
-				+ workflowPath + ", userAndWorkflowStatusPairs=" + userAndWorkflowStatusPairs + ", mapRecordIds="
-				+ mapRecordIds + ", assignedUserNames=" + assignedUserNames + ", assignedUserCount=" + assignedUserCount
-				+ "]";
+    return "TrackingRecordJpa [id=" + id + ", mapProjectId=" + mapProjectId
+        + ", terminology=" + terminology + ", terminologyId=" + terminologyId
+        + ", terminologyVersion=" + terminologyVersion
+        + ", defaultPreferredName=" + defaultPreferredName + ", sortKey="
+        + sortKey + ", workflowPath=" + workflowPath
+        + ", userAndWorkflowStatusPairs=" + userAndWorkflowStatusPairs
+        + ", mapRecordIds=" + mapRecordIds + ", assignedUserNames="
+        + assignedUserNames + ", assignedUserCount=" + assignedUserCount + "]";
   }
 
+  /**
+   * Hash code.
+   *
+   * @return the int
+   */
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
     result = prime * result + assignedUserCount;
-		result = prime * result + ((assignedUserNames == null) ? 0 : assignedUserNames.hashCode());
-		result = prime * result + ((defaultPreferredName == null) ? 0 : defaultPreferredName.hashCode());
-		result = prime * result + ((mapProjectId == null) ? 0 : mapProjectId.hashCode());
-		result = prime * result + ((mapRecordIds == null) ? 0 : mapRecordIds.hashCode());
+    result = prime * result
+        + ((assignedUserNames == null) ? 0 : assignedUserNames.hashCode());
+    result = prime * result + ((defaultPreferredName == null) ? 0
+        : defaultPreferredName.hashCode());
+    result =
+        prime * result + ((mapProjectId == null) ? 0 : mapProjectId.hashCode());
+    result =
+        prime * result + ((mapRecordIds == null) ? 0 : mapRecordIds.hashCode());
     result = prime * result + ((sortKey == null) ? 0 : sortKey.hashCode());
-		result = prime * result + ((terminology == null) ? 0 : terminology.hashCode());
-		result = prime * result + ((terminologyId == null) ? 0 : terminologyId.hashCode());
-		result = prime * result + ((terminologyVersion == null) ? 0 : terminologyVersion.hashCode());
-		result = prime * result + ((userAndWorkflowStatusPairs == null) ? 0 : userAndWorkflowStatusPairs.hashCode());
-		result = prime * result + ((workflowPath == null) ? 0 : workflowPath.hashCode());
+    result =
+        prime * result + ((terminology == null) ? 0 : terminology.hashCode());
+    result = prime * result
+        + ((terminologyId == null) ? 0 : terminologyId.hashCode());
+    result = prime * result
+        + ((terminologyVersion == null) ? 0 : terminologyVersion.hashCode());
+    result = prime * result + ((userAndWorkflowStatusPairs == null) ? 0
+        : userAndWorkflowStatusPairs.hashCode());
+    result =
+        prime * result + ((workflowPath == null) ? 0 : workflowPath.hashCode());
     return result;
   }
 
+  /**
+   * Equals.
+   *
+   * @param obj the obj
+   * @return true, if successful
+   */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
@@ -403,7 +566,8 @@ public class TrackingRecordJpa implements TrackingRecord {
     if (userAndWorkflowStatusPairs == null) {
       if (other.userAndWorkflowStatusPairs != null)
         return false;
-		} else if (!userAndWorkflowStatusPairs.equals(other.userAndWorkflowStatusPairs))
+    } else if (!userAndWorkflowStatusPairs
+        .equals(other.userAndWorkflowStatusPairs))
       return false;
     if (workflowPath != other.workflowPath)
       return false;

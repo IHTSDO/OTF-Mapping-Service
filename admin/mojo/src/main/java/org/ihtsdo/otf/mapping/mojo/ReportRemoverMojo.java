@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
@@ -22,7 +21,7 @@ import org.ihtsdo.otf.mapping.services.ReportService;
  * @goal remove-reports
  * @phase package
  */
-public class ReportRemoverMojo extends AbstractMojo {
+public class ReportRemoverMojo extends AbstractOtfMappingMojo {
   /**
    * The refSet id
    * @parameter refsetId

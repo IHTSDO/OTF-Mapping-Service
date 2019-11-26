@@ -52,14 +52,15 @@
     </dependency>
 
     <!-- JPA dependencies -->
-    <dependency>
+<!--     <dependency>
       <groupId>org.hibernate.javax.persistence</groupId>
       <artifactId>hibernate-jpa-2.0-api</artifactId>
-    </dependency>
+    </dependency> -->
     <dependency>
       <groupId>javax.transaction</groupId>
       <artifactId>jta</artifactId>
     </dependency>
+    <!-- 
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-core</artifactId>
@@ -68,9 +69,10 @@
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-c3p0</artifactId>
     </dependency>
+    -->
     <dependency>
       <groupId>org.hibernate</groupId>
-      <artifactId>hibernate-search</artifactId>
+      <artifactId>hibernate-search-orm</artifactId>
     </dependency>
     <dependency>
       <groupId>org.hibernate</groupId>
@@ -100,6 +102,16 @@
       <groupId>xom</groupId>
       <artifactId>xom</artifactId>
     </dependency>
+    
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-runtime</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+    </dependency>
+    
   </dependencies>
 	
 	<build>
@@ -107,7 +119,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-plugin-plugin</artifactId>
-				<version>3.4</version>
+				<version>3.6.0</version>
 			</plugin>
 			<!-- other plugins -->
 		</plugins>

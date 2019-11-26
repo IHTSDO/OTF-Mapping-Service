@@ -1,8 +1,9 @@
 /*
- *    Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.services;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -617,16 +618,18 @@ public interface MappingService extends RootService {
 
   /**
    * Gets the project specific algorithm handler.
-   * 
+   *
    * @param mapProject the map project
    * @return the project specific algorithm handler
    * @throws InstantiationException the instantiation exception
    * @throws IllegalAccessException the illegal access exception
    * @throws ClassNotFoundException the class not found exception
+   * @throws NoSuchMethodException the no such method exception
+   * @throws InvocationTargetException the invocation target exception
    */
   public ProjectSpecificAlgorithmHandler getProjectSpecificAlgorithmHandler(
     MapProject mapProject) throws InstantiationException,
-    IllegalAccessException, ClassNotFoundException;
+    IllegalAccessException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException;
 
   /**
    * Gets the map user preferences.
@@ -832,15 +835,19 @@ public interface MappingService extends RootService {
     PfsParameter pfsParameter) throws Exception;
 
   /**
-   * @param mapProjectd
-   * @param ancestorId
-   * @param excludeDescendants
-   * @param terminology
-   * @param terminologyVersion
-   * @param relationshipName
-   * @param pfsParameter
-   * @return
-   * @throws Exception
+   * Find map records.
+   *
+   * @param mapProjectd the map projectd
+   * @param ancestorId the ancestor id
+   * @param excludeDescendants the exclude descendants
+   * @param relationshipName the relationship name
+   * @param relationshipValue the relationship value
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param pfsParameter the pfs parameter
+   * @param mapConcepts the map concepts
+   * @return the search result list
+   * @throws Exception the exception
    */
   public SearchResultList findMapRecords(Long mapProjectd, String ancestorId,
     boolean excludeDescendants, String relationshipName,
@@ -878,11 +885,13 @@ public interface MappingService extends RootService {
     throws Exception;
 
   /**
-   * Return a list of map record ids and team names which are Ready for Publication.
-   * 
-   * @param mapProjectId
+   * Return a list of map record ids and team names which are Ready for
+   * Publication.
+   *
+   * @param mapProjectId the map project id
    * @return list of map record ids for the given map project
    * @throws Exception the exception
    */
-  public Map<String, String> getTargetCodeForReadyForPublication (Long mapProjectId) throws Exception;
+  public Map<String, String> getTargetCodeForReadyForPublication(
+    Long mapProjectId) throws Exception;
 }

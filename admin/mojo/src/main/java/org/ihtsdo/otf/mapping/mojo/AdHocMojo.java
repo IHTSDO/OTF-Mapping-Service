@@ -13,7 +13,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
@@ -40,7 +39,7 @@ import org.ihtsdo.otf.mapping.services.WorkflowService;
  * 
  * @goal run-ad-hoc
  */
-public class AdHocMojo extends AbstractMojo {
+public class AdHocMojo extends AbstractOtfMappingMojo {
 
   /**
    * The specified refsetId
