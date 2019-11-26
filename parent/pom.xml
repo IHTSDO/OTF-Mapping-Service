@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
@@ -20,36 +21,59 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-    <!-- Set maven plugin versions -->
-    <maven.javadoc.skip>true</maven.javadoc.skip>
-    <maven.compiler.plugin.version>3.0</maven.compiler.plugin.version>
-    <maven.resources.plugin.version>2.6</maven.resources.plugin.version>
-    <maven.surefire.plugin.version>2.16</maven.surefire.plugin.version>
-    <maven.war.plugin.version>2.4</maven.war.plugin.version>
-
-    <!-- Set third-party dependency versions -->
-    <hibernate.version>4.1.0.Final</hibernate.version>
-    <org.hibernate.javax.persistence.version>1.0.1.Final</org.hibernate.javax.persistence.version>
+    <amazonaws.version>1.11.623</amazonaws.version>
+    <apache.poi>4.1.0</apache.poi>
+    <asm.version>20041228.180559</asm.version>
+    <cglib.version>3.3.0</cglib.version>
+    <commons-io.version>2.6</commons-io.version>
+    
+    <!-- Set hibernate versions -->
+    <hibernate.c3p0.version>5.4.4.Final</hibernate.c3p0.version>
+    <hibernate.core.version>5.4.4.Final</hibernate.core.version>
+    <hibernate.entitymanager.version>5.4.4.Final</hibernate.entitymanager.version>
+    <hibernate.envers.version>5.4.4.Final</hibernate.envers.version>
+    <hibernate.search.version>5.11.2.Final</hibernate.search.version>
+    <hibernate.validator.version>6.0.17.Final</hibernate.validator.version>
+    
+    <java.version>11</java.version>
+    <javax.mail.version>1.6.2</javax.mail.version>
+    <javax.servlet.version>4.0.1</javax.servlet.version>
     <javax.transaction.version>1.1</javax.transaction.version>
-    <hibernate.search.version>4.3.0.Final</hibernate.search.version>
-    <hibernate.envers.version>4.0.1.Final</hibernate.envers.version>
-    <hibernate.entitymanager.version>4.1.0.Final</hibernate.entitymanager.version>
-    <hibernate.validator.version>5.0.1.Final</hibernate.validator.version>
-    <mysql.connector.java.version>5.1.26</mysql.connector.java.version>
-    <slf4j.log4j12.version>1.7.5</slf4j.log4j12.version>
-    <maven.plugin.api.version>3.1.1</maven.plugin.api.version>
-    <maven.model.version>3.0.2</maven.model.version>
-    <jersey.version>2.23.1</jersey.version>
-    <javax.ws.version>2.0.1</javax.ws.version>
-    <jettison.version>1.1</jettison.version>
-    <asm.version>3.1</asm.version>
-    <swagger.version>1.5.17</swagger.version>
-    <junit.version>4.11</junit.version>
-    <cglib.version>2.2.2</cglib.version>
-    <javax.mail.version>1.5.2</javax.mail.version>
-    <xom.version>1.2.5</xom.version>
-    <apache.poi>3.10-FINAL</apache.poi>
-    <amazonaws.version>1.11.106</amazonaws.version>
+    <javax.ws.version>2.1.1</javax.ws.version>
+    <javax.xml.bind.version>2.3.1</javax.xml.bind.version>
+    
+    <jaxb.runtime.version>2.4.0-b180830.0438</jaxb.runtime.version>
+    <sun.xml.jaxb-core.version>2.3.0.1</sun.xml.jaxb-core.version>
+    <sun.xml.jaxb-impl.version>2.3.2</sun.xml.jaxb-impl.version>
+    
+    <jersey.core.version>2.29</jersey.core.version>
+    <jersey.media.version>2.29</jersey.media.version>
+    <jersey.version>2.29</jersey.version>
+    <jettison.version>1.4.0</jettison.version>
+    <junit.version>4.12</junit.version>
+    <lucene.version>5.5.5</lucene.version>
+    
+    <!-- Set maven plugin versions -->
+    <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
+    <maven.invoker.version>3.0.1</maven.invoker.version>
+    <maven.javadoc.skip>true</maven.javadoc.skip>
+    <maven.model.version>3.6.2</maven.model.version>
+    <maven.plugin.annotations.version>3.6.0</maven.plugin.annotations.version>
+    <maven.plugin.api.version>3.6.2</maven.plugin.api.version>
+    <maven.resources.plugin.version>2.7</maven.resources.plugin.version>
+    <maven.surefire.plugin.version>2.22.0</maven.surefire.plugin.version>
+    <maven.war.plugin.version>2.6</maven.war.plugin.version>
+    
+    <mysql.connector.java.version>8.0.17</mysql.connector.java.version>
+    <org.apache.commons.lang3.version>3.9</org.apache.commons.lang3.version>
+    <org.json.version>20190722</org.json.version>
+    <org.reflections.version>0.9.10</org.reflections.version>
+    <sax.version>2.0.1</sax.version>
+    <slf4j.log4j12.version>1.7.28</slf4j.log4j12.version>
+    <swagger.version>1.5.23</swagger.version>
+    <xml-apis.version></xml-apis.version>
+    <xom.version>1.3.2</xom.version>
+    
   </properties>
 
   <dependencyManagement>
@@ -92,13 +116,13 @@
         <artifactId>mapping-rest-client</artifactId>
         <version>${releaseVersion}</version>
       </dependency>
+      <dependency>
+        <groupId>org.ihtsdo.otf.mapping</groupId>
+        <artifactId>mapping-mojo</artifactId>
+        <version>${releaseVersion}</version>
+      </dependency>
 
       <!-- JPA dependencies -->
-      <dependency>
-        <groupId>org.hibernate.javax.persistence</groupId>
-        <artifactId>hibernate-jpa-2.0-api</artifactId>
-        <version>${org.hibernate.javax.persistence.version}</version>
-      </dependency>
       <dependency>
         <groupId>javax.transaction</groupId>
         <artifactId>jta</artifactId>
@@ -107,16 +131,16 @@
       <dependency>
         <groupId>org.hibernate</groupId>
         <artifactId>hibernate-core</artifactId>
-        <version>${hibernate.version}</version>
+        <version>${hibernate.core.version}</version>
       </dependency>
       <dependency>
         <groupId>org.hibernate</groupId>
         <artifactId>hibernate-c3p0</artifactId>
-        <version>${hibernate.version}</version>
+        <version>${hibernate.c3p0.version}</version>
       </dependency>
       <dependency>
         <groupId>org.hibernate</groupId>
-        <artifactId>hibernate-search</artifactId>
+        <artifactId>hibernate-search-orm</artifactId>
         <version>${hibernate.search.version}</version>
       </dependency>
       <dependency>
@@ -140,6 +164,23 @@
         <version>${mysql.connector.java.version}</version>
       </dependency>
 
+      <!-- Lucene -->
+      <dependency>
+        <groupId>org.apache.lucene</groupId>
+        <artifactId>lucene-queryparser</artifactId>
+        <version>${lucene.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.lucene</groupId>
+        <artifactId>lucene-suggest</artifactId>
+        <version>${lucene.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.lucene</groupId>
+        <artifactId>lucene-backward-codecs</artifactId>
+        <version>${lucene.version}</version>
+      </dependency>
+
       <!-- Logging -->
       <dependency>
         <groupId>org.slf4j</groupId>
@@ -158,11 +199,11 @@
         <artifactId>maven-resources-plugin</artifactId>
         <version>${maven.resources.plugin.version}</version>
       </dependency>
-	  <dependency>
-    	<groupId>org.apache.maven</groupId>
-    	<artifactId>maven-model</artifactId>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-model</artifactId>
         <version>${maven.model.version}</version>
-	  </dependency>      
+      </dependency>
 
       <!-- Required for Jersey and JSON -->
       <dependency>
@@ -192,15 +233,25 @@
         <version>${jersey.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.glassfish.jersey.inject</groupId>
+        <artifactId>jersey-hk2</artifactId>
+        <version>${jersey.core.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.codehaus.jettison</groupId>
         <artifactId>jettison</artifactId>
         <version>${jettison.version}</version>
       </dependency>
       <dependency>
-    	<groupId>javax.ws.rs</groupId>
-    	<artifactId>javax.ws.rs-api</artifactId>
-    	<version>${javax.ws.version}</version>
-	  </dependency>
+        <groupId>org.glassfish.jersey.media</groupId>
+        <artifactId>jersey-media-json-processing</artifactId>
+        <version>${jersey.media.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.ws.rs</groupId>
+        <artifactId>javax.ws.rs-api</artifactId>
+        <version>${javax.ws.version}</version>
+      </dependency>
       <dependency>
         <groupId>asm</groupId>
         <artifactId>asm</artifactId>
@@ -214,16 +265,16 @@
       <dependency>
         <groupId>javax.servlet</groupId>
         <artifactId>javax.servlet-api</artifactId>
-        <version>4.0.0</version>
+        <version>${javax.servlet.version}</version>
         <scope>provided</scope>
       </dependency>
 
-	  <!-- Amazon AWS -->
-	  <dependency>
-		<groupId>com.amazonaws</groupId>
-		<artifactId>aws-java-sdk</artifactId>
-		<version>${amazonaws.version}</version>
-	  </dependency>
+      <!-- Amazon AWS -->
+      <dependency>
+        <groupId>com.amazonaws</groupId>
+        <artifactId>aws-java-sdk</artifactId>
+        <version>${amazonaws.version}</version>
+      </dependency>
 
       <!-- Unit testing -->
       <dependency>
@@ -262,40 +313,81 @@
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
-        <version>3.3.2</version>
+        <version>${org.apache.commons.lang3.version}</version>
       </dependency>
+      <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>${commons-io.version}</version>
+      </dependency>
+
 
       <!-- Maven invoker -->
       <dependency>
         <groupId>org.apache.maven.shared</groupId>
         <artifactId>maven-invoker</artifactId>
-        <version>2.2</version>
+        <version>${maven.invoker.version}</version>
       </dependency>
-      
-	<dependency>
+
+      <dependency>
         <groupId>org.apache.maven.plugin-tools</groupId>
         <artifactId>maven-plugin-annotations</artifactId>
-        <version>3.4</version>
+        <version>${maven.plugin.annotations.version}</version>
         <scope>provided</scope>
       </dependency>
+
+      <dependency>
+        <groupId>javax.xml.bind</groupId>
+        <artifactId>jaxb-api</artifactId>
+        <version>${javax.xml.bind.version}</version>
+      </dependency>
       
-	<!-- JSON -->
-	<dependency>
-    	<groupId>org.json</groupId>
-    	<artifactId>json</artifactId>
-    	<version>20160810</version>
-    </dependency>
-    
-    <!-- https://mvnrepository.com/artifact/org.reflections/reflections -->
-	<dependency>
-    	<groupId>org.reflections</groupId>
-    	<artifactId>reflections</artifactId>
-    	<version>0.9.10</version>
-	</dependency>
-    
+      <dependency>
+        <groupId>com.sun.xml.bind</groupId>
+        <artifactId>jaxb-core</artifactId>
+        <version>${sun.xml.jaxb-core.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.sun.xml.bind</groupId>
+        <artifactId>jaxb-impl</artifactId>
+        <version>${sun.xml.jaxb-impl.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.glassfish.jaxb</groupId>
+        <artifactId>jaxb-runtime</artifactId>
+        <version>${jaxb.runtime.version}</version>
+      </dependency>
+      <!-- https://mvnrepository.com/artifact/javax.xml.parsers/jaxp-api -->
+      <dependency>
+        <groupId>xml-apis</groupId>
+        <artifactId>xml-apis</artifactId>
+        <version>${xml-apis.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>sax</groupId>
+        <artifactId>sax</artifactId>
+        <version>${sax.version}</version>
+      </dependency>
+
+
+      <!-- JSON -->
+      <dependency>
+        <groupId>org.json</groupId>
+        <artifactId>json</artifactId>
+        <version>${org.json.version}</version>
+      </dependency>
+
+      <!-- 0.9.11 throw exceptions, keep older version -->
+      <dependency>
+        <groupId>org.reflections</groupId>
+        <artifactId>reflections</artifactId>
+        <version>${org.reflections.version}</version>
+      </dependency>
+
     </dependencies>
   </dependencyManagement>
-
 
   <build>
 
@@ -317,16 +409,22 @@
           <version>1.7</version>
         </plugin>
 
-       <plugin>
+        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>${maven.compiler.plugin.version}</version>
           <configuration>
-            <source>1.7</source>
-            <target>1.7</target>
+            <release>${java.version}</release>
           </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.ow2.asm</groupId>
+              <artifactId>asm</artifactId>
+              <version>6.2</version>
+            </dependency>
+          </dependencies>
         </plugin>
-        
+
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
@@ -341,6 +439,10 @@
             <includes>
               <include>**/*Test.java</include>
             </includes>
+            <skipTests>false</skipTests>
+            <argLine>
+              --illegal-access=permit
+            </argLine>
           </configuration>
         </plugin>
 
@@ -369,6 +471,24 @@
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>truezip-maven-plugin</artifactId>
           <version>1.2</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>versions-maven-plugin</artifactId>
+          <version>2.3</version>
+          <configuration>
+            <rulesUri>file:///${project.basedir}/rules.xml</rulesUri>
+          </configuration>
+          <executions>
+            <execution>
+              <phase>compile</phase>
+              <goals>
+                <goal>display-dependency-updates</goal>
+                <goal>display-plugin-updates</goal>
+              </goals>
+            </execution>
+          </executions>
         </plugin>
 
       </plugins>
