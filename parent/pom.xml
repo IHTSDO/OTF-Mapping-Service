@@ -496,16 +496,35 @@
 
   </build>
 
+ <!-- Distribution management -->
+  <repositories>
+    <repository>
+      <id>ihtsdo-public-nexus</id>
+      <name>IHTSDO Public Nexus Releases</name>
+      <url>https://maven3.ihtsdotools.org/repository/maven-releases/</url>
+    </repository>
+    <repository>
+      <id>ihtsdo-public-nexus-snapshot</id>
+      <name>IHTSDO Public Nexus Snapshots</name>
+      <url>https://maven3.ihtsdotools.org/repository/maven-snapshots/</url>
+    </repository>
+    <repository>
+      <id>jvnet-nexus-staging</id>
+      <url>http://maven.java.net/content/repositories/staging/</url>
+      <layout>default</layout>
+    </repository>
+  </repositories>
+
   <distributionManagement>
     <repository>
       <id>ihtsdo-public-nexus</id>
       <name>IHTSDO Public Nexus Releases</name>
-      <url>https://nexus.ihtsdotools.org/content/repositories/releases/</url>
+      <url>https://maven3.ihtsdotools.org/repository/maven-releases/</url>
     </repository>
     <snapshotRepository>
       <id>ihtsdo-public-nexus</id>
       <name>IHTSDO Public Nexus Snapshots</name>
-      <url>https://nexus.ihtsdotools.org/content/repositories/snapshots/</url>
+      <url>https://maven3.ihtsdotools.org/repository/maven-snapshots/</url>
     </snapshotRepository>
   </distributionManagement>
 
