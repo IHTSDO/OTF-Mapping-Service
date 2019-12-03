@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.jpa;
 
 import java.util.Date;
@@ -10,6 +13,7 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.MapKeyColumn;
@@ -29,16 +33,16 @@ import org.ihtsdo.otf.mapping.model.MapUserPreferences;
 // @UniqueConstraint here is being used to create an index, not to enforce
 // uniqueness
 @Table(name = "map_user_preferences", uniqueConstraints = {
-  @UniqueConstraint(columnNames = {
-      "mapUser_id", "id"
-  })
+    @UniqueConstraint(columnNames = {
+        "mapUser_id", "id"
+    })
 })
 @XmlRootElement(name = "mapUserPreferences")
 public class MapUserPreferencesJpa implements MapUserPreferences {
 
   /** The id. */
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   /** The map user id. */
@@ -52,15 +56,14 @@ public class MapUserPreferencesJpa implements MapUserPreferences {
   /** The map project id for the project last worked on. */
   @Column(nullable = false)
   private Long mapProjectId;
-  
+
   /** The last tab on the Assigned Work widget on which the user was working. */
   @Column(nullable = true)
   private String lastAssignedTab;
-  
+
   /** The last radio button that was selected on the Assigned Work widget. */
   @Column(nullable = true)
   private String lastAssignedRadio;
-
 
   /** The map of name to model dashboards. */
   @ElementCollection(fetch = FetchType.EAGER)
@@ -77,6 +80,7 @@ public class MapUserPreferencesJpa implements MapUserPreferences {
   @Column(nullable = false)
   private boolean digestForm;
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -87,6 +91,7 @@ public class MapUserPreferencesJpa implements MapUserPreferences {
     return id;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -137,7 +142,7 @@ public class MapUserPreferencesJpa implements MapUserPreferences {
   public void setLastLogin(Long lastLogin) {
     this.lastLogin = lastLogin;
   }
-  
+
   /**
    * Gets the last assigned tab.
    * 
@@ -155,7 +160,7 @@ public class MapUserPreferencesJpa implements MapUserPreferences {
    */
   @Override
   public String getLastAssignedRadio() {
-		return lastAssignedRadio;
+    return lastAssignedRadio;
   }
 
   /**
@@ -165,19 +170,20 @@ public class MapUserPreferencesJpa implements MapUserPreferences {
    */
   @Override
   public void setLastAssignedRadio(String lastAssignedRadio) {
-		this.lastAssignedRadio = lastAssignedRadio;
+    this.lastAssignedRadio = lastAssignedRadio;
   }
-	
+
   /**
    * Sets the last assigned tab.
-   * 
-   * @param lastLogin the new last assigned tab
+   *
+   * @param lastAssignedTab the last assigned tab
    */
   @Override
-  public void setLastAssignedTab(String lastAssignedTab){
+  public void setLastAssignedTab(String lastAssignedTab) {
     this.lastAssignedTab = lastAssignedTab;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -188,6 +194,7 @@ public class MapUserPreferencesJpa implements MapUserPreferences {
     return mapProjectId;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -220,11 +227,13 @@ public class MapUserPreferencesJpa implements MapUserPreferences {
     this.dashboardModels = dashboardModels;
   }
 
+  /* see superclass */
   @Override
   public void addDashboardModel(String name, String model) {
     this.dashboardModels.put(name, model);
   }
 
+  /* see superclass */
   @Override
   public void removeDashboardModel(String name) {
     this.dashboardModels.remove(name);
@@ -270,6 +279,7 @@ public class MapUserPreferencesJpa implements MapUserPreferences {
     this.digestForm = digestForm;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -279,13 +289,14 @@ public class MapUserPreferencesJpa implements MapUserPreferences {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result =
-        prime * result
-            + ((dashboardModels == null) ? 0 : dashboardModels.hashCode());
+    result = prime * result
+        + ((dashboardModels == null) ? 0 : dashboardModels.hashCode());
     result = prime * result + (digestForm ? 1231 : 1237);
     result = prime * result + ((lastLogin == null) ? 0 : lastLogin.hashCode());
-    result = prime * result + ((lastAssignedTab == null) ? 0 : lastAssignedTab.hashCode());
-    result = prime * result + ((lastAssignedRadio == null) ? 0 : lastAssignedRadio.hashCode());
+    result = prime * result
+        + ((lastAssignedTab == null) ? 0 : lastAssignedTab.hashCode());
+    result = prime * result
+        + ((lastAssignedRadio == null) ? 0 : lastAssignedRadio.hashCode());
     result =
         prime * result + ((mapProjectId == null) ? 0 : mapProjectId.hashCode());
     result = prime * result + ((mapUser == null) ? 0 : mapUser.hashCode());
@@ -293,6 +304,7 @@ public class MapUserPreferencesJpa implements MapUserPreferences {
     return result;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -320,15 +332,15 @@ public class MapUserPreferencesJpa implements MapUserPreferences {
     } else if (!lastLogin.equals(other.lastLogin))
       return false;
     if (lastAssignedTab == null) {
-        if (other.lastAssignedTab != null)
-          return false;
-      } else if (!lastAssignedTab.equals(other.lastAssignedTab))
+      if (other.lastAssignedTab != null)
         return false;
+    } else if (!lastAssignedTab.equals(other.lastAssignedTab))
+      return false;
     if (lastAssignedRadio == null) {
-        if (other.lastAssignedRadio != null)
-          return false;
-      } else if (!lastAssignedRadio.equals(other.lastAssignedRadio))
+      if (other.lastAssignedRadio != null)
         return false;
+    } else if (!lastAssignedRadio.equals(other.lastAssignedRadio))
+      return false;
     if (mapProjectId == null) {
       if (other.mapProjectId != null)
         return false;
@@ -344,6 +356,7 @@ public class MapUserPreferencesJpa implements MapUserPreferences {
     return true;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -352,14 +365,11 @@ public class MapUserPreferencesJpa implements MapUserPreferences {
   @Override
   public String toString() {
     return "MapUserPreferencesJpa [id=" + id + ", mapUser="
-        + mapUser.getUserName() + ", lastLogin=" + lastLogin
-        + ", mapProjectId=" + mapProjectId + ",lastAssignedTab=" 
-        + lastAssignedTab + ",lastAssignedRadio=" 
-                + lastAssignedRadio+ ", dashboardModels="
+        + mapUser.getUserName() + ", lastLogin=" + lastLogin + ", mapProjectId="
+        + mapProjectId + ",lastAssignedTab=" + lastAssignedTab
+        + ",lastAssignedRadio=" + lastAssignedRadio + ", dashboardModels="
         + dashboardModels + ", notifiedByEmail=" + notifiedByEmail
         + ", digestForm=" + digestForm + "]";
   }
-
-
 
 }

@@ -1,8 +1,12 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.jpa;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -23,9 +27,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @Entity
 @Table(name = "map_principles", uniqueConstraints = {
-  @UniqueConstraint(columnNames = {
-      "name", "principleId"
-  })
+    @UniqueConstraint(columnNames = {
+        "name", "principleId"
+    })
 })
 @Audited
 @XmlRootElement(name = "mapPrinciple")
@@ -34,7 +38,7 @@ public class MapPrincipleJpa implements MapPrinciple {
 
   /** The id. */
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   /** The principle id. */
@@ -262,8 +266,8 @@ public class MapPrincipleJpa implements MapPrinciple {
   /* see superclass */
   @Override
   public String toString() {
-    return "MapPrincipleJpa [id=" + id + ", name=" + name + ", detail="
-        + detail + ", sectionRef=" + sectionRef + "]";
+    return "MapPrincipleJpa [id=" + id + ", name=" + name + ", detail=" + detail
+        + ", sectionRef=" + sectionRef + "]";
   }
 
 }

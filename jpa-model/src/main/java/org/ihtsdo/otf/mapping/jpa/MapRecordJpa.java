@@ -18,6 +18,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
@@ -82,7 +83,7 @@ public class MapRecordJpa implements MapRecord {
 
   /** The id. */
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   /** The owner. */
@@ -123,12 +124,12 @@ public class MapRecordJpa implements MapRecord {
 
   /** The map notes. */
   @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity = MapNoteJpa.class)
-  @CollectionTable(name="map_records_map_notes", joinColumns = @JoinColumn(name="map_records_id"))
+  @CollectionTable(name = "map_records_map_notes", joinColumns = @JoinColumn(name = "map_records_id"))
   private Set<MapNote> mapNotes = new HashSet<>();
 
   /** The map principles. */
   @ManyToMany(targetEntity = MapPrincipleJpa.class, fetch = FetchType.LAZY)
-  @CollectionTable(name="map_records_map_principles", joinColumns = @JoinColumn(name="map_records_id"))
+  @CollectionTable(name = "map_records_map_principles", joinColumns = @JoinColumn(name = "map_records_id"))
   @IndexedEmbedded(targetElement = MapPrincipleJpa.class)
   private Set<MapPrinciple> mapPrinciples = new HashSet<>();
 
@@ -331,6 +332,8 @@ public class MapRecordJpa implements MapRecord {
    */
   /* see superclass */
   @Override
+  // @DateBridge(resolution = Resolution.SECOND)
+  // @SortableField
   public Long getLastModified() {
     return this.lastModified;
   }

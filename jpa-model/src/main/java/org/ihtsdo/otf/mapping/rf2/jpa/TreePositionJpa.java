@@ -1,5 +1,5 @@
 /*
- *    Copyright 2016 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.rf2.jpa;
 
@@ -11,6 +11,7 @@ import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -45,7 +46,7 @@ public class TreePositionJpa implements TreePosition {
 
   /** The id. */
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   /** The ancestor path. */
@@ -129,7 +130,6 @@ public class TreePositionJpa implements TreePosition {
     this.id = id;
   }
 
-
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
@@ -169,14 +169,13 @@ public class TreePositionJpa implements TreePosition {
     this.terminologyVersion = terminologyVersion;
   }
 
-
   @Fields({
       @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO),
       @Field(name = "terminologyIdAnalyzed", index = Index.YES, analyze = Analyze.YES, store = Store.NO, analyzer = @Analyzer(definition = "noStopWord"))
   })
   @Override
   public String getTerminologyId() {
-	  return terminologyId;
+    return terminologyId;
   }
 
   /* see superclass */
@@ -326,20 +325,14 @@ public class TreePositionJpa implements TreePosition {
     int result = 1;
     result =
         prime * result + ((ancestorPath == null) ? 0 : ancestorPath.hashCode());
-    result =
-        prime
-            * result
-            + ((defaultPreferredName == null) ? 0 : defaultPreferredName
-                .hashCode());
+    result = prime * result + ((defaultPreferredName == null) ? 0
+        : defaultPreferredName.hashCode());
     result =
         prime * result + ((terminology == null) ? 0 : terminology.hashCode());
-    result =
-        prime * result
-            + ((terminologyId == null) ? 0 : terminologyId.hashCode());
-    result =
-        prime
-            * result
-            + ((terminologyVersion == null) ? 0 : terminologyVersion.hashCode());
+    result = prime * result
+        + ((terminologyId == null) ? 0 : terminologyId.hashCode());
+    result = prime * result
+        + ((terminologyVersion == null) ? 0 : terminologyVersion.hashCode());
     return result;
   }
 
@@ -392,8 +385,8 @@ public class TreePositionJpa implements TreePosition {
         + terminology + ", terminologyId=" + terminologyId
         + ", terminologyVersion=" + terminologyVersion
         + ", defaultPreferredName=" + defaultPreferredName + ", childrenCount="
-        + childrenCount + ", terminologyNote=" + terminologyNote
-        + ", children=" + childrenStr + "]";
+        + childrenCount + ", terminologyNote=" + terminologyNote + ", children="
+        + childrenStr + "]";
   }
 
 }

@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.jpa;
 
 import java.util.HashSet;
@@ -8,6 +11,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
@@ -18,7 +22,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
@@ -48,7 +51,7 @@ public class MapEntryJpa implements MapEntry {
 
   /** The id. */
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   /** The map record. */
@@ -58,9 +61,9 @@ public class MapEntryJpa implements MapEntry {
 
   /** The map advices. */
   @ManyToMany(targetEntity = MapAdviceJpa.class, fetch = FetchType.LAZY)
-  @CollectionTable(name="map_entries_map_advices", joinColumns = @JoinColumn(name="map_entries_id"))
+  @CollectionTable(name = "map_entries_map_advices", joinColumns = @JoinColumn(name = "map_entries_id"))
   @IndexedEmbedded(targetElement = MapAdviceJpa.class)
-  private Set<MapAdvice> mapAdvices  = new HashSet<>();
+  private Set<MapAdvice> mapAdvices = new HashSet<>();
 
   /** The target. */
   @Column(nullable = true, length = 4000)
@@ -195,14 +198,12 @@ public class MapEntryJpa implements MapEntry {
     return (this.id == null ? null : id.toString());
   }
 
-
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getTargetId() {
     return targetId;
   }
-
 
   /* see superclass */
   @Override
@@ -253,7 +254,6 @@ public class MapEntryJpa implements MapEntry {
     this.mapAdvices = mapAdvices;
   }
 
-
   /* see superclass */
   @Override
   public void addMapAdvice(MapAdvice mapAdvice) {
@@ -273,13 +273,11 @@ public class MapEntryJpa implements MapEntry {
     return rule;
   }
 
-
   /* see superclass */
   @Override
   public void setRule(String rule) {
     this.rule = rule;
   }
-
 
   /* see superclass */
   @Override
@@ -330,7 +328,6 @@ public class MapEntryJpa implements MapEntry {
     }
   }
 
- 
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
@@ -338,7 +335,6 @@ public class MapEntryJpa implements MapEntry {
     return this.mapGroup;
   }
 
-  
   /* see superclass */
   @Override
   public void setMapGroup(int mapGroup) {
@@ -372,9 +368,8 @@ public class MapEntryJpa implements MapEntry {
 
     // note: use map record id instead of map record to prevent hashCode()
     // circular reference chain
-    result =
-        prime * result
-            + ((mapRecord.getId() == null) ? 0 : mapRecord.getId().hashCode());
+    result = prime * result
+        + ((mapRecord.getId() == null) ? 0 : mapRecord.getId().hashCode());
     result =
         prime * result + ((mapRelation == null) ? 0 : mapRelation.hashCode());
     result = prime * result + ((rule == null) ? 0 : rule.hashCode());
@@ -460,7 +455,7 @@ public class MapEntryJpa implements MapEntry {
     // targets must be equal
     final String id1 = this.targetId == null ? "" : this.targetId;
     final String id2 = me.getTargetId() == null ? "" : me.getTargetId();
-    if (!id1.equals(id2)) {       
+    if (!id1.equals(id2)) {
       return false;
     }
 
@@ -496,10 +491,10 @@ public class MapEntryJpa implements MapEntry {
     if (this.mapAdvices == null && me.getMapAdvices() != null) {
       return false;
     } else if (this.mapAdvices != null && me.getMapAdvices() == null) {
-        return false;
+      return false;
     } else if (mapAdvices != null
         && mapAdvices.size() != me.getMapAdvices().size()) {
-        return false;
+      return false;
     } else if (mapAdvices != null) {
       for (MapAdvice ma : this.mapAdvices) {
         if (!me.getMapAdvices().contains(ma)) {

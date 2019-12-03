@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.jpa;
 
 import java.util.Date;
@@ -9,9 +12,9 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
@@ -46,7 +49,7 @@ public class FeedbackJpa implements Feedback {
 
   /** The id. */
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   /** The error. */
@@ -69,8 +72,8 @@ public class FeedbackJpa implements Feedback {
 
   /** The users receiving feedback. */
   @ManyToMany(targetEntity = MapUserJpa.class, fetch = FetchType.LAZY)
-  //@JoinTable(name = "feedback_recipients")
-  @CollectionTable(name="feedback_recipients", joinColumns = @JoinColumn(name="feedbacks_id"))
+  // @JoinTable(name = "feedback_recipients")
+  @CollectionTable(name = "feedback_recipients", joinColumns = @JoinColumn(name = "feedbacks_id"))
   @IndexedEmbedded(targetElement = MapUserJpa.class)
   private Set<MapUser> recipients = new HashSet<>();
 
@@ -85,8 +88,8 @@ public class FeedbackJpa implements Feedback {
 
   /** The users who have viewed this feedback item. */
   @ManyToMany(targetEntity = MapUserJpa.class, fetch = FetchType.LAZY)
-  //@JoinTable(name = "feedback_viewers")
-  @CollectionTable(name="feedback_viewers", joinColumns = @JoinColumn(name="feedbacks_id"))
+  // @JoinTable(name = "feedback_viewers")
+  @CollectionTable(name = "feedback_viewers", joinColumns = @JoinColumn(name = "feedbacks_id"))
   @IndexedEmbedded(targetElement = MapUserJpa.class)
   private Set<MapUser> viewedBy = new HashSet<>();
 
@@ -116,6 +119,7 @@ public class FeedbackJpa implements Feedback {
     this.id = id;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -126,6 +130,7 @@ public class FeedbackJpa implements Feedback {
     this.recipients = receivingUsers;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -139,6 +144,7 @@ public class FeedbackJpa implements Feedback {
     return recipients;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -151,6 +157,7 @@ public class FeedbackJpa implements Feedback {
     this.sender = sender;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -162,6 +169,7 @@ public class FeedbackJpa implements Feedback {
     return (MapUserJpa) sender;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -172,6 +180,7 @@ public class FeedbackJpa implements Feedback {
     this.message = note;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -183,6 +192,7 @@ public class FeedbackJpa implements Feedback {
     return message;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -193,6 +203,7 @@ public class FeedbackJpa implements Feedback {
     this.timestamp = timestamp;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -203,6 +214,7 @@ public class FeedbackJpa implements Feedback {
     return timestamp;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -213,6 +225,7 @@ public class FeedbackJpa implements Feedback {
     this.mapError = mapError;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -224,6 +237,7 @@ public class FeedbackJpa implements Feedback {
     return mapError;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -235,6 +249,7 @@ public class FeedbackJpa implements Feedback {
     return feedbackConversation;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -243,10 +258,12 @@ public class FeedbackJpa implements Feedback {
    * .otf.mapping.model.FeedbackConversation)
    */
   @Override
-  public void setFeedbackConversation(FeedbackConversation feedbackConversation) {
+  public void setFeedbackConversation(
+    FeedbackConversation feedbackConversation) {
     this.feedbackConversation = feedbackConversation;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -257,6 +274,7 @@ public class FeedbackJpa implements Feedback {
     return isError;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -267,6 +285,7 @@ public class FeedbackJpa implements Feedback {
     this.isError = isError;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -280,6 +299,7 @@ public class FeedbackJpa implements Feedback {
     return viewedBy;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -290,6 +310,7 @@ public class FeedbackJpa implements Feedback {
     this.viewedBy = viewedBy;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -302,6 +323,7 @@ public class FeedbackJpa implements Feedback {
     viewedBy.add(user);
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -314,6 +336,7 @@ public class FeedbackJpa implements Feedback {
     viewedBy.remove(user);
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -324,6 +347,7 @@ public class FeedbackJpa implements Feedback {
     return (isError ? mapError : "") + ", " + message;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -333,11 +357,8 @@ public class FeedbackJpa implements Feedback {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result =
-        prime
-            * result
-            + ((feedbackConversation == null) ? 0 : feedbackConversation
-                .hashCode());
+    result = prime * result + ((feedbackConversation == null) ? 0
+        : feedbackConversation.hashCode());
     result = prime * result + (isError ? 1231 : 1237);
     result = prime * result + ((mapError == null) ? 0 : mapError.hashCode());
     result = prime * result + ((message == null) ? 0 : message.hashCode());
@@ -345,6 +366,7 @@ public class FeedbackJpa implements Feedback {
     return result;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 

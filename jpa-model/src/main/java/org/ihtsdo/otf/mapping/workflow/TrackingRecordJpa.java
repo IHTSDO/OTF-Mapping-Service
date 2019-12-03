@@ -14,6 +14,7 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Table;
@@ -23,10 +24,14 @@ import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
+import org.hibernate.search.bridge.builtin.IntegerBridge;
+import org.hibernate.search.bridge.builtin.LongBridge;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 
 /**
@@ -41,7 +46,7 @@ public class TrackingRecordJpa implements TrackingRecord {
 
   /** The id. */
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   /** The map project. */
@@ -120,6 +125,7 @@ public class TrackingRecordJpa implements TrackingRecord {
    */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @FieldBridge(impl = LongBridge.class)
   public Long getMapProjectId() {
     return this.mapProjectId;
   }
@@ -207,6 +213,7 @@ public class TrackingRecordJpa implements TrackingRecord {
       @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
       @Field(name = "defaultPreferredNameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   })
+  @SortableField(forField = "defaultPreferredNameSort")
   @Analyzer(definition = "noStopWord")
   public String getDefaultPreferredName() {
     return defaultPreferredName;
@@ -229,6 +236,7 @@ public class TrackingRecordJpa implements TrackingRecord {
    */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
   public String getSortKey() {
     return sortKey;
   }
@@ -347,6 +355,7 @@ public class TrackingRecordJpa implements TrackingRecord {
    */
   @Override
   @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @FieldBridge(impl = IntegerBridge.class)
   public int getAssignedUserCount() {
     if (this.assignedUserNames == null)
       this.assignedUserCount = 0;
