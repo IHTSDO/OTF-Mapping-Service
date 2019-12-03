@@ -851,18 +851,19 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
 
       query =
           // most recent report before or on specified date
-          "select 'Report' value, name itemName, id itemId "
+          "SELECT value, itemName, itemId FROM ( "
+              + "(select 'Report' value, name itemName, id itemId "
               + "from reports where name = '"
               + reportDefinition.getDiffReportDefinitionName() + "' "
               + "and mapProjectId = :MAP_PROJECT_ID: " + "and timestamp = "
               + "(select max(timestamp) from reports where timestamp <= :TIMESTAMP:"
               + " and mapProjectId = :MAP_PROJECT_ID: and name = '"
               + reportDefinition.getDiffReportDefinitionName() + "') "
-              + "limit 1 "
+              + "limit 1) "
 
               // union with most recent report before or on specified date less
               // interval
-              // note: surround with parantheses to correctly apply LIMIT
+              // note: surround with parentheses to correctly apply LIMIT
               + "UNION " + "(select 'Report' value, name itemName, id itemId "
               + "from reports where name = '"
               + reportDefinition.getDiffReportDefinitionName() + "' "
@@ -870,7 +871,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
               + "(select max(timestamp) from reports where timestamp <= :TIMESTAMP2:"
               + " and mapProjectId = :MAP_PROJECT_ID: and name = '"
               + reportDefinition.getDiffReportDefinitionName() + "') "
-              + "limit 1)";
+              + "limit 1)"
+              + " ) q ";
 
       // modify date by appropriate increment
       switch (reportDefinition.getTimePeriod()) {
