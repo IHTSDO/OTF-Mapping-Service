@@ -1,5 +1,5 @@
 /*
- *    Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.reports;
 
@@ -8,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -39,7 +40,7 @@ public class ReportDefinitionJpa implements ReportDefinition {
 
   /** Auto-generated id. */
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   /** The report type name. */
@@ -167,6 +168,7 @@ public class ReportDefinitionJpa implements ReportDefinition {
     this.name = name;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -177,6 +179,7 @@ public class ReportDefinitionJpa implements ReportDefinition {
     return this.description;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -299,6 +302,7 @@ public class ReportDefinitionJpa implements ReportDefinition {
     return roleRequired;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -311,6 +315,7 @@ public class ReportDefinitionJpa implements ReportDefinition {
     this.roleRequired = roleRequired;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -321,6 +326,7 @@ public class ReportDefinitionJpa implements ReportDefinition {
     return isDiffReport;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -331,6 +337,7 @@ public class ReportDefinitionJpa implements ReportDefinition {
     this.isDiffReport = isDiffReport;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -341,6 +348,7 @@ public class ReportDefinitionJpa implements ReportDefinition {
     return this.timePeriod;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -353,6 +361,7 @@ public class ReportDefinitionJpa implements ReportDefinition {
 
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -363,6 +372,7 @@ public class ReportDefinitionJpa implements ReportDefinition {
     return isQACheck;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -373,6 +383,7 @@ public class ReportDefinitionJpa implements ReportDefinition {
     this.isQACheck = isQACheck;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -388,6 +399,7 @@ public class ReportDefinitionJpa implements ReportDefinition {
         + ", diffReportDefinitionName=" + diffReportDefinitionName + "]";
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -398,6 +410,7 @@ public class ReportDefinitionJpa implements ReportDefinition {
     return this.frequency;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -410,6 +423,7 @@ public class ReportDefinitionJpa implements ReportDefinition {
     this.frequency = timePeriod;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -422,6 +436,7 @@ public class ReportDefinitionJpa implements ReportDefinition {
     return diffReportDefinitionName;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -434,6 +449,7 @@ public class ReportDefinitionJpa implements ReportDefinition {
     this.diffReportDefinitionName = diffReportDefinitionName;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -462,6 +478,7 @@ public class ReportDefinitionJpa implements ReportDefinition {
     return result;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 

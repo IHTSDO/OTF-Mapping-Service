@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.jpa;
 
 import java.util.ArrayList;
@@ -9,6 +12,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -21,22 +25,25 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
+import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
+import org.hibernate.search.bridge.builtin.LongBridge;
 import org.ihtsdo.otf.mapping.model.Feedback;
 import org.ihtsdo.otf.mapping.model.FeedbackConversation;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * JPA enabled implementatin of {@link FeedbackConversation}.
+ * JPA enabled implementation of {@link FeedbackConversation}.
  */
 @Entity
 @Table(name = "feedback_conversations", uniqueConstraints = {
     @UniqueConstraint(columnNames = {
-      "mapRecordId"
+        "mapRecordId"
     }), @UniqueConstraint(columnNames = {
         "mapProjectId", "id"
     })
@@ -49,7 +56,7 @@ public class FeedbackConversationJpa implements FeedbackConversation {
 
   /** The id. */
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   /** List of feedback threads in the feedback conversation. */
@@ -61,7 +68,9 @@ public class FeedbackConversationJpa implements FeedbackConversation {
   @Column(nullable = false)
   private boolean isResolved = false;
 
-  /** Flag for whether this feedback conversation requires discrepancy review. */
+  /**
+   * Flag for whether this feedback conversation requires discrepancy review.
+   */
   @Column(nullable = false)
   private boolean isDiscrepancyReview = false;
 
@@ -150,16 +159,17 @@ public class FeedbackConversationJpa implements FeedbackConversation {
    *
    * @param resolved the resolved flag
    */
-  
+
   @Override
   public void setResolved(boolean resolved) {
     this.isResolved = resolved;
   }
-  
+
   @Override
   public void removeFeedback(Feedback feedbackMessage) {
     feedbacks.remove(feedbackMessage);
   }
+
   /**
    * Indicates whether or not resolved is the case.
    *
@@ -219,6 +229,8 @@ public class FeedbackConversationJpa implements FeedbackConversation {
    */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @FieldBridge(impl = LongBridge.class)
+  @SortableField
   public Date getLastModified() {
     Date localLastModified = null;
     for (Feedback feedback : getFeedbacks()) {
@@ -396,6 +408,7 @@ public class FeedbackConversationJpa implements FeedbackConversation {
    */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @FieldBridge(impl = LongBridge.class)
   public Long getMapProjectId() {
     return mapProjectId;
   }
@@ -428,13 +441,10 @@ public class FeedbackConversationJpa implements FeedbackConversation {
         prime * result + ((mapRecordId == null) ? 0 : mapRecordId.hashCode());
     result =
         prime * result + ((terminology == null) ? 0 : terminology.hashCode());
-    result =
-        prime * result
-            + ((terminologyId == null) ? 0 : terminologyId.hashCode());
-    result =
-        prime
-            * result
-            + ((terminologyVersion == null) ? 0 : terminologyVersion.hashCode());
+    result = prime * result
+        + ((terminologyId == null) ? 0 : terminologyId.hashCode());
+    result = prime * result
+        + ((terminologyVersion == null) ? 0 : terminologyVersion.hashCode());
     result = prime * result + ((title == null) ? 0 : title.hashCode());
     result = prime * result + ((userName == null) ? 0 : userName.hashCode());
     return result;
