@@ -35,6 +35,7 @@
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
+            <version>${project.version}</version>
             <executions>
               <execution>
                 <id>reindex</id>
@@ -63,6 +64,7 @@
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
+            <version>${project.version}</version>
             <executions>
               <execution>
                 <id>execution1</id>
@@ -153,6 +155,7 @@
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
+            <version>${project.version}</version>
             <executions>
               <!-- Generate HTML for TEIL1 data -->
               <execution>
@@ -259,6 +262,7 @@
           <plugin>
             <groupId>org.ihtsdo.otf.mapping</groupId>
             <artifactId>mapping-admin-mojo</artifactId>
+            <version>${project.version}</version>
             <executions>
               <!-- Generate HTML for Neoplasm data -->
               <execution>
