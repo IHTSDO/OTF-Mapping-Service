@@ -17,15 +17,18 @@
 
   <properties>
     <!-- Specify index viewer data for icd10cm -->
+    <!-- TEMPORARYILY REMVOING for JDK11 UPGRADE TESTING
     <index.viewer.groupId>org.ihtsdo.otf.mapping</index.viewer.groupId>
     <index.viewer.artifactId>index-viewer-data-icd10cm</index.viewer.artifactId>
     <index.viewer.version>1.5.0</index.viewer.version>
+    -->
   </properties>
 
   <build>
     <plugins>
 
       <!-- Unpack index viewer data -->
+      <!--
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
@@ -39,8 +42,8 @@
             <configuration>
               <artifactItems>
                 <artifactItem>
-                  <!-- These are set by the properties in the read-project-properties 
-                    call. They can be manually overridden with -D as desired. -->
+                  < ! - - These are set by the properties in the read-project-properties 
+                    call. They can be manually overridden with -D as desired. - - >
                   <groupId>${index.viewer.groupId}</groupId>
                   <artifactId>${index.viewer.artifactId}</artifactId>
                   <version>${index.viewer.version}</version>
@@ -52,6 +55,7 @@
           </execution>
         </executions>
       </plugin>
+      -->
       <!-- Assemble resources into mapping-config*.zip -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
