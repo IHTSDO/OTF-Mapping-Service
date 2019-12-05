@@ -17,9 +17,9 @@
 
 
 	<properties>
-		<packageName>${project.artifactId}</packageName>
+		<packageName>mapping-rest</packageName>
 		<jdeb.version>1.1.1</jdeb.version>
-		<package_username>mapping-service</package_username>
+		<package_username>mapping-rest</package_username>
 		<deb.suffix></deb.suffix>
 	</properties>
 
