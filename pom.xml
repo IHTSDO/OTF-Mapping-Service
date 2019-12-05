@@ -58,12 +58,12 @@
     <repository>
       <id>ihtsdo-public-nexus</id>
       <name>IHTSDO Public Nexus Releases</name>
-      <url>https://nexus.ihtsdotools.org/content/repositories/releases/</url>
+      <url>https://maven3.ihtsdotools.org/repository/maven-releases/</url>
     </repository>
     <snapshotRepository>
       <id>ihtsdo-public-nexus</id>
       <name>IHTSDO Public Nexus Snapshots</name>
-      <url>https://nexus.ihtsdotools.org/content/repositories/snapshots/</url>
+      <url>https://maven3.ihtsdotools.org/repository/maven-snapshots/</url>
     </snapshotRepository>
   </distributionManagement>
 
