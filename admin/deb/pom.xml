@@ -144,7 +144,7 @@
                   </data> -->
 
                 <data>
-                  <src>${basedir}/../admin/pom.xml</src>
+                  <src>${basedir}/../../admin/pom.xml</src>
                   <dst>pom.xml</dst>
                   <type>file</type>
                   <mapper>
