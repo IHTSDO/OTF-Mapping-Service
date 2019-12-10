@@ -1,18 +1,5 @@
-/**
- * Copyright (c) 2012 International Health Terminology Standards Development
- * Organisation
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.mojo;
 
@@ -32,69 +19,72 @@ import org.ihtsdo.otf.mapping.rest.impl.ContentServiceRestImpl;
  */
 public class TerminologyMapsRemoverMojo extends AbstractTerminologyLoaderMojo {
 
-	/**
-	 * Whether to run this mojo against an active server.
-	 * @parameter 
-	 */
-	private boolean server = false;
-	
-	/**
-	 * Ref set id to remove
-	 * 
-	 * @parameter
-	 * @required
-	 */
-	private String refsetId;
+  /**
+   * Whether to run this mojo against an active server.
+   * @parameter
+   */
+  private boolean server = false;
 
-	/**
-	 * Instantiates a {@link TerminologyMapsRemoverMojo} from the specified
-	 * parameters.
-	 * 
-	 */
-	public TerminologyMapsRemoverMojo() {
-		super();
-	}
+  /**
+   * Ref set id to remove
+   * 
+   * @parameter
+   * @required
+   */
+  private String refsetId;
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.apache.maven.plugin.Mojo#execute()
-	 */
-	@Override
-	public void execute() throws MojoFailureException {
-		getLog().info("Starting removing terminology maps");
-		getLog().info("  refsetId = " + refsetId);
+  /**
+   * Instantiates a {@link TerminologyMapsRemoverMojo} from the specified
+   * parameters.
+   * 
+   */
+  public TerminologyMapsRemoverMojo() {
+    super();
+  }
 
-		try {
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.apache.maven.plugin.Mojo#execute()
+   */
+  @Override
+  public void execute() throws MojoFailureException {
+    getLog().info("Starting removing terminology maps");
+    getLog().info("  refsetId = " + refsetId);
 
-			// Track system level information
-			setProcessStartTime();
+    try {
 
-			// throws exception if server is required but not running.
-			// or if server is not required but running.
-            Logger.getLogger(getClass()).info("server is:" + this.server);
-			validateServerStatus(server);
+      setupBindInfoPackage();
+      
+      // Track system level information
+      setProcessStartTime();
 
-			if (serverRunning != null && !serverRunning) {
-				getLog().info("Running directly");
+      // throws exception if server is required but not running.
+      // or if server is not required but running.
+      Logger.getLogger(getClass()).info("server is:" + this.server);
+      validateServerStatus(server);
 
-				ContentServiceRestImpl service = new ContentServiceRestImpl();
-				service.removeMapRecord(refsetId, getAuthToken());
+      if (serverRunning != null && !serverRunning) {
+        getLog().info("Running directly");
 
-			} else {
-				getLog().info("Running against server");
+        ContentServiceRestImpl service = new ContentServiceRestImpl();
+        service.removeMapRecord(refsetId, getAuthToken());
 
-				// invoke the client
-				ContentClientRest client = new ContentClientRest(properties);
-				client.removeMapRecord(refsetId, getAuthToken());
-			}
+      } else {
+        getLog().info("Running against server");
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new MojoFailureException("Unexpected exception:", e);
-		} finally {
-			getLog().info("      elapsed time = " + getTotalElapsedTimeStr());
-			getLog().info("Done removing terminology maps");
-		}
-	}
+        // invoke the client
+        ContentClientRest client = new ContentClientRest(properties);
+        client.removeMapRecord(refsetId, getAuthToken());
+      }
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new MojoFailureException("Unexpected exception:", e);
+    } finally {
+      getLog().info("      elapsed time = " + getTotalElapsedTimeStr());
+      getLog().info("Done removing terminology maps");
+    }
+  }
 }

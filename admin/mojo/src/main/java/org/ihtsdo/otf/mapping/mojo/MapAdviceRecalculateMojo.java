@@ -43,6 +43,8 @@ public class MapAdviceRecalculateMojo extends AbstractOtfMappingMojo {
 
     try {
 
+      setupBindInfoPackage();
+
       final MappingService mappingService = new MappingServiceJpa();
 
       MapProject mapProject = null;

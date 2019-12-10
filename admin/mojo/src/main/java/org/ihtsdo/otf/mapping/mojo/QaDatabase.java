@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.util.ArrayList;
@@ -38,9 +41,9 @@ public class QaDatabase extends AbstractOtfMappingMojo {
 
   /**
    * Executes the plugin.
-   * 
+   *
    * @throws MojoExecutionException the mojo execution exception
-   * @throws MojoFailureException
+   * @throws MojoFailureException the mojo failure exception
    */
   @SuppressWarnings("unchecked")
   @Override
@@ -48,6 +51,8 @@ public class QaDatabase extends AbstractOtfMappingMojo {
     getLog().info("Starting database QA");
 
     try {
+
+      setupBindInfoPackage();
 
       // Obtain an entity manager;
       ContentService service = new ContentServiceJpa() {
@@ -128,8 +133,9 @@ public class QaDatabase extends AbstractOtfMappingMojo {
           props.put("mail.smtp.starttls.enable",
               config.getProperty("mail.smtp.starttls.enable"));
           props.put("mail.smtp.auth", config.getProperty("mail.smtp.auth"));
-          ConfigUtility.sendEmail("[OTF-Mapping-Tool] Database QA Results " + deployTitle,
-              from, notificationRecipients, msg.toString(), props,
+          ConfigUtility.sendEmail(
+              "[OTF-Mapping-Tool] Database QA Results " + deployTitle, from,
+              notificationRecipients, msg.toString(), props,
               "true".equals(config.getProperty("mail.smtp.auth")));
 
         }

@@ -56,6 +56,8 @@ public class MapRecordRemoverMojo extends AbstractOtfMappingMojo {
 
     try (final MappingService mappingService = new MappingServiceJpa();) {
 
+      setupBindInfoPackage();
+
       mappingService.setTransactionPerOperation(false);
       mappingService.beginTransaction();
       final Set<MapProject> mapProjects = new HashSet<>();

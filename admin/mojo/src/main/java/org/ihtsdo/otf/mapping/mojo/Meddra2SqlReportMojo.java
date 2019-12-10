@@ -41,8 +41,8 @@ public class Meddra2SqlReportMojo extends AbstractOtfMappingMojo {
   /**
    * Comma delimited list of project ids.
    *
-   * @parameter 
-   * @required 
+   * @parameter
+   * @required
    */
   private String projectIds;
 
@@ -54,6 +54,8 @@ public class Meddra2SqlReportMojo extends AbstractOtfMappingMojo {
   public void execute() throws MojoExecutionException, MojoFailureException {
 
     getLog().info("Start MedDRA SQLReport Mojo");
+
+    setupBindInfoPackage();
 
     if (projectIds.isEmpty()) {
       getLog().error("Parameter projectIds is empty.");

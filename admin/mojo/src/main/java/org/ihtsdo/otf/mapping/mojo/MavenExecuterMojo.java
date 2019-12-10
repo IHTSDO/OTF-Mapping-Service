@@ -42,15 +42,18 @@ public class MavenExecuterMojo extends AbstractOtfMappingMojo {
   private String mavenExecuterConfigFile = null;
 
   /**
-   * 
-   * @throws MojoExecutionException
-   * @throws MojoFailureException
+   * Execute.
+   *
+   * @throws MojoExecutionException the mojo execution exception
+   * @throws MojoFailureException the mojo failure exception
    */
   public void execute() throws MojoExecutionException, MojoFailureException {
 
     Properties config;
 
     try {
+      setupBindInfoPackage();
+
       config = ConfigUtility.getConfigProperties();
     } catch (Exception e) {
       Logger.getLogger(getClass()).error("Error ", e);
@@ -124,8 +127,8 @@ public class MavenExecuterMojo extends AbstractOtfMappingMojo {
         // neither system or config properties
         if (step.getProperties() != null) {
           for (Property prop : step.getProperties()) {
-            p.setProperty(prop.getName(),
-                prop.getValue() + ((prop.getSuffix() != null) ? prop.getSuffix() : ""));
+            p.setProperty(prop.getName(), prop.getValue()
+                + ((prop.getSuffix() != null) ? prop.getSuffix() : ""));
             Logger.getLogger(getClass())
                 .info("Added prop: " + p.getProperty(prop.getName()));
           }
@@ -133,7 +136,7 @@ public class MavenExecuterMojo extends AbstractOtfMappingMojo {
 
         request.setProperties(p);
         request.setDebug(step.getSetDebug());
-        
+
         if (step.getMavenOpts() != null)
           request.setMavenOpts(step.getMavenOpts());
 
@@ -155,7 +158,9 @@ public class MavenExecuterMojo extends AbstractOtfMappingMojo {
   private static class Property {
 
     private String name;
+
     private String value;
+
     private String suffix;
 
     /**
@@ -172,8 +177,7 @@ public class MavenExecuterMojo extends AbstractOtfMappingMojo {
      * @param suffix
      */
     @JsonCreator
-    public Property(
-        @JsonProperty("name") String name,
+    public Property(@JsonProperty("name") String name,
         @JsonProperty("value") String value,
         @JsonProperty("suffix") String suffix) {
       super();
@@ -185,7 +189,7 @@ public class MavenExecuterMojo extends AbstractOtfMappingMojo {
     public String getName() {
       return name;
     }
-    
+
     public void setName(String name) {
       this.name = name;
     }
@@ -193,7 +197,7 @@ public class MavenExecuterMojo extends AbstractOtfMappingMojo {
     public String getValue() {
       return value;
     }
-    
+
     public void setValue(String value) {
       this.value = value;
     }
@@ -201,7 +205,7 @@ public class MavenExecuterMojo extends AbstractOtfMappingMojo {
     public String getSuffix() {
       return suffix;
     }
-    
+
     public void setSuffix(String suffix) {
       this.suffix = suffix;
     }
@@ -213,14 +217,23 @@ public class MavenExecuterMojo extends AbstractOtfMappingMojo {
   private static class MojoConfig {
 
     private Integer stepNumber;
+
     private String log;
+
     private String pomFile;
+
     private List<String> profile = null;
+
     private List<String> goals = null;
+
     private List<Property> systemProperties = null;
+
     private List<Property> configProperties = null;
+
     private List<Property> properties = null;
+
     private Boolean setDebug;
+
     private String mavenOpts;
 
     /**
@@ -232,20 +245,13 @@ public class MavenExecuterMojo extends AbstractOtfMappingMojo {
 
     /**
      * 
-     * @param goals
-     *          Maven goals
-     * @param pomFile
-     *          Location of Maven pom file.
-     * @param setDebug
-     *          Maven debug
-     * @param properties
-     *          Maven mojo properties
-     * @param stepNumber
-     *          Process step number
-     * @param log
-     *          Text to log at start of execution
-     * @param profile
-     *          Maven profiles to execute
+     * @param goals Maven goals
+     * @param pomFile Location of Maven pom file.
+     * @param setDebug Maven debug
+     * @param properties Maven mojo properties
+     * @param stepNumber Process step number
+     * @param log Text to log at start of execution
+     * @param profile Maven profiles to execute
      */
     @JsonCreator
     public MojoConfig(@JsonProperty("stepNumber") Integer stepNumber,
@@ -342,7 +348,7 @@ public class MavenExecuterMojo extends AbstractOtfMappingMojo {
     public void setSetDebug(Boolean setDebug) {
       this.setDebug = setDebug;
     }
-    
+
     public String getMavenOpts() {
       return mavenOpts;
     }

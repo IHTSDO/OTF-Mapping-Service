@@ -1,5 +1,5 @@
 /*
- *    Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.mojo;
 
@@ -50,6 +50,8 @@ public class ComputeWorkflowLoaderMojo extends AbstractOtfMappingMojo {
     getLog().info("Starting compute workflow");
     getLog().info("  refsetId = " + refsetId);
     getLog().info("  sendNotification = " + sendNotification);
+
+    setupBindInfoPackage();
 
     Properties config;
     try {

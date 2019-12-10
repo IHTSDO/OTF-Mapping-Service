@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.util.Map;
@@ -58,6 +61,7 @@ public class TreeposComputerMojo extends AbstractOtfMappingMojo {
     // do nothing
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -71,9 +75,12 @@ public class TreeposComputerMojo extends AbstractOtfMappingMojo {
     getLog().info("  rootIds = " + rootIds);
     getLog().info("  sendNotification = " + sendNotification);
 
+    setupBindInfoPackage();
+
     // check notification parameter requirements
     Properties config;
     try {
+
       config = ConfigUtility.getConfigProperties();
     } catch (Exception e1) {
       throw new MojoFailureException(
@@ -100,36 +107,33 @@ public class TreeposComputerMojo extends AbstractOtfMappingMojo {
       // creating tree positions
       // first get isaRelType from metadata
       final MetadataService metadataService = new MetadataServiceJpa();
-      Map<String, String> hierRelTypeMap =
-          metadataService.getHierarchicalRelationshipTypes(terminology,
-              terminologyVersion);
+      Map<String, String> hierRelTypeMap = metadataService
+          .getHierarchicalRelationshipTypes(terminology, terminologyVersion);
       String isaRelType = hierRelTypeMap.keySet().iterator().next().toString();
 
       getLog().info("Start creating tree positions.");
       metadataService.close();
-      
+
       final ContentService contentService = new ContentServiceJpa();
       // Walk up tree to the root
       // ASSUMPTION: single root
       ValidationResult results = new ValidationResultJpa();
       for (String rootId : rootIds.split(",")) {
-        getLog().info(
-            "  Compute tree from rootId " + rootId + ", " + isaRelType);
-        ValidationResult result =
-            contentService.computeTreePositions(terminology,
-                terminologyVersion, isaRelType, rootId);
+        getLog()
+            .info("  Compute tree from rootId " + rootId + ", " + isaRelType);
+        ValidationResult result = contentService.computeTreePositions(
+            terminology, terminologyVersion, isaRelType, rootId);
         results.merge(result);
       }
       contentService.close();
 
       if (!results.isValid()) {
-        ConfigUtility
-            .sendValidationResultEmail(
-                notificationRecipients,
-                "OTF-Mapping-Tool:  Errors in computing " + terminology + ", "
-                    + terminologyVersion + " hierarchical tree positions",
-                "Hello,\n\nErrors were detected when computing hierarchical tree positions for "
-                    + terminology + ", " + terminologyVersion, results);
+        ConfigUtility.sendValidationResultEmail(notificationRecipients,
+            "OTF-Mapping-Tool:  Errors in computing " + terminology + ", "
+                + terminologyVersion + " hierarchical tree positions",
+            "Hello,\n\nErrors were detected when computing hierarchical tree positions for "
+                + terminology + ", " + terminologyVersion,
+            results);
       }
 
       getLog().info("Done ...");

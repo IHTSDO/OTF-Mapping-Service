@@ -50,6 +50,8 @@ public class ICD10CMSQLReportMojo extends AbstractOtfMappingMojo {
       }
     };) {
 
+      setupBindInfoPackage();
+
       // Obtain an entity manager;
 
       // Run the SQL report

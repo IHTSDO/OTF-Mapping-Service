@@ -51,6 +51,8 @@ public class MapNoteRemoverMojo extends AbstractOtfMappingMojo {
 
     try (final MappingService mappingService = new MappingServiceJpa();) {
 
+      setupBindInfoPackage();
+
       Set<MapProject> mapProjects = new HashSet<>();
 
       getLog().info("Start removing map notes for project - " + refsetId);

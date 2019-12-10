@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.util.HashSet;
@@ -39,6 +42,7 @@ public class ClearWorkflowRemoverMojo extends AbstractOtfMappingMojo {
     }
 
     try {
+      setupBindInfoPackage();
 
       final WorkflowService workflowService = new WorkflowServiceJpa();
       final Set<MapProject> mapProjects = new HashSet<>();
@@ -54,9 +58,8 @@ public class ClearWorkflowRemoverMojo extends AbstractOtfMappingMojo {
 
       // Clear workflow
       for (MapProject mapProject : mapProjects) {
-        getLog().info(
-            "Clearing workflow for " + mapProject.getName() + ", "
-                + mapProject.getId());
+        getLog().info("Clearing workflow for " + mapProject.getName() + ", "
+            + mapProject.getId());
         workflowService.clearWorkflowForMapProject(mapProject);
       }
 

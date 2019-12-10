@@ -69,6 +69,8 @@ public class GenerateDemoDataMojo extends AbstractOtfMappingMojo {
 
     try {
 
+      setupBindInfoPackage();
+
       securityService = new SecurityServiceJpa();
       contentService = new ContentServiceJpa();
       mappingService = new MappingServiceJpa();

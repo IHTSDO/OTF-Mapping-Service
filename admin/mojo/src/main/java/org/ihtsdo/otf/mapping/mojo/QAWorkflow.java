@@ -51,6 +51,8 @@ public class QAWorkflow extends AbstractOtfMappingMojo {
     try (final WorkflowService workflowService = new WorkflowServiceJpa();) {
       List<MapProject> mapProjects = new ArrayList<>();
 
+      setupBindInfoPackage();
+
       if (refsetId == null) {
         mapProjects = workflowService.getMapProjects().getMapProjects();
       } else {

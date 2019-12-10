@@ -3,7 +3,6 @@
  */
 package org.ihtsdo.otf.mapping.mojo;
 
-
 import org.apache.maven.plugin.MojoExecutionException;
 import org.ihtsdo.otf.mapping.jpa.handlers.ReleaseHandlerJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
@@ -44,6 +43,8 @@ public class ReleaseBeginMojo extends AbstractOtfMappingMojo {
     getLog().info("Begin RF2 release");
     getLog().info("  refsetId = " + refsetId);
     getLog().info("  testModeFlag = " + testModeFlag);
+
+    setupBindInfoPackage();
 
     if (refsetId == null) {
       throw new MojoExecutionException("You must specify a ref set id");

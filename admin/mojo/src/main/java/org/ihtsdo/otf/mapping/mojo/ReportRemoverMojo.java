@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.text.DateFormat;
@@ -53,6 +56,7 @@ public class ReportRemoverMojo extends AbstractOtfMappingMojo {
     getLog().info("  endDate = " + endDate);
 
     try {
+      setupBindInfoPackage();
 
       // check params
       if (refsetId == null && startDate == null && endDate == null) {

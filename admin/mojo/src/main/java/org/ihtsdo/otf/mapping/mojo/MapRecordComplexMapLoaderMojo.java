@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.util.HashSet;
@@ -37,6 +40,7 @@ public class MapRecordComplexMapLoaderMojo extends AbstractOtfMappingMojo {
     getLog().info("  refsetId = " + refsetId);
 
     try {
+      setupBindInfoPackage();
 
       MappingService mappingService = new MappingServiceJpa();
       Set<MapProject> mapProjects = new HashSet<>();
@@ -52,9 +56,8 @@ public class MapRecordComplexMapLoaderMojo extends AbstractOtfMappingMojo {
 
       // Generate members
       for (MapProject mapProject : mapProjects) {
-        getLog().info(
-            "  Generating records for " + mapProject.getName() + ", "
-                + mapProject.getId());
+        getLog().info("  Generating records for " + mapProject.getName() + ", "
+            + mapProject.getId());
         mappingService.createMapRecordsForMapProject(mapProject.getId(),
             WorkflowStatus.PUBLISHED);
       }

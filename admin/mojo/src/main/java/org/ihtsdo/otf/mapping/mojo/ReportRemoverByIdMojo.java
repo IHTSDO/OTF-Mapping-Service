@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
 import org.apache.maven.plugin.MojoExecutionException;
@@ -15,7 +18,6 @@ import org.ihtsdo.otf.mapping.services.ReportService;
  * @phase package
  */
 public class ReportRemoverByIdMojo extends AbstractOtfMappingMojo {
-
 
   /**
    * Starting id
@@ -41,21 +43,20 @@ public class ReportRemoverByIdMojo extends AbstractOtfMappingMojo {
     getLog().info("  endId = " + endId);
 
     try {
+      setupBindInfoPackage();
 
       // check params
       if (startId == null && endId == null) {
-        throw new Exception(
-            "This call will delete all reports.");
+        throw new Exception("This call will delete all reports.");
       }
-
-      
 
       MappingService mappingService = new MappingServiceJpa();
 
       // Remove reports
       ReportService reportService = new ReportServiceJpa();
-      
-      reportService.removeReportsForIdRange(Long.parseLong(startId), Long.parseLong(endId));
+
+      reportService.removeReportsForIdRange(Long.parseLong(startId),
+          Long.parseLong(endId));
 
       mappingService.close();
       reportService.close();

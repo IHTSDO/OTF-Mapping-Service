@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.BufferedWriter;
@@ -42,6 +45,7 @@ public class MapProjectDataExportMojo extends AbstractOtfMappingMojo {
     // Do nothing
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -53,6 +57,8 @@ public class MapProjectDataExportMojo extends AbstractOtfMappingMojo {
     getLog().info("  outputDir = " + outputDir);
 
     try {
+
+      setupBindInfoPackage();
 
       File outputDirFile = new File(outputDir);
       if (!outputDirFile.exists()) {
@@ -75,20 +81,17 @@ public class MapProjectDataExportMojo extends AbstractOtfMappingMojo {
         if (!scopeIncludesFile.exists()) {
           scopeIncludesFile.createNewFile();
         }
-        BufferedWriter scopeIncludesWriter =
-            new BufferedWriter(new FileWriter(
-                scopeIncludesFile.getAbsoluteFile()));
+        BufferedWriter scopeIncludesWriter = new BufferedWriter(
+            new FileWriter(scopeIncludesFile.getAbsoluteFile()));
 
-        File scopeExcludesFile =
-            new File(outputDirFile, "Project" + mpr.getId()
-                + "ScopeExcludes.txt");
+        File scopeExcludesFile = new File(outputDirFile,
+            "Project" + mpr.getId() + "ScopeExcludes.txt");
         // if file doesn't exist, then create it
         if (!scopeExcludesFile.exists()) {
           scopeExcludesFile.createNewFile();
         }
-        BufferedWriter scopeExcludesWriter =
-            new BufferedWriter(new FileWriter(
-                scopeExcludesFile.getAbsoluteFile()));
+        BufferedWriter scopeExcludesWriter = new BufferedWriter(
+            new FileWriter(scopeExcludesFile.getAbsoluteFile()));
 
         for (String concept : mpr.getScopeConcepts()) {
           scopeIncludesWriter.write(concept + "\n");

@@ -47,7 +47,8 @@ public class LuceneReindexMojo extends AbstractTerminologyLoaderMojo {
     getLog().info("  Expect server up = " + server);
 
     try {
-
+      setupBindInfoPackage();
+      
       // Track system level information
       setProcessStartTime();
 
