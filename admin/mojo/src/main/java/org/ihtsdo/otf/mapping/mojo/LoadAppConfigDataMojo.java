@@ -120,6 +120,8 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
     getLog().info("Load App Config Data Started");
 
     try {
+      setupBindInfoPackage();
+
       loadConfigData();
       getLog().info("Load App Config Data Finished");
 
@@ -134,8 +136,7 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
   /**
    * Load configuration data.
    *
-   * @throws Exception
-   *           the exception
+   * @throws Exception the exception
    */
   private void loadConfigData() throws Exception {
 
@@ -167,9 +168,9 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
     if (principleConfigFile != null
         && Files.exists(Paths.get(configFileRoot + principleConfigFile))) {
       getLog().info("  loading " + configFileRoot + principleConfigFile);
-      MapPrinciple[] principles = mapper.readValue(
-          new File(configFileRoot + principleConfigFile),
-          MapPrincipleJpa[].class);
+      MapPrinciple[] principles =
+          mapper.readValue(new File(configFileRoot + principleConfigFile),
+              MapPrincipleJpa[].class);
       loadPrinciples(principles);
     }
 
@@ -184,36 +185,36 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
     if (ageRangeConfigFile != null
         && Files.exists(Paths.get(configFileRoot + ageRangeConfigFile))) {
       getLog().info("  loading " + configFileRoot + ageRangeConfigFile);
-      MapAgeRange[] ageRanges = mapper.readValue(
-          new File(configFileRoot + ageRangeConfigFile),
-          MapAgeRangeJpa[].class);
+      MapAgeRange[] ageRanges =
+          mapper.readValue(new File(configFileRoot + ageRangeConfigFile),
+              MapAgeRangeJpa[].class);
       loadAgeRange(ageRanges);
     }
 
     if (relationConfigFile != null
         && Files.exists(Paths.get(configFileRoot + relationConfigFile))) {
       getLog().info("  loading " + configFileRoot + relationConfigFile);
-      MapRelation[] relations = mapper.readValue(
-          new File(configFileRoot + relationConfigFile),
-          MapRelationJpa[].class);
+      MapRelation[] relations =
+          mapper.readValue(new File(configFileRoot + relationConfigFile),
+              MapRelationJpa[].class);
       loadRelation(relations);
     }
 
     if (reportConfigFile != null
         && Files.exists(Paths.get(configFileRoot + reportConfigFile))) {
       getLog().info("  loading " + configFileRoot + reportConfigFile);
-      ReportDefinition[] reportsConfig = mapper.readValue(
-          new File(configFileRoot + reportConfigFile),
-          ReportDefinitionJpa[].class);
+      ReportDefinition[] reportsConfig =
+          mapper.readValue(new File(configFileRoot + reportConfigFile),
+              ReportDefinitionJpa[].class);
       loadReports(reportsConfig);
     }
 
     if (projectConfigFile != null
         && Files.exists(Paths.get(configFileRoot + projectConfigFile))) {
       getLog().info(" loading " + configFileRoot + projectConfigFile);
-      MapProjectConfiguration[] mapProjectsConfig = mapper.readValue(
-          new File(configFileRoot + projectConfigFile),
-          MapProjectConfiguration[].class);
+      MapProjectConfiguration[] mapProjectsConfig =
+          mapper.readValue(new File(configFileRoot + projectConfigFile),
+              MapProjectConfiguration[].class);
       loadProjects(mapProjectsConfig);
     }
 
@@ -221,17 +222,17 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
 
   // Mapping Projects
   private void loadProjects(MapProjectConfiguration[] mapProjectsConfig)
-      throws Exception {
+    throws Exception {
 
     try (MappingService mappingService = new MappingServiceJpa();
         ReportService reportService = new ReportServiceJpa()) {
 
       mappingService.setTransactionPerOperation(false);
 
-      final ReportDefinitionList existingReports = reportService
-          .getReportDefinitions();
-      final List<MapProject> mapProjects = mappingService.getMapProjects()
-          .getMapProjects();
+      final ReportDefinitionList existingReports =
+          reportService.getReportDefinitions();
+      final List<MapProject> mapProjects =
+          mappingService.getMapProjects().getMapProjects();
 
       for (MapProjectConfiguration mapProject : mapProjectsConfig) {
         getLog().info("Map Project json:" + mapper
@@ -285,8 +286,8 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
           }
 
           if (mapProject.getEditingCycleBeginDate() != null) {
-            final SimpleDateFormat dateFormat = new SimpleDateFormat(
-                mapProject.getDateFormat());
+            final SimpleDateFormat dateFormat =
+                new SimpleDateFormat(mapProject.getDateFormat());
             project.setEditingCycleBeginDate(
                 dateFormat.parse(mapProject.getEditingCycleBeginDate()));
           }
@@ -350,8 +351,8 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
     try (MappingService mappingService = new MappingServiceJpa();) {
       getLog().info("  loading PrincipleConfigFile");
 
-      List<MapPrinciple> mapPrinciples = mappingService.getMapPrinciples()
-          .getMapPrinciples();
+      List<MapPrinciple> mapPrinciples =
+          mappingService.getMapPrinciples().getMapPrinciples();
 
       for (MapPrinciple principleDef : principles) {
         getLog().info("MapPrinciple json:" + mapper
@@ -379,8 +380,8 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
 
       getLog().info("  loading ReportDefinitionConfig");
 
-      List<ReportDefinition> reportDefinitions = reportService
-          .getReportDefinitions().getReportDefinitions();
+      List<ReportDefinition> reportDefinitions =
+          reportService.getReportDefinitions().getReportDefinitions();
 
       for (ReportDefinition reportDef : reports) {
         getLog().info("ReportDefinition json:" + mapper
@@ -461,8 +462,8 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
     try (MappingService mappingService = new MappingServiceJpa();) {
       getLog().info("  loading AdviceConfigFile");
 
-      List<MapAdvice> mapAdvices = mappingService.getMapAdvices()
-          .getMapAdvices();
+      List<MapAdvice> mapAdvices =
+          mappingService.getMapAdvices().getMapAdvices();
 
       for (MapAdvice adviceDef : advices) {
         getLog().info("MapAdvice json:" + mapper
@@ -489,8 +490,8 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
     try (MappingService mappingService = new MappingServiceJpa();) {
       getLog().info("  loading RelationConfigFile");
 
-      List<MapRelation> mapRelations = mappingService.getMapRelations()
-          .getMapRelations();
+      List<MapRelation> mapRelations =
+          mappingService.getMapRelations().getMapRelations();
 
       for (MapRelation relationDef : relations) {
         getLog().info("MapRelation json:" + mapper
@@ -518,8 +519,8 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
     try (MappingService mappingService = new MappingServiceJpa();) {
       getLog().info("  loading AgeRangeConfigFile");
 
-      List<MapAgeRange> mapAgeRanges = mappingService.getMapAgeRanges()
-          .getMapAgeRanges();
+      List<MapAgeRange> mapAgeRanges =
+          mappingService.getMapAgeRanges().getMapAgeRanges();
 
       for (MapAgeRange ageRangeDef : ageRanges) {
         getLog().info("MapAgeRange json:" + mapper
@@ -544,7 +545,7 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
   }
 
   private boolean containsMapPrinciple(List<MapPrinciple> mapPrinciples,
-      String mapPrincipleName) {
+    String mapPrincipleName) {
     if (mapPrinciples == null || mapPrincipleName == null) {
       return false;
     } else {
@@ -558,7 +559,7 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
   }
 
   private boolean containsMapAdvice(List<MapAdvice> mapAdvices,
-      String mapAdviceName) {
+    String mapAdviceName) {
     if (mapAdvices == null || mapAdviceName == null) {
       return false;
     } else {
@@ -572,7 +573,7 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
   }
 
   private boolean containsMapRelation(List<MapRelation> mapRelations,
-      String mapRelationName) {
+    String mapRelationName) {
     if (mapRelations == null || mapRelationName == null) {
       return false;
     } else {
@@ -586,7 +587,7 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
   }
 
   private boolean containsMapAgeRange(List<MapAgeRange> mapAgeRanges,
-      String mapAgeRangeName) {
+    String mapAgeRangeName) {
     if (mapAgeRanges == null || mapAgeRangeName == null) {
       return false;
     } else {
@@ -600,7 +601,7 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
   }
 
   private boolean containsReportDefintion(
-      List<ReportDefinition> reportDefintions, String reportName) {
+    List<ReportDefinition> reportDefintions, String reportName) {
     if (reportDefintions == null || reportName == null) {
       return false;
     } else {
@@ -614,7 +615,7 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
   }
 
   private boolean containsMapProject(List<MapProject> mapProjects,
-      String mapProjectName) {
+    String mapProjectName) {
     if (mapProjectName == null || mapProjects == null) {
       return false;
     } else {

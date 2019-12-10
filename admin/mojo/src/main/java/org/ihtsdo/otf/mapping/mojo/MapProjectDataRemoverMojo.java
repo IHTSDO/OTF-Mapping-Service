@@ -49,6 +49,8 @@ public class MapProjectDataRemoverMojo extends AbstractOtfMappingMojo {
     try (MappingService mappingService = new MappingServiceJpa();
         ReportService reportService = new ReportServiceJpa();) {
 
+      setupBindInfoPackage();
+
       // Remove map projects
       for (MapProject p : mappingService.getMapProjects().getIterable()) {
         getLog().info("  Remove map project - " + p.getName());

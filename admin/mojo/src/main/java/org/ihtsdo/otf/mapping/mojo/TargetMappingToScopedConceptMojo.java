@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.util.HashSet;
@@ -42,9 +45,12 @@ public class TargetMappingToScopedConceptMojo extends AbstractOtfMappingMojo {
    */
   private String targetMapProjectName;
 
+  /* see superclass */
   public void execute() throws MojoExecutionException, MojoFailureException {
 
     try {
+      setupBindInfoPackage();
+
       transfer();
     } catch (MojoExecutionException me) {
       throw me;
@@ -92,8 +98,8 @@ public class TargetMappingToScopedConceptMojo extends AbstractOtfMappingMojo {
 
       if (newScopeConceptList != null && !newScopeConceptList.isEmpty()) {
         // upload code as scope concepts to other project
-        final Set<String> oldScopedConceptList = new HashSet<>(
-            targetMapProject.getScopeConcepts());
+        final Set<String> oldScopedConceptList =
+            new HashSet<>(targetMapProject.getScopeConcepts());
 
         for (String oldScopedConcept : oldScopedConceptList) {
           Logger.getLogger(getClass()).info("Removing scoped concept "
@@ -101,10 +107,12 @@ public class TargetMappingToScopedConceptMojo extends AbstractOtfMappingMojo {
           targetMapProject.removeScopeConcept(oldScopedConcept);
           mappingService.updateMapProject(targetMapProject);
         }
-        
-        for (Map.Entry<String, String> newScopedConcept : newScopeConceptList.entrySet()) {
-          Logger.getLogger(getClass()).info("Adding scoped concept "
-              + newScopedConcept.getKey() + " to target map project id: " + targetMapProject.getId());
+
+        for (Map.Entry<String, String> newScopedConcept : newScopeConceptList
+            .entrySet()) {
+          Logger.getLogger(getClass())
+              .info("Adding scoped concept " + newScopedConcept.getKey()
+                  + " to target map project id: " + targetMapProject.getId());
           targetMapProject.addScopeConcept(newScopedConcept.getKey());
           mappingService.updateMapProject(targetMapProject);
         }
@@ -113,23 +121,26 @@ public class TargetMappingToScopedConceptMojo extends AbstractOtfMappingMojo {
         Logger.getLogger(getClass()).info("Computing workflow for "
             + targetMapProject.getName() + ", " + targetMapProject.getId());
         workflowService.computeWorkflow(targetMapProject);
-        
+
         workflowService.beginTransaction();
-        Logger.getLogger(getClass()).info("Updating tracking records for mapProjectId: " + targetMapProject.getId());
+        Logger.getLogger(getClass())
+            .info("Updating tracking records for mapProjectId: "
+                + targetMapProject.getId());
         for (Map.Entry<String, String> newScopedConcept : newScopeConceptList
             .entrySet()) {
-          
-            Logger.getLogger(getClass())
-                .info("Updating tracking record - terminologyId: " + newScopedConcept.getKey()
-                    + " with team name: " + newScopedConcept.getValue() + " in target map project.");
-            
-            TrackingRecord tr = workflowService
-                .getTrackingRecord(targetMapProject, newScopedConcept.getKey());
-  
-            if (tr != null) {             
-              tr.setAssignedTeamName(newScopedConcept.getValue());
-              workflowService.updateTrackingRecord(tr);
-            }
+
+          Logger.getLogger(getClass())
+              .info("Updating tracking record - terminologyId: "
+                  + newScopedConcept.getKey() + " with team name: "
+                  + newScopedConcept.getValue() + " in target map project.");
+
+          TrackingRecord tr = workflowService
+              .getTrackingRecord(targetMapProject, newScopedConcept.getKey());
+
+          if (tr != null) {
+            tr.setAssignedTeamName(newScopedConcept.getValue());
+            workflowService.updateTrackingRecord(tr);
+          }
 
         }
         workflowService.commit();

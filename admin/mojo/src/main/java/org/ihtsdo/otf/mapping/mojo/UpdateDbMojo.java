@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
 import org.apache.maven.plugin.MojoFailureException;
@@ -22,6 +25,7 @@ public class UpdateDbMojo extends AbstractOtfMappingMojo {
     // do nothing
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -31,6 +35,8 @@ public class UpdateDbMojo extends AbstractOtfMappingMojo {
   public void execute() throws MojoFailureException {
     getLog().info("Start updating database schema");
     try {
+      setupBindInfoPackage();
+
       // Trigger a JPA event
       new ContentServiceJpa().close();
       getLog().info("done ...");

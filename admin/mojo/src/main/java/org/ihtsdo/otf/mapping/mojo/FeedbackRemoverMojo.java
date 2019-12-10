@@ -53,6 +53,8 @@ public class FeedbackRemoverMojo extends AbstractOtfMappingMojo {
 
     try (final WorkflowService workflowService = new WorkflowServiceJpa();) {
 
+      setupBindInfoPackage();
+
       workflowService.setTransactionPerOperation(false);
       workflowService.beginTransaction();
       final Set<MapProject> mapProjects = new HashSet<>();

@@ -1,5 +1,5 @@
 /*
- * 
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.mojo;
 
@@ -18,82 +18,85 @@ import org.ihtsdo.otf.mapping.rest.impl.ContentServiceRestImpl;
  */
 public class TerminologyRf2DeltaLoader extends AbstractTerminologyLoaderMojo {
 
-	/**
-	 * Whether to run this mojo against an active server.
-	 * 
-	 * @parameter
-	 */
-	private boolean server = false;
+  /**
+   * Whether to run this mojo against an active server.
+   * 
+   * @parameter
+   */
+  private boolean server = false;
 
-	/**
-	 * The input directory
-	 * 
-	 * @parameter
-	 * @required
-	 */
-	private String inputDir;
+  /**
+   * The input directory
+   * 
+   * @parameter
+   * @required
+   */
+  private String inputDir;
 
-	/**
-	 * Name of terminology to be loaded.
-	 * 
-	 * @parameter
-	 * @required
-	 */
-	private String terminology;
+  /**
+   * Name of terminology to be loaded.
+   * 
+   * @parameter
+   * @required
+   */
+  private String terminology;
 
-	/**
-	 * Requirement to have the last publication version passed in. This is used
-	 * for the "remove retired concepts" routine.
-	 * 
-	 * @parameter
-	 */
-	private String lastPublicationDate;
+  /**
+   * Requirement to have the last publication version passed in. This is used
+   * for the "remove retired concepts" routine.
+   * 
+   * @parameter
+   */
+  private String lastPublicationDate;
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.apache.maven.plugin.Mojo#execute()
-	 */
-	@Override
-	public void execute() throws MojoFailureException {
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.apache.maven.plugin.Mojo#execute()
+   */
+  @Override
+  public void execute() throws MojoFailureException {
 
-		// Create and configure services and variables and open files
-		getLog().info("Run delta loader");
-		getLog().info("    terminology         = " + terminology);
-		getLog().info("    lastPublicationDate = " + lastPublicationDate);
+    // Create and configure services and variables and open files
+    getLog().info("Run delta loader");
+    getLog().info("    terminology         = " + terminology);
+    getLog().info("    lastPublicationDate = " + lastPublicationDate);
 
-		try {
+    try {
 
-			// Track system level information
-			setProcessStartTime();
+      setupBindInfoPackage();
+      
+      // Track system level information
+      setProcessStartTime();
 
-			// throws exception if server is required but not running.
-			// or if server is not required but running.
-			validateServerStatus(server);
+      // throws exception if server is required but not running.
+      // or if server is not required but running.
+      validateServerStatus(server);
 
-			if (serverRunning != null && !serverRunning) {
-				getLog().info("Running directly");
+      if (serverRunning != null && !serverRunning) {
+        getLog().info("Running directly");
 
-				ContentServiceRestImpl service = new ContentServiceRestImpl();
-				service.loadTerminologyRf2Delta(terminology,
-						lastPublicationDate, inputDir, getAuthToken());
+        ContentServiceRestImpl service = new ContentServiceRestImpl();
+        service.loadTerminologyRf2Delta(terminology, lastPublicationDate,
+            inputDir, getAuthToken());
 
-			} else {
-				getLog().info("Running against server");
+      } else {
+        getLog().info("Running against server");
 
-				// invoke the client
-				ContentClientRest client = new ContentClientRest(properties);
-				client.loadTerminologyRf2Delta(terminology, lastPublicationDate,
-						inputDir, getAuthToken());
-			}
+        // invoke the client
+        ContentClientRest client = new ContentClientRest(properties);
+        client.loadTerminologyRf2Delta(terminology, lastPublicationDate,
+            inputDir, getAuthToken());
+      }
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new MojoFailureException("Unexpected exception:", e);
-		} finally {
-			getLog().info("      elapsed time = " + getTotalElapsedTimeStr());
-			getLog().info("done ...");
-		}
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new MojoFailureException("Unexpected exception:", e);
+    } finally {
+      getLog().info("      elapsed time = " + getTotalElapsedTimeStr());
+      getLog().info("done ...");
+    }
 
-	}
+  }
 }

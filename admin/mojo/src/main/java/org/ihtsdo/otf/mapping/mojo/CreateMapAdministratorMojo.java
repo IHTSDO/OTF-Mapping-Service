@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
 import javax.persistence.NoResultException;
@@ -47,6 +50,8 @@ public class CreateMapAdministratorMojo extends AbstractOtfMappingMojo {
           "You must specify a user name to serve as project administrator");
 
     try {
+
+      setupBindInfoPackage();
 
       MappingService mappingService = new MappingServiceJpa();
 

@@ -1,5 +1,5 @@
 /*
- *    Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.mojo;
 
@@ -17,88 +17,89 @@ import org.ihtsdo.otf.mapping.rest.impl.ContentServiceRestImpl;
  */
 public class TerminologyGmdnLoaderMojo extends AbstractTerminologyLoaderMojo {
 
-	/**
-	 * Whether to run this mojo against an active server.
-	 * @parameter 
-	 */
-	private boolean server = false;
-	
-	/**
-	 * The input dir.
-	 *
-	 * @parameter
-	 * @required
-	 */
-	private String inputDir;
+  /**
+   * Whether to run this mojo against an active server.
+   * @parameter
+   */
+  private boolean server = false;
 
-	/**
-	 * Name of terminology to be loaded.
-	 * 
-	 * @parameter
-	 * @required
-	 */
-	private String terminology;
+  /**
+   * The input dir.
+   *
+   * @parameter
+   * @required
+   */
+  private String inputDir;
 
-	/**
-	 * Terminology version.
-	 *
-	 * @parameter
-	 * @required
-	 */
-	private String version;
+  /**
+   * Name of terminology to be loaded.
+   * 
+   * @parameter
+   * @required
+   */
+  private String terminology;
 
-	/**
-	 * Instantiates a {@link TerminologyGmdnLoaderMojo} from the specified
-	 * parameters.
-	 */
-	public TerminologyGmdnLoaderMojo() {
-		super();
-		// do nothing
-	}
+  /**
+   * Terminology version.
+   *
+   * @parameter
+   * @required
+   */
+  private String version;
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.apache.maven.plugin.Mojo#execute()
-	 */
-	@Override
-	public void execute() throws MojoFailureException {
-		getLog().info("Starting loading GMDN terminology");
-		getLog().info("  inputDir    = " + inputDir);
-		getLog().info("  terminology = " + terminology);
-		getLog().info("  version     = " + version);
+  /**
+   * Instantiates a {@link TerminologyGmdnLoaderMojo} from the specified
+   * parameters.
+   */
+  public TerminologyGmdnLoaderMojo() {
+    super();
+    // do nothing
+  }
 
-		try {
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.apache.maven.plugin.Mojo#execute()
+   */
+  @Override
+  public void execute() throws MojoFailureException {
+    getLog().info("Starting loading GMDN terminology");
+    getLog().info("  inputDir    = " + inputDir);
+    getLog().info("  terminology = " + terminology);
+    getLog().info("  version     = " + version);
 
-			// Track system level information
-			setProcessStartTime();
+    try {
 
-			// throws exception if server is required but not running.
-			// or if server is not required but running.
-			validateServerStatus(server);
+      setupBindInfoPackage();
 
-			if (serverRunning != null && !serverRunning) {
-				getLog().info("Running directly");
+      // Track system level information
+      setProcessStartTime();
 
-				ContentServiceRestImpl service = new ContentServiceRestImpl();
-				service.loadTerminologyGmdn(version, inputDir,
-						getAuthToken());
+      // throws exception if server is required but not running.
+      // or if server is not required but running.
+      validateServerStatus(server);
 
-			} else {
-				getLog().info("Running against server");
+      if (serverRunning != null && !serverRunning) {
+        getLog().info("Running directly");
 
-				// invoke the client
-				ContentClientRest client = new ContentClientRest(properties);
-				client.loadTerminologyGmdn(version, inputDir,
-						getAuthToken());
-			}
+        ContentServiceRestImpl service = new ContentServiceRestImpl();
+        service.loadTerminologyGmdn(version, inputDir, getAuthToken());
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new MojoFailureException("Unexpected exception:", e);
-		} finally {
-			getLog().info("      elapsed time = " + getTotalElapsedTimeStr());
-			getLog().info("done ...");
-		}
-	}
+      } else {
+        getLog().info("Running against server");
+
+        // invoke the client
+        ContentClientRest client = new ContentClientRest(properties);
+        client.loadTerminologyGmdn(version, inputDir, getAuthToken());
+      }
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new MojoFailureException("Unexpected exception:", e);
+    } finally {
+      getLog().info("      elapsed time = " + getTotalElapsedTimeStr());
+      getLog().info("done ...");
+    }
+  }
 }

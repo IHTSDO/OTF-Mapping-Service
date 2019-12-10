@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.File;
@@ -63,6 +66,7 @@ public class ReleaseProcessingMojo extends AbstractOtfMappingMojo {
    */
   private boolean testModeFlag = false;
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -76,6 +80,8 @@ public class ReleaseProcessingMojo extends AbstractOtfMappingMojo {
     getLog().info("  effectiveTime = " + effectiveTime);
     getLog().info("  moduleId = " + moduleId);
     getLog().info("  testModeFlag = " + testModeFlag);
+
+    setupBindInfoPackage();
 
     // Check preconditions
     if (refsetId == null) {
@@ -94,8 +100,8 @@ public class ReleaseProcessingMojo extends AbstractOtfMappingMojo {
 
     File outputDirFile = new File(outputDir);
     if (!outputDirFile.isDirectory())
-      throw new MojoExecutionException("Output file directory (" + outputDir
-          + ") could not be found.");
+      throw new MojoExecutionException(
+          "Output file directory (" + outputDir + ") could not be found.");
 
     if (effectiveTime == null)
       throw new MojoExecutionException("You must specify a release time");
@@ -146,9 +152,8 @@ public class ReleaseProcessingMojo extends AbstractOtfMappingMojo {
         releaseHandler.setMapRecords(mapRecords);
       }
       // call release handler with specific records
-      getLog().info(
-          "  Handle project " + mapProject.getName() + ", "
-              + mapProject.getId());
+      getLog().info("  Handle project " + mapProject.getName() + ", "
+          + mapProject.getId());
       releaseHandler.processRelease();
 
       getLog().info("done ...");

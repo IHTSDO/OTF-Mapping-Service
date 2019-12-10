@@ -1,18 +1,5 @@
-/**
- * Copyright (c) 2012 International Health Terminology Standards Development
- * Organisation
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.mojo;
 
@@ -31,86 +18,88 @@ import org.ihtsdo.otf.mapping.rest.impl.ContentServiceRestImpl;
  */
 public class TerminologyRemoverMojo extends AbstractTerminologyLoaderMojo {
 
-	/**
-	 * Whether to run this mojo against an active server.
-	 * @parameter 
-	 */
-	private boolean server = false;
-	
-	/**
-	 * Name of terminology to be loaded.
-	 * 
-	 * @parameter
-	 * @required
-	 */
-	protected String terminology;
+  /**
+   * Whether to run this mojo against an active server.
+   * @parameter
+   */
+  private boolean server = false;
 
-	/**
-	 * Version of terminology to be loaded.
-	 * 
-	 * @parameter
-	 * @required
-	 */
-	protected String version;
+  /**
+   * Name of terminology to be loaded.
+   * 
+   * @parameter
+   * @required
+   */
+  protected String terminology;
 
-	/**
-	 * Whether to send email notification of any errors. Default is false.
-	 * 
-	 * @parameter
-	 */
-	protected boolean sendNotification = false;
+  /**
+   * Version of terminology to be loaded.
+   * 
+   * @parameter
+   * @required
+   */
+  protected String version;
 
-	/**
-	 * Instantiates a {@link TerminologyRemoverMojo} from the specified
-	 * parameters.
-	 * 
-	 */
-	public TerminologyRemoverMojo() {
-		super();
-		// do nothing
-	}
+  /**
+   * Whether to send email notification of any errors. Default is false.
+   * 
+   * @parameter
+   */
+  protected boolean sendNotification = false;
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.apache.maven.plugin.Mojo#execute()
-	 */
-	@Override
-	public void execute() throws MojoFailureException {
+  /**
+   * Instantiates a {@link TerminologyRemoverMojo} from the specified
+   * parameters.
+   * 
+   */
+  public TerminologyRemoverMojo() {
+    super();
+    // do nothing
+  }
 
-		getLog().info("Starting removing terminology");
-		getLog().info("  terminology = " + terminology);
-		getLog().info("  version     = " + version);
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.apache.maven.plugin.Mojo#execute()
+   */
+  @Override
+  public void execute() throws MojoFailureException {
 
-		try {
+    getLog().info("Starting removing terminology");
+    getLog().info("  terminology = " + terminology);
+    getLog().info("  version     = " + version);
 
-			// Track system level information
-			setProcessStartTime();
+    try {
 
-			// throws exception if server is required but not running.
-			// or if server is not required but running.
-			validateServerStatus(server);
+      setupBindInfoPackage();
 
-			if (serverRunning != null && !serverRunning) {
-				getLog().info("Running directly");
+      // Track system level information
+      setProcessStartTime();
 
-				ContentServiceRestImpl service = new ContentServiceRestImpl();
-				service.removeTerminology(terminology, version, getAuthToken());
+      // throws exception if server is required but not running.
+      // or if server is not required but running.
+      validateServerStatus(server);
 
-			} else {
-				getLog().info("Running against server");
+      if (serverRunning != null && !serverRunning) {
+        getLog().info("Running directly");
 
-				// invoke the client
-				ContentClientRest client = new ContentClientRest(properties);
-				client.removeTerminology(terminology, version, getAuthToken());
-			}
+        ContentServiceRestImpl service = new ContentServiceRestImpl();
+        service.removeTerminology(terminology, version, getAuthToken());
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new MojoFailureException("Unexpected exception:", e);
-		} finally {
-			getLog().info("      elapsed time = " + getTotalElapsedTimeStr());
-			getLog().info("Done removing terminology");
-		}
-	}
+      } else {
+        getLog().info("Running against server");
+
+        // invoke the client
+        ContentClientRest client = new ContentClientRest(properties);
+        client.removeTerminology(terminology, version, getAuthToken());
+      }
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new MojoFailureException("Unexpected exception:", e);
+    } finally {
+      getLog().info("      elapsed time = " + getTotalElapsedTimeStr());
+      getLog().info("Done removing terminology");
+    }
+  }
 }

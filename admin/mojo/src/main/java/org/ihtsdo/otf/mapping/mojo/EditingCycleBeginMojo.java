@@ -58,7 +58,9 @@ public class EditingCycleBeginMojo extends AbstractOtfMappingMojo {
     }
 
     try (final MappingService mappingService = new MappingServiceJpa();) {
-      
+
+      setupBindInfoPackage();
+
       MapProject mapProject = null;
       for (MapProject project : mappingService.getMapProjects().getIterable()) {
         if (project.getRefSetId().equals(refsetId)) {
@@ -67,7 +69,8 @@ public class EditingCycleBeginMojo extends AbstractOtfMappingMojo {
         }
       }
       if (mapProject == null) {
-        throw new Exception("Unable to find map project for refset " + refsetId);
+        throw new Exception(
+            "Unable to find map project for refset " + refsetId);
       }
 
       //
@@ -78,9 +81,8 @@ public class EditingCycleBeginMojo extends AbstractOtfMappingMojo {
 
       // Begin the release
       BeginEditingCycleHandler handler = new BeginEditingCycleHandlerJpa();
-      getLog().info(
-          "  Handle project " + mapProject.getName() + ", "
-              + mapProject.getId());
+      getLog().info("  Handle project " + mapProject.getName() + ", "
+          + mapProject.getId());
       handler.setMapProject(mapProject);
       handler.beginEditingCycle();
 

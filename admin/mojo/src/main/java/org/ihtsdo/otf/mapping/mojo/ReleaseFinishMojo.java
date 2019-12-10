@@ -63,6 +63,8 @@ public class ReleaseFinishMojo extends AbstractOtfMappingMojo {
     getLog().info("  inputFile = " + inputFile);
     getLog().info("  testModeFlag = " + testModeFlag);
 
+    setupBindInfoPackage();
+
     if (refsetId == null) {
       throw new MojoExecutionException("You must specify a ref set id");
     }

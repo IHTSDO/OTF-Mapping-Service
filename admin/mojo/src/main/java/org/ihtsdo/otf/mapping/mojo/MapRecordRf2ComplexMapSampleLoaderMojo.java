@@ -37,7 +37,8 @@ import org.ihtsdo.otf.mapping.services.helpers.FileSorter;
  * @goal load-rf2-complex-map-sample
  * @phase package
  */
-public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractOtfMappingMojo {
+public class MapRecordRf2ComplexMapSampleLoaderMojo
+    extends AbstractOtfMappingMojo {
 
   /**
    * The input file
@@ -73,6 +74,8 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo extends AbstractOtfMappingMo
     getLog().info("  samplingRate = " + samplingRate);
 
     try {
+      setupBindInfoPackage();
+
       float rate = Float.parseFloat(samplingRate);
 
       // Bail if sampling percentage not in range (0, 1]

@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.BufferedReader;
@@ -10,15 +13,15 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+
 import nu.xom.Attribute;
 import nu.xom.Document;
 import nu.xom.Element;
 import nu.xom.Elements;
 import nu.xom.Serializer;
-
-import org.apache.log4j.Logger;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 
 /**
  * Converts ICD10 ASC file to ICD10CM-style XML.
@@ -66,7 +69,7 @@ public class AscToXmlMojo extends AbstractOtfMappingMojo {
   String documentTitle;
 
   /**
-   * Tracks header columns for table-sytle data.
+   * Tracks header columns for table-style data.
    * 
    * @parameter
    */
@@ -98,6 +101,8 @@ public class AscToXmlMojo extends AbstractOtfMappingMojo {
 
     try {
 
+      setupBindInfoPackage();
+
       // set the input directory
       String baseDir = inputDir + "/" + terminology + "/" + terminologyVersion;
       inputDir = baseDir + "/asc";
@@ -127,9 +132,8 @@ public class AscToXmlMojo extends AbstractOtfMappingMojo {
       // Set parent to root
       Element parent = root;
       // Read through file and process each record
-      reader =
-          new BufferedReader(new InputStreamReader(new FileInputStream(file),
-              "UTF-8"));
+      reader = new BufferedReader(
+          new InputStreamReader(new FileInputStream(file), "UTF-8"));
       String line = reader.readLine();
       StringBuilder lastLine = new StringBuilder();
       Pattern pattern = Pattern.compile("^[A-Z]+");
@@ -160,9 +164,8 @@ public class AscToXmlMojo extends AbstractOtfMappingMojo {
           // Determine if this is a table entry
           if (headerProperties.containsKey(lastLine.substring(0, 1))) {
             // write table entry. if not yet in a table, write headers
-            parent =
-                writeTableEntryToXml(root, parent, lastLine.toString(),
-                    !inTable);
+            parent = writeTableEntryToXml(root, parent, lastLine.toString(),
+                !inTable);
 
             // If there is a pending note and inTable isn't set yet
             // wait one more time to set it, so the note can be written inside
@@ -204,9 +207,8 @@ public class AscToXmlMojo extends AbstractOtfMappingMojo {
 
       // Create output directories and write file
       new File(outputDir).mkdirs();
-      FileOutputStream outputStream =
-          new FileOutputStream(new File(outputDir, "ICD10_" + file.getName()
-              + ".xml"));
+      FileOutputStream outputStream = new FileOutputStream(
+          new File(outputDir, "ICD10_" + file.getName() + ".xml"));
       Serializer serializer = new Serializer(outputStream, "UTF-8");
       serializer.setIndent(4);
       serializer.write(document);
@@ -236,8 +238,8 @@ public class AscToXmlMojo extends AbstractOtfMappingMojo {
    * @return the element
    * @throws Exception the exception
    */
-  public Element writeToXml(Element root, Element initialParent, String lastLine)
-    throws Exception {
+  public Element writeToXml(Element root, Element initialParent,
+    String lastLine) throws Exception {
 
     Logger.getLogger(getClass()).info(lastLine);
     // Setup
@@ -254,8 +256,8 @@ public class AscToXmlMojo extends AbstractOtfMappingMojo {
     // This applies to TEIL1.ASC and TEIL2.ASC files if the neoplasm entries
     // have been removed.
     if (!codes[0].startsWith("K") && !codes[0].startsWith("U")) {
-      throw new IOException("Unexpected data found in " + inputFile + ", "
-          + codes[0]);
+      throw new IOException(
+          "Unexpected data found in " + inputFile + ", " + codes[0]);
     }
 
     // Get level code
@@ -282,9 +284,8 @@ public class AscToXmlMojo extends AbstractOtfMappingMojo {
           String index = name.substring(m.start(), m.end());
           Elements letters = root.getChildElements();
           for (int i = 0; i < letters.size(); i++) {
-            if (letters.get(i).getLocalName().equals("letter")
-                && letters.get(i).getChild(0).getChild(0).getValue()
-                    .equals(index))
+            if (letters.get(i).getLocalName().equals("letter") && letters.get(i)
+                .getChild(0).getChild(0).getValue().equals(index))
               letter = letters.get(i);
           }
           // If letter has changed, add a new entry to the DOM (under root)
@@ -310,18 +311,16 @@ public class AscToXmlMojo extends AbstractOtfMappingMojo {
       else {
 
         // Iterate to correct parent based on level setting
-        while (parent.getAttribute("level") != null
-            && context <= Character.getNumericValue(parent
-                .getAttribute("level").getValue().charAt(0)))
+        while (parent.getAttribute("level") != null && context <= Character
+            .getNumericValue(parent.getAttribute("level").getValue().charAt(0)))
           parent = (Element) parent.getParent();
         // Create term element, add to parent
         term = new Element("term");
         term.addAttribute(new Attribute("level", String.valueOf(level)));
         parent.appendChild(term);
         // Set parent to term if it is nested term
-        if (parent.getAttribute("level") == null
-            || context > Character.getNumericValue(parent.getAttribute("level")
-                .getValue().charAt(0)))
+        if (parent.getAttribute("level") == null || context > Character
+            .getNumericValue(parent.getAttribute("level").getValue().charAt(0)))
           parent = term;
       }
 
@@ -339,9 +338,10 @@ public class AscToXmlMojo extends AbstractOtfMappingMojo {
       // Add see also tag, if data is present
       if (name.indexOf("see also") != -1) {
         Element seeAlso = new Element("seeAlso");
-        seeAlso.appendChild(name.substring(name.indexOf("see also") + 9, (name
-            .indexOf(')', name.indexOf("see also") + 9) == -1 ? name.length()
-            : name.indexOf(')', name.indexOf("see also") + 9))));
+        seeAlso.appendChild(name.substring(name.indexOf("see also") + 9,
+            (name.indexOf(')', name.indexOf("see also") + 9) == -1
+                ? name.length()
+                : name.indexOf(')', name.indexOf("see also") + 9))));
         term.appendChild(seeAlso);
         name = name.substring(0, name.indexOf("see also") - 2);
       }
@@ -349,25 +349,23 @@ public class AscToXmlMojo extends AbstractOtfMappingMojo {
       else if (name.indexOf("- see ") != -1 && name.indexOf("see also") == -1
           && name.indexOf('(') == -1) {
         Element see = new Element("see");
-        see.appendChild(name.substring(name.indexOf("- see ") + 6, (name
-            .indexOf(')', name.indexOf("- see ") + 6) == -1 ? name.length()
-            : name.indexOf(')', name.indexOf("- see ") + 6))));
+        see.appendChild(name.substring(name.indexOf("- see ") + 6,
+            (name.indexOf(')', name.indexOf("- see ") + 6) == -1 ? name.length()
+                : name.indexOf(')', name.indexOf("- see ") + 6))));
         term.appendChild(see);
-        name =
-            name.substring(0, name.indexOf("- see ") - 1)
-                + (name.indexOf(')', name.indexOf("- see ")) != -1 ? name
-                    .substring(name.lastIndexOf(')')) : "");
+        name = name.substring(0, name.indexOf("- see ") - 1)
+            + (name.indexOf(')', name.indexOf("- see ")) != -1
+                ? name.substring(name.lastIndexOf(')')) : "");
       }
       // Handle nemod
       if (name.indexOf(" (") != -1) {
         Element nemod = new Element("nemod");
-        nemod.appendChild(name.substring(name.indexOf(" (") + 1,
-            name.lastIndexOf(')') + 1));
+        nemod.appendChild(
+            name.substring(name.indexOf(" (") + 1, name.lastIndexOf(')') + 1));
         term.appendChild(nemod);
-        name =
-            name.substring(0, name.indexOf(" ("))
-                + (name.lastIndexOf(')') == name.length() - 1 ? "" : name
-                    .substring(name.lastIndexOf(')') + 1));
+        name = name.substring(0, name.indexOf(" ("))
+            + (name.lastIndexOf(')') == name.length() - 1 ? ""
+                : name.substring(name.lastIndexOf(')') + 1));
       }
       // Add code if present (perform XML entity conversions)
       Element code = new Element("code");
@@ -458,9 +456,8 @@ public class AscToXmlMojo extends AbstractOtfMappingMojo {
     String name = lastLine.substring(38);
     String fields = lastLine.substring(0, 37);
     // Process fixed-length data
-    String codeFields =
-        fields.replaceAll("(.........)(.......)(.......)(.......)(.......)",
-            "$1;$2;$3;$4;$5");
+    String codeFields = fields.replaceAll(
+        "(.........)(.......)(.......)(.......)(.......)", "$1;$2;$3;$4;$5");
     String[] codes = codeFields.split(";");
     for (int i = 0; i < codes.length; i++) {
       codes[i] = codes[i].replaceAll(" ", "");
@@ -482,9 +479,8 @@ public class AscToXmlMojo extends AbstractOtfMappingMojo {
           String index = name.substring(m.start(), m.end());
           Elements letters = root.getChildElements();
           for (int i = 0; i < letters.size(); i++) {
-            if (letters.get(i).getLocalName().equals("letter")
-                && letters.get(i).getChild(0).getChild(0).getValue()
-                    .equals(index))
+            if (letters.get(i).getLocalName().equals("letter") && letters.get(i)
+                .getChild(0).getChild(0).getValue().equals(index))
               letter = letters.get(i);
           }
           if (letter == null) {
@@ -504,16 +500,14 @@ public class AscToXmlMojo extends AbstractOtfMappingMojo {
         term = mainTerm;
         parent = mainTerm;
       } else {
-        while (parent.getAttribute("level") != null
-            && context <= Character.getNumericValue(parent
-                .getAttribute("level").getValue().charAt(0)))
+        while (parent.getAttribute("level") != null && context <= Character
+            .getNumericValue(parent.getAttribute("level").getValue().charAt(0)))
           parent = (Element) parent.getParent();
         term = new Element("term");
         term.addAttribute(new Attribute("level", String.valueOf(level)));
         parent.appendChild(term);
-        if (parent.getAttribute("level") == null
-            || context > Character.getNumericValue(parent.getAttribute("level")
-                .getValue().charAt(0)))
+        if (parent.getAttribute("level") == null || context > Character
+            .getNumericValue(parent.getAttribute("level").getValue().charAt(0)))
           parent = term;
       }
     }
@@ -537,9 +531,9 @@ public class AscToXmlMojo extends AbstractOtfMappingMojo {
     term.appendChild(title);
     if (name.indexOf("see also") != -1) {
       Element seeAlso = new Element("seeAlso");
-      seeAlso.appendChild(name.substring(name.indexOf("see also") + 9, (name
-          .indexOf(')', name.indexOf("see also") + 9) == -1 ? name.length()
-          : name.indexOf(')', name.indexOf("see also") + 9))));
+      seeAlso.appendChild(name.substring(name.indexOf("see also") + 9,
+          (name.indexOf(')', name.indexOf("see also") + 9) == -1 ? name.length()
+              : name.indexOf(')', name.indexOf("see also") + 9))));
       term.appendChild(seeAlso);
       name = name.substring(0, name.indexOf("see also") - 2);
     } else if (name.indexOf("- see ") != -1 && name.indexOf("see also") == -1
@@ -549,20 +543,18 @@ public class AscToXmlMojo extends AbstractOtfMappingMojo {
           (name.indexOf(')', name.indexOf("- see ") + 6) == -1 ? name.length()
               : name.indexOf(')', name.indexOf("- see ") + 6))));
       term.appendChild(see);
-      name =
-          name.substring(0, name.indexOf("- see ") - 1)
-              + (name.indexOf(')', name.indexOf("- see ")) != -1 ? name
-                  .substring(name.lastIndexOf(')')) : "");
+      name = name.substring(0, name.indexOf("- see ") - 1)
+          + (name.indexOf(')', name.indexOf("- see ")) != -1
+              ? name.substring(name.lastIndexOf(')')) : "");
     }
     if (name.indexOf(" (") != -1) {
       Element nemod = new Element("nemod");
-      nemod.appendChild(name.substring(name.indexOf(" (") + 1,
-          name.lastIndexOf(')') + 1));
+      nemod.appendChild(
+          name.substring(name.indexOf(" (") + 1, name.lastIndexOf(')') + 1));
       term.appendChild(nemod);
-      name =
-          name.substring(0, name.indexOf(" ("))
-              + (name.lastIndexOf(')') == name.length() - 1 ? "" : name
-                  .substring(name.lastIndexOf(')') + 1));
+      name = name.substring(0, name.indexOf(" ("))
+          + (name.lastIndexOf(')') == name.length() - 1 ? ""
+              : name.substring(name.lastIndexOf(')') + 1));
     }
     Element cell = new Element("cell");
     // codes[] indexes 0-n correspond to columns 2-(n-2)

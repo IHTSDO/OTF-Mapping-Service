@@ -1,5 +1,5 @@
 /*
- * 
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.mojo;
 
@@ -47,6 +47,7 @@ public class ComputeDefaultPreferredNameMojo extends AbstractOtfMappingMojo {
   /** The dpn acceptability id. */
   private Long dpnAcceptabilityId = 900000000000548007L;
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -62,6 +63,8 @@ public class ComputeDefaultPreferredNameMojo extends AbstractOtfMappingMojo {
       getLog().info("  dpnTypeId = " + dpnTypeId);
       getLog().info("  dpnRefsetId = " + dpnRefsetId);
       getLog().info("  dpnAcceptabilityId = " + dpnAcceptabilityId);
+
+      setupBindInfoPackage();
 
       computeDefaultPreferredNames();
 

@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.text.SimpleDateFormat;
@@ -5,7 +8,6 @@ import java.text.SimpleDateFormat;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.rest.client.ContentClientRest;
 import org.ihtsdo.otf.mapping.rest.impl.ContentServiceRestImpl;
-
 
 /**
  * Goal which loads a simple code list data file.
@@ -22,92 +24,97 @@ import org.ihtsdo.otf.mapping.rest.impl.ContentServiceRestImpl;
  */
 public class TerminologySimpleLoaderMojo extends AbstractTerminologyLoaderMojo {
 
-	/** The date format. */
-	final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+  /** The date format. */
+  final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 
-	/**
-	 * Whether to run this mojo against an active server.
-	 * @parameter 
-	 */
-	private boolean server = false;
-	
-	/**
-	 * Input directory.
-	 *
-	 * @parameter
-	 * @required
-	 */
-	private String inputDir;
+  /**
+   * Whether to run this mojo against an active server.
+   * @parameter
+   */
+  private boolean server = false;
 
-	/**
-	 * Name of terminology to be loaded.
-	 * 
-	 * @parameter
-	 * @required
-	 */
-	private String terminology;
+  /**
+   * Input directory.
+   *
+   * @parameter
+   * @required
+   */
+  private String inputDir;
 
-	/**
-	 * Name of terminology to be loaded.
-	 * 
-	 * @parameter
-	 * @required
-	 */
-	private String version;
+  /**
+   * Name of terminology to be loaded.
+   * 
+   * @parameter
+   * @required
+   */
+  private String terminology;
 
-	/**
-	 * Instantiates a {@link TerminologySimpleLoaderMojo} from the specified
-	 * parameters.
-	 * 
-	 */
-	public TerminologySimpleLoaderMojo() {
-		super();
-		// do nothing
-	}
+  /**
+   * Name of terminology to be loaded.
+   * 
+   * @parameter
+   * @required
+   */
+  private String version;
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.apache.maven.plugin.Mojo#execute()
-	 */
-	@Override
-	public void execute() throws MojoFailureException {
-		
-        getLog().info("Simple Terminology Loader called via mojo.");
-	    getLog().info("  Terminology        : " + terminology);
-	    getLog().info("  Version            : " + version);
-	    getLog().info("  Input directory    : " + inputDir);
-	    getLog().info("  Expect server up   : " + server);
+  /**
+   * Instantiates a {@link TerminologySimpleLoaderMojo} from the specified
+   * parameters.
+   * 
+   */
+  public TerminologySimpleLoaderMojo() {
+    super();
+    // do nothing
+  }
 
-		try {
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.apache.maven.plugin.Mojo#execute()
+   */
+  @Override
+  public void execute() throws MojoFailureException {
 
-			// Track system level information
-			setProcessStartTime();
+    getLog().info("Simple Terminology Loader called via mojo.");
+    getLog().info("  Terminology        : " + terminology);
+    getLog().info("  Version            : " + version);
+    getLog().info("  Input directory    : " + inputDir);
+    getLog().info("  Expect server up   : " + server);
 
-			// throws exception if server is required but not running.
-			// or if server is not required but running.
-			validateServerStatus(server);
-			
-			if (serverRunning != null && !serverRunning) {
-				getLog().info("Running directly");
-					
-				ContentServiceRestImpl service = new ContentServiceRestImpl();
-				service.loadTerminologySimple(terminology, version, inputDir, getAuthToken());
+    try {
 
-			} else {
-				getLog().info("Running against server");
+      setupBindInfoPackage();
 
-				// invoke the client
-				ContentClientRest client = new ContentClientRest(properties);
-				client.loadTerminologySimple(terminology, version, inputDir, getAuthToken());
-			}
+      // Track system level information
+      setProcessStartTime();
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new MojoFailureException("Unexpected exception:", e);
-		} finally {
-			getLog().info("      elapsed time = " + getTotalElapsedTimeStr());
-			getLog().info("done ...");
-		}
-	}
+      // throws exception if server is required but not running.
+      // or if server is not required but running.
+      validateServerStatus(server);
+
+      if (serverRunning != null && !serverRunning) {
+        getLog().info("Running directly");
+
+        ContentServiceRestImpl service = new ContentServiceRestImpl();
+        service.loadTerminologySimple(terminology, version, inputDir,
+            getAuthToken());
+
+      } else {
+        getLog().info("Running against server");
+
+        // invoke the client
+        ContentClientRest client = new ContentClientRest(properties);
+        client.loadTerminologySimple(terminology, version, inputDir,
+            getAuthToken());
+      }
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new MojoFailureException("Unexpected exception:", e);
+    } finally {
+      getLog().info("      elapsed time = " + getTotalElapsedTimeStr());
+      getLog().info("done ...");
+    }
+  }
 }

@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.BufferedReader;
@@ -51,6 +54,8 @@ public class MapNoteRf2LoaderMojo extends AbstractOtfMappingMojo {
 
     BufferedReader mapNoteReader = null;
     try {
+
+      setupBindInfoPackage();
 
       // Set date format for parsing "effectiveTime"
       final SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd");
@@ -109,9 +114,10 @@ public class MapNoteRf2LoaderMojo extends AbstractOtfMappingMojo {
         }
         mapNote.setNote(note);
 
-        List<MapRecord> mapRecords =
-            mappingService.getMapRecordsForProjectAndConcept(
-                refsetMapProjectIdMap.get(fields[4]), fields[5]).getMapRecords();
+        List<MapRecord> mapRecords = mappingService
+            .getMapRecordsForProjectAndConcept(
+                refsetMapProjectIdMap.get(fields[4]), fields[5])
+            .getMapRecords();
 
         // Verify matching map records were found, otherwise fail
         if (mapRecords != null && mapRecords.size() > 0) {
@@ -120,10 +126,9 @@ public class MapNoteRf2LoaderMojo extends AbstractOtfMappingMojo {
           // Note, if there are multiple records in the workflow, they all get
           // the note
           for (MapRecord mapRecord : mapRecords) {
-            getLog().debug(
-                mapNote.getNote().length() + " " + "    Adding note "
-                    + fields[4] + ", " + mapRecord.getConceptId() + " = "
-                    + mapNote.getNote());
+            getLog().debug(mapNote.getNote().length() + " " + "    Adding note "
+                + fields[4] + ", " + mapRecord.getConceptId() + " = "
+                + mapNote.getNote());
             mapRecord.addMapNote(mapNote);
             mappingService.updateMapRecord(mapRecord);
 
@@ -135,9 +140,8 @@ public class MapNoteRf2LoaderMojo extends AbstractOtfMappingMojo {
             }
           }
         } else {
-          getLog().info(
-              "Map note references non-existent concept/project " + fields[5]
-                  + "/" + fields[4]);
+          getLog().info("Map note references non-existent concept/project "
+              + fields[5] + "/" + fields[4]);
         }
       }
       getLog().info("    count = " + ct);

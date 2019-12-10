@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.BufferedReader;
@@ -67,6 +70,7 @@ public class MapProjectDataImportMojo extends AbstractOtfMappingMojo {
     // Do nothing
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -78,7 +82,10 @@ public class MapProjectDataImportMojo extends AbstractOtfMappingMojo {
     getLog().info("Starting importing metadata ...");
     getLog().info("  inputDir = " + inputDir);
     getLog().info("  mini = " + mini);
+
     try {
+
+      setupBindInfoPackage();
 
       File inputDirFile = new File(inputDir);
       if (!inputDirFile.exists()) {
@@ -113,10 +120,9 @@ public class MapProjectDataImportMojo extends AbstractOtfMappingMojo {
         getLog().info("  Handling project file " + projectFile);
 
         // Unmarshal project from XML
-        MapProject project =
-            (MapProjectJpa) unmarshaller.unmarshal(new StreamSource(
-                new StringReader(new Scanner(projectFile, "UTF-8")
-                    .useDelimiter("\\A").next())));
+        MapProject project = (MapProjectJpa) unmarshaller
+            .unmarshal(new StreamSource(new StringReader(
+                new Scanner(projectFile, "UTF-8").useDelimiter("\\A").next())));
 
         // Add advices if they do not already exist
         Set<MapAdvice> advices = project.getMapAdvices();
@@ -205,8 +211,8 @@ public class MapProjectDataImportMojo extends AbstractOtfMappingMojo {
             project.getReportDefinitions();
         List<ReportDefinition> currentReportDefinitions =
             reportService.getReportDefinitions().getReportDefinitions();
-        currentReportDefinitions.addAll(reportService.getQACheckDefinitions()
-            .getReportDefinitions());
+        currentReportDefinitions.addAll(
+            reportService.getQACheckDefinitions().getReportDefinitions());
         for (ReportDefinition reportDefinition : reportDefinitions) {
           if (!currentReportDefinitions.contains(reportDefinition)) {
             getLog().info(
@@ -214,9 +220,8 @@ public class MapProjectDataImportMojo extends AbstractOtfMappingMojo {
             reportDefinition.setId(null);
             reportService.addReportDefinition(reportDefinition);
           } else {
-            getLog().info(
-                "  Report definition already exists "
-                    + reportDefinition.getName());
+            getLog().info("  Report definition already exists "
+                + reportDefinition.getName());
           }
         }
 
@@ -309,13 +314,14 @@ public class MapProjectDataImportMojo extends AbstractOtfMappingMojo {
             }
           }
         }
-        getLog().info(
-            "      count = " + bareProject.getPresetAgeRanges().size());
+        getLog()
+            .info("      count = " + bareProject.getPresetAgeRanges().size());
         mappingService.updateMapProject(bareProject);
 
         // attach report definitions
         getLog().info("    Attach report definitions");
-        for (ReportDefinition reportDefinition : project.getReportDefinitions()) {
+        for (ReportDefinition reportDefinition : project
+            .getReportDefinitions()) {
           for (ReportDefinition rd : reportService.getReportDefinitions()
               .getReportDefinitions()) {
             if (rd.equals(reportDefinition)) {
@@ -323,28 +329,27 @@ public class MapProjectDataImportMojo extends AbstractOtfMappingMojo {
             }
           }
         }
-        getLog().info(
-            "      count = " + bareProject.getPresetAgeRanges().size());
+        getLog()
+            .info("      count = " + bareProject.getPresetAgeRanges().size());
         mappingService.updateMapProject(bareProject);
 
         // attach scope concepts
         getLog().info("    Attach scope concepts");
         BufferedReader scopeIncludesReader =
-            new BufferedReader(new FileReader(new File(projectFile
-                .getAbsolutePath().replace(".xml", "Scope.txt"))));
+            new BufferedReader(new FileReader(new File(
+                projectFile.getAbsolutePath().replace(".xml", "Scope.txt"))));
         String line = null;
         Set<String> conceptsInScope = new HashSet<>();
         while ((line = scopeIncludesReader.readLine()) != null) {
-          Concept c =
-              contentService.getConcept(line.trim(),
-                  project.getSourceTerminology(),
-                  project.getSourceTerminologyVersion());
+          Concept c = contentService.getConcept(line.trim(),
+              project.getSourceTerminology(),
+              project.getSourceTerminologyVersion());
           if (c == null && "true".equals(mini)) {
             // if it's mini, just ignore this
           } else if (c == null) {
             // if it's not mini, then throw an error
-            throw new Exception("Scope concept + " + line.trim()
-                + " cannot be found.");
+            throw new Exception(
+                "Scope concept + " + line.trim() + " cannot be found.");
           } else {
             conceptsInScope.add(line.trim());
           }
@@ -363,10 +368,9 @@ public class MapProjectDataImportMojo extends AbstractOtfMappingMojo {
                 .getAbsolutePath().replace(".xml", "ScopeExcludes.txt"))));
         Set<String> conceptsExcludedScope = new HashSet<>();
         while ((line = scopeExcludesReader.readLine()) != null) {
-          Concept c =
-              contentService.getConcept(line.trim(),
-                  project.getSourceTerminology(),
-                  project.getSourceTerminologyVersion());
+          Concept c = contentService.getConcept(line.trim(),
+              project.getSourceTerminology(),
+              project.getSourceTerminologyVersion());
           if (c == null && "true".equals(mini)) {
             // if it's mini, just ignore this
           } else if (c == null) {

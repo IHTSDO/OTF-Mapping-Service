@@ -1,18 +1,5 @@
-/**
- * Copyright (c) 2012 International Health Terminology Standards Development
- * Organisation
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.mojo;
 
@@ -56,6 +43,7 @@ public class MapRecordUpdaterMojo extends AbstractOtfMappingMojo {
     // Do nothing
   }
 
+  /* see superclass */
   @Override
   public void execute() throws MojoExecutionException {
     getLog().info("Starting updating map records for project");
@@ -63,7 +51,9 @@ public class MapRecordUpdaterMojo extends AbstractOtfMappingMojo {
 
     try (final MappingService mappingService = new MappingServiceJpa();
         final ContentService contentService = new ContentServiceJpa();) {
-      
+
+      setupBindInfoPackage();
+
       mappingService.setTransactionPerOperation(false);
       mappingService.beginTransaction();
       final Set<MapProject> mapProjects = new HashSet<>();
@@ -90,18 +80,17 @@ public class MapRecordUpdaterMojo extends AbstractOtfMappingMojo {
         for (final MapRecord record : mappingService
             .getMapRecordsForMapProject(mapProject.getId()).getMapRecords()) {
 
-          final Concept concept =
-              contentService.getConcept(record.getConceptId(),
-                  mapProject.getSourceTerminology(),
-                  mapProject.getSourceTerminologyVersion());
+          final Concept concept = contentService.getConcept(
+              record.getConceptId(), mapProject.getSourceTerminology(),
+              mapProject.getSourceTerminologyVersion());
 
           boolean changed = false;
           // Handle source name
-          // Don't update if dpn is TBD (which would be the case if concept becomes inactive)
+          // Don't update if dpn is TBD (which would be the case if concept
+          // becomes inactive)
           if (concept != null
-              && !concept.getDefaultPreferredName().equals("TBD")
-              && !record.getConceptName().equals(
-                  concept.getDefaultPreferredName())) {
+              && !concept.getDefaultPreferredName().equals("TBD") && !record
+                  .getConceptName().equals(concept.getDefaultPreferredName())) {
 
             getLog().info("    Update map record " + record.getId() + " : "
                 + record.getConceptId() + " from *" + record.getConceptName()
@@ -113,13 +102,11 @@ public class MapRecordUpdaterMojo extends AbstractOtfMappingMojo {
           // Handle target names
           for (final MapEntry entry : record.getMapEntries()) {
             if (entry.getTargetId() != null && !entry.getTargetId().isEmpty()) {
-              final Concept concept2 =
-                  contentService.getConcept(entry.getTargetId(),
-                      mapProject.getDestinationTerminology(),
-                      mapProject.getDestinationTerminologyVersion());
-              if (concept2 != null
-                   && !concept2.getDefaultPreferredName().equals(
-                       entry.getTargetName())) {
+              final Concept concept2 = contentService.getConcept(
+                  entry.getTargetId(), mapProject.getDestinationTerminology(),
+                  mapProject.getDestinationTerminologyVersion());
+              if (concept2 != null && !concept2.getDefaultPreferredName()
+                  .equals(entry.getTargetName())) {
                 getLog().info("    Update map entry " + entry.getId() + " : "
                     + record.getConceptId() + " from *" + entry.getTargetName()
                     + "* to *" + concept2.getDefaultPreferredName() + "*");

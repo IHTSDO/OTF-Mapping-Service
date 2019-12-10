@@ -41,6 +41,8 @@ public class MapAdviceRemoverMojo extends AbstractOtfMappingMojo {
 
     try (final MappingService mappingService = new MappingServiceJpa();) {
 
+      setupBindInfoPackage();
+
       MapAdvice mapAdvice = null;
       for (MapAdvice ma : mappingService.getMapAdvices().getIterable()) {
         if (ma.getName().equals(mapAdviceName))

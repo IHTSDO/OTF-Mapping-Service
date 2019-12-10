@@ -103,8 +103,7 @@ public class ExportAppConfigDataMojo extends AbstractOtfMappingMojo {
    */
   private String principleConfigFile = null;
 
-  private static final DateFormat dateFormat = new SimpleDateFormat(
-      "yyyyMMdd");
+  private static final DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 
   /* see superclass */
   @Override
@@ -112,6 +111,8 @@ public class ExportAppConfigDataMojo extends AbstractOtfMappingMojo {
     getLog().info("Load App Config Data Started");
 
     try {
+      setupBindInfoPackage();
+
       exportConfigData();
       getLog().info("Load App Config Data Finished");
 
@@ -126,8 +127,7 @@ public class ExportAppConfigDataMojo extends AbstractOtfMappingMojo {
   /**
    * Load sample data.
    *
-   * @throws Exception
-   *           the exception
+   * @throws Exception the exception
    */
   private void exportConfigData() throws Exception {
 
@@ -136,7 +136,7 @@ public class ExportAppConfigDataMojo extends AbstractOtfMappingMojo {
 
     List<MapAgeRange> ageRanges = exportAgeRange();
     writeConfigToFile(ageRangeConfigFile, ageRanges);
-    
+
     List<MapPrinciple> principles = exportPrinciples();
     writeConfigToFile(principleConfigFile, principles);
 
@@ -153,7 +153,7 @@ public class ExportAppConfigDataMojo extends AbstractOtfMappingMojo {
     writeConfigToFile(userConfigFile, users);
 
   }
- 
+
   // Mapping Projects
   // Not using MapProjectJPA since it includes the full details of MapUsers
   // and other related objects which are generated in other methods.
@@ -191,10 +191,10 @@ public class ExportAppConfigDataMojo extends AbstractOtfMappingMojo {
         lmp.setRefSetId(mp.getRefSetId());
         lmp.setRefSetName(mp.getRefSetName());
         lmp.setScopeDescendantsFlag(mp.isScopeDescendantsFlag());
-        
+
         lmp.setIncludeScopeConcepts(mp.getScopeConcepts());
         lmp.setExcludeScopeConcepts(mp.getScopeExcludedConcepts());
-        
+
         lmp.setSourceTerminology(mp.getSourceTerminology());
         lmp.setSourceTerminologyVersion(mp.getSourceTerminologyVersion());
 
@@ -224,7 +224,6 @@ public class ExportAppConfigDataMojo extends AbstractOtfMappingMojo {
     return mapProjectConfigurations;
   }
 
-  
   // Principles
   private List<MapPrinciple> exportPrinciples() throws Exception {
 
@@ -240,7 +239,7 @@ public class ExportAppConfigDataMojo extends AbstractOtfMappingMojo {
   private List<ReportDefinition> exportReports() throws Exception {
 
     final ReportDefinitionList reportDefinitionList;
-    
+
     try (ReportService reportService = new ReportServiceJpa()) {
       getLog().info(" exporting report definition config");
       reportDefinitionList = reportService.getReportDefinitions();
@@ -250,7 +249,7 @@ public class ExportAppConfigDataMojo extends AbstractOtfMappingMojo {
 
   // Users
   private List<MapUser> exportUsers() throws Exception {
-    
+
     final MapUserList userList;
     try (SecurityService securityService = new SecurityServiceJpa()) {
       getLog().info(" exporting user config");
@@ -261,7 +260,7 @@ public class ExportAppConfigDataMojo extends AbstractOtfMappingMojo {
 
   // Advice
   private List<MapAdvice> exportAdvice() throws Exception {
-    
+
     final MapAdviceList adviceList;
     try (MappingService mappingService = new MappingServiceJpa();) {
       getLog().info(" exporting advice config");
@@ -272,7 +271,7 @@ public class ExportAppConfigDataMojo extends AbstractOtfMappingMojo {
 
   // Relation
   private List<MapRelation> exportRelation() throws Exception {
-    
+
     final MapRelationList relationList;
     try (MappingService mappingService = new MappingServiceJpa();) {
       getLog().info(" exporting relation config");
@@ -284,7 +283,7 @@ public class ExportAppConfigDataMojo extends AbstractOtfMappingMojo {
 
   // Age Range
   private List<MapAgeRange> exportAgeRange() throws Exception {
-    
+
     final MapAgeRangeList ageRangeList;
     try (MappingService mappingService = new MappingServiceJpa();) {
       getLog().info(" exporting age range config");
@@ -294,7 +293,7 @@ public class ExportAppConfigDataMojo extends AbstractOtfMappingMojo {
   }
 
   private void writeConfigToFile(String fullFileName, Object object)
-      throws Exception {
+    throws Exception {
 
     ObjectMapper mapper = new ObjectMapper();
     try {

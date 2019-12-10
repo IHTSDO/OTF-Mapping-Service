@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
 import org.apache.maven.plugin.MojoExecutionException;
@@ -17,104 +20,104 @@ import org.ihtsdo.otf.mapping.rest.impl.ContentServiceRestImpl;
  * @phase package
  */
 public class MapRecordRf2SimpleMapLoaderMojo
-		extends AbstractTerminologyLoaderMojo {
+    extends AbstractTerminologyLoaderMojo {
 
-	/**
-	 * Whether to run this mojo against an active server.
-	 * @parameter 
-	 */
-	private boolean server = false;
-	
-	/**
-	 * The input file.
-	 * 
-	 * @parameter
-	 * @required
-	 */
-	private String inputFile;
+  /**
+   * Whether to run this mojo against an active server.
+   * @parameter
+   */
+  private boolean server = false;
 
-	/**
-	 * The members flag.
-	 * 
-	 * @parameter
-	 * @required
-	 */
-	private boolean memberFlag;
+  /**
+   * The input file.
+   * 
+   * @parameter
+   * @required
+   */
+  private String inputFile;
 
-	/**
-	 * The records flag.
-	 * 
-	 * @parameter
-	 * @required
-	 */
-	private boolean recordFlag;
+  /**
+   * The members flag.
+   * 
+   * @parameter
+   * @required
+   */
+  private boolean memberFlag;
 
+  /**
+   * The records flag.
+   * 
+   * @parameter
+   * @required
+   */
+  private boolean recordFlag;
 
-    /**
-     * The refset Id to filter the input file by (optional).
-     *
-     * @parameter
-     */
-    private String refsetId;	
-	
-	/**
-	 * The workflow status to assign to created map records.
-	 *
-	 * @parameter
-	 * @required
-	 */
-	private String workflowStatus = WorkflowStatus.READY_FOR_PUBLICATION
-			.toString();
+  /**
+   * The refset Id to filter the input file by (optional).
+   *
+   * @parameter
+   */
+  private String refsetId;
 
-	/**
-	 * Executes the plugin.
-	 * 
-	 * @throws MojoExecutionException
-	 *             the mojo execution exception
-	 */
-	@Override
-	public void execute() throws MojoExecutionException {
+  /**
+   * The workflow status to assign to created map records.
+   *
+   * @parameter
+   * @required
+   */
+  private String workflowStatus =
+      WorkflowStatus.READY_FOR_PUBLICATION.toString();
 
-		getLog().info("Starting loading simple map data");
-		getLog().info("  inputFile      = " + inputFile);
-		getLog().info("  membersFlag    = " + memberFlag);
-		getLog().info("  recordFlag     = " + recordFlag);
-        getLog().info("  refsetId       = " + refsetId);
-		getLog().info("  workflowStatus = " + workflowStatus);
+  /**
+   * Executes the plugin.
+   * 
+   * @throws MojoExecutionException the mojo execution exception
+   */
+  @Override
+  public void execute() throws MojoExecutionException {
 
-		try {
+    getLog().info("Starting loading simple map data");
+    getLog().info("  inputFile      = " + inputFile);
+    getLog().info("  membersFlag    = " + memberFlag);
+    getLog().info("  recordFlag     = " + recordFlag);
+    getLog().info("  refsetId       = " + refsetId);
+    getLog().info("  workflowStatus = " + workflowStatus);
 
-			// Track system level information
-			setProcessStartTime();
+    try {
 
-			// throws exception if server is required but not running.
-			// or if server is not required but running.
-			validateServerStatus(server);
+      setupBindInfoPackage();
 
-			if (serverRunning != null && !serverRunning) {
-				getLog().info("Running directly");
+      // Track system level information
+      setProcessStartTime();
 
-				ContentServiceRestImpl service = new ContentServiceRestImpl();
-				service.loadMapRecordRf2SimpleMap(inputFile, memberFlag,
-						recordFlag, refsetId, workflowStatus, getAuthToken()); 
+      // throws exception if server is required but not running.
+      // or if server is not required but running.
+      validateServerStatus(server);
 
-			} else {
-				getLog().info("Running against server");
+      if (serverRunning != null && !serverRunning) {
+        getLog().info("Running directly");
 
-				// invoke the client
-				ContentClientRest client = new ContentClientRest(properties);
-				client.loadMapRecordRf2SimpleMap(inputFile, memberFlag,
-						recordFlag, refsetId, workflowStatus, getAuthToken());
-			}
+        ContentServiceRestImpl service = new ContentServiceRestImpl();
+        service.loadMapRecordRf2SimpleMap(inputFile, memberFlag, recordFlag,
+            refsetId, workflowStatus, getAuthToken());
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new MojoExecutionException("Unexpected exception:", e);
-		} finally {
-			getLog().info("      elapsed time = " + getTotalElapsedTimeStr());
-			getLog().info("done ...");
-		}
+      } else {
+        getLog().info("Running against server");
 
-	}
+        // invoke the client
+        ContentClientRest client = new ContentClientRest(properties);
+        client.loadMapRecordRf2SimpleMap(inputFile, memberFlag, recordFlag,
+            refsetId, workflowStatus, getAuthToken());
+      }
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new MojoExecutionException("Unexpected exception:", e);
+    } finally {
+      getLog().info("      elapsed time = " + getTotalElapsedTimeStr());
+      getLog().info("done ...");
+    }
+
+  }
 
 }

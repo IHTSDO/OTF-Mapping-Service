@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.mojo;
 
 import java.util.Map;
@@ -48,6 +51,7 @@ public class CycleCheckMojo extends AbstractOtfMappingMojo {
     // do nothing
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -62,12 +66,13 @@ public class CycleCheckMojo extends AbstractOtfMappingMojo {
 
     try {
 
+      setupBindInfoPackage();
+
       // creating tree positions
       // first get isaRelType from metadata
       final MetadataService metadataService = new MetadataServiceJpa();
-      Map<String, String> hierRelTypeMap =
-          metadataService.getHierarchicalRelationshipTypes(terminology,
-              terminologyVersion);
+      Map<String, String> hierRelTypeMap = metadataService
+          .getHierarchicalRelationshipTypes(terminology, terminologyVersion);
       String isaRelType = hierRelTypeMap.keySet().iterator().next().toString();
       metadataService.close();
       getLog().info("Start creating tree positions.");

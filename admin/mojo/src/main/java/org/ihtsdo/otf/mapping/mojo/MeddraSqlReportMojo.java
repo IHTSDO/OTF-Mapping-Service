@@ -55,6 +55,8 @@ public class MeddraSqlReportMojo extends AbstractOtfMappingMojo {
 
     getLog().info("Start MedDRA SQLReport Mojo");
 
+    setupBindInfoPackage();
+
     if (projectIds.isEmpty()) {
       getLog().error("Parameter projectIds is empty.");
       throw new MojoExecutionException("Parameter projectIds is empty.");
