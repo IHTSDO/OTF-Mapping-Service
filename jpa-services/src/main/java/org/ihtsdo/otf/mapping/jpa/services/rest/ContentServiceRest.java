@@ -284,11 +284,12 @@ public interface ContentServiceRest {
    * @param terminology The terminology.
    * @param version The terminology version.
    * @param inputDir The full path to the concept and parent-child files.
+   * @param metadataCounter The starting id for metadata concepts.
    * @param authToken The auth token
    * @throws Exception The execution exception
    */
   void loadTerminologySimple(String terminology, String version,
-    String inputDir, String authToken) throws Exception;
+    String inputDir, String metadataCounter, String authToken) throws Exception;
 
   /**
    * Removes and loads an RF2 Snapshot of SNOMED CT data into a database.

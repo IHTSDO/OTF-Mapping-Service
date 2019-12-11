@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.jpa.algo.helpers;
 
 import java.text.SimpleDateFormat;
@@ -42,7 +45,7 @@ public class SimpleMetadataHelper {
 	private int metadataCounter = 1;
 
 
-	/**
+  /**
 	 * Instantiates a {@link SimpleMetadataHelper} from the specified parameters.
 	 * 
 	 * @param terminology
@@ -62,6 +65,15 @@ public class SimpleMetadataHelper {
 		this.contentService = contentService;
 	}
 
+    /**
+     * Sets the metadata counter.
+     *
+     * @param metadataCounter the metadata counter
+     */
+    public void setMetadataCounter(int metadataCounter) {
+        this.metadataCounter = metadataCounter;
+    }	
+	
 	/**
 	 * Creates the metadata in the form of a map of keys to metadata concepts.
 	 * 
