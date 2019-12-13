@@ -1168,19 +1168,20 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   /* see superclass */
   @Override
   @PUT
-  @Path("/terminology/load/simple/{terminology}/{version}")
+  @Path("/terminology/load/simple/{terminology}/{version}/{metadataCounter}")
   @Consumes(MediaType.TEXT_PLAIN)
   @ApiOperation(value = "Load simple terminology from file", notes = "Loads simple terminology from specified input file")
   public void loadTerminologySimple(
     @ApiParam(value = "Terminology, e.g. UMLS", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Version, e.g. latest", required = true) @PathParam("version") String version,
     @ApiParam(value = "Full path to input files", required = true) String inputDir,
+    @ApiParam(value = "Starting ID for metadata concepts", required = true) String metadataCounter,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass())
         .info("RESTful call (Content): /terminology/load/simple " + terminology
-            + ", " + version + " from input directory " + inputDir);
+            + ", " + version + " from input directory " + inputDir + ", with metadata starting at id=" + metadataCounter);
 
     // Track system level information
     long startTimeOrig = System.nanoTime();
@@ -1197,8 +1198,8 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
         "load simple terminology", securityService);
 
-    try (final SimpleLoaderAlgorithm algo =
-        new SimpleLoaderAlgorithm(localTerminology, localVersion, inputDir);) {
+    try (final SimpleLoaderAlgorithm algo = new SimpleLoaderAlgorithm(
+        localTerminology, localVersion, inputDir, metadataCounter);) {
 
       algo.compute();
 

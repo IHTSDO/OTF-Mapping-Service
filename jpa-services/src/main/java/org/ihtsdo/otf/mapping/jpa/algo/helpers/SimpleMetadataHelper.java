@@ -60,7 +60,16 @@ public class SimpleMetadataHelper {
     this.contentService = contentService;
   }
 
-  /**
+    /**
+     * Sets the metadata counter.
+     *
+     * @param metadataCounter the metadata counter
+     */
+    public void setMetadataCounter(int metadataCounter) {
+        this.metadataCounter = metadataCounter;
+    }	
+	
+	/**
    * Creates the metadata in the form of a map of keys to metadata concepts.
    * 
    * <pre>
