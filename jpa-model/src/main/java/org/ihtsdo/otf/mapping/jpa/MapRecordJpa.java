@@ -47,6 +47,7 @@ import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.annotations.TokenFilterDef;
 import org.hibernate.search.annotations.TokenizerDef;
+import org.hibernate.search.bridge.builtin.LongBridge;
 import org.ihtsdo.otf.mapping.helpers.CollectionToCSVBridge;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.model.MapEntry;
@@ -358,6 +359,7 @@ public class MapRecordJpa implements MapRecord {
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @FieldBridge(impl = LongBridge.class)
   @SortableField
   public Long getMapProjectId() {
     return mapProjectId;
@@ -382,6 +384,7 @@ public class MapRecordJpa implements MapRecord {
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
   public String getConceptId() {
     return conceptId;
   }
