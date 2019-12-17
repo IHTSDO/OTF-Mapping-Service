@@ -1175,7 +1175,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Terminology, e.g. UMLS", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Version, e.g. latest", required = true) @PathParam("version") String version,
     @ApiParam(value = "Full path to input files", required = true) String inputDir,
-    @ApiParam(value = "Starting ID for metadata concepts", required = true) String metadataCounter,
+    @ApiParam(value = "Starting ID for metadata concepts", required = true) @PathParam("metadataCounter") String metadataCounter,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
