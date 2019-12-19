@@ -19,7 +19,7 @@
     <plugins>
 
       <!-- Package tools -->
-      <plugin>
+<!--       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>truezip-maven-plugin</artifactId>
         <executions>
@@ -31,7 +31,7 @@
             <phase>package</phase>
             <configuration>
               <fileset>
-               <!--   <directory>src/main/resources</directory> -->
+                 <directory>src/main/resources</directory>
                <directory>${basedir}</directory>
                <excludes>
                   <exclude>.gitignore</exclude>
@@ -43,10 +43,10 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
+      </plugin> -->
 
       <!-- Attach .zip file artifact -->
-      <plugin>
+<!--       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
         <executions>
@@ -66,7 +66,7 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
+      </plugin> -->
 
     </plugins>
 
@@ -83,6 +83,5 @@
     <module>qa</module>
     <module>release</module>
     <module>daily-build</module>
-    <module>deb</module>
   </modules>
 </project>
