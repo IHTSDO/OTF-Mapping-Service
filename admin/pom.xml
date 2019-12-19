@@ -36,7 +36,6 @@
                <excludes>
                   <exclude>.gitignore</exclude>
                   <exclude>**/deb/**</exclude>
-                  <exclude>**/mojo/**</exclude>
                   <exclude>**/target/**</exclude>
                 </excludes>
                 <outputDirectory>${project.build.directory}/mapping-admin-${releaseVersion}.zip</outputDirectory>
@@ -75,7 +74,6 @@
 
   <!-- Sub-modules -->
   <modules>
-    <module>mojo</module>
     <module>updatedb</module>
     <module>lucene</module>
     <module>loader</module>
