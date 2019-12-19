@@ -25,6 +25,7 @@
     <module>rest</module>
 	<module>rest-client</module>
     <module>admin</module>
+	<module>mojo</module>
     <module>integration-tests</module>
   </modules>
 
