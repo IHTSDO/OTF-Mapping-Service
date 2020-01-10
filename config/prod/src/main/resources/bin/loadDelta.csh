@@ -2,13 +2,13 @@
 #
 # Sample cron entry:
 # Minute     Hour     Day of Month     Month     Day of Week
-# 0      19      *       *       0       csh /home/ihtsdo/config/bin/loadDelta.csh > /home/ihtsdo/logs/loadDelta.log
+# 0      19      *       *       0       csh /home/mapping-rest/config/bin/loadDelta.csh > /home/mapping-rest/logs/loadDelta.log
 #
 # Configure
 #
-set MAPPING_CODE=/home/ihtsdo/code
-set MAPPING_CONFIG=/home/ihtsdo/config/config.properties
-set MAPPING_DATA=/home/ihtsdo/data
+set MAPPING_CODE=/opt/mapping-admin
+set MAPPING_CONFIG=/opt/mapping-rest/config.properties
+set MAPPING_DATA=/opt/mapping-data
 # no longer set this
 # set SNOMEDCT_VERSION=20160731
 
@@ -29,11 +29,11 @@ echo "------------------------------------------------"
 echo "Starting ...`/bin/date`"
 echo "------------------------------------------------"
 echo "MAPPING_CODE = $MAPPING_CODE"
-echo "MAPPING_DATA = $MAPPING_CODE"
-echo "MAPPING_CONFIG = $MAPPING_CODE"
+echo "MAPPING_DATA = $MAPPING_DATA"
+echo "MAPPING_CONFIG = $MAPPING_CONFIG"
 
 echo "Taking down the server"
-service tomcat stop
+supervisorctl stop mapping-rest
 if ($status != 0) then
         echo "ERROR stopping server"
         exit 1
@@ -161,7 +161,7 @@ endif
 if (`grep -v effectiveTime *Concept*txt | wc -l` > 0) then
 
         echo "    Load the delta ... `/bin/date`"
-        cd $MAPPING_CODE/admin/loader
+        cd $MAPPING_CODE/loader
         # don't do this anymore: -Dlast.publication.date=$SNOMEDCT_VERSION \
         # null value leads to correct computation
         mvn install -PRF2-delta -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT \
@@ -172,7 +172,7 @@ if (`grep -v effectiveTime *Concept*txt | wc -l` > 0) then
         endif
 
         echo "    Remove SNOMEDCT tree positions ... `/bin/date`"
-        cd $MAPPING_CODE/admin/remover
+        cd $MAPPING_CODE/remover
         mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dversion=latest | sed 's/^/      /'
         if ($status != 0) then
             echo "ERROR removing tree positions"
@@ -181,14 +181,14 @@ if (`grep -v effectiveTime *Concept*txt | wc -l` > 0) then
 
         # optimize tree positions table
         echo "Clear indexes directory"
-        /bin/rm -rf /opt/tomcat8/indexes/lucene/indexes/org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa/*
+        /bin/rm -rf /opt/mapping-indexes/mapping/org.ihtsdo.otf.mapping.rf2.jpa.TreePositionJpa/*
         echo "Reindex other tree positions"
-         cd $MAPPING_CODE/admin/lucene
+         cd $MAPPING_CODE/lucene
         mvn install -PReindex -Drun.config=$MAPPING_CONFIG -Dindexed.objects=TreePositionJpa | sed 's/^/      /'
 
 
         echo "    Generate SNOMEDCT tree positions ... `/bin/date`"
-        cd $MAPPING_CODE/admin/loader
+        cd $MAPPING_CODE/loader
         mvn install -PTreepos -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dversion=latest -Droot.ids=138875005 | sed 's/^/      /'
         if ($status != 0) then
             echo "ERROR computing tree positions"
@@ -200,7 +200,7 @@ else
 endif
 
 echo "    Compute workflow ...`/bin/date`"
-cd $MAPPING_CODE/admin/loader
+cd $MAPPING_CODE/loader
 mvn install -PComputeWorkflow -Drun.config=$MAPPING_CONFIG -Drefset.id=447562003,446608001 -Dsend.notification=true | sed 's/^/      /'
 if ($status != 0) then
     echo "ERROR computing workflow"
@@ -208,7 +208,7 @@ if ($status != 0) then
 endif
 
 echo "    Restarting tomcat server ...`/bin/date`"
-service tomcat start
+supervisorctl start mapping-rest
 
 # reconnect "doc" directory
 #sleep 40
