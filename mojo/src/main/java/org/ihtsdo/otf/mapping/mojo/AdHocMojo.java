@@ -68,11 +68,12 @@ public class AdHocMojo extends AbstractOtfMappingMojo {
     getLog().info("  refsetId = " + refsetId);
     getLog().info("  mode = " + mode);
 
+    getLog().info("  preloading bind info package");
+    setupBindInfoPackage();        
+    
     try (final WorkflowService workflowService = new WorkflowServiceJpa();
         final ContentService contentService = new ContentServiceJpa();
         final MappingService mappingService = new MappingServiceJpa()) {
-      
-      setupBindInfoPackage();
 
       if (mode != null && mode.equals("icd11")) {
         handleIcd11(refsetId, inputFile, workflowService, contentService,
