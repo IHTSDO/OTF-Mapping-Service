@@ -73,7 +73,6 @@ public class ReportGenerateDailyMojo extends AbstractOtfMappingMojo {
     getLog().info("  startDate = " + startDate);
     getLog().info("  endDate = " + endDate);
 
-    getLog().info("  preloading bind info package");
     setupBindInfoPackage();
     
     MapUser mapUser = null;
