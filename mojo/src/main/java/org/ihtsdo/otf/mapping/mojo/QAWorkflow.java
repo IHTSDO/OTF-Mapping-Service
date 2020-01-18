@@ -48,11 +48,10 @@ public class QAWorkflow extends AbstractOtfMappingMojo {
     getLog().info("  refsetId = " + refsetId);
     getLog().info("  sendNotification = " + sendNotification);
 
-    getLog().info("  preloading bind info package");
-    setupBindInfoPackage();    
-    
     try (final WorkflowService workflowService = new WorkflowServiceJpa();) {
       List<MapProject> mapProjects = new ArrayList<>();
+
+      setupBindInfoPackage();
 
       if (refsetId == null) {
         mapProjects = workflowService.getMapProjects().getMapProjects();

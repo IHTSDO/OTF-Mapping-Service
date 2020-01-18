@@ -101,9 +101,7 @@ public class AscToXmlMojo extends AbstractOtfMappingMojo {
 
     try {
 
-     getLog().info("  preloading bind info package");
-     setupBindInfoPackage();    
-
+      setupBindInfoPackage();
 
       // set the input directory
       String baseDir = inputDir + "/" + terminology + "/" + terminologyVersion;

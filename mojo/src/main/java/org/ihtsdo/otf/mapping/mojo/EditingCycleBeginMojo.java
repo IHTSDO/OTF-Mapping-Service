@@ -57,10 +57,9 @@ public class EditingCycleBeginMojo extends AbstractOtfMappingMojo {
           "You must specify only a single ref set id");
     }
 
-    getLog().info("  preloading bind info package");
-    setupBindInfoPackage();        
-    
     try (final MappingService mappingService = new MappingServiceJpa();) {
+
+      setupBindInfoPackage();
 
       MapProject mapProject = null;
       for (MapProject project : mappingService.getMapProjects().getIterable()) {
