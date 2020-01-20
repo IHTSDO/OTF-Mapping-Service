@@ -64,9 +64,9 @@ public class CycleCheckMojo extends AbstractOtfMappingMojo {
     getLog().info("  terminologyVersion = " + terminologyVersion);
     getLog().info("  rootIds = " + rootIds);
 
-    try {
+    setupBindInfoPackage();
 
-      setupBindInfoPackage();
+    try {
 
       // creating tree positions
       // first get isaRelType from metadata

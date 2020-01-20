@@ -49,10 +49,10 @@ public class MapRecordUpdaterMojo extends AbstractOtfMappingMojo {
     getLog().info("Starting updating map records for project");
     getLog().info("  refsetId = " + refsetId);
 
+    setupBindInfoPackage();
+
     try (final MappingService mappingService = new MappingServiceJpa();
         final ContentService contentService = new ContentServiceJpa();) {
-
-      setupBindInfoPackage();
 
       mappingService.setTransactionPerOperation(false);
       mappingService.beginTransaction();

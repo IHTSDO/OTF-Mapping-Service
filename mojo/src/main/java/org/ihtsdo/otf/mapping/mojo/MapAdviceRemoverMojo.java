@@ -34,14 +34,14 @@ public class MapAdviceRemoverMojo extends AbstractOtfMappingMojo {
     getLog().info("Removing map advice");
     getLog().info("  mapAdviceName = " + mapAdviceName);
 
+    setupBindInfoPackage();
+
     if (mapAdviceName == null) {
       throw new MojoExecutionException(
           "You must specify the full name of the map advice.");
     }
 
     try (final MappingService mappingService = new MappingServiceJpa();) {
-
-      setupBindInfoPackage();
 
       MapAdvice mapAdvice = null;
       for (MapAdvice ma : mappingService.getMapAdvices().getIterable()) {

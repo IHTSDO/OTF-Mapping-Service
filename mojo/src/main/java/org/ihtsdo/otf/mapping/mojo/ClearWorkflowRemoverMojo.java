@@ -37,12 +37,13 @@ public class ClearWorkflowRemoverMojo extends AbstractOtfMappingMojo {
   public void execute() throws MojoExecutionException {
     getLog().info("Starting clear workflow - " + refsetId);
 
+    setupBindInfoPackage();   
+    
     if (refsetId == null) {
       throw new MojoExecutionException("You must specify a refsetId.");
     }
 
     try {
-      setupBindInfoPackage();
 
       final WorkflowService workflowService = new WorkflowServiceJpa();
       final Set<MapProject> mapProjects = new HashSet<>();

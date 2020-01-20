@@ -48,6 +48,8 @@ public class EditingCycleBeginMojo extends AbstractOtfMappingMojo {
     getLog().info("Begin Editing Cycle");
     getLog().info("  refsetId = " + refsetId);
 
+    setupBindInfoPackage();
+
     if (refsetId == null) {
       throw new MojoExecutionException("You must specify a ref set id");
     }
@@ -58,8 +60,6 @@ public class EditingCycleBeginMojo extends AbstractOtfMappingMojo {
     }
 
     try (final MappingService mappingService = new MappingServiceJpa();) {
-
-      setupBindInfoPackage();
 
       MapProject mapProject = null;
       for (MapProject project : mappingService.getMapProjects().getIterable()) {
