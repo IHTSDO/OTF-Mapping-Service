@@ -54,9 +54,9 @@ public class MapRecordRemoverMojo extends AbstractOtfMappingMojo {
     getLog().info("Starting removing map records for project");
     getLog().info("  refsetId = " + refsetId);
 
-    try (final MappingService mappingService = new MappingServiceJpa();) {
+    setupBindInfoPackage();
 
-      setupBindInfoPackage();
+    try (final MappingService mappingService = new MappingServiceJpa();) {
 
       mappingService.setTransactionPerOperation(false);
       mappingService.beginTransaction();

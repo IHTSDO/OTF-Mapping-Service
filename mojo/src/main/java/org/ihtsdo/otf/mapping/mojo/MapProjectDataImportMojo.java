@@ -83,9 +83,9 @@ public class MapProjectDataImportMojo extends AbstractOtfMappingMojo {
     getLog().info("  inputDir = " + inputDir);
     getLog().info("  mini = " + mini);
 
-    try {
+    setupBindInfoPackage();
 
-      setupBindInfoPackage();
+    try {
 
       File inputDirFile = new File(inputDir);
       if (!inputDirFile.exists()) {

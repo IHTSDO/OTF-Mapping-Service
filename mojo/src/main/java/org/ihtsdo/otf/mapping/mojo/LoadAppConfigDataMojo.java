@@ -119,9 +119,9 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
   public void execute() throws MojoExecutionException, MojoFailureException {
     getLog().info("Load App Config Data Started");
 
-    try {
-      setupBindInfoPackage();
+    setupBindInfoPackage();
 
+    try {
       loadConfigData();
       getLog().info("Load App Config Data Finished");
 

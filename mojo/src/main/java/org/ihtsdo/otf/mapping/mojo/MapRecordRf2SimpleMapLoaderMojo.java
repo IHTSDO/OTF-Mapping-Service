@@ -83,9 +83,9 @@ public class MapRecordRf2SimpleMapLoaderMojo
     getLog().info("  refsetId       = " + refsetId);
     getLog().info("  workflowStatus = " + workflowStatus);
 
-    try {
+    setupBindInfoPackage();
 
-      setupBindInfoPackage();
+    try {
 
       // Track system level information
       setProcessStartTime();

@@ -48,9 +48,9 @@ public class TargetMappingToScopedConceptMojo extends AbstractOtfMappingMojo {
   /* see superclass */
   public void execute() throws MojoExecutionException, MojoFailureException {
 
-    try {
-      setupBindInfoPackage();
+    setupBindInfoPackage();
 
+    try {
       transfer();
     } catch (MojoExecutionException me) {
       throw me;

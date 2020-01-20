@@ -77,9 +77,9 @@ public class TerminologyClamlLoaderMojo extends AbstractTerminologyLoaderMojo {
     getLog().info("  terminology = " + terminology);
     getLog().info("  version     = " + version);
 
-    try {
+    setupBindInfoPackage();
 
-      setupBindInfoPackage();
+    try {
       
       // Track system level information
       setProcessStartTime();

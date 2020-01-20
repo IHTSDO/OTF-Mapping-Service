@@ -78,9 +78,9 @@ public class MapRecordRf2ComplexMapAppenderMojo
     getLog().info("  userName       = " + userName);
     getLog().info("  refsetId       = " + refsetId);
 
-    try {
+    setupBindInfoPackage();
 
-      setupBindInfoPackage();
+    try {
       // Track system level information
       setProcessStartTime();
 

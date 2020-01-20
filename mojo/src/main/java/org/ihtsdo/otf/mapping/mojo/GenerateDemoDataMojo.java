@@ -67,9 +67,9 @@ public class GenerateDemoDataMojo extends AbstractOtfMappingMojo {
   public void execute() throws MojoExecutionException, MojoFailureException {
     getLog().info("Generate demo data");
 
-    try {
+    setupBindInfoPackage();
 
-      setupBindInfoPackage();
+    try {
 
       securityService = new SecurityServiceJpa();
       contentService = new ContentServiceJpa();

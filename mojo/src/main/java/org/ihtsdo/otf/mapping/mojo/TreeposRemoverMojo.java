@@ -51,9 +51,9 @@ public class TreeposRemoverMojo extends AbstractOtfMappingMojo {
     getLog().info("  terminology = " + terminology);
     getLog().info("  terminologyVersion = " + terminologyVersion);
 
-    try {
-      setupBindInfoPackage();
+    setupBindInfoPackage();
 
+    try {
       ContentServiceJpa contentService = new ContentServiceJpa();
       contentService.clearTreePositions(terminology, terminologyVersion);
       contentService.close();
