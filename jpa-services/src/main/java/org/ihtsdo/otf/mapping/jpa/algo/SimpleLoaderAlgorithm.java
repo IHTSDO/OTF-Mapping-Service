@@ -38,6 +38,10 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
 	/** Terminology version */
 	private String version;
 
+    /** Metadata counter */
+    private int metadataCounter;
+	
+	
 	/** The date format. */
 	final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 
@@ -57,12 +61,13 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
 	 * Instantiates a {@link SimpleLoaderAlgorithm} from the specified parameters.
 	 * 
 	 */
-	public SimpleLoaderAlgorithm(String terminology, String version, String inputDir) throws Exception {
+	public SimpleLoaderAlgorithm(String terminology, String version, String inputDir, String metadataCounter) throws Exception {
 
 		super();
 		this.terminology = terminology;
 		this.version = version;
 		this.inputDir = inputDir;
+		this.metadataCounter = metadataCounter == null ? 1 : Integer.parseInt(metadataCounter);
 
 		// initialize logger
 		String rootPath = ConfigUtility.getConfigProperties().getProperty("map.principle.source.document.dir");
@@ -126,6 +131,7 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
 			SimpleMetadataHelper helper = new SimpleMetadataHelper(terminology, version, dateFormat.format(now),
 					contentService);
 			log.info("  Create concept metadata");
+			helper.setMetadataCounter(metadataCounter);
 			Map<String, Concept> conceptMap = helper.createMetadata();
 
 			// Create the root concept

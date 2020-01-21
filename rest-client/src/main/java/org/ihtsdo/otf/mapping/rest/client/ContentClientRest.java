@@ -446,20 +446,21 @@ public class ContentClientRest extends RootClientRest
 	/* see superclass */
 	@Override
 	public void loadTerminologySimple(String terminology, String version,
-			String inputDir, String authToken) throws Exception {
+			String inputDir, String metadataCounter, String authToken) throws Exception {
 
 	    Logger.getLogger(getClass())
         .debug("Content Client - load terminology simple " + terminology + ", "
-            + version + ", " + inputDir);
+            + version + ", " + inputDir + ", with metadata starting at id=" + metadataCounter);
 
 		validateNotEmpty(terminology, "terminology");
 		validateNotEmpty(version, "version");
 		validateNotEmpty(inputDir, "inputDir");
+        validateNotEmpty(metadataCounter, "metadataCounter");
 
 		final Client client = ClientBuilder.newClient();
 		final WebTarget target = client.target(config.getProperty("base.url")
 				+ URL_SERVICE_ROOT + "/terminology/load/simple/" + terminology
-				+ "/" + version);
+				+ "/" + version + "/" + metadataCounter);
 		
 		final Response response = target.request(MediaType.APPLICATION_JSON)
 				.header("Authorization", authToken).put(Entity.text(inputDir));

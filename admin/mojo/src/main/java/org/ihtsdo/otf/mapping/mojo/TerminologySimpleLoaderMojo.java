@@ -48,13 +48,21 @@ public class TerminologySimpleLoaderMojo extends AbstractTerminologyLoaderMojo {
 	private String terminology;
 
 	/**
-	 * Name of terminology to be loaded.
+	 * Version of terminology to be loaded.
 	 * 
 	 * @parameter
 	 * @required
 	 */
 	private String version;
 
+	 /**
+     * Version of terminology to be loaded.
+     * 
+     * @parameter
+     */
+    private String metadataCounter = "1";
+	
+	
 	/**
 	 * Instantiates a {@link TerminologySimpleLoaderMojo} from the specified
 	 * parameters.
@@ -77,6 +85,7 @@ public class TerminologySimpleLoaderMojo extends AbstractTerminologyLoaderMojo {
 	    getLog().info("  Terminology        : " + terminology);
 	    getLog().info("  Version            : " + version);
 	    getLog().info("  Input directory    : " + inputDir);
+        getLog().info("  Metadata counter   : " + metadataCounter);
 	    getLog().info("  Expect server up   : " + server);
 
 		try {
@@ -92,14 +101,14 @@ public class TerminologySimpleLoaderMojo extends AbstractTerminologyLoaderMojo {
 				getLog().info("Running directly");
 					
 				ContentServiceRestImpl service = new ContentServiceRestImpl();
-				service.loadTerminologySimple(terminology, version, inputDir, getAuthToken());
+				service.loadTerminologySimple(terminology, version, inputDir, metadataCounter, getAuthToken());
 
 			} else {
 				getLog().info("Running against server");
 
 				// invoke the client
 				ContentClientRest client = new ContentClientRest(properties);
-				client.loadTerminologySimple(terminology, version, inputDir, getAuthToken());
+				client.loadTerminologySimple(terminology, version, inputDir, metadataCounter, getAuthToken());
 			}
 
 		} catch (Exception e) {
