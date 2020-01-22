@@ -96,12 +96,12 @@ public class AscToXmlMojo extends AbstractOtfMappingMojo {
     getLog().info("  documentTitle = " + documentTitle);
     getLog().info("  headerProperties = " + headerProperties);
 
+    setupBindInfoPackage();    
+    
     BufferedReader reader = null;
     String outputDir = "";
 
     try {
-
-      setupBindInfoPackage();
 
       // set the input directory
       String baseDir = inputDir + "/" + terminology + "/" + terminologyVersion;

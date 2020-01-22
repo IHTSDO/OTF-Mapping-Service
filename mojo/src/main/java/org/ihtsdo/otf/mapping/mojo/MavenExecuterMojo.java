@@ -51,8 +51,9 @@ public class MavenExecuterMojo extends AbstractOtfMappingMojo {
 
     Properties config;
 
+    setupBindInfoPackage();
+
     try {
-      setupBindInfoPackage();
 
       config = ConfigUtility.getConfigProperties();
     } catch (Exception e) {

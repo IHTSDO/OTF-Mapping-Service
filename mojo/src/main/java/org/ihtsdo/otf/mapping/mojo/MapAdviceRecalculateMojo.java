@@ -37,13 +37,13 @@ public class MapAdviceRecalculateMojo extends AbstractOtfMappingMojo {
     getLog().info("Recalculating map advice for project");
     getLog().info("  refsetId = " + refsetId);
 
+    setupBindInfoPackage();
+
     if (refsetId == null) {
       throw new MojoExecutionException("You must specify a refset Id.");
     }
 
     try {
-
-      setupBindInfoPackage();
 
       final MappingService mappingService = new MappingServiceJpa();
 

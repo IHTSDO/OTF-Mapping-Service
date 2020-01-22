@@ -91,10 +91,9 @@ public class TerminologySimpleLoaderMojo extends AbstractTerminologyLoaderMojo {
         getLog().info("  Metadata counter   : " + metadataCounter);
     getLog().info("  Expect server up   : " + server);
 
+    setupBindInfoPackage();
+
     try {
-
-      setupBindInfoPackage();
-
       // Track system level information
       setProcessStartTime();
 

@@ -34,10 +34,11 @@ public class UpdateDbMojo extends AbstractOtfMappingMojo {
   @Override
   public void execute() throws MojoFailureException {
     getLog().info("Start updating database schema");
-    try {
-      setupBindInfoPackage();
 
-      // Trigger a JPA event
+    setupBindInfoPackage();
+
+   try {
+       // Trigger a JPA event
       new ContentServiceJpa().close();
       getLog().info("done ...");
     } catch (Exception e) {

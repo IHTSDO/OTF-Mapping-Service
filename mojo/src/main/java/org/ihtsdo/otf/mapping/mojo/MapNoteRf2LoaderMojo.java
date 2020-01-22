@@ -52,10 +52,10 @@ public class MapNoteRf2LoaderMojo extends AbstractOtfMappingMojo {
     getLog().info("Start loading map notes data");
     getLog().info("  inputFile = " + inputFile);
 
+    setupBindInfoPackage();
+
     BufferedReader mapNoteReader = null;
     try {
-
-      setupBindInfoPackage();
 
       // Set date format for parsing "effectiveTime"
       final SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd");

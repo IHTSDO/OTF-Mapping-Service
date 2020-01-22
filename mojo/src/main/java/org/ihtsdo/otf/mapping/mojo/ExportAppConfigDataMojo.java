@@ -110,8 +110,9 @@ public class ExportAppConfigDataMojo extends AbstractOtfMappingMojo {
   public void execute() throws MojoExecutionException, MojoFailureException {
     getLog().info("Load App Config Data Started");
 
+    setupBindInfoPackage();
+    
     try {
-      setupBindInfoPackage();
 
       exportConfigData();
       getLog().info("Load App Config Data Finished");

@@ -51,9 +51,9 @@ public class FeedbackRemoverMojo extends AbstractOtfMappingMojo {
     getLog().info("Starting removing feedback for project");
     getLog().info("  refsetId = " + refsetId);
 
-    try (final WorkflowService workflowService = new WorkflowServiceJpa();) {
+    setupBindInfoPackage();
 
-      setupBindInfoPackage();
+    try (final WorkflowService workflowService = new WorkflowServiceJpa();) {
 
       workflowService.setTransactionPerOperation(false);
       workflowService.beginTransaction();

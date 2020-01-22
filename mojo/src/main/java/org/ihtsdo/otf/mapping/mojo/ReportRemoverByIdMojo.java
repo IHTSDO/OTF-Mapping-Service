@@ -42,9 +42,9 @@ public class ReportRemoverByIdMojo extends AbstractOtfMappingMojo {
     getLog().info("  startId = " + startId);
     getLog().info("  endId = " + endId);
 
-    try {
-      setupBindInfoPackage();
+    setupBindInfoPackage();
 
+    try {
       // check params
       if (startId == null && endId == null) {
         throw new Exception("This call will delete all reports.");

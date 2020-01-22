@@ -44,13 +44,13 @@ public class ICD10CMSQLReportMojo extends AbstractOtfMappingMojo {
   public void execute() throws MojoExecutionException, MojoFailureException {
     getLog().info("Start ICD10CM SQLReport Mojo");
 
+    setupBindInfoPackage();
+
     try (final ContentService service = new ContentServiceJpa() {
       {
         ICD10CMSQLReportMojo.this.manager = manager;
       }
     };) {
-
-      setupBindInfoPackage();
 
       // Obtain an entity manager;
 

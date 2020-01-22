@@ -39,8 +39,9 @@ public class MapRecordComplexMapLoaderMojo extends AbstractOtfMappingMojo {
     getLog().info("Starting generating map records from complex map records");
     getLog().info("  refsetId = " + refsetId);
 
+    setupBindInfoPackage();
+
     try {
-      setupBindInfoPackage();
 
       MappingService mappingService = new MappingServiceJpa();
       Set<MapProject> mapProjects = new HashSet<>();
