@@ -44,14 +44,14 @@ public class CreateMapAdministratorMojo extends AbstractOtfMappingMojo {
   public void execute() throws MojoExecutionException {
     getLog().info("Start creating an admin user");
     getLog().info("  mapUser = " + mapUser);
+    
+    setupBindInfoPackage();
 
     if (mapUser == null)
       throw new MojoExecutionException(
           "You must specify a user name to serve as project administrator");
 
     try {
-
-      setupBindInfoPackage();
 
       MappingService mappingService = new MappingServiceJpa();
 

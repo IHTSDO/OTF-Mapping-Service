@@ -55,9 +55,9 @@ public class ReportRemoverMojo extends AbstractOtfMappingMojo {
     getLog().info("  startDate = " + startDate);
     getLog().info("  endDate = " + endDate);
 
-    try {
-      setupBindInfoPackage();
+    setupBindInfoPackage();
 
+    try {
       // check params
       if (refsetId == null && startDate == null && endDate == null) {
         throw new Exception(

@@ -89,9 +89,9 @@ public class TerminologyRf2SnapshotLoaderMojo
     getLog().info("  treePositions    = " + treePositions);
     getLog().info("  sendNotification = " + sendNotification);
 
-    try {
+    setupBindInfoPackage();
 
-      setupBindInfoPackage();
+    try {
 
       // Track system level information
       setProcessStartTime();

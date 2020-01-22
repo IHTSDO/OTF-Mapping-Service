@@ -63,9 +63,9 @@ public class TerminologyRf2DeltaLoader extends AbstractTerminologyLoaderMojo {
     getLog().info("    terminology         = " + terminology);
     getLog().info("    lastPublicationDate = " + lastPublicationDate);
 
-    try {
+    setupBindInfoPackage();
 
-      setupBindInfoPackage();
+    try {
       
       // Track system level information
       setProcessStartTime();

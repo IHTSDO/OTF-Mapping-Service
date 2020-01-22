@@ -46,10 +46,10 @@ public class MapProjectDataRemoverMojo extends AbstractOtfMappingMojo {
   public void execute() throws MojoFailureException {
     getLog().info("Starting removing map project data");
 
+    setupBindInfoPackage();
+
     try (MappingService mappingService = new MappingServiceJpa();
         ReportService reportService = new ReportServiceJpa();) {
-
-      setupBindInfoPackage();
 
       // Remove map projects
       for (MapProject p : mappingService.getMapProjects().getIterable()) {

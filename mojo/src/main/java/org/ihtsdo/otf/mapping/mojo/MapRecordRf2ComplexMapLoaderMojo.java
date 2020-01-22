@@ -96,9 +96,9 @@ public class MapRecordRf2ComplexMapLoaderMojo
     getLog().info("  recordFlag     = " + recordFlag);
     getLog().info("  refsetId       = " + refsetId);
 
-    try {
+    setupBindInfoPackage();
 
-      setupBindInfoPackage();
+    try {
 
       // Track system level information
       setProcessStartTime();

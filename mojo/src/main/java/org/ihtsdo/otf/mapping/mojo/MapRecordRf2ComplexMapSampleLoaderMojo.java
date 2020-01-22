@@ -73,8 +73,9 @@ public class MapRecordRf2ComplexMapSampleLoaderMojo
     getLog().info("  user = " + user);
     getLog().info("  samplingRate = " + samplingRate);
 
+    setupBindInfoPackage();
+
     try {
-      setupBindInfoPackage();
 
       float rate = Float.parseFloat(samplingRate);
 

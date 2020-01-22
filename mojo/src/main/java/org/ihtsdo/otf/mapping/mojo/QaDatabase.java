@@ -50,9 +50,9 @@ public class QaDatabase extends AbstractOtfMappingMojo {
   public void execute() throws MojoExecutionException, MojoFailureException {
     getLog().info("Starting database QA");
 
-    try {
+    setupBindInfoPackage();
 
-      setupBindInfoPackage();
+    try {
 
       // Obtain an entity manager;
       ContentService service = new ContentServiceJpa() {

@@ -73,11 +73,11 @@ public class ReportGenerateDailyMojo extends AbstractOtfMappingMojo {
     getLog().info("  startDate = " + startDate);
     getLog().info("  endDate = " + endDate);
 
+    setupBindInfoPackage();
+    
     MapUser mapUser = null;
     try (final ReportService reportService = new ReportServiceJpa();
         final MappingService mappingService = new MappingServiceJpa();) {
-
-      setupBindInfoPackage();
 
       if (startDate == null) {
         throw new MojoFailureException("You must specify a start date");

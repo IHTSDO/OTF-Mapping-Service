@@ -56,9 +56,9 @@ public class MapProjectDataExportMojo extends AbstractOtfMappingMojo {
     getLog().info("Starting exporting metadata");
     getLog().info("  outputDir = " + outputDir);
 
-    try {
+    setupBindInfoPackage();
 
-      setupBindInfoPackage();
+    try {
 
       File outputDirFile = new File(outputDir);
       if (!outputDirFile.exists()) {

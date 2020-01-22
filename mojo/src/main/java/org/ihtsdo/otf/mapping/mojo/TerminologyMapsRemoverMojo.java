@@ -53,9 +53,9 @@ public class TerminologyMapsRemoverMojo extends AbstractTerminologyLoaderMojo {
     getLog().info("Starting removing terminology maps");
     getLog().info("  refsetId = " + refsetId);
 
-    try {
+    setupBindInfoPackage();
 
-      setupBindInfoPackage();
+    try {
       
       // Track system level information
       setProcessStartTime();
