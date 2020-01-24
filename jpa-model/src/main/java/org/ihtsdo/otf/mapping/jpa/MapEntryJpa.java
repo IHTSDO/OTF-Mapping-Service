@@ -85,6 +85,7 @@ public class MapEntryJpa implements MapEntry {
   /** The map relation. */
   @OneToOne(targetEntity = MapRelationJpa.class, fetch = FetchType.EAGER)
   @IndexedEmbedded(targetElement = MapRelationJpa.class)
+  @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})  
   private MapRelation mapRelation;
 
   /** The mapBlock. */
