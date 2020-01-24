@@ -1688,7 +1688,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     }
 
     int[] totalCt = new int[1];
-    final List<FeedbackConversation> feedbackConversations =
+    List<FeedbackConversation> feedbackConversations =
         (List<FeedbackConversation>) getQueryResults(sb.toString(),
             FeedbackConversationJpa.class, FeedbackConversationJpa.class, pfs,
             totalCt);
@@ -1731,7 +1731,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
         }
       }
 
-      feedbackConversations.clear();
+      feedbackConversations = new ArrayList<>();
       feedbackConversations.addAll(conversationsToKeep);
       conversationsToKeep.clear();
     }
@@ -1767,7 +1767,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
           conversationsToKeep.add(fc);
         }
       }
-      feedbackConversations.clear();
+      feedbackConversations = new ArrayList<>();
       feedbackConversations.addAll(conversationsToKeep);
       conversationsToKeep.clear();
     }
@@ -1788,7 +1788,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     }
 
     totalCt[0] = feedbackConversations.size();
-    feedbackConversations.clear();
+    feedbackConversations = new ArrayList<>();
     feedbackConversations.addAll(recordsToKeep);
     recordsToKeep.clear();
 
