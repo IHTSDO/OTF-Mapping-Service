@@ -131,6 +131,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
       newMapUserPreferences.setLastLogin(new Date().getTime());
       newMapUserPreferences.setLastMapProjectId(0L);
       newMapUserPreferences.setNotifiedByEmail(false);
+      newMapUserPreferences.setLastAssignedTab("0");
       addMapUserPreferences(newMapUserPreferences);
       userId = newMapUser.getId();
     }
