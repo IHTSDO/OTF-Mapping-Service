@@ -71,7 +71,7 @@
     <sax.version>2.0.1</sax.version>
     <slf4j.log4j12.version>1.7.28</slf4j.log4j12.version>
     <swagger.version>1.5.23</swagger.version>
-    <xml-apis.version></xml-apis.version>
+    <xml-apis.version>2.0.2</xml-apis.version>
     <xom.version>1.3.2</xom.version>
     
   </properties>
