@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
@@ -17,7 +18,7 @@
 
   <!-- Declare Project Dependency Versions -->
   <dependencies>
-  
+
     <!-- Model interfaces. -->
     <dependency>
       <groupId>org.ihtsdo.otf.mapping</groupId>
@@ -42,7 +43,7 @@
     <dependency>
       <groupId>org.ihtsdo.otf.mapping</groupId>
       <artifactId>mapping-rest</artifactId>
-	  <classifier>classes</classifier>
+      <classifier>classes</classifier>
     </dependency>
 
     <!-- Maven invoker -->
@@ -52,24 +53,15 @@
     </dependency>
 
     <!-- JPA dependencies -->
-<!--     <dependency>
-      <groupId>org.hibernate.javax.persistence</groupId>
-      <artifactId>hibernate-jpa-2.0-api</artifactId>
-    </dependency> -->
+    <!-- <dependency> <groupId>org.hibernate.javax.persistence</groupId> <artifactId>hibernate-jpa-2.0-api</artifactId> 
+      </dependency> -->
     <dependency>
       <groupId>javax.transaction</groupId>
       <artifactId>jta</artifactId>
     </dependency>
-    <!-- 
-    <dependency>
-      <groupId>org.hibernate</groupId>
-      <artifactId>hibernate-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.hibernate</groupId>
-      <artifactId>hibernate-c3p0</artifactId>
-    </dependency>
-    -->
+    <!-- <dependency> <groupId>org.hibernate</groupId> <artifactId>hibernate-core</artifactId> 
+      </dependency> <dependency> <groupId>org.hibernate</groupId> <artifactId>hibernate-c3p0</artifactId> 
+      </dependency> -->
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-search-orm</artifactId>
@@ -102,7 +94,7 @@
       <groupId>xom</groupId>
       <artifactId>xom</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.glassfish.jaxb</groupId>
       <artifactId>jaxb-runtime</artifactId>
@@ -111,17 +103,26 @@
       <groupId>javax.xml.bind</groupId>
       <artifactId>jaxb-api</artifactId>
     </dependency>
+
+    <dependency>
+      <groupId>xml-apis</groupId>
+      <artifactId>xml-apis</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>sax</groupId>
+      <artifactId>sax</artifactId>
+    </dependency>
     
   </dependencies>
-	
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-plugin-plugin</artifactId>
-				<version>3.6.0</version>
-			</plugin>
-			<!-- other plugins -->
-		</plugins>
-	</build>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-plugin-plugin</artifactId>
+        <version>3.6.0</version>
+      </plugin>
+      <!-- other plugins -->
+    </plugins>
+  </build>
 </project>
