@@ -309,8 +309,23 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       if (moduleId == null || moduleId.isEmpty()) {
         throw new LocalException("Module id must be specified");
       }
-      if (!metadataService.getModules(mapProject.getSourceTerminology(),
+      boolean moduleFound = false;
+      if (metadataService.getModules(mapProject.getSourceTerminology(),
           mapProject.getSourceTerminologyVersion()).containsKey(moduleId)) {
+        moduleFound = true;
+      }
+      // Also check the destination terminology (this is to handle bidirectional
+      // maps that are both controlled by a single module id concept
+      if (metadataService
+          .getModules(mapProject.getDestinationTerminology(),
+              mapProject.getDestinationTerminologyVersion())
+          .containsKey(moduleId)) {
+        moduleFound = true;
+      }
+      // In the edge-case where the correct module Id is not associated with a
+      // valid concept, allow "REPLACE_THIS*" as a module id, to remind the
+      // releaser to post-process the release files with the correct module ID
+      if (!moduleFound && !moduleId.contains("REPLACE_THIS")) {
         throw new LocalException(
             "Module id is not a valid module id " + moduleId);
       }
