@@ -322,13 +322,17 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         moduleFound = true;
       }
       // In the edge-case where the correct module Id is not associated with a
-      // valid concept, allow "REPLACE_THIS*" as a module id, to remind the
-      // releaser to post-process the release files with the correct module ID
-      if (!moduleFound && !moduleId.contains("REPLACE_THIS")) {
+      // valid concept, allow "REMOVE_THIS*" as a module id, and strip the 
+      // REMOVE_THIS from the moduleId later on the process.
+      if (!moduleFound && !moduleId.startsWith("REMOVE_THIS")) {
         throw new LocalException(
             "Module id is not a valid module id " + moduleId);
       }
 
+      if(moduleId.startsWith("REMOVE_THIS")){
+        moduleId = moduleId.replace("REMOVE_THIS","");
+      }
+      
       // Refset id against pattern
       if (EnumSet.of(MapRefsetPattern.ComplexMap, MapRefsetPattern.ExtendedMap)
           .contains(mapProject.getMapRefsetPattern())) {
