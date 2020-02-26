@@ -27,7 +27,6 @@ public class MedDRAToSnomedProjectSpecificAlgorithmHandler
   public ValidationResult validateTargetCodes(MapRecord mapRecord)
     throws Exception {
 
-    // A relation must be selected
     // Maps cannot have multiple groups
     // Maps cannot have multiple entries
     // If either condition is not met, the changes will not be saved
@@ -40,12 +39,15 @@ public class MedDRAToSnomedProjectSpecificAlgorithmHandler
         validationResult.addError("A map record may only have one entry.");
       }
 
-      for (final MapEntry mapEntry : mapRecord.getMapEntries()) {
-        if (mapEntry.getMapRelation() == null) {
-          validationResult
-              .addError("A relation indicating the reason must be selected.");
-        }
-      }
+      // RAW 20200226 - MedDRA to Snomed project is being changes to a Simple
+      // project, so relations are no longer accepted or allowed
+      
+      // for (final MapEntry mapEntry : mapRecord.getMapEntries()) {
+      // if (mapEntry.getMapRelation() == null) {
+      // validationResult
+      // .addError("A relation indicating the reason must be selected.");
+      // }
+      // }
     }
     return validationResult;
   }
