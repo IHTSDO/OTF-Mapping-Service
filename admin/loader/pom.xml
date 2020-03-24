@@ -814,5 +814,32 @@
       </build>
     </profile>
 
+    <!-- Send an email using specified subject and body. -Drun.config=.. must also be specified. -->
+    <profile>
+      <id>SendEmail</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>send-email</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>send-email</goal>
+                </goals>
+                <configuration>
+                  <subject>${subject}</subject>
+                  <body>${body}</body>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+        </plugins>
+      </build>
+    </profile>
+
   </profiles>
 </project>
