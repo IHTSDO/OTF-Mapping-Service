@@ -42,6 +42,8 @@ public class SendEmailMojo extends AbstractOtfMappingMojo {
 	@Override
 	public void execute() throws MojoExecutionException {
 		getLog().info("Sending an email");
+	    getLog().info("  subject = " + subject);
+	    getLog().info("  body = " + body);
 
 		Properties config;
 		try {
