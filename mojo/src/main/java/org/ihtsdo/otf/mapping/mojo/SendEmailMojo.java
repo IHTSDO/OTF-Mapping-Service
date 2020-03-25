@@ -42,8 +42,12 @@ public class SendEmailMojo extends AbstractOtfMappingMojo {
 	@Override
 	public void execute() throws MojoExecutionException {
 		getLog().info("Sending an email");
-	    getLog().info("  subject = " + subject);
-	    getLog().info("  body = " + body);
+		getLog().info("  subject = " + subject);
+		getLog().info("  body = " + body);
+
+		// The '\n' when coming in via parameter are getting double-slashed.
+		// Replace with an explicit line separator.
+		body = body.replace("\\n", System.lineSeparator());
 
 		Properties config;
 		try {
