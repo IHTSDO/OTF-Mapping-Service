@@ -601,7 +601,7 @@ angular
         descendants : 'mapped',
     	    adviceOptions : 		  [ 'contains', 'does not contain', 'none'],
     	    ruleCategories : [ 'TRUE', 'Gender - Male', 'Gender - Female',
-    		                            'Age - Chronological', 'Age - At Onset' ],
+    		                            'Age - At Onset' ],
 
         // search display data
         roots : [], // source terminology root concepts
@@ -748,9 +748,6 @@ angular
     		  	}
       	  	  break;
     		  case $scope.searchParameters.ruleCategories[3] : {
-    			  queryRestrictions.push('mapEntries.rule:' + 'IFA 424144002');
-    		  	}
-    		  case $scope.searchParameters.ruleCategories[4] : {
     			  queryRestrictions.push('mapEntries.rule:' + 'IFA 445518008');
     		  	}
     		  break;
