@@ -514,17 +514,17 @@ angular
           initializePresetAgeRanges();
 
           $scope.ruleCategories = [ 'TRUE', 'Gender - Male', 'Gender - Female',
-            'Age - Chronological', 'Age - At Onset' ];
+            'Age - At Onset (Custom range)', 'Age - At Onset (Preset range)' ];
 
           if (entry != null && entry.rule != null) {
             if (entry.rule.indexOf('Male') > -1)
               $scope.ruleCategory = 'Gender - Male';
             else if (entry.rule.indexOf('Female') > -1)
               $scope.ruleCategory = 'Gender - Female';
-            else if (entry.rule.indexOf('chronological') > -1)
-              $scope.ruleCategory = 'Age - Chronological';
-            else if (entry.rule.indexOf('onset') > -1)
-              $scope.ruleCategory = 'Age - At Onset';
+            else if (entry.rule.indexOf('Custom') > -1)
+              $scope.ruleCategory = 'Age - At Onset (Custom range)';
+            else if (entry.rule.indexOf('Preset') > -1)
+              $scope.ruleCategory = 'Age - At Onset (Preset range)';
             else
               $scope.ruleCategory = 'TRUE';
           } else
@@ -572,8 +572,8 @@ angular
             }
 
             // if an age range rule
-            else if (ruleCategory === 'Age - Chronological'
-              || ruleCategory === 'Age - At Onset') {
+            else if (ruleCategory === 'Age - At Onset (Custom range)'
+              || ruleCategory === 'Age - At Onset (Preset range)') {
 
               // if age range not yet specified, do not construct rule
               if (ageRange == null || ageRange == undefined)
@@ -652,8 +652,7 @@ angular
               }
 
               // base text for both lower and upper value sections
-              var ruleText = (ruleCategory === 'Age - Chronological') ? 'IFA 424144002 | Current chronological age (observable entity)'
-                : 'IFA 445518008 | Age at onset of clinical finding (observable entity)';
+              var ruleText = 'IFA 445518008 | Age at onset of clinical finding (observable entity)';
 
               if (lowerValueValid) {
                 $scope.rule += ruleText + ' | '
