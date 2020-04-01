@@ -6,7 +6,6 @@ package org.ihtsdo.otf.mapping.jpa.services;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -23,9 +22,6 @@ import java.util.StringTokenizer;
 import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
-import org.hibernate.CacheMode;
-import org.hibernate.search.jpa.FullTextEntityManager;
-import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.helpers.FeedbackConversationList;
 import org.ihtsdo.otf.mapping.helpers.FeedbackConversationListJpa;
 import org.ihtsdo.otf.mapping.helpers.FeedbackList;
@@ -1177,22 +1173,24 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     // commit any remaining transactions
     commit();
 
-    if(reindex){
-	// Track system level information
-	final LuceneReindexAlgorithm algo = new LuceneReindexAlgorithm();
-	//Only reindex the Tracking Records
-	String indexedObjects = "TrackingRecordJpa";
-	
-	try 
-		algo.setIndexedObjects(indexedObjects);
-		algo.compute();
+    if (reindex) {
+        // Track system level information
+        final LuceneReindexAlgorithm algo = new LuceneReindexAlgorithm();
+        // Only reindex the Tracking Records
+        String indexedObjects = "TrackingRecordJpa";
 
-	} catch (Exception e) {
-		throw new Exception("Exception trying to reindex " + indexedObjects + ". " + e);
-	} finally {
-		algo.close();
-	}
-    }
+        try {
+
+          algo.setIndexedObjects(indexedObjects);
+          algo.compute();
+
+        } catch (Exception e) {
+          throw new Exception(
+              "Exception trying to reindex " + indexedObjects + ". " + e);
+        } finally {
+          algo.close();
+        }
+      }
 //        
 //    // instantiate the full text eneity manager and set version
 //    FullTextEntityManager fullTextEntityManager =
