@@ -6,7 +6,6 @@ package org.ihtsdo.otf.mapping.jpa.services;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -20,14 +19,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import javax.persistence.Entity;
 import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
-import org.apache.lucene.util.Version;
-import org.hibernate.CacheMode;
-import org.hibernate.search.jpa.FullTextEntityManager;
-import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.mapping.helpers.FeedbackConversationList;
 import org.ihtsdo.otf.mapping.helpers.FeedbackConversationListJpa;
 import org.ihtsdo.otf.mapping.helpers.FeedbackList;
@@ -289,10 +283,10 @@ public class WorkflowServiceJpa extends MappingServiceJpa
 
     List results = query.getResultList();
     Object foundObject = null;
-    if(!results.isEmpty()){
-        foundObject = results.get(0);
+    if (!results.isEmpty()) {
+      foundObject = results.get(0);
     }
-    
+
     return (TrackingRecord) foundObject;
   }
 
@@ -885,10 +879,6 @@ public class WorkflowServiceJpa extends MappingServiceJpa
   /* see superclass */
   @Override
   public void computeWorkflow(MapProject mapProject) throws Exception {
-	  computeWorkflow(mapProject, true);
-  }
-
-  public void computeWorkflow(MapProject mapProject, Boolean reindex) throws Exception {
 
     Logger.getLogger(WorkflowServiceJpa.class)
         .info("Start computing workflow for " + mapProject.getName());
@@ -900,19 +890,26 @@ public class WorkflowServiceJpa extends MappingServiceJpa
 
     final Map<String, String> teamAssignedConcepts = new HashMap<>();
     if (mapProject.isTeamBased()) {
-      //put into config - option to implement team based
-      //key = ProjectId-ConceptId, value = team name
-      TrackingRecordList trackingRecords = getTrackingRecordsForMapProject(mapProject);    
-      
-      if(trackingRecords != null){
-        Logger.getLogger(getClass()).info("Total number of tracking records: " + trackingRecords.getCount());
+      // put into config - option to implement team based
+      // key = ProjectId-ConceptId, value = team name
+      TrackingRecordList trackingRecords =
+          getTrackingRecordsForMapProject(mapProject);
+
+      if (trackingRecords != null) {
+        Logger.getLogger(getClass()).info(
+            "Total number of tracking records: " + trackingRecords.getCount());
         for (final TrackingRecord tr : trackingRecords.getIterable()) {
-          Logger.getLogger(getClass()).info("Workflow: build list of key:" + tr.getMapProjectId() + "||" + tr.getTerminologyId() + " teamName:" + tr.getAssignedTeamName());
-          teamAssignedConcepts.put(tr.getMapProjectId() + "||" + tr.getTerminologyId(), tr.getAssignedTeamName());
+          Logger.getLogger(getClass())
+              .info("Workflow: build list of key:" + tr.getMapProjectId() + "||"
+                  + tr.getTerminologyId() + " teamName:"
+                  + tr.getAssignedTeamName());
+          teamAssignedConcepts.put(
+              tr.getMapProjectId() + "||" + tr.getTerminologyId(),
+              tr.getAssignedTeamName());
         }
       }
     }
-    
+
     // Clear the workflow for this project
     Logger.getLogger(WorkflowServiceJpa.class).info("  Clear old workflow");
     clearWorkflowForMapProject(mapProject);
@@ -944,14 +941,13 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     // get the concepts in scope
     SearchResultList conceptsInScope =
         findConceptsInScope(mapProject.getId(), null);
-    
+
     // construct a hashset of concepts in scope
     Set<String> conceptIds = new HashSet<>();
     for (final SearchResult sr : conceptsInScope.getIterable()) {
       conceptIds.add(sr.getTerminologyId());
     }
-    
-    
+
     Logger.getLogger(WorkflowServiceJpa.class)
         .info("  Concept ids put into hash set: " + conceptIds.size());
 
@@ -1058,13 +1054,15 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       trackingRecord.setTerminologyVersion(concept.getTerminologyVersion());
       trackingRecord.setDefaultPreferredName(concept.getDefaultPreferredName());
       trackingRecord.setSortKey(sortKey);
-      
+
       if (mapProject.isTeamBased() && !teamAssignedConcepts.isEmpty()) {
-        String team = teamAssignedConcepts.get(mapProject.getId() + "||"+ concept.getTerminologyId());
-        if (!StringUtils.isNullOrEmpty(team)){
-          
-          Logger.getLogger(getClass()).info("Tracking record set team name:" + team + " for: " + trackingRecord.getTerminologyId());
-          
+        String team = teamAssignedConcepts
+            .get(mapProject.getId() + "||" + concept.getTerminologyId());
+        if (!StringUtils.isNullOrEmpty(team)) {
+
+          Logger.getLogger(getClass()).info("Tracking record set team name:"
+              + team + " for: " + trackingRecord.getTerminologyId());
+
           trackingRecord.setAssignedTeamName(team);
         }
       }
@@ -1169,46 +1167,30 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       }
     }
 
+    contentService.close();
+
     // commit any remaining transactions
     commit();
 
-    if(reindex){
-	// Track system level information
-	final LuceneReindexAlgorithm algo = new LuceneReindexAlgorithm();
-	//Only reindex the Tracking Records
-	String indexedObjects = "TrackingRecordJpa";
-	
-	try {
+    // Reindex the Tracking Records
+    final LuceneReindexAlgorithm algo = new LuceneReindexAlgorithm();
+    String indexedObjects = "TrackingRecordJpa";
 
-		algo.setIndexedObjects(indexedObjects);
-		algo.compute();
+    try {
 
-	} catch (Exception e) {
-		throw new Exception("Exception trying to reindex " + indexedObjects + ". " + e);
-	} finally {
-		algo.close();
-	}
+      algo.setIndexedObjects(indexedObjects);
+      algo.compute();
+
+    } catch (Exception e) {
+      throw new Exception(
+          "Exception trying to reindex " + indexedObjects + ". " + e);
+    } finally {
+      algo.close();
     }
-//        
-//    // instantiate the full text eneity manager and set version
-//    FullTextEntityManager fullTextEntityManager =
-//        Search.getFullTextEntityManager(manager);
-//    fullTextEntityManager.setProperty("Version", Version.LUCENE_36);
-//
-//    // create the indexes
-//    Logger.getLogger(WorkflowServiceJpa.class)
-//        .info("  Creating indexes for TrackingRecordJpa");
-//    fullTextEntityManager.purgeAll(TrackingRecordJpa.class);
-//    fullTextEntityManager.flushToIndexes();
-//    fullTextEntityManager.createIndexer(TrackingRecordJpa.class)
-//        .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
-//        .threadsToLoadObjects(4).threadsForSubsequentFetching(8).startAndWait();
 
-    //fullTextEntityManager.detach(manager);
     Logger.getLogger(WorkflowServiceJpa.class).info("Done.");
   }
-  
-  
+
   /* see superclass */
   @Override
   public void clearWorkflowForMapProject(MapProject mapProject)
@@ -1674,10 +1656,11 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       sb.append(" AND ").append("mapProjectId:").append(mapProject.getId());
     }
 
-    // MapProjectId is already used - no reason to look for terminology and version
-//    sb.append(" AND terminology:").append(mapProject.getSourceTerminology());
-//    sb.append(" AND terminologyVersion:")
-//        .append(mapProject.getSourceTerminologyVersion());
+    // MapProjectId is already used - no reason to look for terminology and
+    // version
+    // sb.append(" AND terminology:").append(mapProject.getSourceTerminology());
+    // sb.append(" AND terminologyVersion:")
+    // .append(mapProject.getSourceTerminologyVersion());
 
     // if simplest query, just get most recent 12 months of results, to make
     // expedient
@@ -1881,11 +1864,11 @@ public class WorkflowServiceJpa extends MappingServiceJpa
             "select m from FeedbackConversationJpa m where mapProjectId=:mapProjectId")
         .setParameter("mapProjectId", mapProjectId);
 
-    List<FeedbackConversation> feedbackConversations = query.getResultList();    
+    List<FeedbackConversation> feedbackConversations = query.getResultList();
     for (final FeedbackConversation feedbackConversation : feedbackConversations) {
       handleFeedbackConversationLazyInitialization(feedbackConversation);
-    }     
-    
+    }
+
     // set the total count
     FeedbackConversationListJpa feedbackConversationList =
         new FeedbackConversationListJpa();
@@ -1896,7 +1879,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
 
     return feedbackConversationList;
   }
-  
+
   /* see superclass */
   @Override
   public FeedbackList getFeedbackErrorsForRecord(MapRecord mapRecord)
