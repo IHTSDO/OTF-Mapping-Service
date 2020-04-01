@@ -1,11 +1,12 @@
 /*
- *    Copyright 2017 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -53,6 +54,7 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
 import org.ihtsdo.otf.mapping.jpa.FeedbackJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
+import org.ihtsdo.otf.mapping.jpa.algo.LuceneReindexAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.handlers.AbstractWorkflowPathHandler;
 import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowFixErrorPathHandler;
 import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowNonLegacyPathHandler;
@@ -883,6 +885,10 @@ public class WorkflowServiceJpa extends MappingServiceJpa
   /* see superclass */
   @Override
   public void computeWorkflow(MapProject mapProject) throws Exception {
+	  computeWorkflow(mapProject, true);
+  }
+
+  public void computeWorkflow(MapProject mapProject, Boolean reindex) throws Exception {
 
     Logger.getLogger(WorkflowServiceJpa.class)
         .info("Start computing workflow for " + mapProject.getName());
@@ -1166,24 +1172,43 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     // commit any remaining transactions
     commit();
 
-    // instantiate the full text eneity manager and set version
-    FullTextEntityManager fullTextEntityManager =
-        Search.getFullTextEntityManager(manager);
-    fullTextEntityManager.setProperty("Version", Version.LUCENE_36);
+    if(reindex){
+	// Track system level information
+	final LuceneReindexAlgorithm algo = new LuceneReindexAlgorithm();
+	//Only reindex the Tracking Records
+	String indexedObjects = "TrackingRecordJpa";
+	
+	try {
 
-    // create the indexes
-    Logger.getLogger(WorkflowServiceJpa.class)
-        .info("  Creating indexes for TrackingRecordJpa");
-    fullTextEntityManager.purgeAll(TrackingRecordJpa.class);
-    fullTextEntityManager.flushToIndexes();
-    fullTextEntityManager.createIndexer(TrackingRecordJpa.class)
-        .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
-        .threadsToLoadObjects(4).threadsForSubsequentFetching(8).startAndWait();
+		algo.setIndexedObjects(indexedObjects);
+		algo.compute();
 
-    fullTextEntityManager.detach(manager);
+	} catch (Exception e) {
+		throw new Exception("Exception trying to reindex " + indexedObjects + ". " + e);
+	} finally {
+		algo.close();
+	}
+    }
+//        
+//    // instantiate the full text eneity manager and set version
+//    FullTextEntityManager fullTextEntityManager =
+//        Search.getFullTextEntityManager(manager);
+//    fullTextEntityManager.setProperty("Version", Version.LUCENE_36);
+//
+//    // create the indexes
+//    Logger.getLogger(WorkflowServiceJpa.class)
+//        .info("  Creating indexes for TrackingRecordJpa");
+//    fullTextEntityManager.purgeAll(TrackingRecordJpa.class);
+//    fullTextEntityManager.flushToIndexes();
+//    fullTextEntityManager.createIndexer(TrackingRecordJpa.class)
+//        .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
+//        .threadsToLoadObjects(4).threadsForSubsequentFetching(8).startAndWait();
+
+    //fullTextEntityManager.detach(manager);
     Logger.getLogger(WorkflowServiceJpa.class).info("Done.");
   }
-
+  
+  
   /* see superclass */
   @Override
   public void clearWorkflowForMapProject(MapProject mapProject)
