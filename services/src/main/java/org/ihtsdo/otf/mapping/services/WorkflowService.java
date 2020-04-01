@@ -133,16 +133,6 @@ public interface WorkflowService extends MappingService {
    * @throws Exception the exception
    */
   public void computeWorkflow(MapProject mapProject) throws Exception;
-
-  /**
-   * Compute workflow.
-   * 
-   * @param mapProject the map project
-   * @param reindex the reindex
-   * @throws Exception the exception
-   */
-  public void computeWorkflow(MapProject mapProject, Boolean reindex) throws Exception;
-
   
   /**
    * Clear workflow for map project.
