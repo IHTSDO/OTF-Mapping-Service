@@ -225,7 +225,7 @@ public class GenerateDemoDataMojo extends AbstractOtfMappingMojo {
     Logger.getLogger(getClass()).info("  add " + project1);
     project1 = mappingService.addMapProject(project1);
     Logger.getLogger(getClass()).info("  compute workflow");
-    workflowService.computeWorkflow(project1);
+    workflowService.computeWorkflow(project1, false);
 
     // Create project MEDICATION to RXNORM with REVIEW
     Logger.getLogger(getClass())
@@ -259,13 +259,8 @@ public class GenerateDemoDataMojo extends AbstractOtfMappingMojo {
     Logger.getLogger(getClass()).info("  add " + project2);
     project2 = mappingService.addMapProject(project2);
     Logger.getLogger(getClass()).info("  compute workflow");
-    workflowService.computeWorkflow(project2);
+    workflowService.computeWorkflow(project2, false);
 
-    // Add project
-    Logger.getLogger(getClass()).info("  add " + project1);
-    project1 = mappingService.addMapProject(project1);
-    Logger.getLogger(getClass()).info("  compute workflow");
-    workflowService.computeWorkflow(project1);
 
     // Create project SNOMED to ICD10
     Logger.getLogger(getClass())
@@ -300,7 +295,7 @@ public class GenerateDemoDataMojo extends AbstractOtfMappingMojo {
     Logger.getLogger(getClass()).info("  add " + project3);
     project3 = mappingService.addMapProject(project3);
     Logger.getLogger(getClass()).info("  compute workflow");
-    workflowService.computeWorkflow(project3);
+    workflowService.computeWorkflow(project3, false);
 
     // Create project SNOMED to ICD10CM
     Logger.getLogger(getClass())
@@ -335,7 +330,7 @@ public class GenerateDemoDataMojo extends AbstractOtfMappingMojo {
     Logger.getLogger(getClass()).info("  add " + project4);
     project4 = mappingService.addMapProject(project4);
     Logger.getLogger(getClass()).info("  compute workflow");
-    workflowService.computeWorkflow(project4);
+    workflowService.computeWorkflow(project4, true);
 
     //
     // Cross-project steps
