@@ -122,10 +122,8 @@ public class ResetDemoDatabase {
     p.setProperty("run.config", System.getProperty("run.config"));
     p.setProperty("terminology", "RXNORM");
     p.setProperty("version", "2016AA");
-    p.setProperty("input.file",
-        config.getProperty("data.dir") + "/" + "rxnorm.txt");
-    p.setProperty("par.chd.file",
-        config.getProperty("data.dir") + "/" + "rxnormParChd.txt");
+    p.setProperty("input.dir",
+        config.getProperty("data.dir") + "/RXNORM");
     request.setProperties(p);
     request.setDebug(false);
     invoker = new DefaultInvoker();
@@ -144,8 +142,8 @@ public class ResetDemoDatabase {
     p.setProperty("run.config", System.getProperty("run.config"));
     p.setProperty("terminology", "ALLERGY");
     p.setProperty("version", "latest");
-    p.setProperty("input.file",
-        config.getProperty("data.dir") + "/" + "allergy.txt");
+    p.setProperty("input.dir",
+            config.getProperty("data.dir") + "/ALLERGY");
     request.setProperties(p);
     request.setDebug(false);
     invoker = new DefaultInvoker();
@@ -164,8 +162,8 @@ public class ResetDemoDatabase {
     p.setProperty("run.config", System.getProperty("run.config"));
     p.setProperty("terminology", "MEDICATION");
     p.setProperty("version", "latest");
-    p.setProperty("input.file",
-        config.getProperty("data.dir") + "/" + "medication.txt");
+    p.setProperty("input.dir",
+            config.getProperty("data.dir") + "/MEDICATION");
     request.setProperties(p);
     request.setDebug(false);
     invoker = new DefaultInvoker();
