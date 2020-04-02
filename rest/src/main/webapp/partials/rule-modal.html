@@ -10,11 +10,11 @@
     ng-options="category as category for category in ruleCategories"></select>
 
   <div
-    ng-show="ruleCategory === 'Age - Chronological' || ruleCategory === 'Age - At Onset'">
+    ng-show="ruleCategory === 'Age - At Onset (Custom range)' || ruleCategory === 'Age - At Onset (Preset range)'">
     <hr>
 
 
-    <div ng-show="ruleCategory === 'Age - Chronological'">
+    <div ng-show="ruleCategory === 'Age - At Onset (Custom range)'">
       <h4>Enter age range</h4>
 
       <table class="table">
@@ -75,7 +75,7 @@
       <div class="alert alert-danger" ng-show="ruleError.length > 0">{{ruleError}}</div>
     </div>
 
-    <div ng-show="ruleCategory === 'Age - At Onset'">
+    <div ng-show="ruleCategory === 'Age - At Onset (Preset range)'">
       <h4>Select from preset age ranges</h4>
 
       <select ng-model="presetAgeRange"

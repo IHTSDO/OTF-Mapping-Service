@@ -1,5 +1,5 @@
 /*
- *    Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.services;
 
@@ -133,7 +133,7 @@ public interface WorkflowService extends MappingService {
    * @throws Exception the exception
    */
   public void computeWorkflow(MapProject mapProject) throws Exception;
-
+  
   /**
    * Clear workflow for map project.
    * 

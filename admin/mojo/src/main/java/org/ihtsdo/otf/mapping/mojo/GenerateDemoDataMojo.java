@@ -148,6 +148,8 @@ public class GenerateDemoDataMojo extends AbstractMojo {
       specialist3 = (MapUserJpa) securityService.addMapUser(specialist3);
     }
 
+    securityService.close();
+    
     //
     // Mapping relationships
     //
@@ -260,11 +262,6 @@ public class GenerateDemoDataMojo extends AbstractMojo {
     Logger.getLogger(getClass()).info("  compute workflow");
     workflowService.computeWorkflow(project2);
 
-    // Add project
-    Logger.getLogger(getClass()).info("  add " + project1);
-    project1 = mappingService.addMapProject(project1);
-    Logger.getLogger(getClass()).info("  compute workflow");
-    workflowService.computeWorkflow(project1);
 
     // Create project SNOMED to ICD10
     Logger.getLogger(getClass())

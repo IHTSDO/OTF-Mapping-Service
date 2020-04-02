@@ -155,7 +155,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
   /** Concept ids read in from previous release file **/
   private Set<String> conceptsFromReleaseFile = new HashSet<>();
-  
+
   /** The begin log. */
   private static Logger beginLog;
 
@@ -255,7 +255,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       logger = processLog;
 
       logger.info("  Starting processing the release");
-      
+
       // Keep track of all of the created files
       final List<String> createdFilenames = new ArrayList<>();
 
@@ -308,12 +308,31 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       if (moduleId == null || moduleId.isEmpty()) {
         throw new LocalException("Module id must be specified");
       }
-      if (!metadataService.getModules(mapProject.getSourceTerminology(),
+      boolean moduleFound = false;
+      if (metadataService.getModules(mapProject.getSourceTerminology(),
           mapProject.getSourceTerminologyVersion()).containsKey(moduleId)) {
+        moduleFound = true;
+      }
+      // Also check the destination terminology (this is to handle bidirectional
+      // maps that are both controlled by a single module id concept
+      if (metadataService
+          .getModules(mapProject.getDestinationTerminology(),
+              mapProject.getDestinationTerminologyVersion())
+          .containsKey(moduleId)) {
+        moduleFound = true;
+      }
+      // In the edge-case where the correct module Id is not associated with a
+      // valid concept, allow "REMOVE_THIS*" as a module id, and strip the 
+      // REMOVE_THIS from the moduleId later on the process.
+      if (!moduleFound && !moduleId.startsWith("REMOVE_THIS")) {
         throw new LocalException(
             "Module id is not a valid module id " + moduleId);
       }
 
+      if(moduleId.startsWith("REMOVE_THIS")){
+        moduleId = moduleId.replace("REMOVE_THIS","");
+      }
+      
       // Refset id against pattern
       if (EnumSet.of(MapRefsetPattern.ComplexMap, MapRefsetPattern.ExtendedMap)
           .contains(mapProject.getMapRefsetPattern())) {
@@ -768,9 +787,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             "  " + terminologyId + ": " + conceptErrors.get(terminologyId));
       }
 
-
       logger.info("  Done processing the release");
-      
+
       // /////////////////////////////////////////////////////
       // Clean up
       // /////////////////////////////////////////////////////
@@ -1019,10 +1037,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // Open file
     String filename = null;
     BufferedWriter writer = null;
-    filename = outputDir + "/der2_ssRefset_ModuleDependencyDelta_"+algorithmHandler.getReleaseFile3rdElement()+"_"
-        + effectiveTime + ".txt";
+    filename = outputDir + "/der2_ssRefset_ModuleDependencyDelta_"
+        + algorithmHandler.getReleaseFile3rdElement() + "_" + effectiveTime
+        + ".txt";
     writer = new BufferedWriter(new FileWriter(filename));
-    
 
     // Write header
     writer.write(
@@ -1062,13 +1080,15 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     BufferedWriter writer = null;
     String pattern = getPatternForType(mapProject);
     filename = outputDir + "/der2_" + pattern + mapProject.getMapRefsetPattern()
-        + "Delta_"+algorithmHandler.getReleaseFile3rdElement()+"_" + effectiveTime + ".txt";
+        + "Delta_" + algorithmHandler.getReleaseFile3rdElement() + "_"
+        + effectiveTime + ".txt";
     logger.info("  delta:  " + filename);
 
     // Write headers (subject to pattern)
-   // writer = new BufferedWriter(new FileWriter(filename));
-    writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename), StandardCharsets.UTF_8));
-    
+    // writer = new BufferedWriter(new FileWriter(filename));
+    writer = new BufferedWriter(new OutputStreamWriter(
+        new FileOutputStream(filename), StandardCharsets.UTF_8));
+
     writer.write(getHeader(mapProject));
     writer.write("\r\n");
 
@@ -1235,7 +1255,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             + mapProject.getDestinationTerminology().substring(1).toLowerCase();
     final String filename = outputDir + "/" + camelCaseName + "stats.txt";
     BufferedWriter statsWriter = new BufferedWriter(new FileWriter(filename));
-    
+
     List<String> statistics = new ArrayList<>(reportStatistics.keySet());
     Collections.sort(statistics);
     for (final String statistic : statistics) {
@@ -1263,14 +1283,16 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     String filename = null;
     BufferedWriter writer = null;
     filename = outputDir + "/der2_" + pattern + mapProject.getMapRefsetPattern()
-        + "ActiveSnapshot_"+algorithmHandler.getReleaseFile3rdElement()+"_" + effectiveTime + ".txt";
+        + "ActiveSnapshot_" + algorithmHandler.getReleaseFile3rdElement() + "_"
+        + effectiveTime + ".txt";
 
     // write headers
     logger.info("  active snapshot:  " + filename);
 
-    //writer = new BufferedWriter(new FileWriter(filename));
-    writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename), StandardCharsets.UTF_8));
-    
+    // writer = new BufferedWriter(new FileWriter(filename));
+    writer = new BufferedWriter(new OutputStreamWriter(
+        new FileOutputStream(filename), StandardCharsets.UTF_8));
+
     writer.write(getHeader(mapProject));
     writer.write("\r\n");
 
@@ -1323,14 +1345,16 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     String filename = null;
     BufferedWriter writer = null;
     filename = outputDir + "/der2_" + pattern + mapProject.getMapRefsetPattern()
-        + "Snapshot_"+algorithmHandler.getReleaseFile3rdElement()+"_" + effectiveTime + ".txt";
+        + "Snapshot_" + algorithmHandler.getReleaseFile3rdElement() + "_"
+        + effectiveTime + ".txt";
 
     // write headers
     logger.info("  snapshot file:  " + filename);
 
-    //writer = new BufferedWriter(new FileWriter(filename));
-    writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename), StandardCharsets.UTF_8));
-    
+    // writer = new BufferedWriter(new FileWriter(filename));
+    writer = new BufferedWriter(new OutputStreamWriter(
+        new FileOutputStream(filename), StandardCharsets.UTF_8));
+
     writer.write(getHeader(mapProject));
     writer.write("\r\n");
 
@@ -1411,10 +1435,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         mapProject.getDestinationTerminology().substring(0, 1)
             + mapProject.getDestinationTerminology().substring(1).toLowerCase();
     humanReadableFileName = outputDir + "/tls_" + camelCaseName
-        + "HumanReadableMap_"+algorithmHandler.getReleaseFile3rdElement()+"_" + effectiveTime + ".tsv";
+        + "HumanReadableMap_" + algorithmHandler.getReleaseFile3rdElement()
+        + "_" + effectiveTime + ".tsv";
     humanReadableWriter =
-    //    new BufferedWriter(new FileWriter(humanReadableFileName));
-    new BufferedWriter(new OutputStreamWriter(new FileOutputStream(humanReadableFileName), StandardCharsets.UTF_8));
+        // new BufferedWriter(new FileWriter(humanReadableFileName));
+        new BufferedWriter(
+            new OutputStreamWriter(new FileOutputStream(humanReadableFileName),
+                StandardCharsets.UTF_8));
 
     // Write headers (subject to pattern)
     MapRefsetPattern pattern = mapProject.getMapRefsetPattern();
@@ -1445,8 +1472,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       // get the map relation name for the human readable file
       MapRelation mapRelation = null;
       for (final MapRelation mr : mapProject.getMapRelations()) {
-        if (mr.getTerminologyId() != null && member.getMapRelationId() != null && 
-            mr.getTerminologyId().equals(member.getMapRelationId().toString())) {
+        if (mr.getTerminologyId() != null && member.getMapRelationId() != null
+            && mr.getTerminologyId()
+                .equals(member.getMapRelationId().toString())) {
           mapRelation = mr;
         }
       }
@@ -2002,8 +2030,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ExtendedMap) {
       entryLine = member.getTerminologyId() // the UUID
           + "\t"
-          + ((trueEffectiveTimeFlag && !dateFormat.format(member.getEffectiveTime()).equals("100070607"))
-              ? dateFormat.format(member.getEffectiveTime()) : effectiveTime)
+          + ((trueEffectiveTimeFlag && !dateFormat
+              .format(member.getEffectiveTime()).equals("100070607"))
+                  ? dateFormat.format(member.getEffectiveTime())
+                  : effectiveTime)
           + "\t" + (member.isActive() ? "1" : "0") + "\t" + moduleId + "\t"
           + member.getRefSetId() + "\t" + member.getConcept().getTerminologyId()
           + "\t" + member.getMapGroup() + "\t" + member.getMapPriority() + "\t"
@@ -2018,8 +2048,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap) {
       entryLine = member.getTerminologyId() // the UUID
           + "\t"
-          + ((trueEffectiveTimeFlag && !dateFormat.format(member.getEffectiveTime()).equals("100070607"))
-              ? dateFormat.format(member.getEffectiveTime()) : effectiveTime)
+          + ((trueEffectiveTimeFlag && !dateFormat
+              .format(member.getEffectiveTime()).equals("100070607"))
+                  ? dateFormat.format(member.getEffectiveTime())
+                  : effectiveTime)
           + "\t" + (member.isActive() ? "1" : "0") + "\t" + moduleId + "\t"
           + member.getRefSetId() + "\t" + member.getConcept().getTerminologyId()
           + "\t" + member.getMapGroup() + "\t" + member.getMapPriority() + "\t"
@@ -2038,8 +2070,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       }
       entryLine = member.getTerminologyId() // the UUID
           + "\t"
-          + ((trueEffectiveTimeFlag && !dateFormat.format(member.getEffectiveTime()).equals("100070607"))
-              ? dateFormat.format(member.getEffectiveTime()) : effectiveTime)
+          + ((trueEffectiveTimeFlag && !dateFormat
+              .format(member.getEffectiveTime()).equals("100070607"))
+                  ? dateFormat.format(member.getEffectiveTime())
+                  : effectiveTime)
           + "\t" + (member.isActive() ? "1" : "0") + "\t" + moduleId + "\t"
           + member.getRefSetId() + "\t" + member.getConcept().getTerminologyId()
           + "\t" + member.getMapTarget();
@@ -2173,7 +2207,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       logger = beginLog;
       clearLog(logger);
-      
 
       logger.info("  Starting begin release");
 
@@ -2193,7 +2226,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               + " AND workflowStatus:PUBLISHED", null)
           .getSearchResults().size() > 0) {
         final ContentService contentService = new ContentServiceJpa();
-        
+
         try {
           if (contentService
               .getComplexMapRefSetMembersForRefSetId(mapProject.getRefSetId())
@@ -2274,7 +2307,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         if (list == null) {
           list = new ArrayList<>();
         }
-        
+
         // Don't include up-propagated refset member entries
         // Skip concept exclusion rules
         if (member.getMapRule() != null
@@ -2299,7 +2332,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             continue;
           }
         }
-        
+
         list.add(member);
         refsetMemberMap.put(member.getConcept().getId(), list);
       }
@@ -2514,8 +2547,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       for (ComplexMapRefSetMember member : members
           .getComplexMapRefSetMembers()) {
         Concept sourceConcept = member.getConcept();
-        if (member.isActive() && sourceConcept != null && sourceConcept.isActive()
-            && !conceptMapRecordCountMap
+        if (member.isActive() && sourceConcept != null
+            && sourceConcept.isActive() && !conceptMapRecordCountMap
                 .containsKey(member.getConcept().getTerminologyId())) {
           this.addReportError(report, mapProject,
               member.getConcept().getTerminologyId(),
@@ -2562,7 +2595,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           mappingService.commit();
         }
       }
-    
 
       logger.info("  Done begin release");
 
@@ -2634,18 +2666,20 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       }
       clearLog(logger);
 
-      logger.info("Starting " + (testModeFlag ? "Preview Finish Release" : "Finish Release"));
-      logger.info("transactionPerOperation " + mappingService.getTransactionPerOperation());
-    Logger.getLogger(getClass())
-    .info("transactionPerOperation " + mappingService.getTransactionPerOperation());
+      logger.info("Starting "
+          + (testModeFlag ? "Preview Finish Release" : "Finish Release"));
+      logger.info("transactionPerOperation "
+          + mappingService.getTransactionPerOperation());
+      Logger.getLogger(getClass()).info("transactionPerOperation "
+          + mappingService.getTransactionPerOperation());
 
       // instantiate required services
-      /*final MappingService mappingService = new MappingServiceJpa();
-      if (!testModeFlag) {
-        mappingService.setTransactionPerOperation(false);
-        mappingService.beginTransaction();
-      }*/
-      
+      /*
+       * final MappingService mappingService = new MappingServiceJpa(); if
+       * (!testModeFlag) { mappingService.setTransactionPerOperation(false);
+       * mappingService.beginTransaction(); }
+       */
+
       // compare file to current records
       Report report = compareInputFileToExistingMapRecords();
 
@@ -2664,7 +2698,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         MapRecordList mapRecordList = mappingService
             .getPublishedAndReadyForPublicationMapRecordsForMapProject(
                 mapProject.getId(), null);
-        mapRecords = mapRecordList.getMapRecords();  
+        mapRecords = mapRecordList.getMapRecords();
 
         // Log recently edited records that won't be PUBLISHED
         for (Long recordId : recentlyEditedRecords) {
@@ -2692,9 +2726,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           // since
           // the publication date
           else if (record
-              .getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION &&
-                		recentlyEditedRecords.contains(record.getId()) &&
-                		conceptsFromReleaseFile.contains(record.getConceptId())) {
+              .getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION
+              && recentlyEditedRecords.contains(record.getId())
+              && conceptsFromReleaseFile.contains(record.getConceptId())) {
             logger.info("  Record not updated to PUBLISHED for "
                 + record.getConceptId() + " " + record.getConceptName());
 
@@ -2723,9 +2757,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         if (!testModeFlag) {
 
           mapProject.setLatestPublicationDate(new Date());
-          //mapProject.setPublic(true);
+          // mapProject.setPublic(true);
           mappingService.updateMapProject(mapProject);
-          //mappingService.commit();
+          // mappingService.commit();
         }
       }
 
@@ -2750,10 +2784,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       reportService.close();
 
       mappingService.close();
-      
+
       logger.info("Finished " + (testModeFlag ? "test mode " : "")
           + "release successfully");
-      
+
     } catch (Exception e) {
       logger.error(e.getMessage(), e);
       throw new Exception(e);
@@ -3027,26 +3061,28 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             continue;
           }
         }
-        
-        
-        
-        
+
         List<ComplexMapRefSetMember> members =
             conceptRefSetMap.get(member.getConcept().getTerminologyId());
         if (members == null) {
           members = new ArrayList<>();
         }
-        
-        // if we get a TRUE/MAP SOURCE CONCEPT CANNOT BE CLASSIFIED WITH AVAILABLE DATA member
+
+        // if we get a TRUE/MAP SOURCE CONCEPT CANNOT BE CLASSIFIED WITH
+        // AVAILABLE DATA member
         // AND we've already seen a TRUE member
         // AND it's not in the same map group as an allowed IFA member
-        // skip this member.  It is due to up-propagation and shouldn't be compared.
-        if (member.getMapRule() != null && member.getMapRule().equals("TRUE") && 
-        	member.getMapAdvice() != null && member.getMapAdvice().equals("MAP SOURCE CONCEPT CANNOT BE CLASSIFIED WITH AVAILABLE DATA") &&
-            containsTrueMember(members) && !containsIFAMember(members, member.getMapGroup())) {
+        // skip this member. It is due to up-propagation and shouldn't be
+        // compared.
+        if (member.getMapRule() != null && member.getMapRule().equals("TRUE")
+            && member.getMapAdvice() != null
+            && member.getMapAdvice().equals(
+                "MAP SOURCE CONCEPT CANNOT BE CLASSIFIED WITH AVAILABLE DATA")
+            && containsTrueMember(members)
+            && !containsIFAMember(members, member.getMapGroup())) {
           continue;
         }
-        
+
         members.add(member);
         conceptRefSetMap.put(member.getConcept().getTerminologyId(), members);
         conceptsFromReleaseFile.add(member.getConcept().getTerminologyId());
@@ -3260,7 +3296,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
   }
 
-  
   private boolean containsTrueMember(List<ComplexMapRefSetMember> members) {
     for (ComplexMapRefSetMember m : members) {
       if (m.getMapRule().equals("TRUE")) {
@@ -3269,8 +3304,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
     return false;
   }
-  
-  private boolean containsIFAMember(List<ComplexMapRefSetMember> members, int mapGroup) {
+
+  private boolean containsIFAMember(List<ComplexMapRefSetMember> members,
+    int mapGroup) {
     for (ComplexMapRefSetMember m : members) {
       if (m.getMapRule().matches("IFA.*") && m.getMapGroup() == mapGroup) {
         return true;
@@ -3278,6 +3314,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
     return false;
   }
+
   /**
    * Update statistic max.
    *
@@ -3387,7 +3424,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       logger.error(e.getStackTrace());
     }
   }
-  
+
   private void clearLog(Logger logger) {
     try {
       String rootPath = ConfigUtility.getConfigProperties()
@@ -3404,13 +3441,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         File beginLogFile = new File(logDirectory, "begin.log");
         PrintWriter writer = new PrintWriter(beginLogFile);
         writer.print("");
-        writer.close();      
+        writer.close();
       }
       if (logger == processLog) {
         File processLogFile = new File(logDirectory, "process.log");
         PrintWriter writer = new PrintWriter(processLogFile);
         writer.print("");
-        writer.close();      
+        writer.close();
       }
 
       File previewFinishLogFile = new File(logDirectory, "previewFinish.log");
