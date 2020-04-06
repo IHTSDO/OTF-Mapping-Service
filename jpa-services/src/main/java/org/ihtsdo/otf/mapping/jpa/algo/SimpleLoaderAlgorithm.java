@@ -326,9 +326,9 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
 
       // Create terminology-specific metadata concept
       final Concept targetTerminologyMetadataConcept =
-          helper.createNewActiveConcept("MedDRA metadata",
+          helper.createNewActiveConcept(terminology + " metadata",
               conceptMap.get("Metadata"));
-      conceptMap.put("MedDRA metadata", targetTerminologyMetadataConcept);
+      conceptMap.put(terminology + " metadata", targetTerminologyMetadataConcept);
 
       while ((line = conAttr.readLine()) != null) {
         final String[] fields = parseLine(line);

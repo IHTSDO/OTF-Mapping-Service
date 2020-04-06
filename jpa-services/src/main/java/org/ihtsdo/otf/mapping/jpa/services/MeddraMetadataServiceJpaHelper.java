@@ -176,12 +176,12 @@ public class MeddraMetadataServiceJpaHelper extends RootServiceJpa
 
     descriptionTypeMap = new HashMap<>();
 
-    // find all active descendants of 'MedDRA metadata' concept
+    // find all active descendants of 'Terminology metadata' concept
     ContentService contentService = new ContentServiceJpa();
 
     // want all descendants, do not use pfsParameter
     List<Concept> descendants = getDescendantConcepts(contentService,
-        "MedDRA metadata", terminology, version);
+        terminology + " metadata", terminology, version);
 
     for (Concept descendant : descendants) {
       if (descendant.isActive()) {
