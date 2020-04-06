@@ -2339,7 +2339,8 @@ public class ContentServiceJpa extends RootServiceJpa
         // TODO: this should really have a project specific handler aspect
         // also see directives.js - treeSearchResult
         if (terminology.toLowerCase().startsWith("icd")
-            || terminology.toLowerCase().startsWith("gmdn")) {
+            || terminology.toLowerCase().startsWith("gmdn")
+            || terminology.toLowerCase().startsWith("atc")) {
           Collections.sort(treePositions, new Comparator<TreePosition>() {
             @Override
             public int compare(TreePosition o1, TreePosition o2) {
