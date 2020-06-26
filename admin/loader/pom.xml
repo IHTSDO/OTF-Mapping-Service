@@ -740,6 +740,27 @@
         </plugins>
       </build>
     </profile>
+    
+    <profile>
+      <id>Icd10CMSqlConflictReport</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>icd10cm-sql-conflict-report</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>run-icd10cm-sql-conflict-report</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
     <profile>
       <id>TargetMappingToScopedConcepts</id>
