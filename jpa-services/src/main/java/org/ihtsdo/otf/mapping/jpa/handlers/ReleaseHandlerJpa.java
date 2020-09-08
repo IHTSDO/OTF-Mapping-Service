@@ -403,13 +403,21 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       }
 
       // create a list from the set and sort by concept id
+      // If ids are numeric, sort numerically
+      // Otherwise, sort alphabetically
       logger.info("  Sorting records");
       Collections.sort(mapRecords, new Comparator<MapRecord>() {
         @Override
-        public int compare(MapRecord o1, MapRecord o2) {
-          Long conceptId1 = Long.parseLong(o1.getConceptId());
-          Long conceptId2 = Long.parseLong(o2.getConceptId());
-          return conceptId1.compareTo(conceptId2);
+        public int compare(MapRecord o1, MapRecord o2){
+        	try {
+        		Long conceptId1 = Long.parseLong(o1.getConceptId());
+        		Long conceptId2 = Long.parseLong(o2.getConceptId());
+        		return conceptId1.compareTo(conceptId2);
+        	} catch (NumberFormatException e) {
+        		String conceptId1 = o1.getConceptId();
+        		String conceptId2 = o2.getConceptId();
+        		return conceptId1.compareTo(conceptId2);
+        	}
         }
       });
 
