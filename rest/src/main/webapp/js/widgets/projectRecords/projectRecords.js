@@ -690,11 +690,12 @@ angular
           // check target id
           if ($scope.searchParameters.targetId
             && $scope.searchParameters.targetId.length > 0) {
-        	  $scope.searchParameters.targetId.forEach(function (s) {
-		            queryRestrictions.push('mapEntries.targetId:'
-		              + s);
-          		}
-            );
+        	  for(var targetId of $scope.searchParameters.targetId){
+        		  if(targetId !== ""){
+  		            queryRestrictions.push('mapEntries.targetId:'
+  			              + targetId);
+        		  }
+        	  }
           }
 
           // check target id range
