@@ -546,6 +546,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         // Add the original (non-propagated) entries
         // /////////////////////////////////////////////////////
         logger.debug("     Adding original entries");
+        
+        //Sort entries by group/priority.
+        Collections.sort(mapRecord.getMapEntries(),
+                new TerminologyUtility.MapEntryComparator());
+        
         for (MapEntry me : mapRecord.getMapEntries()) {
           logger.debug("       Adding entry " + me.getId());
 
@@ -946,6 +951,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             //
             // Thus if all the entries for a group match the parent, then none
             // need to be rendered, otherwise all do.
+            
+            //Sort entries by group/priority.
+            Collections.sort(mr.getMapEntries(),
+                    new TerminologyUtility.MapEntryComparator());
+            
             for (final MapEntry me : mr.getMapEntries()) {
 
               // get the current list of entries for this group
@@ -967,6 +977,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               // (this produces short-form)
               // NOTE: This uses unmodified rules
               if (mrParent != null) {
+                  //Sort entries by group/priority.
+                  Collections.sort(mrParent.getMapEntries(),
+                          new TerminologyUtility.MapEntryComparator());
+                  
                 for (final MapEntry parentEntry : mrParent.getMapEntries()) {
                   if (parentEntry.getMapGroup() == me.getMapGroup()
                       && parentEntry.isEquivalent(me)) {
@@ -2468,6 +2482,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             if (member.isActive() && member.getMapTarget() != null
                 && !member.getMapTarget().isEmpty()) {
               boolean memberTargetFound = false;
+              //Sort entries by group/priority.
+              Collections.sort(mapRecord.getMapEntries(),
+                      new TerminologyUtility.MapEntryComparator());
               for (MapEntry me : mapRecord.getMapEntries()) {
                 if (member.getMapTarget().equals(me.getTargetId())) {
                   memberTargetFound = true;
@@ -2505,6 +2522,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           // check: concept mapped to duplicate codes (non-group-based only)
           if (mapProject.isGroupStructure()) {
             final Set<String> targetIds = new HashSet<>();
+            //Sort entries by group/priority.
+            Collections.sort(mapRecord.getMapEntries(),
+                    new TerminologyUtility.MapEntryComparator());
             for (MapEntry entry : mapRecord.getMapEntries()) {
               if (entry.getTargetId() != null
                   && !entry.getTargetId().isEmpty()) {
