@@ -860,13 +860,12 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     // If inputDir set as 'GENERATE', generate based on config.properties
     if (inputDir.equals("GENERATE")) {
       inputDir = ConfigUtility.getConfigProperties()
-          .getProperty("map.principle.source.document.dir");
-      // Strip off final folder, and replace with "GMDN/{version}"
+          .getProperty("gmdnsftp.dir");
+      // Strip off final /, if it exists
       if (inputDir.endsWith("/")) {
         inputDir = inputDir.substring(0, inputDir.length() - 1);
       }
-      inputDir = inputDir.substring(0, inputDir.lastIndexOf("/"));
-      inputDir = inputDir + "/GMDN/" + version;
+      inputDir = inputDir + "/" + version;
     }
 
     Logger.getLogger(getClass())
