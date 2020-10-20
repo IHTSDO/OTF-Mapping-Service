@@ -495,6 +495,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       final Map<String, ComplexMapRefSetMember> activeMembersMap =
           new HashMap<>();
       for (final MapRecord mapRecord : mapRecords) {
+    	  
+    	
         // Skip out of scope records
         if (!scopeConceptTerminologyIds.contains(mapRecord.getConceptId())) {
           continue;
@@ -1715,6 +1717,14 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     entry.setMapPriority(member.getMapPriority());
     entry.setMapRelation(relations.get(member.getMapRelationId()));
     entry.setTargetId(member.getMapTarget());
+    
+    Concept concept = contentService.getConcept(member.getMapTarget(),
+            mapProject.getDestinationTerminology(),
+            mapProject.getDestinationTerminologyVersion());
+    if (concept != null) {
+      entry.setTargetName(concept.getDefaultPreferredName());
+    }
+    
     return entry;
   }
 
@@ -2736,7 +2746,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         }
 
         for (final MapRecord record : mapRecords) {
-
+        	
           // Remove out of scope concepts if not in test mode
           if (!scopeConceptTerminologyIds.contains(record.getConceptId())) {
 
@@ -3241,7 +3251,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           }
         }
 
-        // check release mappings against current mappings
+        // check release mappings against current mappings 
+        // iterate through release file members, checking all current members
+        int priorMapGroup = 1;
+        int priorMapPriority = 0;
         for (ComplexMapRefSetMember member : members) {
 
           final String memberHash = getHash(member);
@@ -3249,6 +3262,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           MapEntry releaseEntry =
               this.getMapEntryForComplexMapRefSetMember(member);
           releaseEntry.setMapRecord(mapRecord);
+          // before adding releaseEntry, check if up-propagation requires changes to mapGroup/mapPriority
+          if (releaseEntry.getMapGroup() == priorMapGroup)  {
+        	  releaseEntry.setMapPriority(++priorMapPriority);
+          } else if (releaseEntry.getMapGroup() != priorMapGroup) {
+        	  priorMapPriority = 1;
+        	  releaseEntry.setMapPriority(priorMapPriority);
+          }
           releaseRecord.addMapEntry(releaseEntry);
 
           boolean entryMatched = false;
