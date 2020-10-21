@@ -2938,9 +2938,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           contentService.commit();
           contentService.clear();
           contentService.beginTransaction();
-          contentService.commit();
-          contentService.clear();
-          contentService.beginTransaction();
         }
 
         if (concept != null) {
@@ -3217,7 +3214,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       // if entries are mismatched in size, automatic flag
       else if (mapRecord.getMapEntries().size() != members.size()) {
-        logger.info("Discrepancy: entry set size mismatch for " + conceptId);
+        logger.info("Discrepancy: entry set size mismatch for " + conceptId + 
+                " " + mapRecord.getMapEntries().size()  + " vs " + members.size());
         discrepancyFound = true;
       }
 
