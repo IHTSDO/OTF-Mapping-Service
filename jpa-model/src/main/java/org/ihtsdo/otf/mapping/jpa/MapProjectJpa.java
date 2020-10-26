@@ -78,6 +78,10 @@ public class MapProjectJpa implements MapProject {
   /** Whether this project is viewable by public roles. */
   @Column(unique = false, nullable = false)
   private boolean isPublic = false;
+  
+  /** Whether this project's map notes are viewable by public roles. */
+  @Column(unique = false, nullable = false)
+  private boolean mapNotesPublic = false;
 
   /**
    * Indicates whether there is group structure for map records of this project.
@@ -258,6 +262,7 @@ public class MapProjectJpa implements MapProject {
     this.id = project.getId();
     this.name = project.getName();
     this.isPublic = project.isPublic();
+    this.mapNotesPublic = isMapNotesPublic();
     this.groupStructure = project.isGroupStructure();
     this.published = project.isPublished();
     this.refSetId = project.getRefSetId();
@@ -464,6 +469,18 @@ public class MapProjectJpa implements MapProject {
   @Override
   public void setPublic(boolean isPublic) {
     this.isPublic = isPublic;
+  }
+  
+  /* see superclass */
+  @Override
+  public boolean isMapNotesPublic() {
+    return mapNotesPublic;
+  }
+
+  /* see superclass */
+  @Override
+  public void setMapNotesPublic(boolean mapNotesPublic) {
+    this.mapNotesPublic = mapNotesPublic;
   }
 
   /* see superclass */
