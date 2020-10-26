@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -103,8 +104,32 @@ public class ICD10CMProjectSpecificAlgorithmHandler
 
     for (final MapEntry mapEntry : mapRecord.getMapEntries()) {
 
+      // double check that expected map advice has not been lost for each entry
+      MapAdviceList expectedAdviceList = computeMapAdvice(mapRecord, mapEntry);
+      if (expectedAdviceList.getTotalCount() > 0) {
+    	  boolean adviceNotFound = false;
+    	  for (MapAdvice thisExpectedAdvice : expectedAdviceList.getMapAdvices()) {
+    		  if (!mapEntry.getMapAdvices().contains(thisExpectedAdvice))
+    			  adviceNotFound = true;
+    	  }
+    	  if (adviceNotFound) {
+    	    validationResult.addError(
+    	    "Automated map advice was not added for target " + mapEntry.getTargetId() + ".  Please confirm on Record Summary below. Map advice can be recomputed by clicking the Set button again on the Target panel.");   
+    	  }
+      }
+      
+      // double check that expected map relation has not been lost for each entry
+      MapRelation expectedRelation = computeMapRelation(mapRecord, mapEntry);
+      if (expectedRelation != null) {   	  
+    	  if (!expectedRelation.equals(mapEntry.getMapRelation())) {
+    	    validationResult.addError(
+    	    "Automated map relation was not set for " + mapEntry.getTargetId() + ".  Please confirm on Record Summary below. Map relation can be recomputed by clicking the Set button or the Set Empty Target button on the Target panel.");   
+    	  }
+      }
+    	
       // add an error if neither relation nor target are set
-      if (mapEntry.getMapRelation() == null && (mapEntry.getTargetId() == null
+      if (mapEntry.getMapRelation() == null 
+    		  && (mapEntry.getTargetId() == null
           || mapEntry.getTargetId().equals(""))) {
 
         validationResult.addError(
@@ -569,6 +594,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
 
       MapAdviceList mapAdviceList = new MapAdviceListJpa();
       mapAdviceList.setMapAdvices(advices);
+      mapAdviceList.setTotalCount(advices.size());
       return mapAdviceList;
     } catch (Exception e) {
       throw e;
