@@ -495,6 +495,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       final Map<String, ComplexMapRefSetMember> activeMembersMap =
           new HashMap<>();
       for (final MapRecord mapRecord : mapRecords) {
+    	  
+    	
         // Skip out of scope records
         if (!scopeConceptTerminologyIds.contains(mapRecord.getConceptId())) {
           continue;
@@ -546,6 +548,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         // Add the original (non-propagated) entries
         // /////////////////////////////////////////////////////
         logger.debug("     Adding original entries");
+        
+        //Sort entries by group/priority.
+        Collections.sort(mapRecord.getMapEntries(),
+                new TerminologyUtility.MapEntryComparator());
+        
         for (MapEntry me : mapRecord.getMapEntries()) {
           logger.debug("       Adding entry " + me.getId());
 
@@ -946,6 +953,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             //
             // Thus if all the entries for a group match the parent, then none
             // need to be rendered, otherwise all do.
+            
+            //Sort entries by group/priority.
+            Collections.sort(mr.getMapEntries(),
+                    new TerminologyUtility.MapEntryComparator());
+            
             for (final MapEntry me : mr.getMapEntries()) {
 
               // get the current list of entries for this group
@@ -967,6 +979,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               // (this produces short-form)
               // NOTE: This uses unmodified rules
               if (mrParent != null) {
+                  //Sort entries by group/priority.
+                  Collections.sort(mrParent.getMapEntries(),
+                          new TerminologyUtility.MapEntryComparator());
+                  
                 for (final MapEntry parentEntry : mrParent.getMapEntries()) {
                   if (parentEntry.getMapGroup() == me.getMapGroup()
                       && parentEntry.isEquivalent(me)) {
@@ -1701,6 +1717,14 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     entry.setMapPriority(member.getMapPriority());
     entry.setMapRelation(relations.get(member.getMapRelationId()));
     entry.setTargetId(member.getMapTarget());
+    
+    Concept concept = contentService.getConcept(member.getMapTarget(),
+            mapProject.getDestinationTerminology(),
+            mapProject.getDestinationTerminologyVersion());
+    if (concept != null) {
+      entry.setTargetName(concept.getDefaultPreferredName());
+    }
+    
     return entry;
   }
 
@@ -2468,6 +2492,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             if (member.isActive() && member.getMapTarget() != null
                 && !member.getMapTarget().isEmpty()) {
               boolean memberTargetFound = false;
+              //Sort entries by group/priority.
+              Collections.sort(mapRecord.getMapEntries(),
+                      new TerminologyUtility.MapEntryComparator());
               for (MapEntry me : mapRecord.getMapEntries()) {
                 if (member.getMapTarget().equals(me.getTargetId())) {
                   memberTargetFound = true;
@@ -2505,6 +2532,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           // check: concept mapped to duplicate codes (non-group-based only)
           if (mapProject.isGroupStructure()) {
             final Set<String> targetIds = new HashSet<>();
+            //Sort entries by group/priority.
+            Collections.sort(mapRecord.getMapEntries(),
+                    new TerminologyUtility.MapEntryComparator());
             for (MapEntry entry : mapRecord.getMapEntries()) {
               if (entry.getTargetId() != null
                   && !entry.getTargetId().isEmpty()) {
@@ -2716,7 +2746,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         }
 
         for (final MapRecord record : mapRecords) {
-
+        	
           // Remove out of scope concepts if not in test mode
           if (!scopeConceptTerminologyIds.contains(record.getConceptId())) {
 
@@ -2915,9 +2945,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         // regularly log and commit at intervals
         if (++objectCt % 5000 == 0) {
           logger.info("    count = " + objectCt);
-          contentService.commit();
-          contentService.clear();
-          contentService.beginTransaction();
           contentService.commit();
           contentService.clear();
           contentService.beginTransaction();
@@ -3197,7 +3224,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       // if entries are mismatched in size, automatic flag
       else if (mapRecord.getMapEntries().size() != members.size()) {
-        logger.info("Discrepancy: entry set size mismatch for " + conceptId);
+        logger.info("Discrepancy: entry set size mismatch for " + conceptId + 
+                " " + mapRecord.getMapEntries().size()  + " vs " + members.size());
         discrepancyFound = true;
       }
 
@@ -3221,7 +3249,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           }
         }
 
-        // check release mappings against current mappings
+        // check release mappings against current mappings 
+        // iterate through release file members, checking all current members
+        int priorMapGroup = 1;
+        int priorMapPriority = 0;
         for (ComplexMapRefSetMember member : members) {
 
           final String memberHash = getHash(member);
@@ -3229,6 +3260,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           MapEntry releaseEntry =
               this.getMapEntryForComplexMapRefSetMember(member);
           releaseEntry.setMapRecord(mapRecord);
+          // before adding releaseEntry, check if up-propagation requires changes to mapGroup/mapPriority
+          if (releaseEntry.getMapGroup() == priorMapGroup)  {
+        	  releaseEntry.setMapPriority(++priorMapPriority);
+          } else if (releaseEntry.getMapGroup() != priorMapGroup) {
+        	  priorMapPriority = 1;
+        	  releaseEntry.setMapPriority(priorMapPriority);
+          }
           releaseRecord.addMapEntry(releaseEntry);
 
           boolean entryMatched = false;

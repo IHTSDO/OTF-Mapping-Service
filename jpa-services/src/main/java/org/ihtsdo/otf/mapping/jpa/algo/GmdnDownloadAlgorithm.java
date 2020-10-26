@@ -64,6 +64,8 @@ public class GmdnDownloadAlgorithm extends RootServiceJpa implements Algorithm {
         ConfigUtility.getConfigProperties().getProperty("gmdnsftp.user");
     final String gmdnsftpPassword =
         ConfigUtility.getConfigProperties().getProperty("gmdnsftp.password");
+    final String gmdnDataDir = 
+            ConfigUtility.getConfigProperties().getProperty("gmdnsftp.sftp.data.dir");
     final String saveLocation =
         ConfigUtility.getConfigProperties().getProperty("gmdnsftp.dir");
 
@@ -76,8 +78,8 @@ public class GmdnDownloadAlgorithm extends RootServiceJpa implements Algorithm {
       Channel channel = session.openChannel("sftp");
       channel.connect();
       ChannelSftp sftpChannel = (ChannelSftp) channel;
-      sftpChannel.cd("/data");
-      Vector filelist = sftpChannel.ls("/data");
+      sftpChannel.cd(gmdnDataDir);
+      Vector filelist = sftpChannel.ls(gmdnDataDir);
       for (int i = 0; i < filelist.size(); i++) {
         LsEntry entry = (LsEntry) filelist.get(i);
         // Find all files named gmdnDatayy_M.zip
