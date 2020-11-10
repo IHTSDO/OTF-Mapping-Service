@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.jpa.algo.helpers;
 
 import java.text.SimpleDateFormat;
@@ -101,7 +104,7 @@ public class GmdnMetadataHelper {
     final Concept defaultModuleConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Default module", effectiveTime, "meta");
-    defaultModuleConcept.setModuleId(new Long(defaultModuleConcept
+    defaultModuleConcept.setModuleId(Long.valueOf(defaultModuleConcept
         .getTerminologyId()));
     conceptMap.put("defaultModule", defaultModuleConcept);
 
@@ -141,32 +144,32 @@ public class GmdnMetadataHelper {
     // i.e. because "defaultModule" didn't exist when
     // "defaultDefinitionStatus" was created
     //
-    defaultDefinitionStatusConcept.setModuleId(new Long(conceptMap.get(
+    defaultDefinitionStatusConcept.setModuleId(Long.valueOf(conceptMap.get(
         "defaultModule").getTerminologyId()));
     for (final Description desc : defaultDefinitionStatusConcept
         .getDescriptions()) {
-      desc.setModuleId(new Long(conceptMap.get("defaultModule")
+      desc.setModuleId(Long.valueOf(conceptMap.get("defaultModule")
           .getTerminologyId()));
-      desc.setCaseSignificanceId(new Long(conceptMap.get(
+      desc.setCaseSignificanceId(Long.valueOf(conceptMap.get(
           "defaultCaseSignificance").getTerminologyId()));
-      desc.setTypeId(new Long(conceptMap.get("meta").getTerminologyId()));
+      desc.setTypeId(Long.valueOf(conceptMap.get("meta").getTerminologyId()));
     }
     for (final Description desc : defaultModuleConcept.getDescriptions()) {
-      desc.setModuleId(new Long(conceptMap.get("defaultModule")
+      desc.setModuleId(Long.valueOf(conceptMap.get("defaultModule")
           .getTerminologyId()));
-      desc.setCaseSignificanceId(new Long(conceptMap.get(
+      desc.setCaseSignificanceId(Long.valueOf(conceptMap.get(
           "defaultCaseSignificance").getTerminologyId()));
-      desc.setTypeId(new Long(conceptMap.get("meta").getTerminologyId()));
+      desc.setTypeId(Long.valueOf(conceptMap.get("meta").getTerminologyId()));
     }
     for (final Description desc : defaultCaseSignificanceConcept
         .getDescriptions()) {
-      desc.setCaseSignificanceId(new Long(conceptMap.get(
+      desc.setCaseSignificanceId(Long.valueOf(conceptMap.get(
           "defaultCaseSignificance").getTerminologyId()));
-      desc.setTypeId(new Long(conceptMap.get("meta").getTerminologyId()));
+      desc.setTypeId(Long.valueOf(conceptMap.get("meta").getTerminologyId()));
     }
 
     for (final Description desc : metaConcept.getDescriptions()) {
-      desc.setTypeId(new Long(conceptMap.get("meta").getTerminologyId()));
+      desc.setTypeId(Long.valueOf(conceptMap.get("meta").getTerminologyId()));
     }
 
     //
@@ -399,11 +402,11 @@ public class GmdnMetadataHelper {
 
     // default definition status
     if (conceptMap.containsKey("defaultDefinitionStatus"))
-      concept.setDefinitionStatusId(new Long(conceptMap.get(
+      concept.setDefinitionStatusId(Long.valueOf(conceptMap.get(
           "defaultDefinitionStatus").getTerminologyId()));
     // default module
     if (conceptMap.containsKey("defaultModule"))
-      concept.setModuleId(new Long(conceptMap.get("defaultModule")
+      concept.setModuleId(Long.valueOf(conceptMap.get("defaultModule")
           .getTerminologyId()));
 
     // Create a preferred name description
@@ -413,7 +416,7 @@ public class GmdnMetadataHelper {
     desc.setActive(true);
     // default module
     if (conceptMap.containsKey("defaultModule"))
-      desc.setModuleId(new Long(conceptMap.get("defaultModule")
+      desc.setModuleId(Long.valueOf(conceptMap.get("defaultModule")
           .getTerminologyId()));
     desc.setTerminology(terminology);
     desc.setTerminologyVersion(terminologyVersion);
@@ -421,12 +424,12 @@ public class GmdnMetadataHelper {
     desc.setConcept(concept);
     // default case significance
     if (conceptMap.containsKey("defaultCaseSignificance"))
-      desc.setCaseSignificanceId(new Long(conceptMap.get(
+      desc.setCaseSignificanceId(Long.valueOf(conceptMap.get(
           "defaultCaseSignificance").getTerminologyId()));
     desc.setLanguageCode("en");
     // preferred description type
     if (conceptMap.containsKey(descriptionType))
-      desc.setTypeId(new Long(conceptMap.get(descriptionType)
+      desc.setTypeId(Long.valueOf(conceptMap.get(descriptionType)
           .getTerminologyId()));
 
     concept.addDescription(desc);
@@ -455,20 +458,21 @@ public class GmdnMetadataHelper {
     relationship.setTerminologyId(terminologyId);
     relationship.setEffectiveTime(dt.parse(effectiveTime));
     relationship.setActive(true);
-    relationship.setModuleId(new Long(conceptMap.get("defaultModule")
+    relationship.setModuleId(Long.valueOf(conceptMap.get("defaultModule")
         .getTerminologyId()));
     relationship.setTerminology(terminology);
     relationship.setTerminologyVersion(terminologyVersion);
     // default characteristic type
-    relationship.setCharacteristicTypeId(new Long(conceptMap.get(
+    relationship.setCharacteristicTypeId(Long.valueOf(conceptMap.get(
         "defaultCharacteristicType").getTerminologyId()));
     // default modifier
-    relationship.setModifierId(new Long(conceptMap.get("defaultModifier")
+    relationship.setModifierId(Long.valueOf(conceptMap.get("defaultModifier")
         .getTerminologyId()));
     relationship.setDestinationConcept(parentConcept);
     relationship.setSourceConcept(childConcept);
     // default "isa" type
-    relationship.setTypeId(new Long(conceptMap.get("isa").getTerminologyId()));
+    relationship
+        .setTypeId(Long.valueOf(conceptMap.get("isa").getTerminologyId()));
     childConcept.addRelationship(relationship);
   }
 

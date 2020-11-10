@@ -20,7 +20,7 @@ echo "MAPPING_DATA = $MAPPING_CODE"
 echo "MAPPING_CONFIG = $MAPPING_CODE"
 
 echo "Taking down the server"
-service tomcat stop
+service tomcat7 stop
 if ($status != 0) then
         echo "ERROR stopping server"
         exit 1
@@ -115,8 +115,8 @@ if ($status != 0) then
     exit 1
 endif
 
-echo "    Restarting tomcat server ...`/bin/date`"
-service tomcat start
+echo "    Restarting tomcat7 server ...`/bin/date`"
+service tomcat7 start
 
 echo "------------------------------------------------"
 echo "Finished ...`/bin/date`"

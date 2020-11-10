@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.lang.reflect.Method;
@@ -14,8 +17,8 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 
 import org.apache.log4j.Logger;
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.ihtsdo.otf.mapping.helpers.HasLastModified;
 import org.ihtsdo.otf.mapping.helpers.LogEntry;
@@ -25,7 +28,6 @@ import org.ihtsdo.otf.mapping.jpa.helpers.IndexUtility;
 import org.ihtsdo.otf.mapping.services.RootService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
-// TODO: Auto-generated Javadoc
 /**
  * The root service for managing the entity manager factory and hibernate search
  * field names.
@@ -72,6 +74,11 @@ public abstract class RootServiceJpa implements RootService {
   }
 
   /* see superclass */
+  /**
+   * Open factory.
+   *
+   * @throws Exception the exception
+   */
   /*
    * (non-Javadoc)
    * 
@@ -93,6 +100,11 @@ public abstract class RootServiceJpa implements RootService {
   }
 
   /* see superclass */
+  /**
+   * Close factory.
+   *
+   * @throws Exception the exception
+   */
   /*
    * (non-Javadoc)
    * 
@@ -106,6 +118,11 @@ public abstract class RootServiceJpa implements RootService {
   }
 
   /* see superclass */
+  /**
+   * Returns the transaction per operation.
+   *
+   * @return the transaction per operation
+   */
   /*
    * (non-Javadoc)
    * 
@@ -119,6 +136,11 @@ public abstract class RootServiceJpa implements RootService {
   }
 
   /* see superclass */
+  /**
+   * Sets the transaction per operation.
+   *
+   * @param transactionPerOperation the transaction per operation
+   */
   /*
    * (non-Javadoc)
    * 
@@ -132,6 +154,9 @@ public abstract class RootServiceJpa implements RootService {
   }
 
   /* see superclass */
+  /**
+   * Begin transaction.
+   */
   /*
    * (non-Javadoc)
    * 
@@ -152,6 +177,11 @@ public abstract class RootServiceJpa implements RootService {
   }
 
   /* see superclass */
+  /**
+   * Commit.
+   *
+   * @throws Exception the exception
+   */
   /*
    * (non-Javadoc)
    * 
@@ -174,6 +204,11 @@ public abstract class RootServiceJpa implements RootService {
     manager.clear();
   }
 
+  /**
+   * Rollback.
+   *
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public void rollback() throws Exception {
@@ -192,12 +227,22 @@ public abstract class RootServiceJpa implements RootService {
     manager.clear();
   }
 
+  /**
+   * Clear.
+   *
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public void clear() throws Exception {
     manager.clear();
   }
 
+  /**
+   * Close.
+   *
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public void close() throws Exception {
@@ -250,6 +295,17 @@ public abstract class RootServiceJpa implements RootService {
   }
 
   /* see superclass */
+  /**
+   * Apply pfs to list.
+   *
+   * @param <T> the
+   * @param list the list
+   * @param clazz the clazz
+   * @param totalCt the total ct
+   * @param pfs the pfs
+   * @return the list
+   * @throws Exception the exception
+   */
   // this is called by REST layer and so needs to be exposed through RootService
   @Override
   public <T> List<T> applyPfsToList(List<T> list, Class<T> clazz, int[] totalCt,
@@ -375,6 +431,13 @@ public abstract class RootServiceJpa implements RootService {
     this.lastModifiedBy = lastModifiedBy;
   }
 
+  /**
+   * Adds the log entry.
+   *
+   * @param logEntry the log entry
+   * @return the log entry
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public LogEntry addLogEntry(final LogEntry logEntry) throws Exception {
@@ -383,6 +446,12 @@ public abstract class RootServiceJpa implements RootService {
     return addObject(logEntry);
   }
 
+  /**
+   * Update log entry.
+   *
+   * @param logEntry the log entry
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public void updateLogEntry(final LogEntry logEntry) throws Exception {
@@ -391,6 +460,12 @@ public abstract class RootServiceJpa implements RootService {
     updateObject(logEntry);
   }
 
+  /**
+   * Removes the log entry.
+   *
+   * @param id the id
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public void removeLogEntry(final Long id) throws Exception {
@@ -398,12 +473,31 @@ public abstract class RootServiceJpa implements RootService {
     removeObject(getObject(id, LogEntryJpa.class));
   }
 
+  /**
+   * Returns the log entry.
+   *
+   * @param id the id
+   * @return the log entry
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public LogEntry getLogEntry(final Long id) throws Exception {
     return getHasLastModified(id, LogEntry.class);
   }
 
+  /**
+   * Adds the log entry.
+   *
+   * @param userName the user name
+   * @param projectId the project id
+   * @param objectId the object id
+   * @param activityId the activity id
+   * @param workId the work id
+   * @param message the message
+   * @return the log entry
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public LogEntry addLogEntry(final String userName, final Long projectId,
@@ -423,6 +517,18 @@ public abstract class RootServiceJpa implements RootService {
 
   }
 
+  /**
+   * Adds the log entry.
+   *
+   * @param userName the user name
+   * @param terminology the terminology
+   * @param version the version
+   * @param activityId the activity id
+   * @param workId the work id
+   * @param message the message
+   * @return the log entry
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public LogEntry addLogEntry(final String userName, final String terminology,
@@ -442,6 +548,19 @@ public abstract class RootServiceJpa implements RootService {
 
   }
 
+  /**
+   * Adds the log entry.
+   *
+   * @param projectId the project id
+   * @param userName the user name
+   * @param terminology the terminology
+   * @param version the version
+   * @param activityId the activity id
+   * @param workId the work id
+   * @param message the message
+   * @return the log entry
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public LogEntry addLogEntry(final Long projectId, final String userName,
@@ -592,6 +711,12 @@ public abstract class RootServiceJpa implements RootService {
     return component;
   }
 
+  /**
+   * Lock process.
+   *
+   * @param processInfo the process info
+   * @throws Exception the exception
+   */
   public synchronized static void lockProcess(String processInfo)
     throws Exception {
     // If processLock is populated, return the existing processInfo as an
@@ -605,6 +730,9 @@ public abstract class RootServiceJpa implements RootService {
     }
   }
 
+  /**
+   * Unlock process.
+   */
   public synchronized static void unlockProcess() {
     // clear out the processLock
     processLock = "";

@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.jpa;
 
 import javax.persistence.Column;
@@ -5,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -27,18 +31,20 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @Entity
 @Table(name = "map_users", uniqueConstraints = {
-  @UniqueConstraint(columnNames = {
-    "userName"
-  })
+    @UniqueConstraint(columnNames = {
+        "userName"
+    })
 })
 @Audited
 @XmlRootElement(name = "mapUser")
-@JsonIgnoreProperties(ignoreUnknown = true , value={"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties(ignoreUnknown = true, value = {
+    "hibernateLazyInitializer", "handler"
+})
 public class MapUserJpa implements MapUser {
 
   /** The id. */
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   /** The user name. */
@@ -232,8 +238,8 @@ public class MapUserJpa implements MapUser {
   @Override
   public String toString() {
 
-    return this.getId() + "," + this.getUserName() + "," + this.getEmail()
-        + "," + this.getName() + "," + this.getApplicationRole().getValue();
+    return this.getId() + "," + this.getUserName() + "," + this.getEmail() + ","
+        + this.getName() + "," + this.getApplicationRole().getValue();
   }
 
   /* see superclass */
@@ -257,9 +263,8 @@ public class MapUserJpa implements MapUser {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result =
-        prime * result
-            + ((applicationRole == null) ? 0 : applicationRole.hashCode());
+    result = prime * result
+        + ((applicationRole == null) ? 0 : applicationRole.hashCode());
     result = prime * result + ((email == null) ? 0 : email.hashCode());
     result = prime * result + ((team == null) ? 0 : team.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());

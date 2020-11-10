@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.reports;
 
 import java.util.ArrayList;
@@ -8,6 +11,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -32,7 +36,7 @@ public class ReportResultJpa implements ReportResult {
 
   /** The id. */
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   /** The name. */
@@ -51,7 +55,7 @@ public class ReportResultJpa implements ReportResult {
   @Column(nullable = true)
   private String dateValue;
 
-  /** The qualified user */
+  /**  The qualified user. */
   @Column(nullable = true)
   private String qualifiedUserName;
 
@@ -295,9 +299,8 @@ public class ReportResultJpa implements ReportResult {
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result =
         prime * result + ((projectName == null) ? 0 : projectName.hashCode());
-    result =
-        prime * result
-            + ((qualifiedUserName == null) ? 0 : qualifiedUserName.hashCode());
+    result = prime * result
+        + ((qualifiedUserName == null) ? 0 : qualifiedUserName.hashCode());
     result = prime * result + ((report == null) ? 0 : report.hashCode());
     result = prime * result + ((value == null) ? 0 : value.hashCode());
     return result;

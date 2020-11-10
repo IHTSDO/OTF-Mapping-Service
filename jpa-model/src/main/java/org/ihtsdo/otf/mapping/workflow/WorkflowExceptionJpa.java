@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.workflow;
 
 import java.util.HashSet;
@@ -8,6 +11,7 @@ import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Table;
@@ -24,7 +28,7 @@ public class WorkflowExceptionJpa implements WorkflowException {
 
   /** The id. */
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   /** The map project id. */
@@ -59,6 +63,7 @@ public class WorkflowExceptionJpa implements WorkflowException {
     return id;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -162,9 +167,8 @@ public class WorkflowExceptionJpa implements WorkflowException {
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * org.ihtsdo.otf.mapping.workflow.WorkflowException#getFalseConflictMapRecordIds
-   * ()
+   * @see org.ihtsdo.otf.mapping.workflow.WorkflowException#
+   * getFalseConflictMapRecordIds ()
    */
   @Override
   public Set<Long> getFalseConflictMapRecordIds() {
@@ -174,12 +178,12 @@ public class WorkflowExceptionJpa implements WorkflowException {
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * org.ihtsdo.otf.mapping.workflow.WorkflowException#setFalseConflictMapRecordIds
-   * (java.util.Set)
+   * @see org.ihtsdo.otf.mapping.workflow.WorkflowException#
+   * setFalseConflictMapRecordIds (java.util.Set)
    */
   @Override
-  public void setFalseConflictMapRecordIds(Set<Long> falseConflictMapRecordIds) {
+  public void setFalseConflictMapRecordIds(
+    Set<Long> falseConflictMapRecordIds) {
     if (falseConflictMapRecordIds == null)
       this.falseConflictMapRecordIds = new HashSet<>();
     else
@@ -189,9 +193,8 @@ public class WorkflowExceptionJpa implements WorkflowException {
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * org.ihtsdo.otf.mapping.workflow.WorkflowException#addFalseConflictMapRecordId
-   * (java.lang.Long)
+   * @see org.ihtsdo.otf.mapping.workflow.WorkflowException#
+   * addFalseConflictMapRecordId (java.lang.Long)
    */
   @Override
   public void addFalseConflictMapRecordId(Long id) {
@@ -232,22 +235,16 @@ public class WorkflowExceptionJpa implements WorkflowException {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result =
-        prime
-            * result
-            + ((falseConflictMapRecordIds == null) ? 0
-                : falseConflictMapRecordIds.hashCode());
+    result = prime * result + ((falseConflictMapRecordIds == null) ? 0
+        : falseConflictMapRecordIds.hashCode());
     result =
         prime * result + ((mapProjectId == null) ? 0 : mapProjectId.hashCode());
     result =
         prime * result + ((terminology == null) ? 0 : terminology.hashCode());
-    result =
-        prime * result
-            + ((terminologyId == null) ? 0 : terminologyId.hashCode());
-    result =
-        prime
-            * result
-            + ((terminologyVersion == null) ? 0 : terminologyVersion.hashCode());
+    result = prime * result
+        + ((terminologyId == null) ? 0 : terminologyId.hashCode());
+    result = prime * result
+        + ((terminologyVersion == null) ? 0 : terminologyVersion.hashCode());
     return result;
   }
 

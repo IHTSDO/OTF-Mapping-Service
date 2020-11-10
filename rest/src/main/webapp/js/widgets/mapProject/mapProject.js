@@ -24,10 +24,10 @@ angular
       
       $scope.project.terminologyButtonText =
         ($scope.project.sourceTerminology !== 'SNOMEDCT' && $scope.project.sourceTerminology !== 'SNOMEDCT_US')
-            ? (deployBrowserLabel = null || typeof deployBrowserLabel == 'undefined' || deployBrowserLabel === '' )
+            ? (deployBrowserLabel == null || typeof deployBrowserLabel == 'undefined' || deployBrowserLabel === '' )
                   ? $scope.project.sourceTerminology
                   : deployBrowserLabel
-            : (deployBrowserLabel = null || typeof deployBrowserLabel == 'undefined' || deployBrowserLabel === '' ) 
+            : (deployBrowserLabel == null || typeof deployBrowserLabel == 'undefined' || deployBrowserLabel === '' ) 
                   ? $scope.project.destinationTerminology
                   : deployBrowserLabel;
       

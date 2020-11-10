@@ -5,17 +5,17 @@
 #
 # Setup environment
 #
-set MAPPING_CODE=/home/ihtsdo/code
-set MAPPING_CONFIG=/home/ihtsdo/config/config.properties
-set MAPPING_DATA=/home/ihtsdo/data
+set MAPPING_CODE=/opt/mapping-admin
+set MAPPING_CONFIG=/opt/mapping-rest/config.properties
+set MAPPING_DATA=/opt/mapping-data
 set version = 2010
 
 echo "------------------------------------------------" 
 echo "Starting ...`/bin/date`"
 echo "------------------------------------------------"
 echo "MAPPING_CODE = $MAPPING_CODE"
-echo "MAPPING_DATA = $MAPPING_CODE"
-echo "MAPPING_CONFIG = $MAPPING_CODE"
+echo "MAPPING_DATA = $MAPPING_DATA"
+echo "MAPPING_CONFIG = $MAPPING_CONFIG"
 echo "version      = $version"
 echo ""
 
@@ -29,7 +29,7 @@ if ($status != 0) then
 endif
 
 echo "  Run ConvertAscToXml ...`/bin/date`"
-cd $MAPPING_CODE/admin/lucene
+cd $MAPPING_CODE/lucene
 mvn install -PConvertAscToXml -Drun.config=$MAPPING_CONFIG -Dinput.dir=$MAPPING_DATA/ihtsdo-mapping-tool-data/index-viewer-data/icd10/src/main/resources/indexViewerData >&! mvn.log
 if ($status != 0) then
     echo "ERROR running ConvertAscToXml"
@@ -38,7 +38,7 @@ if ($status != 0) then
 endif
 
 echo "  Run ConvertXmlToHtmlAndLucene ...`/bin/date`"
-cd $MAPPING_CODE/admin/lucene
+cd $MAPPING_CODE/lucene
 mvn install -PConvertXmlToHtmlAndLucene -Drun.config=$MAPPING_CONFIG -Dinput.dir=$MAPPING_DATA/ihtsdo-mapping-tool-data/index-viewer-data/icd10/src/main/resources/indexViewerData >&! mvn.log
 if ($status != 0) then
     echo "ERROR running ConvertXmlToHtmlAndLucene"

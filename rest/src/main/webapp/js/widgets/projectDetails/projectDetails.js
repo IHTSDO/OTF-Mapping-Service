@@ -2581,11 +2581,11 @@ angular
         $scope.S3Initialize = function() {
           gpService.increment();
           if (!$scope.S3Initialized && $scope.applicationRole == 'Administrator') {
-            $scope.handleTerminologySelection($scope.focusProject.sourceTerminology);
+            //$scope.handleTerminologySelection($scope.focusProject.sourceTerminology);
             $scope.loadProjectReleaseFiles();
             $scope.fileArray = new Array();
             $scope.amazons3FilesPlusCurrent = new Array();
-            $scope.getFilesFromAmazonS3();
+            //$scope.getFilesFromAmazonS3();
             $scope.getCurrentReleaseFile();
             $scope.getPagedReleaseReports(1);
             $scope.S3Initialized = true;

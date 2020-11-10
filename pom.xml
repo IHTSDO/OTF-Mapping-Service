@@ -6,14 +6,14 @@
   <!-- Module Metadata - no parent -->
   <groupId>org.ihtsdo.otf.mapping</groupId>
   <artifactId>ihtsdo-mapping-service</artifactId>
-  <version>1.6.7-SNAPSHOT</version>
+  <version>1.7.11-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>IHTSDO RF2 Data Model</name>
   <description>Aggregator and parent for interfaces and default implementations of RF2 data model for OTF services</description>
   <properties>
-  
   	<tmp>TMP</tmp>
 	</properties>
+  
   <!-- Sub-modules -->
   <modules>
     <module>parent</module>
@@ -25,6 +25,7 @@
     <module>rest</module>
 	<module>rest-client</module>
     <module>admin</module>
+	<module>mojo</module>
     <module>integration-tests</module>
   </modules>
 
@@ -58,12 +59,12 @@
     <repository>
       <id>ihtsdo-public-nexus</id>
       <name>IHTSDO Public Nexus Releases</name>
-      <url>https://nexus.ihtsdotools.org/content/repositories/releases/</url>
+      <url>https://maven3.ihtsdotools.org/repository/maven-releases/</url>
     </repository>
     <snapshotRepository>
       <id>ihtsdo-public-nexus</id>
       <name>IHTSDO Public Nexus Snapshots</name>
-      <url>https://nexus.ihtsdotools.org/content/repositories/snapshots/</url>
+      <url>https://maven3.ihtsdotools.org/repository/maven-snapshots/</url>
     </snapshotRepository>
   </distributionManagement>
 

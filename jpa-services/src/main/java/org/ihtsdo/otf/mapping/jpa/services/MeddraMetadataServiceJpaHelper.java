@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.jpa.services;
 
 import java.util.ArrayList;
@@ -18,14 +21,12 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
  * Implementation of {@link MetadataService} for MedDRA terminology.
  * 
  */
-public class MeddraMetadataServiceJpaHelper extends RootServiceJpa implements
-    MetadataService {
+public class MeddraMetadataServiceJpaHelper extends RootServiceJpa
+    implements MetadataService {
 
   private Map<String, String> descriptionTypeMap = null;
 
-
-
-/**
+  /**
    * Instantiates an empty {@link MeddraMetadataServiceJpaHelper}.
    * 
    * @throws Exception the exception
@@ -72,25 +73,27 @@ public class MeddraMetadataServiceJpaHelper extends RootServiceJpa implements
   @Override
   public Map<String, String> getModules(String terminology, String version)
     throws Exception {
-    ContentService contentService = new ContentServiceJpa();
-    String rootId = null;
-    SearchResultList results =
-        contentService.findConceptsForQuery("Module", new PfsParameterJpa());
-    for (SearchResult result : results.getSearchResults()) {
-      if (result.getTerminology().equals(terminology)
-          && result.getTerminologyVersion().equals(version)
-          && result.getValue().equals("Module")) {
-        rootId = result.getTerminologyId();
-        break;
-      }
-    }
-    if (rootId == null)
-      throw new Exception("Module concept cannot be found.");
 
-    Map<String, String> result =
-        getDescendantMap(contentService, rootId, terminology, version);
-    contentService.close();
-    return result;
+    try (ContentService contentService = new ContentServiceJpa();) {
+      String rootId = null;
+      SearchResultList results =
+          contentService.findConceptsForQuery("Module", new PfsParameterJpa());
+      for (SearchResult result : results.getSearchResults()) {
+        if (result.getTerminology().equals(terminology)
+            && result.getTerminologyVersion().equals(version)
+            && result.getValue().equals("Module")) {
+          rootId = result.getTerminologyId();
+          break;
+        }
+      }
+      if (rootId == null)
+        throw new Exception("Module concept cannot be found.");
+
+      Map<String, String> result =
+          getDescendantMap(contentService, rootId, terminology, version);
+
+      return result;
+    }
   }
 
   /* see superclass */
@@ -124,9 +127,9 @@ public class MeddraMetadataServiceJpaHelper extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public Map<String, String> getSimpleRefSets(String terminology, String version)
-    throws NumberFormatException, Exception {
-	    return new HashMap<>();
+  public Map<String, String> getSimpleRefSets(String terminology,
+    String version) throws NumberFormatException, Exception {
+    return new HashMap<>();
   }
 
   /* see superclass */
@@ -140,175 +143,183 @@ public class MeddraMetadataServiceJpaHelper extends RootServiceJpa implements
   @Override
   public Map<String, String> getDefinitionStatuses(String terminology,
     String version) throws NumberFormatException, Exception {
-    ContentService contentService = new ContentServiceJpa();
-    String rootId = null;
-    SearchResultList results =
-        contentService.findConceptsForQuery("Definition status",
-            new PfsParameterJpa());
-    for (SearchResult result : results.getSearchResults()) {
-      if (result.getTerminology().equals(terminology)
-          && result.getTerminologyVersion().equals(version)
-          && result.getValue().equals("Definition status")) {
-        rootId = result.getTerminologyId();
-        break;
-      }
-    }
-    if (rootId == null)
-      throw new Exception("Definition status concept cannot be found.");
 
-    Map<String, String> result =
-        getDescendantMap(contentService, rootId, terminology, version);
-    contentService.close();
-    return result;
+    try (ContentService contentService = new ContentServiceJpa();) {
+      String rootId = null;
+      SearchResultList results = contentService
+          .findConceptsForQuery("Definition status", new PfsParameterJpa());
+      for (SearchResult result : results.getSearchResults()) {
+        if (result.getTerminology().equals(terminology)
+            && result.getTerminologyVersion().equals(version)
+            && result.getValue().equals("Definition status")) {
+          rootId = result.getTerminologyId();
+          break;
+        }
+      }
+      if (rootId == null)
+        throw new Exception("Definition status concept cannot be found.");
+
+      Map<String, String> result =
+          getDescendantMap(contentService, rootId, terminology, version);
+
+      return result;
+    }
   }
 
   /* see superclass */
   @Override
   public Map<String, String> getDescriptionTypes(String terminology,
     String version) throws NumberFormatException, Exception {
-	    if (descriptionTypeMap != null) {
-	    	return descriptionTypeMap;
-	    }
-	    
-	    descriptionTypeMap = new HashMap<>();
-	    
-	    // find all active descendants of 'MedDRA metadata' concept
-	    ContentService contentService = new ContentServiceJpa();
+    if (descriptionTypeMap != null) {
+      return descriptionTypeMap;
+    }
 
-	    // want all descendants, do not use pfsParameter
-	    List<Concept> descendants = getDescendantConcepts
-	         (contentService, "MedDRA metadata",
-	            terminology, version);
+    descriptionTypeMap = new HashMap<>();
 
-	    for (Concept descendant : descendants) {
-	      if (descendant.isActive()) {
-	    	  descriptionTypeMap.put(new String(descendant.getTerminologyId()),
-	            descendant.getDefaultPreferredName());
-	      }
-	    }
-	    contentService.close();
-	    return descriptionTypeMap;
+    // find all active descendants of 'Terminology metadata' concept
+    ContentService contentService = new ContentServiceJpa();
+
+    // want all descendants, do not use pfsParameter
+    List<Concept> descendants = getDescendantConcepts(contentService,
+        terminology + " metadata", terminology, version);
+
+    for (Concept descendant : descendants) {
+      if (descendant.isActive()) {
+        descriptionTypeMap.put(new String(descendant.getTerminologyId()),
+            descendant.getDefaultPreferredName());
+      }
+    }
+    contentService.close();
+    return descriptionTypeMap;
   }
 
   /* see superclass */
   @Override
   public Map<String, String> getCaseSignificances(String terminology,
     String version) throws NumberFormatException, Exception {
-    ContentService contentService = new ContentServiceJpa();
-    String rootId = null;
-    SearchResultList results =
-        contentService.findConceptsForQuery("Case significance",
-            new PfsParameterJpa());
-    for (SearchResult result : results.getSearchResults()) {
-      if (result.getTerminology().equals(terminology)
-          && result.getTerminologyVersion().equals(version)
-          && result.getValue().equals("Case significance")) {
-        rootId = result.getTerminologyId();
-        break;
-      }
-    }
-    if (rootId == null)
-      throw new Exception("Case significance concept cannot be found.");
 
-    Map<String, String> result =
-        getDescendantMap(contentService, rootId, terminology, version);
-    contentService.close();
-    return result;
+    try (ContentService contentService = new ContentServiceJpa();) {
+      String rootId = null;
+      SearchResultList results = contentService
+          .findConceptsForQuery("Case significance", new PfsParameterJpa());
+      for (SearchResult result : results.getSearchResults()) {
+        if (result.getTerminology().equals(terminology)
+            && result.getTerminologyVersion().equals(version)
+            && result.getValue().equals("Case significance")) {
+          rootId = result.getTerminologyId();
+          break;
+        }
+      }
+      if (rootId == null)
+        throw new Exception("Case significance concept cannot be found.");
+
+      Map<String, String> result =
+          getDescendantMap(contentService, rootId, terminology, version);
+
+      return result;
+    }
   }
 
   /* see superclass */
   @Override
   public Map<String, String> getRelationshipTypes(String terminology,
     String version) throws NumberFormatException, Exception {
-    // find all active descendants of 106237007
-    ContentService contentService = new ContentServiceJpa();
-    String rootId = null;
-    SearchResultList results =
-        contentService.findConceptsForQuery("Relationship type",
-            new PfsParameterJpa());
-    for (SearchResult result : results.getSearchResults()) {
-      if (result.getTerminology().equals(terminology)
-          && result.getTerminologyVersion().equals(version)
-          && result.getValue().equals("Relationship type")) {
-        rootId = result.getTerminologyId();
-        break;
-      }
-    }
-    if (rootId == null)
-      throw new Exception("Relationship type concept cannot be found.");
 
-    Map<String, String> result =
-        getDescendantMap(contentService, rootId, terminology, version);
-    contentService.close();
-    return result;
+    // find all active descendants of 106237007
+    try (ContentService contentService = new ContentServiceJpa();) {
+      String rootId = null;
+      SearchResultList results = contentService
+          .findConceptsForQuery("Relationship type", new PfsParameterJpa());
+      for (SearchResult result : results.getSearchResults()) {
+        if (result.getTerminology().equals(terminology)
+            && result.getTerminologyVersion().equals(version)
+            && result.getValue().equals("Relationship type")) {
+          rootId = result.getTerminologyId();
+          break;
+        }
+      }
+      if (rootId == null)
+        throw new Exception("Relationship type concept cannot be found.");
+
+      Map<String, String> result =
+          getDescendantMap(contentService, rootId, terminology, version);
+
+      return result;
+    }
   }
 
   /* see superclass */
   @Override
   public Map<String, String> getHierarchicalRelationshipTypes(
-    String terminology, String version) throws NumberFormatException, Exception {
+    String terminology, String version)
+    throws NumberFormatException, Exception {
     Map<String, String> map = new HashMap<>();
 
     // find all active descendants of isa
-    ContentService contentService = new ContentServiceJpa();
-    Concept isaRel =
-        contentService.getConcept(getIsaRelationshipType(terminology, version)
-            .toString(), terminology, version);
-    map.put(new String(isaRel.getTerminologyId()),
-        isaRel.getDefaultPreferredName());
-    contentService.close();
-    return map;
+    try (ContentService contentService = new ContentServiceJpa();) {
+      Concept isaRel = contentService.getConcept(
+          getIsaRelationshipType(terminology, version).toString(), terminology,
+          version);
+      map.put(new String(isaRel.getTerminologyId()),
+          isaRel.getDefaultPreferredName());
+
+      return map;
+    }
   }
 
   /* see superclass */
   @Override
   public Map<String, String> getRelationshipCharacteristicTypes(
-    String terminology, String version) throws NumberFormatException, Exception {
-    ContentService contentService = new ContentServiceJpa();
-    String rootId = null;
-    SearchResultList results =
-        contentService.findConceptsForQuery("Characteristic type",
-            new PfsParameterJpa());
-    for (SearchResult result : results.getSearchResults()) {
-      if (result.getTerminology().equals(terminology)
-          && result.getTerminologyVersion().equals(version)
-          && result.getValue().equals("Characteristic type")) {
-        rootId = result.getTerminologyId();
-        break;
-      }
-    }
-    if (rootId == null)
-      throw new Exception("Characteristic type concept cannot be found.");
+    String terminology, String version)
+    throws NumberFormatException, Exception {
 
-    Map<String, String> result =
-        getDescendantMap(contentService, rootId, terminology, version);
-    contentService.close();
-    return result;
+    try (ContentService contentService = new ContentServiceJpa();) {
+      String rootId = null;
+      SearchResultList results = contentService
+          .findConceptsForQuery("Characteristic type", new PfsParameterJpa());
+      for (SearchResult result : results.getSearchResults()) {
+        if (result.getTerminology().equals(terminology)
+            && result.getTerminologyVersion().equals(version)
+            && result.getValue().equals("Characteristic type")) {
+          rootId = result.getTerminologyId();
+          break;
+        }
+      }
+      if (rootId == null)
+        throw new Exception("Characteristic type concept cannot be found.");
+
+      Map<String, String> result =
+          getDescendantMap(contentService, rootId, terminology, version);
+
+      return result;
+    }
   }
 
   /* see superclass */
   @Override
   public Map<String, String> getRelationshipModifiers(String terminology,
     String version) throws NumberFormatException, Exception {
-    ContentService contentService = new ContentServiceJpa();
-    String rootId = null;
-    SearchResultList results =
-        contentService.findConceptsForQuery("Modifier", new PfsParameterJpa());
-    for (SearchResult result : results.getSearchResults()) {
-      if (result.getTerminology().equals(terminology)
-          && result.getTerminologyVersion().equals(version)
-          && result.getValue().equals("Modifier")) {
-        rootId = result.getTerminologyId();
-        break;
-      }
-    }
-    if (rootId == null)
-      throw new Exception("Modifier concept cannot be found.");
 
-    Map<String, String> result =
-        getDescendantMap(contentService, rootId, terminology, version);
-    contentService.close();
-    return result;
+    try (ContentService contentService = new ContentServiceJpa();) {
+      String rootId = null;
+      SearchResultList results = contentService.findConceptsForQuery("Modifier",
+          new PfsParameterJpa());
+      for (SearchResult result : results.getSearchResults()) {
+        if (result.getTerminology().equals(terminology)
+            && result.getTerminologyVersion().equals(version)
+            && result.getValue().equals("Modifier")) {
+          rootId = result.getTerminologyId();
+          break;
+        }
+      }
+      if (rootId == null)
+        throw new Exception("Modifier concept cannot be found.");
+
+      Map<String, String> result =
+          getDescendantMap(contentService, rootId, terminology, version);
+
+      return result;
+    }
   }
 
   /* see superclass */
@@ -351,10 +362,11 @@ public class MeddraMetadataServiceJpaHelper extends RootServiceJpa implements
     // no-op - this is just helper class
     return null;
   }
-  
+
   /* see superclass */
   @Override
-  public Boolean checkTerminologyVersionExists(String terminology, String version) {
+  public Boolean checkTerminologyVersionExists(String terminology,
+    String version) {
     // no-op - this is just helper class
     return null;
   }
@@ -395,7 +407,6 @@ public class MeddraMetadataServiceJpaHelper extends RootServiceJpa implements
     // n/a
   }
 
-
   /**
    * Helper method for getting descendants.
    *
@@ -407,34 +418,32 @@ public class MeddraMetadataServiceJpaHelper extends RootServiceJpa implements
    * @throws Exception the exception
    */
   @SuppressWarnings("static-method")
-  private List<Concept> getDescendantConcepts(ContentService contentService, String term,
-    String terminology, String terminologyVersion)
+  private List<Concept> getDescendantConcepts(ContentService contentService,
+    String term, String terminology, String terminologyVersion)
     throws Exception {
     final SearchResultList list = contentService.findConceptsForQuery(
-            "defaultPreferredName:" + term 
-                + " AND terminology:" + terminology + " AND terminologyVersion:"
-                + terminologyVersion,
-            null);
+        "defaultPreferredName:" + term + " AND terminology:" + terminology
+            + " AND terminologyVersion:" + terminologyVersion,
+        null);
 
     if (list.getTotalCount() == 0) {
-    	return new ArrayList<Concept>();
+      return new ArrayList<Concept>();
     }
-    
+
     Concept concept = null;
 
     for (SearchResult result : list.getIterable()) {
-    	if (result.getValue().equals(term)) {
-    		concept = 
-            contentService.getConcept(result.getTerminologyId(), terminology,
-                    terminologyVersion);
-    		break;
-    	}
+      if (result.getValue().equals(term)) {
+        concept = contentService.getConcept(result.getTerminologyId(),
+            terminology, terminologyVersion);
+        break;
+      }
     }
 
     if (concept == null) {
-    	throw new Exception("Cannot locate the MedDRA Metadata concept");
+      throw new Exception("Cannot locate the MedDRA Metadata concept");
     }
-    	    
+
     return TerminologyUtility.getActiveDescendants(concept);
 
   }

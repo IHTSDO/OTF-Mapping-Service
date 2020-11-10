@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.test.selenium;
 
 import static org.junit.Assert.assertTrue;
@@ -46,7 +49,7 @@ public class GeneralNormalUseTest {
     if (config.contains("selenium.browser")) {
       return;
     }
-    
+
     // construct a new webdriver
     switch (config.getProperty("selenium.browser")) {
       case "firefox":
@@ -63,11 +66,8 @@ public class GeneralNormalUseTest {
             "Invalid browser specified in config file.  Valid options are: firefox, chrome, ie");
     }
 
-    webDriver
-        .manage()
-        .timeouts()
-        .implicitlyWait(new Long(config.getProperty("selenium.timeout")),
-            TimeUnit.SECONDS);
+    webDriver.manage().timeouts().implicitlyWait(
+        Long.valueOf(config.getProperty("selenium.timeout")), TimeUnit.SECONDS);
   }
 
   /**
@@ -107,15 +107,15 @@ public class GeneralNormalUseTest {
     webDriver.findElement(By.id("guestLoginButton")).click();
 
     // Find the header content and test once injection is complete
-    (new WebDriverWait(webDriver, new Long(
-        config.getProperty("selenium.timeout")) / 1000))
-        .until(new ExpectedCondition<Boolean>() {
-          @Override
-          public Boolean apply(WebDriver d) {
-            return webDriver.findElement(By.id("userAndRole")).getText()
-                .length() > 0;
-          }
-        });
+    (new WebDriverWait(webDriver,
+        Long.valueOf(config.getProperty("selenium.timeout")) / 1000))
+            .until(new ExpectedCondition<Boolean>() {
+              @Override
+              public Boolean apply(WebDriver d) {
+                return webDriver.findElement(By.id("userAndRole")).getText()
+                    .length() > 0;
+              }
+            });
 
     assertTrue(webDriver.findElement(By.id("userAndRole")).getText()
         .matches(".*(.*)*"));
@@ -127,26 +127,26 @@ public class GeneralNormalUseTest {
     webDriver.get(config.getProperty("selenium.url"));
 
     // fill in the user name from created valid user
-    webDriver.findElement(By.id("userField")).sendKeys(
-        config.getProperty("selenium.user.valid.name"));
+    webDriver.findElement(By.id("userField"))
+        .sendKeys(config.getProperty("selenium.user.valid.name"));
 
     // fill in the password from config file
-    webDriver.findElement(By.id("passwordField")).sendKeys(
-        config.getProperty("selenium.user.valid.password"));
+    webDriver.findElement(By.id("passwordField"))
+        .sendKeys(config.getProperty("selenium.user.valid.password"));
 
     // login
     webDriver.findElement(By.id("userLoginButton")).click();
 
     // Find the header content and test once injection is complete
-    (new WebDriverWait(webDriver, new Long(
-        config.getProperty("selenium.timeout")) / 1000))
-        .until(new ExpectedCondition<Boolean>() {
-          @Override
-          public Boolean apply(WebDriver d) {
-            return webDriver.findElement(By.id("userAndRole")).getText()
-                .length() > 0;
-          }
-        });
+    (new WebDriverWait(webDriver,
+        Long.valueOf(config.getProperty("selenium.timeout")) / 1000))
+            .until(new ExpectedCondition<Boolean>() {
+              @Override
+              public Boolean apply(WebDriver d) {
+                return webDriver.findElement(By.id("userAndRole")).getText()
+                    .length() > 0;
+              }
+            });
 
     // verify that string matches pattern Text (Text)
     assertTrue(webDriver.findElement(By.id("userAndRole")).getText()

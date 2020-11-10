@@ -1,12 +1,12 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <!-- Module Metadata -->
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.6.7-SNAPSHOT</version>
+    <version>1.7.11-SNAPSHOT</version>
     <relativePath>../parent</relativePath>
   </parent>
 
@@ -19,7 +19,7 @@
     <plugins>
 
       <!-- Package tools -->
-      <plugin>
+<!--       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>truezip-maven-plugin</artifactId>
         <executions>
@@ -31,12 +31,11 @@
             <phase>package</phase>
             <configuration>
               <fileset>
-               <!--   <directory>src/main/resources</directory> -->
+                 <directory>src/main/resources</directory>
                <directory>${basedir}</directory>
                <excludes>
                   <exclude>.gitignore</exclude>
                   <exclude>**/deb/**</exclude>
-                  <exclude>**/mojo/**</exclude>
                   <exclude>**/target/**</exclude>
                 </excludes>
                 <outputDirectory>${project.build.directory}/mapping-admin-${releaseVersion}.zip</outputDirectory>
@@ -44,10 +43,10 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
+      </plugin> -->
 
       <!-- Attach .zip file artifact -->
-      <plugin>
+<!--       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
         <executions>
@@ -67,7 +66,7 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
+      </plugin> -->
 
     </plugins>
 
@@ -75,7 +74,6 @@
 
   <!-- Sub-modules -->
   <modules>
-    <module>mojo</module>
     <module>updatedb</module>
     <module>lucene</module>
     <module>loader</module>
@@ -85,6 +83,5 @@
     <module>qa</module>
     <module>release</module>
     <module>daily-build</module>
-    <module>deb</module>
   </modules>
 </project>

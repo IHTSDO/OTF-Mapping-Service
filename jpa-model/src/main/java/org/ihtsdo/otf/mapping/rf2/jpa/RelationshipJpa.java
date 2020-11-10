@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.rf2.jpa;
 
 import javax.persistence.Column;
@@ -9,8 +12,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
-import org.hibernate.annotations.Index;
 import org.hibernate.search.annotations.ContainedIn;
+import org.hibernate.search.annotations.Indexed;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
 
@@ -24,6 +27,7 @@ import org.ihtsdo.otf.mapping.rf2.Relationship;
     "terminologyId", "terminology", "terminologyVersion"
 }))
 // @Audited
+@Indexed
 @XmlRootElement(name = "relationship")
 public class RelationshipJpa extends AbstractComponent implements Relationship {
 
@@ -37,8 +41,7 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
   private Concept destinationConcept;
 
   /** The type id. */
-  @Column(nullable = false)
-  @Index(name = "type_id")
+  @Column(nullable = false) // @Index(name = "type_id")
   private Long typeId;
 
   /** The characteristic type id. */
@@ -211,8 +214,8 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
    */
   @XmlElement
   public String getDestinationConceptPreferredName() {
-    return destinationConcept != null ? destinationConcept
-        .getDefaultPreferredName() : null;
+    return destinationConcept != null
+        ? destinationConcept.getDefaultPreferredName() : null;
   }
 
   /**
@@ -240,59 +243,43 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
    */
   @Override
   public String toString() {
-    return this.getId()
-        + ","
-        + this.getTerminology()
-        + ","
-        + this.getTerminologyId()
-        + ","
-        + this.getTerminologyVersion()
-        + ","
-        + this.getEffectiveTime()
-        + ","
-        + this.isActive()
-        + ","
-        + this.getModuleId()
-        + ","
-        + // end of basic component fields
+    return this.getId() + "," + this.getTerminology() + ","
+        + this.getTerminologyId() + "," + this.getTerminologyVersion() + ","
+        + this.getEffectiveTime() + "," + this.isActive() + ","
+        + this.getModuleId() + "," + // end of basic component fields
 
-        (this.getSourceConcept() == null ? null : this.getSourceConcept()
-            .getId())
+        (this.getSourceConcept() == null ? null
+            : this.getSourceConcept().getId())
         + ","
-        + (this.getDestinationConcept() == null ? null : this
-            .getDestinationConcept().getId()) + ","
-        + this.getRelationshipGroup() + "," + this.getTypeId() + ","
+        + (this.getDestinationConcept() == null ? null
+            : this.getDestinationConcept().getId())
+        + "," + this.getRelationshipGroup() + "," + this.getTypeId() + ","
         + this.getCharacteristicTypeId() + "," + this.getModifierId(); // end of
                                                                        // relationship
                                                                        // fields
 
   }
 
+  /* see superclass */
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
-    result =
-        prime
-            * result
-            + ((characteristicTypeId == null) ? 0 : characteristicTypeId
-                .hashCode());
-    result =
-        prime
-            * result
-            + ((destinationConcept == null) ? 0 : destinationConcept.hashCode());
+    result = prime * result + ((characteristicTypeId == null) ? 0
+        : characteristicTypeId.hashCode());
+    result = prime * result
+        + ((destinationConcept == null) ? 0 : destinationConcept.hashCode());
     result =
         prime * result + ((modifierId == null) ? 0 : modifierId.hashCode());
-    result =
-        prime * result
-            + ((relationshipGroup == null) ? 0 : relationshipGroup.hashCode());
-    result =
-        prime * result
-            + ((sourceConcept == null) ? 0 : sourceConcept.hashCode());
+    result = prime * result
+        + ((relationshipGroup == null) ? 0 : relationshipGroup.hashCode());
+    result = prime * result
+        + ((sourceConcept == null) ? 0 : sourceConcept.hashCode());
     result = prime * result + ((typeId == null) ? 0 : typeId.hashCode());
     return result;
   }
 
+  /* see superclass */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)

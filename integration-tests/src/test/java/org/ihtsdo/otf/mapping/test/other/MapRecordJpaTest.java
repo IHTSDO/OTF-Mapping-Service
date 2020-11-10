@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.test.other;
 
 import static org.junit.Assert.assertEquals;
@@ -15,9 +18,8 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 
 import org.apache.log4j.Logger;
-import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.util.Version;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.search.SearchFactory;
@@ -87,8 +89,8 @@ public class MapRecordJpaTest {
 
     // create Entity Manager
     String configFileName = System.getProperty("run.config.test");
-    Logger.getLogger(MapRecordJpaTest.class).info(
-        "  run.config.test = " + configFileName);
+    Logger.getLogger(MapRecordJpaTest.class)
+        .info("  run.config.test = " + configFileName);
     Properties config = new Properties();
     FileReader in = new FileReader(new File(configFileName));
     config.load(in);
@@ -122,9 +124,8 @@ public class MapRecordJpaTest {
 
     SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
 
-    QueryParser queryParser =
-        new QueryParser(Version.LUCENE_36, "summary",
-            searchFactory.getAnalyzer(MapProjectJpa.class));
+    QueryParser queryParser = new QueryParser("summary",
+        searchFactory.getAnalyzer(MapProjectJpa.class));
 
     // test index on refSetId
     Query luceneQuery = queryParser.parse("conceptId:" + conceptId1);
@@ -132,7 +133,7 @@ public class MapRecordJpaTest {
         fullTextEntityManager.createFullTextQuery(luceneQuery);
     List<MapRecord> results = fullTextQuery.getResultList();
     for (MapRecord mapRecord : results) {
-      assertEquals(mapRecord.getMapProjectId(), new Long("1"));
+      assertEquals(mapRecord.getMapProjectId(), Long.getLong("1"));
     }
     assertTrue("results.size() " + results.size(), results.size() > 0);
 
@@ -147,14 +148,14 @@ public class MapRecordJpaTest {
   @Test
   public void testMapRecordAuditReader() throws Exception {
 
-    Logger.getLogger(MapRecordJpaTest.class).info(
-        "testMapRecordAuditReader()...");
+    Logger.getLogger(MapRecordJpaTest.class)
+        .info("testMapRecordAuditReader()...");
 
     // report initial number of revisions on MapRecord object
     List<Number> revNumbers =
         reader.getRevisions(MapRecordJpa.class, mapRecord1.getId());
-    Logger.getLogger(MapRecordJpaTest.class).info(
-        "MapRecord: " + 1L + " - Versions: " + revNumbers.toString());
+    Logger.getLogger(MapRecordJpaTest.class)
+        .info("MapRecord: " + 1L + " - Versions: " + revNumbers.toString());
     assertTrue(revNumbers.size() == 1);
 
     // make a change to MapRecord
@@ -171,8 +172,8 @@ public class MapRecordJpaTest {
 
     // report incremented number of revisions on MapProject object
     revNumbers = reader.getRevisions(MapRecordJpa.class, mapRecord1.getId());
-    Logger.getLogger(MapRecordJpaTest.class).info(
-        "MapRecord: " + 1L + " - Versions: " + revNumbers.toString());
+    Logger.getLogger(MapRecordJpaTest.class)
+        .info("MapRecord: " + 1L + " - Versions: " + revNumbers.toString());
     assertTrue(revNumbers.size() == 2);
 
     // revert change to MapProject
@@ -194,16 +195,16 @@ public class MapRecordJpaTest {
   @Test
   public void confirmMapRecordDelete() throws Exception {
 
-    Logger.getLogger(MapRecordJpaTest.class).info(
-        "Testing MapRecord delete functions...");
+    Logger.getLogger(MapRecordJpaTest.class)
+        .info("Testing MapRecord delete functions...");
 
     EntityTransaction tx = manager.getTransaction();
     Logger.getLogger(MapRecordJpaTest.class).info("testMapRecordDelete()...");
 
-    MapRecord mapRecord =
-        (MapRecord) manager.createQuery(
+    MapRecord mapRecord = (MapRecord) manager
+        .createQuery(
             "select m from MapRecordJpa m where conceptId = " + conceptId1)
-            .getSingleResult();
+        .getSingleResult();
 
     // retrieve id of principle, entry, note
     Long recordId = mapRecord.getId();
@@ -259,15 +260,14 @@ public class MapRecordJpaTest {
     Logger.getLogger(MapRecordJpaTest.class).info("Testing MapRecord load...");
 
     // test load of record
-    javax.persistence.Query query =
-        manager
-            .createQuery("select m from MapRecordJpa m where conceptId = :conceptId");
+    javax.persistence.Query query = manager.createQuery(
+        "select m from MapRecordJpa m where conceptId = :conceptId");
 
     query.setParameter("conceptId", conceptId1);
 
     MapRecord mapRecord = (MapRecord) query.getSingleResult();
     assertEquals(mapRecord.getConceptId(), conceptId1);
-    assertEquals(mapRecord.getMapProjectId(), new Long("1"));
+    assertEquals(mapRecord.getMapProjectId(), Long.valueOf("1"));
     assertEquals(mapRecord.getMapEntries().size(), 1);
     assertEquals(mapRecord.getMapPrinciples().size(), 1);
     assertEquals(mapRecord.getConceptId(), conceptId1);
@@ -301,11 +301,11 @@ public class MapRecordJpaTest {
     mapRecord1 = new MapRecordJpa();
     mapRecord1.setConceptId(conceptId1);
     mapRecord1.setConceptName("conceptTestName");
-    mapRecord1.setMapProjectId(new Long("1"));
+    mapRecord1.setMapProjectId(Long.valueOf("1"));
     mapRecord1.setFlagForConsensusReview(false);
     mapRecord1.setFlagForEditorialReview(false);
     mapRecord1.setFlagForMapLeadReview(false);
-    mapRecord1.setLastModified(new Long("1"));
+    mapRecord1.setLastModified(Long.valueOf("1"));
     mapRecord1.setTimestamp(System.currentTimeMillis());
     mapRecord1.setLastModifiedBy(mapUser1);
     mapRecord1.setOwner(mapUser1);
@@ -367,8 +367,8 @@ public class MapRecordJpaTest {
 
     EntityTransaction tx = manager.getTransaction();
     // remove map records
-    for (MapRecord m : (List<MapRecord>) manager.createQuery(
-        "select m from MapRecordJpa m").getResultList()) {
+    for (MapRecord m : (List<MapRecord>) manager
+        .createQuery("select m from MapRecordJpa m").getResultList()) {
       // delete the map record
       tx.begin();
       if (manager.contains(m)) {
@@ -380,8 +380,8 @@ public class MapRecordJpaTest {
     }
 
     // remove map advice
-    for (MapAdvice m : (List<MapAdvice>) manager.createQuery(
-        "select m from MapAdviceJpa m").getResultList()) {
+    for (MapAdvice m : (List<MapAdvice>) manager
+        .createQuery("select m from MapAdviceJpa m").getResultList()) {
       // delete the map record
       tx.begin();
       if (manager.contains(m)) {
@@ -393,8 +393,8 @@ public class MapRecordJpaTest {
     }
 
     // remove map users
-    for (MapUser m : (List<MapUser>) manager.createQuery(
-        "select m from MapUserJpa m").getResultList()) {
+    for (MapUser m : (List<MapUser>) manager
+        .createQuery("select m from MapUserJpa m").getResultList()) {
       // delete the map record
       tx.begin();
       if (manager.contains(m)) {

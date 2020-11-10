@@ -197,7 +197,7 @@ public class ConfigUtility {
     }
     Object o = null;
     try {
-      o = toInstantiate.newInstance();
+      o = toInstantiate.getDeclaredConstructor().newInstance();
     } catch (Exception e) {
       // do nothing
     }

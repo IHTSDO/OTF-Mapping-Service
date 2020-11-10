@@ -1,8 +1,12 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.jpa;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -19,9 +23,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @Entity
 @Table(name = "map_relations", uniqueConstraints = {
-  @UniqueConstraint(columnNames = {
-    "name"
-  })
+    @UniqueConstraint(columnNames = {
+        "name"
+    })
 })
 @Audited
 @XmlRootElement(name = "mapRelation")
@@ -30,7 +34,7 @@ public class MapRelationJpa implements MapRelation {
 
   /** The id. */
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   /** The terminology id. */
@@ -71,7 +75,8 @@ public class MapRelationJpa implements MapRelation {
    * @param isComputed the is computed
    */
   public MapRelationJpa(Long id, String terminologyId, String name,
-      String abbreviation, boolean isAllowableForNullTarget, boolean isComputed) {
+      String abbreviation, boolean isAllowableForNullTarget,
+      boolean isComputed) {
     super();
     this.id = id;
     this.terminologyId = terminologyId;
@@ -237,9 +242,8 @@ public class MapRelationJpa implements MapRelation {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result =
-        prime * result
-            + ((terminologyId == null) ? 0 : terminologyId.hashCode());
+    result = prime * result
+        + ((terminologyId == null) ? 0 : terminologyId.hashCode());
     return result;
   }
 
