@@ -5,8 +5,8 @@ See Confluence:
 * https://confluence.ihtsdotools.org/display/MT/Redeploy+Instructions
 
 Tomcat Settings
-#* config file = /etc/tomcat7/tomcat7.conf (add -Drun.config= parameter here)
-* webapps dir = /opt/tomcat8/webapps
+* config file = /etc/tomcat7/tomcat7.conf (add -Drun.config= parameter here)
+* webapps dir = /var/lib/tomcat7/webapps
 
 MYSQL Settings
 * my.cnf - /etc/mysql
@@ -23,16 +23,16 @@ su root
 # enter password
 
 # To clean up the indexes do this (as root)
-/bin/rm -rf /opt/tomcat8/indexes
-mkdir /opt/tomcat8/indexes
-mkdir /opt/tomcat8/indexes/lucene
-mkdir /opt/tomcat8/indexes/lucene/indexes
-chmod -R ga+rwx /opt/tomcat8/indexes
-chown -R tomcat /opt/tomcat8/indexes
-chgrp -R tomcat /opt/tomcat8/indexes
+/bin/rm -rf /var/lib/tomcat7/indexes
+mkdir /var/lib/tomcat7/indexes
+mkdir /var/lib/tomcat7/indexes/lucene
+mkdir /var/lib/tomcat7/indexes/lucene/indexes
+chmod -R ga+rwx /var/lib/tomcat7/indexes
+chown -R tomcat7 /var/lib/tomcat7/indexes
+chgrp -R tomcat7 /var/lib/tomcat7/indexes
 
 # Ensure the config.properties file used to run the application has this setting
-hibernate.search.default.indexBase=/opt/tomcat8/indexes/lucene/indexes
+hibernate.search.default.indexBase=/var/lib/tomcat7/indexes/lucene/indexes
 
 UPDATE DATABASE - after build
 
@@ -54,23 +54,18 @@ cd ~/code
 git pull
 mvn -Dconfig.artifactId=mapping-config-prod clean install
 
-sudo service tomcat stop
-/bin/rm -rf /opt/tomcat8/work/Catalina/localhost/mapping-rest
-/bin/rm -rf /opt/tomcat8/webapps/mapping-rest
-/bin/rm -rf /opt/tomcat8/webapps/mapping-rest.war
+service tomcat7 stop
+/bin/rm -rf /var/lib/tomcat7/work/Catalina/localhost/mapping-rest
+/bin/rm -rf /var/lib/tomcat7/webapps/mapping-rest
+/bin/rm -rf /var/lib/tomcat7/webapps/mapping-rest.war
 
-/bin/cp -f ~/code/rest/target/mapping-rest*war /opt/tomcat8/webapps/mapping-rest.war
+/bin/cp -f ~/code/rest/target/mapping-rest*war /var/lib/tomcat7/webapps/mapping-rest.war
 
-sudo service tomcat start
+service tomcat7 start
 
 sleep 40
 
-cd /opt/tomcat8/webapps/mapping-rest
+cd /var/lib/tomcat7/webapps/mapping-rest
 ln -s ~ihtsdo/data/doc
 chmod -R ga+rwx ~ihtsdo/data/doc
-
-# access to the tomcat log
-/var/log/upstart/tomcat.log
-# access to historical logs
-/opt/tomcat8/logs
 

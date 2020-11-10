@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
@@ -41,18 +40,18 @@ import org.junit.Test;
  */
 public class ComputeIcd11Map {
 
-  /** The Constant NO_MAP. */
-  final static int NO_MAP = 4;
+	  /** The Constant NO_MAP. */
+	  final static int NO_MAP = 4;
 
-  /** The Constant HIGH. */
-  final static int HIGH = 3;
+	  /** The Constant HIGH. */
+	  final static int HIGH = 3;
 
-  /** The Constant MEDIUM. */
-  final static int MEDIUM = 2;
+	  /** The Constant MEDIUM. */
+	  final static int MEDIUM = 2;
 
-  /** The Constant LOW. */
-  final static int LOW = 1;
-
+	  /** The Constant LOW. */
+	  final static int LOW = 1;
+	  
   /** The properties. */
   static Properties config;
 
@@ -177,7 +176,7 @@ public class ComputeIcd11Map {
       // Cache SNOMED concepts
       // sctid|name|ptFlag
       //
-      Logger.getLogger(getClass()).info(" Load SNOMED concepts");
+      Logger.getLogger(getClass()).info(" Load ICD11 concepts");
       List<String> lines =
           FileUtils.readLines(new File(icd11Dir, "sctScopeDesc.txt"), "UTF-8");
       int ct = 0;
@@ -194,10 +193,10 @@ public class ComputeIcd11Map {
           Logger.getLogger(getClass()).debug(code + " => " + fields[1]);
         }
         ct++;
-      }
+       }
       Logger.getLogger(getClass()).info("   ct = " + ct);
       Logger.getLogger(getClass()).info("   skipCt =  " + skipCt);
-
+    
       // Cache ICD11 map (by SCTID)
       Logger.getLogger(getClass()).info(" Load ICD11 map edits");
       lines = FileUtils.readLines(new File(icd11Dir, "icd11MapEdits.txt"), "UTF-8");
@@ -290,7 +289,6 @@ public class ComputeIcd11Map {
 
       //
       // Cache ICD11 scope (by id) - noheader
-      // entityCode
       //
       Logger.getLogger(getClass()).info(" Load ICD11 scope");
       lines =
@@ -299,8 +297,9 @@ public class ComputeIcd11Map {
       ct = 0;
       skipCt = 0;
       for (final String line : lines) {
-        // entityCode already has URL stripped - http://id.who.int/icd/entity
-        final String code = line;
+
+        final String code =
+            line.replaceAll("http\\:\\/\\/id.who.int\\/icd\\/entity\\/", "");
         if (code.equals("300B")) {
           continue;
         }
@@ -343,7 +342,6 @@ public class ComputeIcd11Map {
 
       //
       // Cache ICD10 scope (by code) - noheader
-      // code
       //
       Logger.getLogger(getClass()).info(" Load ICD10 scope");
       lines =
@@ -393,7 +391,6 @@ public class ComputeIcd11Map {
 
       //
       // Cache SCT scope - noheader
-      // sctid
       //
       Logger.getLogger(getClass()).info(" Load SCT scope");
       lines = FileUtils.readLines(new File(icd11Dir, "sctScope.txt"), "UTF-8");
@@ -431,7 +428,6 @@ public class ComputeIcd11Map {
 
       //
       // Cache SCT ancDesc and descAnc - noheader
-      // anc|desc|depth
       //
       Logger.getLogger(getClass()).info(" Load SCT anc/desc (for scope)");
       lines = FileUtils.readLines(new File(icd11Dir, "sctScopeAncDesc.txt"),
@@ -442,7 +438,7 @@ public class ComputeIcd11Map {
         final String[] fields = line.split("\\|");
         // skip if if self-row
         if (fields[2].equals("0")) {
-          skipCt++;
+          skipCt = 0;
           // no need to log this, it is very common and verified
           continue;
         }
@@ -453,17 +449,13 @@ public class ComputeIcd11Map {
 
         if (!sctDescAnc.containsKey(fields[1])) {
           sctDescAnc.put(fields[1], new HashSet<String>());
-          sctChdPar.put(fields[1], new HashSet<String>());
         }
         sctDescAnc.get(fields[1]).add(new Depth(line, false).getCode());
-        if (fields[2].equals("1")) {
-          sctChdPar.get(fields[1]).add(fields[0]);
-        }
         if (ct < sampleCt) {
           Logger.getLogger(getClass())
-              .debug(fields[0] + " => DESC " + sctAncDesc.get(fields[0]));
+              .debug(fields[0] + " => " + sctAncDesc.get(fields[0]) + " CHD");
           Logger.getLogger(getClass())
-              .debug(fields[1] + " => ANC " + sctDescAnc.get(fields[1]));
+              .debug(fields[1] + " => " + sctDescAnc.get(fields[1]) + " PAR");
         }
 
         ct++;
@@ -580,7 +572,7 @@ public class ComputeIcd11Map {
       ct = 0;
       skipCt = 0;
       for (final String line : lines) {
-        final String[] fields = line.split("\\|");
+        final String[] fields = line.split("\\t");
         if (!sctIcd10Rollup.containsKey(fields[0])) {
           sctIcd10Rollup.put(fields[0], new HashSet<Depth>());
         }
@@ -618,8 +610,9 @@ public class ComputeIcd11Map {
           continue;
         }
         // Skip header (no skipCt++)
-        if (fields[2].equals("mms")) {
+        if (!fields[2].equals("mms")) {
           // skipCt++;
+          Logger.getLogger(getClass()).debug("SKIP: " + line);
           continue;
         }
         // // Skip if "MMS" flag != Y
@@ -679,53 +672,54 @@ public class ComputeIcd11Map {
 
       //
       // Cache ICD10-11 mappings (provided in frozen release) - HEADER
-      // 10ClassKind 10DepthInKind icd10Code icd10Chapter icd10Title
-      // 11ClassKind 11DepthInKind icd11Id icd11Code icd11Chapter
-      // chapterMatch icd11Title Relation Linearization
-      // StatementDistance IssueType Match Type 2017-Mar-24
       //
-      Logger.getLogger(getClass()).info(" Load ICD10-11 mappings");
+      Logger.getLogger(getClass()).info(" Load ICD10-ICD11 mappings");
       final Map<String, Set<WhoMap>> icd10To11 = new HashMap<>();
-      // 10To11MapToOneCategory.txt - this is redundant in MultipleCategory file
-      // lines = FileUtils
-      // .readLines(new File(icd11Dir, "10To11MapToOneCategory.txt"), "UTF-8");
-      // ct = 0;
-      // skipCt = 0;
-      // for (final String line : lines) {
-      // final String[] fields = line.split("\\t");
-      // // Skip header (no skipct++)
-      // if (fields[0].equals("10ClassKind")) {
-      // // skipCt++;
-      // continue;
-      // }
-      // final WhoMap map = new WhoMap(line);
-      // final String code = map.getCode();
-      // // Skip cases where the code or target code are not in scope
-      // if (!icd10Scope.contains(map.getCode())) {
-      // skipCt++;
-      // Logger.getLogger(getClass())
-      // .debug("SKIP (scope " + map.getCode() + "): " + line);
-      // continue;
-      // }
-      // if (!map.getTargetCode().equals("No Mapping")
-      // && !icd11Scope.contains(map.getTargetCode())) {
-      // skipCt++;
-      // Logger.getLogger(getClass())
-      // .debug("SKIP (scope " + map.getTargetCode() + "): " + line);
-      // continue;
-      // }
-      // if (!icd10To11.containsKey(code)) {
-      // icd10To11.put(code, new HashSet<WhoMap>());
-      // }
-      // icd10To11.get(code).add(map);
-      // if (ct < sampleCt) {
-      // Logger.getLogger(getClass())
-      // .debug(code + " => " + icd10To11.get(code));
-      // }
-      // ct++;
-      // }
-      // Logger.getLogger(getClass()).info(" ct = " + ct);
-      // Logger.getLogger(getClass()).info(" skipCt = " + skipCt);
+      // 10To11MapToOneCategory.txt
+      lines = FileUtils
+          .readLines(new File(icd11Dir, "10To11MapToOneCategory.txt"), "UTF-8");
+      ct = 0;
+      skipCt = 0;
+      for (final String line : lines) {
+        final String[] fields = line.split("\\|");
+        final WhoMap map = new WhoMap(line);
+        // Skip header (no skipCt++
+        if (fields[0].equals("10ClassKind")) {
+          // skipCt++;
+          Logger.getLogger(getClass()).debug("SKIP: " + line);
+          continue;
+        }
+        // Skip if "No Mapping"
+        if (fields[4].equals("No Mapping")) {
+          skipCt++;
+          Logger.getLogger(getClass()).debug("SKIP: " + line);
+          continue;
+        }
+        // Skip cases where the code or target code are not in scope
+        if (!icd10Scope.contains(map.getCode())) {
+          skipCt++;
+          Logger.getLogger(getClass()).debug("SKIP: " + line);
+          continue;
+        }
+        if (!icd11Scope.contains(map.getTargetCode())) {
+          skipCt++;
+          Logger.getLogger(getClass()).debug("SKIP: " + line);
+          continue;
+        }
+        final String code = fields[0]
+            .replaceAll("http\\:\\/\\/id.who.int\\/icd\\/entity\\/", "");
+        if (!icd10To11.containsKey(code)) {
+          icd10To11.put(code, new HashSet<WhoMap>());
+        }
+        icd10To11.get(code).add(map);
+        if (ct < sampleCt) {
+          Logger.getLogger(getClass())
+              .debug(code + " => " + icd10To11.get(code));
+        }
+        ct++;
+      }
+      Logger.getLogger(getClass()).info("   ct = " + ct);
+      Logger.getLogger(getClass()).info("   skipCt =  " + skipCt);
 
       //
       // 10To11MapToMultipleCategories.txt - HEADER
@@ -735,15 +729,18 @@ public class ComputeIcd11Map {
       ct = 0;
       skipCt = 0;
       for (final String line : lines) {
-        final String[] fields = line.split("\\t");
+        final String[] fields = line.split("\\|");
+        final WhoMap map = new WhoMap(line);
         // Skip header (no skipCt++
         if (fields[0].equals("10ClassKind")) {
           // skipCt++;
           continue;
         } // Skip if "No Mapping"
-        final WhoMap map = new WhoMap(line);
-        final String code = map.getCode();
-
+        if (fields[4].equals("No Mapping")) {
+          skipCt++;
+          Logger.getLogger(getClass()).debug("SKIP: " + line);
+          continue;
+        }
         // Skip cases where the code or target code are not in scope
         if (!icd10Scope.contains(map.getCode())) {
           skipCt++;
@@ -751,13 +748,14 @@ public class ComputeIcd11Map {
               .debug("SKIP (scope " + map.getCode() + ") ");// + line);
           continue;
         }
-        if (!map.getTargetCode().equals("No Mapping")
-            && !icd11Scope.contains(map.getTargetCode())) {
+        if (!icd11Scope.contains(map.getTargetCode())) {
           skipCt++;
           Logger.getLogger(getClass())
               .debug("SKIP (scope " + map.getTargetCode() + ") ");// + line);
           continue;
         }
+        final String code = fields[0]
+            .replaceAll("http\\:\\/\\/id.who.int\\/icd\\/entity\\/", "");
         if (!icd10To11.containsKey(code)) {
           icd10To11.put(code, new HashSet<WhoMap>());
         }
@@ -782,15 +780,21 @@ public class ComputeIcd11Map {
       ct = 0;
       skipCt = 0;
       for (final String line : lines) {
-        final String[] fields = line.split("\\t");
+        final String[] fields = line.split("\\|");
         // Skip header (no skipCt++
         if (fields[0].equals("icd11Id")) {
           // skipCt++;
+          Logger.getLogger(getClass()).debug("SKIP: " + line);
+          continue;
+        }
+        // Skip if "No Mapping"
+        if (fields[3].equals("No Mapping")) {
+          skipCt++;
+          Logger.getLogger(getClass()).debug("SKIP: " + line);
           continue;
         }
 
         final WhoMap map = new WhoMap(line);
-        final String code = map.getCode();
         // Skip cases where the code or target code are not in scope
         if (!icd11Scope.contains(map.getCode())) {
           skipCt++;
@@ -798,13 +802,14 @@ public class ComputeIcd11Map {
               .debug("SKIP (scope " + map.getCode() + ") ");// + line);
           continue;
         }
-        if (!map.getTargetCode().equals("No Mapping")
-            && !icd10Scope.contains(map.getTargetCode())) {
+        if (!icd10Scope.contains(map.getTargetCode())) {
           skipCt++;
           Logger.getLogger(getClass())
               .debug("SKIP (scope " + map.getTargetCode() + ") ");// + line);
           continue;
         }
+        final String code = fields[3]
+            .replaceAll("http\\:\\/\\/id.who.int\\/icd\\/entity\\/", "");
         if (!icd11To10Reverse.containsKey(code)) {
           icd11To10Reverse.put(code, new HashSet<WhoMap>());
         }
@@ -822,41 +827,35 @@ public class ComputeIcd11Map {
       // PROCESSING
       //
 
-      // Tracking vars
       final String refsetId = "icd11RefsetId";
       final String moduleId = "123456789";
-      final Map<String, List<IcdMap>> icd11Map = new TreeMap<>();
-      final Map<String, String> icd11MapNotes = new TreeMap<>();
+      final Map<String, List<IcdMap>> icd11Map = new HashMap<>();
+      final Map<String, String> icd11MapNotes = new HashMap<>();
 
       //
-      // Reverse sort SNOMED concepts by max depth (e.g. top-down search)
+      // Iterate through SNOMED concepts (in reverse max depth order)
       //
       Collections.sort(sctScope, new Comparator<String>() {
-
-        /* see superclass */
         @Override
         public int compare(String c1, String c2) {
-          // Sort by thing with most descendants first
-          int ct1 = 0;
-          if (sctAncDesc.containsKey(c1)) {
-            ct1 = sctAncDesc.get(c1).size();
-          }
-          int ct2 = 0;
-          if (sctAncDesc.containsKey(c2)) {
-            ct2 = sctAncDesc.get(c2).size();
-          }
-
-          return ct2 - ct1;
+          // TODO restore this and remove fake line below
+          // return getMaxDepth(c2, sctAncDesc) - getMaxDepth(c1, sctAncDesc);
+          return c2.compareTo(c1);
         }
       });
-      // Verify
-      Logger.getLogger(getClass()).info("   SORT (top) = " + sctScope.get(0));
-      Logger.getLogger(getClass()).info("   SORT (top) = " + sctScope.get(1));
-      Logger.getLogger(getClass())
-          .info("   SORT (leaf) = " + sctScope.get(sctScope.size() - 2));
-      Logger.getLogger(getClass())
-          .info("   SORT (leaf) = " + sctScope.get(sctScope.size() - 1));
 
+      // Go through SNOMED concepts now in depth-first order
+      // This is so that subsequent lookups can determine the mapping of a
+      // parent
+      final Map<String, String> sctIdCategories = new HashMap<>();
+
+      // For 10-11 maps
+      // Equivalent (highest)
+      // Subclass (higher)
+      // Relation (medium)
+
+      // For 11-10 maps
+      // stated = true (higher)
       // Write maps
       final PrintWriter mapOut =
           new PrintWriter(new FileWriter(new File(icd11Dir, "icd11Map.txt")));
@@ -865,9 +864,7 @@ public class ComputeIcd11Map {
       final PrintWriter statsOut = new PrintWriter(
           new FileWriter(new File(icd11Dir, "icd11MapStats.txt")));
       final int[] stats = new int[5];
-      final Map<String, String> sctIdCategories = new HashMap<>();
 
-      // Iterate through SNOMED concepts in sorted orde
       int sctidCt = 0;
 
       for (final String sctid : sctScope) {
@@ -2386,35 +2383,26 @@ public class ComputeIcd11Map {
    */
   class WhoMap {
 
+    /** The id. */
+    private String id;
+
     /** The kind. */
     private String kind;
-
-    /** The depth in kind. */
-    private int depthInKind;
 
     /** The code. */
     private String code;
 
-    /** The chapter. */
-    private String chapter;
-
     /** The name. */
     private String name;
+
+    /** The target id. */
+    private String targetId;
 
     /** The target kind. */
     private String targetKind;
 
-    /** The target depth in kind. */
-    private int targetDepthInKind;
-
     /** The target code. */
     private String targetCode;
-
-    /** The target chapter. */
-    private String targetChapter;
-
-    /** The chapter match. */
-    private boolean chapterMatch = false;
 
     /** The target name. */
     private String targetName;
@@ -2427,18 +2415,6 @@ public class ComputeIcd11Map {
 
     /** The issue type. */
     private String issueType;
-
-    /** The match type. */
-    private String matchType;
-
-    // 5128 EquivalentMatch
-    // 1 Match Type
-    // 302 MatchElseWhere
-    // 92 NoMapping
-    // 546 NoMappingDueToMaptoGroupingWithoutResidual
-    // 2279 ToBroaderInTheSame3Char
-    // 1792 ToBroaderInTheSameBlock
-    // 2344 ToBroaderInTheSameChapter
 
     /** The states. */
     private boolean stated;
@@ -2458,79 +2434,77 @@ public class ComputeIcd11Map {
      */
     public WhoMap(String line) throws Exception {
       final String[] fields = line.split("\\t");
-      if (fields.length == 17 || fields.length == 18 || fields.length == 15) {
+      if (fields.length == 12 || fields.length == 11) {
         // 0 - 10ClassKind
-        // 1 - 10DepthInKind
-        // 2 - icd10Code
-        // 3 - icd10Chapter
-        // 4 - icd10Title
-        // 5 - 11ClassKind
-        // 6 - 11DepthInKind
-        // 7 - icd11Id
-        // 8 - icd11Code
-        // 9 - icd11Chapter
-        // 10 - chapterMatch
-        // 11 - icd11Title
-        // 12 - Relation
-        // 13 - Linearization
-        // 14 - StatementDistance
-        // 15 - IssueType
-        // 16 - MatchType
-        // 17 - 2017-Mar-24
+        // 1 - icd10Code
+        // 2 - icd10Title
+        // 3 - 11ClassKind
+        // 4 - icd11Id
+        // 5 - icd11Code
+        // 6 - icd11Title
+        // 7 - Relation
+        // 8 - Linearization
+        // 9 - StatementDistance
+        // 10 - IssueType
+        // 11 - 2015-May-31
         kind = fields[0];
-        depthInKind = Integer.parseInt(fields[1]);
-        code = fields[2].replaceAll("http\\:\\/\\/id.who.int\\/icd\\/entity\\/",
+        code = fields[1].replaceAll("http\\:\\/\\/id.who.int\\/icd\\/entity\\/",
             "");
-        chapter = fields[3];
-        name = fields[4];
-        targetKind = fields[5];
-        targetCode = fields[7]
+        name = fields[2];
+        targetKind = fields[3];
+        targetId = fields[4]
             .replaceAll("http\\:\\/\\/id.who.int\\/icd\\/entity\\/", "");
-        if (!targetCode.equals("No Mapping")) {
-          targetDepthInKind = Integer.parseInt(fields[6]);
-          // skip fields[8]
-          targetChapter = fields[9];
-          chapterMatch = "True".equals(fields[10]);
-          targetName = fields[11];
-          relation = fields[12];
-          distance = fields[14];
-          issueType = "";
-          issueType = fields[15];
-          matchType = fields[16];
-        }
+        targetCode = fields[5]
+            .replaceAll("http\\:\\/\\/id.who.int\\/icd\\/entity\\/", "");
 
-      } else if (fields.length == 10 || fields.length == 11) {
+        targetName = fields[6];
+        relation = fields[7];
+        distance = fields[9];
+        issueType = fields[10];
+
+      } else if (fields.length == 8 || fields.length == 7) {
         // 0 - icd11Id
         // 1 - icd11Code
-        // 2 - icd11Chapter
-        // 3 - icd11Title
-        // 4 - icd10Code
-        // 5 - icd10Chapter
-        // 6 - chapterMatch
-        // 7 - icd10Title
-        // 8 - Relation
-        // 9 - Stated{0}|Deduced
-        // 10 - 2015-May-31
-        // http://id.who.int/icd/entity/588616678 01 Gastroenteritis and colitis
-        // of infectious origin A00-A09 I True Intestinal infectious diseases
-        // Equival
-        code = fields[0].replaceAll("http\\:\\/\\/id.who.int\\/icd\\/entity\\/",
+        // 2 - icd11Title
+        // 3 - icd10Code
+        // 4 - icd10Title
+        // 5 - Relation
+        // 6 - Stated{0}|Deduced
+        // 7 - 2015-May-31
+        // http://id.who.int/icd/entity/434814373 Infections due to Bacteria No
+        // Mapping -1
+        id = fields[0].replaceAll("http\\:\\/\\/id.who.int\\/icd\\/entity\\/",
             "");
-        // skip fields[1]
-        chapter = fields[2];
-        name = fields[3];
-        targetCode = fields[4]
+        code = fields[1];
+        name = fields[2];
+        targetCode = fields[3]
             .replaceAll("http\\:\\/\\/id.who.int\\/icd\\/entity\\/", "");
 
-        targetChapter = fields[5];
-        chapterMatch = "True".equals(fields[6]);
-        targetName = fields[7];
-        relation = fields[8];
-        stated = fields[9].equals("0");
+        targetName = fields[4];
+        relation = fields[5];
+        stated = fields[6].equals("0");
       } else {
         throw new Exception(
             "Unexpected number of fields - " + fields.length + ", " + line);
       }
+    }
+
+    /**
+     * Returns the id.
+     *
+     * @return the id
+     */
+    public String getId() {
+      return id;
+    }
+
+    /**
+     * Sets the id.
+     *
+     * @param id the id
+     */
+    public void setId(String id) {
+      this.id = id;
     }
 
     /**
@@ -2585,6 +2559,24 @@ public class ComputeIcd11Map {
      */
     public void setName(String name) {
       this.name = name;
+    }
+
+    /**
+     * Returns the target id.
+     *
+     * @return the target id
+     */
+    public String getTargetId() {
+      return targetId;
+    }
+
+    /**
+     * Sets the target id.
+     *
+     * @param targetId the target id
+     */
+    public void setTargetId(String targetId) {
+      this.targetId = targetId;
     }
 
     /**
@@ -2716,121 +2708,11 @@ public class ComputeIcd11Map {
     /* see superclass */
     @Override
     public String toString() {
-      return "WhoMap [kind=" + kind + ", depthInKind=" + depthInKind + ", code="
-          + code + ", chapter=" + chapter + ", name=" + name + ", targetKind="
-          + targetKind + ", targetDepthInKind=" + targetDepthInKind
-          + ", targetCode=" + targetCode + ", targetChapter=" + targetChapter
-          + ", chapterMatch=" + chapterMatch + ", targetName=" + targetName
-          + ", relation=" + relation + ", distance=" + distance + ", issueType="
-          + issueType + ", matchType=" + matchType + ", stated=" + stated + "]";
-    }
-
-    /**
-     * Returns the depth in kind.
-     *
-     * @return the depth in kind
-     */
-    public int getDepthInKind() {
-      return depthInKind;
-    }
-
-    /**
-     * Sets the depth in kind.
-     *
-     * @param depthInKind the depth in kind
-     */
-    public void setDepthInKind(int depthInKind) {
-      this.depthInKind = depthInKind;
-    }
-
-    /**
-     * Returns the chapter.
-     *
-     * @return the chapter
-     */
-    public String getChapter() {
-      return chapter;
-    }
-
-    /**
-     * Sets the chapter.
-     *
-     * @param chapter the chapter
-     */
-    public void setChapter(String chapter) {
-      this.chapter = chapter;
-    }
-
-    /**
-     * Returns the target depth in kind.
-     *
-     * @return the target depth in kind
-     */
-    public int getTargetDepthInKind() {
-      return targetDepthInKind;
-    }
-
-    /**
-     * Sets the target depth in kind.
-     *
-     * @param targetDepthInKind the target depth in kind
-     */
-    public void setTargetDepthInKind(int targetDepthInKind) {
-      this.targetDepthInKind = targetDepthInKind;
-    }
-
-    /**
-     * Returns the target chapter.
-     *
-     * @return the target chapter
-     */
-    public String getTargetChapter() {
-      return targetChapter;
-    }
-
-    /**
-     * Sets the target chapter.
-     *
-     * @param targetChapter the target chapter
-     */
-    public void setTargetChapter(String targetChapter) {
-      this.targetChapter = targetChapter;
-    }
-
-    /**
-     * Indicates whether or not chapter match is the case.
-     *
-     * @return <code>true</code> if so, <code>false</code> otherwise
-     */
-    public boolean isChapterMatch() {
-      return chapterMatch;
-    }
-
-    /**
-     * Sets the chapter match.
-     *
-     * @param chapterMatch the chapter match
-     */
-    public void setChapterMatch(boolean chapterMatch) {
-      this.chapterMatch = chapterMatch;
-    }
-
-    /**
-     * Returns the match type.
-     *
-     * @return the match type
-     */
-    public String getMatchType() {
-      return matchType;
-    }
-
-    /**
-     * Sets the match type.
-     *
-     * @param matchType the match type
-     */
-    public void setMatchType(String matchType) {
-      this.matchType = matchType;
+      return "WhoMap [id=" + id + ", kind=" + kind + ", code=" + code
+          + ", name=" + name + ", targetId=" + targetId + ", targetKind="
+          + targetKind + ", targetCode=" + targetCode + ", targetName="
+          + targetName + ", relation=" + relation + ", distance=" + distance
+          + ", issueType=" + issueType + ", stated=" + stated + "]";
     }
   }
 
@@ -2839,9 +2721,9 @@ public class ComputeIcd11Map {
    */
   class IcdMap {
 
-    /** The concept id. */
-    private String conceptId;
-
+	/** The concept id. */
+	private String conceptId;
+	    
     /** The map group. */
     private int mapGroup;
 
@@ -2900,6 +2782,26 @@ public class ComputeIcd11Map {
       mapTarget = copy.getMapTarget();
       mapCategoryId = copy.getMapCategoryId();
       conceptId = copy.getConceptId();
+    }
+    
+    /**
+     * Instantiates a {@link IcdMap} from the specified parameters.
+     *
+     * @param mapGroup the map group
+     * @param mapPriority the map priority
+     * @param mapRule the map rule
+     * @param mapAdvice the map advice
+     * @param mapTarget the map target
+     * @param mapCategoryId the map category id
+     */
+    public IcdMap(int mapGroup, int mapPriority, String mapRule,
+        String mapAdvice, String mapTarget, String mapCategoryId) {
+      this.mapGroup = mapGroup;
+      this.mapPriority = mapPriority;
+      this.mapRule = mapRule;
+      this.mapAdvice = mapAdvice;
+      this.mapTarget = mapTarget;
+      this.mapCategoryId = mapCategoryId;
     }
 
     /**
@@ -3017,7 +2919,7 @@ public class ComputeIcd11Map {
           + ", mapRule=" + mapRule + ", mapAdvice=" + mapAdvice + ", mapTarget="
           + mapTarget + ", mapCategoryId=" + mapCategoryId + "]";
     }
-
+    
     /**
      * Returns the concept id.
      *
@@ -3035,6 +2937,7 @@ public class ComputeIcd11Map {
     public void setConceptId(String conceptId) {
       this.conceptId = conceptId;
     }
+    
   }
 
   /**

@@ -33,9 +33,8 @@ import org.hibernate.search.bridge.builtin.LongBridge;
 public class LogEntryJpa implements LogEntry {
 
   /** The id. */
-  @TableGenerator(name = "EntityIdGen", table = "table_generator", pkColumnValue = "Entity")
   @Id
-  @GeneratedValue(strategy = GenerationType.TABLE, generator = "EntityIdGen")
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   /** The last modified. */

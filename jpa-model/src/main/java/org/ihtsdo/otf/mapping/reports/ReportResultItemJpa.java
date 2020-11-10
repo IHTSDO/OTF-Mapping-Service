@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.reports;
 
 import javax.persistence.Column;
@@ -5,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
@@ -29,7 +33,7 @@ public class ReportResultItemJpa implements ReportResultItem {
 
   /** The id. */
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   /** The item id. */
@@ -44,6 +48,7 @@ public class ReportResultItemJpa implements ReportResultItem {
   @Enumerated(EnumType.STRING)
   private ReportResultType resultType;
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -54,6 +59,7 @@ public class ReportResultItemJpa implements ReportResultItem {
     return id;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -85,6 +91,7 @@ public class ReportResultItemJpa implements ReportResultItem {
     this.reportResult = reportResult;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -95,6 +102,7 @@ public class ReportResultItemJpa implements ReportResultItem {
     return itemId;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -106,6 +114,7 @@ public class ReportResultItemJpa implements ReportResultItem {
     this.itemId = itemId;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -116,6 +125,7 @@ public class ReportResultItemJpa implements ReportResultItem {
     return resultType;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -128,16 +138,19 @@ public class ReportResultItemJpa implements ReportResultItem {
     this.resultType = resultType;
   }
 
+  /* see superclass */
   @Override
   public String getItemName() {
     return this.itemName;
   }
 
+  /* see superclass */
   @Override
   public void setItemName(String itemName) {
     this.itemName = itemName;
   }
 
+  /* see superclass */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -149,6 +162,7 @@ public class ReportResultItemJpa implements ReportResultItem {
     return result;
   }
 
+  /* see superclass */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)

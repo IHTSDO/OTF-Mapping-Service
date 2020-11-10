@@ -1,8 +1,12 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.jpa;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -24,9 +28,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @Entity
 @Table(name = "map_advices", uniqueConstraints = {
-  @UniqueConstraint(columnNames = {
-    "name"
-  })
+    @UniqueConstraint(columnNames = {
+        "name"
+    })
 })
 @Audited
 @XmlRootElement(name = "mapAdvice")
@@ -35,7 +39,7 @@ public class MapAdviceJpa implements MapAdvice {
 
   /** The id. */
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   /** The name. */
@@ -125,6 +129,7 @@ public class MapAdviceJpa implements MapAdvice {
     return id.toString();
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -136,6 +141,7 @@ public class MapAdviceJpa implements MapAdvice {
     return detail;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -146,6 +152,7 @@ public class MapAdviceJpa implements MapAdvice {
     this.detail = detail;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -162,6 +169,7 @@ public class MapAdviceJpa implements MapAdvice {
    * 
    * @see org.ihtsdo.otf.mapping.model.MapAdvice#setName(java.lang.String)
    */
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -172,6 +180,7 @@ public class MapAdviceJpa implements MapAdvice {
     this.name = name;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -183,6 +192,7 @@ public class MapAdviceJpa implements MapAdvice {
     return isAllowableForNullTarget;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -194,6 +204,7 @@ public class MapAdviceJpa implements MapAdvice {
     this.isAllowableForNullTarget = isAllowableForNullTarget;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -205,6 +216,7 @@ public class MapAdviceJpa implements MapAdvice {
     return isComputed;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -215,6 +227,7 @@ public class MapAdviceJpa implements MapAdvice {
     this.isComputed = isComputed;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -229,6 +242,7 @@ public class MapAdviceJpa implements MapAdvice {
     return result;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -256,6 +270,7 @@ public class MapAdviceJpa implements MapAdvice {
     return true;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 

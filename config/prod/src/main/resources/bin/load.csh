@@ -5,19 +5,19 @@
 #
 # Setup environment
 #
-set MAPPING_CODE=/home/ihtsdo/code
-set MAPPING_CONFIG=/home/ihtsdo/config/config.properties
-set MAPPING_DATA=/home/ihtsdo/data
+set MAPPING_CODE=/opt/mapping-admin
+set MAPPING_CONFIG=/opt/mapping-rest/config.properties
+set MAPPING_DATA=/opt/mapping-data
 
 echo "------------------------------------------------"
 echo "Starting ...`/bin/date`"
 echo "------------------------------------------------"
 echo "MAPPING_CODE = $MAPPING_CODE"
-echo "MAPPING_DATA = $MAPPING_CODE"
-echo "MAPPING_CONFIG = $MAPPING_CODE"
+echo "MAPPING_DATA = $MAPPING_DATA"
+echo "MAPPING_CONFIG = $MAPPING_CONFIG"
 
 echo "    Run updatedb with hibernate.hbm2ddl.auto = create ...`/bin/date`"
-cd $MAPPING_CODE/admin/updatedb
+cd $MAPPING_CODE/updatedb
 mvn install -PUpdatedb -Drun.config=$MAPPING_CONFIG -Dhibernate.hbm2ddl.auto=create >&! mvn.log
 if ($status != 0) then
     echo "ERROR running updatedb"
@@ -26,7 +26,7 @@ if ($status != 0) then
 endif
 
 echo "    Clear indexes ...`/bin/date`"
-cd $MAPPING_CODE/admin/lucene
+cd $MAPPING_CODE/lucene
 mvn install -PReindex -Drun.config=$MAPPING_CONFIG >&! mvn.log
 if ($status != 0) then
     echo "ERROR running lucene"
@@ -35,7 +35,7 @@ if ($status != 0) then
 endif
 
 echo "    Load SNOMEDCT ...`/bin/date`"
-cd $MAPPING_CODE/admin/loader
+cd $MAPPING_CODE/loader
 mvn install -PRF2-snapshot -Drun.config=$MAPPING_CONFIG -Dterminology=SNOMEDCT -Dinput.dir=$MAPPING_DATA/snomedct-20140731-snapshot >&! mvn.log
 if ($status != 0) then
     echo "ERROR loading SNOMEDCT"
@@ -45,7 +45,7 @@ endif
 
 
 echo "    Load ICPC ...`/bin/date`"
-cd $MAPPING_CODE/admin/loader
+cd $MAPPING_CODE/loader
 mvn install -PClaML -Drun.config=$MAPPING_CONFIG -Dterminology=ICPC -Dversion=2 -Dinput.file=$MAPPING_DATA/icpc-2.xml >&! mvn.log
 if ($status != 0) then
     echo "ERROR loading ICPC"
@@ -54,7 +54,7 @@ if ($status != 0) then
 endif
 
 echo "    Load ICD10 ...`/bin/date`"
-cd $MAPPING_CODE/admin/loader
+cd $MAPPING_CODE/loader
 mvn install -PClaML -Drun.config=$MAPPING_CONFIG -Dterminology=ICD10 -Dversion=2010 -Dinput.file=$MAPPING_DATA/icd10-2010.xml >&! mvn.log
 if ($status != 0) then
     echo "ERROR loading ICD10"
@@ -63,7 +63,7 @@ if ($status != 0) then
 endif
 
 echo "    Load ICD9CM ...`/bin/date`"
-cd $MAPPING_CODE/admin/loader
+cd $MAPPING_CODE/loader
 mvn install -PClaML -Drun.config=$MAPPING_CONFIG -Dterminology=ICD9CM -Dversion=2013 -Dinput.file=$MAPPING_DATA/icd9cm-2013.xml >&! mvn.log
 if ($status != 0) then
     echo "ERROR loading ICD9CM"
@@ -72,7 +72,7 @@ if ($status != 0) then
 endif
 
 echo "    Import project data ...`/bin/date`"
-cd $MAPPING_CODE/admin/import
+cd $MAPPING_CODE/import
 mvn install -PMapProject -Drun.config=$MAPPING_CONFIG -Dinput.dir=$MAPPING_DATA/ihtsdo-project-data >&! mvn.log
 if ($status != 0) then
     echo "ERROR importing project data"
@@ -81,7 +81,7 @@ if ($status != 0) then
 endif
 
 echo "    Create ICD10 map records ...`/bin/date`"
-cd $MAPPING_CODE/admin/loader
+cd $MAPPING_CODE/loader
 mvn install -PCreateMapRecords -Drun.config=$MAPPING_CONFIG -Drefset.id=447562003 >&! mvn.log
 if ($status != 0) then
     echo "ERROR creating ICD10 map records"
@@ -90,7 +90,7 @@ if ($status != 0) then
 endif
 
 echo "    Create ICD9CM map records ...`/bin/date`"
-cd $MAPPING_CODE/admin/loader
+cd $MAPPING_CODE/loader
 mvn install -PCreateMapRecords -Drun.config=$MAPPING_CONFIG -Drefset.id=447563008 >&! mvn.log
 if ($status != 0) then
     echo "ERROR creating ICD9CM map records"
@@ -99,7 +99,7 @@ if ($status != 0) then
 endif
 
 echo "    Load ICPC maps from file ...`/bin/date`"
-cd $MAPPING_CODE/admin/loader
+cd $MAPPING_CODE/loader
 mvn install -PMapRecords -Drun.config=$MAPPING_CONFIG -Dinput.file=$MAPPING_DATA/der2_iisssccRefset_ExtendedMapSnapshot_INT_20140131.txt >&! mvn.log
 if ($status != 0) then
     echo "ERROR loading ICPC map records"
@@ -108,7 +108,7 @@ if ($status != 0) then
 endif
 
 echo "    Load map notes from file ...`/bin/date`"
-cd $MAPPING_CODE/admin/loader
+cd $MAPPING_CODE/loader
 mvn install -PMapNotes -Drun.config=$MAPPING_CONFIG -Dinput.file=$MAPPING_DATA/der2_sRefset_MapNotesSnapshot_INT_20140131.txt >&! mvn.log
 if ($status != 0) then
     echo "ERROR loading map notes"
@@ -117,7 +117,7 @@ if ($status != 0) then
 endif
 
 echo "    Compute workflow ...`/bin/date`"
-cd $MAPPING_CODE/admin/loader
+cd $MAPPING_CODE/loader
 mvn install -PComputeWorkflow -Drun.config=$MAPPING_CONFIG -Drefset.id=447563008,447562003,450993002 >&! mvn.log
 if ($status != 0) then
     echo "ERROR computing workflow"
@@ -126,7 +126,7 @@ if ($status != 0) then
 endif
 
 echo "    Begin editing cycle for ICD10 ...`/bin/date`"
-cd $MAPPING_CODE/admin/release
+cd $MAPPING_CODE/release
 mvn install -PBeginEditingCycle -Drun.config=$MAPPING_CONFIG -Drefset.id=447562003 >&! mvn.log
 if ($status != 0) then
     echo "ERROR beginning editing cycle for ICD10"
@@ -135,7 +135,7 @@ if ($status != 0) then
 endif
 
 echo "    Begin editing cycle for ICD9CM ...`/bin/date`"
-cd $MAPPING_CODE/admin/release
+cd $MAPPING_CODE/release
 mvn install -PBeginEditingCycle -Drun.config=$MAPPING_CONFIG -Drefset.id=447563008 >&! mvn.log
 if ($status != 0) then
     echo "ERROR beginning editing cycle for ICD9CM"
@@ -144,7 +144,7 @@ if ($status != 0) then
 endif
 
 echo "    Begin editing cycle for ICD10 ...`/bin/date`"
-cd $MAPPING_CODE/admin/release
+cd $MAPPING_CODE/release
 mvn install -PBeginEditingCycle -Drun.config=$MAPPING_CONFIG -Drefset.id=450993002 >&! mvn.log
 if ($status != 0) then
     echo "ERROR beginning editing cycle for ICD10"

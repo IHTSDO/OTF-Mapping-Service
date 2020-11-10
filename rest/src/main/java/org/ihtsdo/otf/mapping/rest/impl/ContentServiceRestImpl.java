@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.rest.impl;
 
 import java.io.BufferedOutputStream;
@@ -293,6 +296,16 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     }
   }
 
+  /**
+   * Find child concepts.
+   *
+   * @param id the id
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @param authToken the auth token
+   * @return the search result list
+   * @throws Exception the exception
+   */
   /*
    * (non-Javadoc)
    * 
@@ -346,7 +359,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       // cycle over relationships
       for (final Relationship rel : concept.getInverseRelationships()) {
 
-        if (rel.isActive() && rel.getTypeId().equals(new Long(isaId))
+        if (rel.isActive() && rel.getTypeId().equals(Long.valueOf(isaId))
             && rel.getSourceConcept().isActive()) {
 
           final Concept c = rel.getSourceConcept();
@@ -672,7 +685,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
   }
-  
+
   /* see superclass */
   @Override
   @PUT
@@ -696,7 +709,8 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         securityService);
 
     try (final MapRecordRf2ComplexMapAppenderAlgorithm algo =
-        new MapRecordRf2ComplexMapAppenderAlgorithm(inputFile, refsetId, workflowStatus);) {
+        new MapRecordRf2ComplexMapAppenderAlgorithm(inputFile, refsetId,
+            workflowStatus);) {
 
       algo.compute();
 
@@ -709,7 +723,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     } finally {
       securityService.close();
     }
-  }  
+  }
 
   /* see superclass */
   @Override
@@ -846,13 +860,12 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     // If inputDir set as 'GENERATE', generate based on config.properties
     if (inputDir.equals("GENERATE")) {
       inputDir = ConfigUtility.getConfigProperties()
-          .getProperty("map.principle.source.document.dir");
-      // Strip off final folder, and replace with "GMDN/{version}"
+          .getProperty("gmdnsftp.dir");
+      // Strip off final /, if it exists
       if (inputDir.endsWith("/")) {
         inputDir = inputDir.substring(0, inputDir.length() - 1);
       }
-      inputDir = inputDir.substring(0, inputDir.lastIndexOf("/"));
-      inputDir = inputDir + "/GMDN/" + version;
+      inputDir = inputDir + "/" + version;
     }
 
     Logger.getLogger(getClass())
@@ -1165,7 +1178,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-	  Logger.getLogger(getClass())
+    Logger.getLogger(getClass())
         .info("RESTful call (Content): /terminology/load/simple " + terminology
             + ", " + version + " from input directory " + inputDir + ", with metadata starting at id=" + metadataCounter);
 
@@ -1325,6 +1338,19 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
   }
 
+  /**
+   * Reload terminology aws rf 2 snapshot.
+   *
+   * @param terminology the terminology
+   * @param removeVersion the remove version
+   * @param loadVersion the load version
+   * @param awsZipFileName the aws zip file name
+   * @param treePositions the tree positions
+   * @param sendNotification the send notification
+   * @param authToken the auth token
+   * @return the string
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   @PUT
@@ -1400,7 +1426,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     fileStream = new FileOutputStream(logFile, false);
     fileStream.write("".getBytes());
     fileStream.close();
-    
+
     try (final RemoverAlgorithm removeAlgo =
         new RemoverAlgorithm(terminology, removeVersion);) {
 
@@ -1423,7 +1449,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       // version that will be loaded next
       MappingService mappingService = new MappingServiceJpa();
       MapProjectList mapProjects = mappingService.getMapProjects();
-      
+
       for (MapProject mapProject : mapProjects.getMapProjects()) {
         if (mapProject.getSourceTerminologyVersion().equals(removeVersion)) {
           mapProject.setSourceTerminologyVersion(loadVersion);
@@ -1431,7 +1457,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         }
       }
       mappingService.close();
-      
+
       // if no errors try to load from aws
 
       final String localTerminology = removeSpaces(terminology);
@@ -1493,7 +1519,6 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
         Logger.getLogger(getClass())
             .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
-        
 
         success = true;
         return "Success";
@@ -1512,15 +1537,17 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       handleException(e, "trying to reload RF2 snapshot terminology from aws");
       return "Failure";
     } finally {
-            
+
       String notificationMessage = "";
       if (success) {
-        notificationMessage = "Hello,\n\nReloading terminology " + terminology + " has been completed.  \n\n";
+        notificationMessage = "Hello,\n\nReloading terminology " + terminology
+            + " has been completed.  \n\n";
       } else {
-        notificationMessage = "Hello,\n\nReloading terminology " + terminology + " failed. Please check the log available on the UI and report the problem to an administrator. \n\n";
+        notificationMessage = "Hello,\n\nReloading terminology " + terminology
+            + " failed. Please check the log available on the UI and report the problem to an administrator. \n\n";
       }
       sendReleaseNotification(notificationMessage, userName);
-      
+
       RootServiceJpa.unlockProcess();
       securityService.close();
     }
@@ -1724,7 +1751,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
         Logger.getLogger(getClass()).info(
             "Load Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
-        
+
       } catch (Exception e) {
         handleException(e, "trying to load refset members");
         return "Failure";
@@ -1764,7 +1791,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
     // Track system level information
     long startTimeOrig = System.nanoTime();
-    
+
     // Track if process finishes, to send email notification
     boolean success = false;
 
@@ -1783,7 +1810,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       securityService.close();
       return e.getMessage();
     }
-    
+
     // Get all non-published projects that have source terminology matching the
     // passed-in terminology
     final MappingService mappingService = new MappingServiceJpa();
@@ -1817,33 +1844,34 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       if (!logDirectory.exists()) {
         logDirectory.mkdir();
       }
-      
+
       for (MapProject mapProject : mapProjectsForSourceTerminology) {
         final String refsetId = mapProject.getRefSetId();
-        
+
         // this process uses two log files. need to reset both to empty
         // before the process begins.
         File logFile;
         FileOutputStream fileStream;
-        
+
         // remove_maps - file name must match RefsetmemberRemoverAlgorithm
         logFile = new File(logDirectory, "remove_maps_" + refsetId + ".log");
         fileStream = new FileOutputStream(logFile, false);
         fileStream.write("".getBytes());
         fileStream.close();
 
-        // load_maps - file name must match MapRecordRf2ComplexMapLoaderAlgorithm
+        // load_maps - file name must match
+        // MapRecordRf2ComplexMapLoaderAlgorithm
         logFile = new File(logDirectory, "load_maps_" + refsetId + ".log");
         fileStream = new FileOutputStream(logFile, false);
         fileStream.write("".getBytes());
         fileStream.close();
       }
-      
-      for (int i=0; i < mapProjectsForSourceTerminology.size(); i++) {
+
+      for (int i = 0; i < mapProjectsForSourceTerminology.size(); i++) {
         MapProject mapProject = mapProjectsForSourceTerminology.get(i);
-        
+
         final String refsetId = mapProject.getRefSetId();
-                 
+
         Logger.getLogger(getClass())
             .info("Removing refset members for refsetId = " + refsetId);
 
@@ -1853,7 +1881,9 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         // only for first project, log initial message
         if (i == 0) {
           Logger log = LoggerUtility.getLogger("remove_maps");
-          log.info("Starting removal and loading of ALL refset members on projects with source terminology " + sourceTerminology + ".");
+          log.info(
+              "Starting removal and loading of ALL refset members on projects with source terminology "
+                  + sourceTerminology + ".");
         }
         removeAlgo.compute();
         removeAlgo.close();
@@ -1967,11 +1997,13 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         Logger.getLogger(getClass()).info(
             "Load Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
         Logger log = LoggerUtility.getLogger("load_maps");
-        log.info("Done removal and loading of ALL refset members on projects with source terminology " + sourceTerminology + ".");
-        
+        log.info(
+            "Done removal and loading of ALL refset members on projects with source terminology "
+                + sourceTerminology + ".");
+
       }
       success = true;
-      
+
     } catch (Exception e) {
       handleException(e, "trying to load refset members");
       success = false;
@@ -1979,12 +2011,14 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     } finally {
       String notificationMessage = "";
       if (success) {
-        notificationMessage = "Hello,\n\nReloading refset members completed.  \n\n";
+        notificationMessage =
+            "Hello,\n\nReloading refset members completed.  \n\n";
       } else {
-        notificationMessage = "Hello,\n\nReloading refset members failed. Please check the log available on the UI and report the problem to an administrator. \n\n";
+        notificationMessage =
+            "Hello,\n\nReloading refset members failed. Please check the log available on the UI and report the problem to an administrator. \n\n";
       }
       sendReleaseNotification(notificationMessage, userName);
-      
+
       // Remove directory
       FileUtils.deleteDirectory(placementDir);
       RootServiceJpa.unlockProcess();
@@ -2080,7 +2114,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   @Path("/latest/clone")
   @ApiOperation(value = "Gets the latest date that the db was cloned.", notes = "Gets the latest date that a db was cloned from a backup sqldump.", response = Concept.class)
   @Produces({
-    MediaType.TEXT_PLAIN
+      MediaType.TEXT_PLAIN
   })
   public String getLatestCloneDate(
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
@@ -2090,15 +2124,15 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         .info("RESTful call (Content): /latest/date");
 
     String cloneDate = "";
-    
+
     try {
       // authorize call
-      authorizeApp(authToken, MapUserRole.VIEWER,
-          "find latest clone date", securityService);
+      authorizeApp(authToken, MapUserRole.VIEWER, "find latest clone date",
+          securityService);
 
       String docPath = ConfigUtility.getConfigProperties()
           .getProperty("map.principle.source.document.dir");
-      
+
       // looking for clones directory in the mapping-data dir
       File docDirectory = new File(docPath);
       File dataDirectory = docDirectory.getParentFile();
@@ -2122,7 +2156,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         }
       }
       return cloneDate.replaceAll("-", "");
-      
+
     } catch (Exception e) {
       handleException(e, "trying to find latest clone date");
       return null;
@@ -2130,7 +2164,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
   }
-  
+
   private void unzipToDirectory(File zippedFile, File placementDir)
     throws IOException {
     if (zippedFile == null) {
@@ -2194,80 +2228,85 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       return null;
   }
 
+  /**
+   * If duplicate terminology-version pairs found on S3, send email
+   * notification.
+   *
+   * @param dups Map of duplicate terminologies to each duplicate
+   * @throws Exception the exception
+   */
+  private void sendDuplicateVersionNotification(
+    Map<String, Set<TerminologyVersion>> dups) throws Exception {
+    Properties config = ConfigUtility.getConfigProperties();
 
-	/**
-	 * If duplicate terminology-version pairs found on S3, send email
-	 * notification.
-	 *
-	 * @param dups
-	 *            Map of duplicate terminologies to each duplicate
-	 * @throws Exception
-	 *             the exception
-	 */
-	private void sendDuplicateVersionNotification(Map<String, Set<TerminologyVersion>> dups) throws Exception {
-		Properties config = ConfigUtility.getConfigProperties();
+    if (!dups.isEmpty()) {
+      // Define recipients
+      String notificationRecipients =
+          config.getProperty("send.notification.recipients");
 
-		if (!dups.isEmpty()) {
-			// Define recipients
-			String notificationRecipients = config.getProperty("send.notification.recipients");
+      if (!notificationRecipients.isEmpty()
+          && "true".equals(config.getProperty("mail.enabled"))) {
+        Logger.getLogger(ContentServiceRestImpl.class).info("Identified "
+            + dups.size() + " sets of duplicate terminologies.  Sending email");
 
-			if (!notificationRecipients.isEmpty() && "true".equals(config.getProperty("mail.enabled"))) {
-				Logger.getLogger(ContentServiceRestImpl.class)
-						.info("Identified " + dups.size() + " sets of duplicate terminologies.  Sending email");
+        // Define sender
+        String sender;
+        if (config.containsKey("mail.smtp.from")) {
+          sender = config.getProperty("mail.smtp.from");
+        } else {
+          sender = config.getProperty("mail.smtp.user");
+        }
 
-				// Define sender
-				String sender;
-				if (config.containsKey("mail.smtp.from")) {
-					sender = config.getProperty("mail.smtp.from");
-				} else {
-					sender = config.getProperty("mail.smtp.user");
-				}
+        // Define email properties
+        Properties props = new Properties();
+        props.put("mail.smtp.user", config.getProperty("mail.smtp.user"));
+        props.put("mail.smtp.password",
+            config.getProperty("mail.smtp.password"));
+        props.put("mail.smtp.host", config.getProperty("mail.smtp.host"));
+        props.put("mail.smtp.port", config.getProperty("mail.smtp.port"));
+        props.put("mail.smtp.starttls.enable",
+            config.getProperty("mail.smtp.starttls.enable"));
+        props.put("mail.smtp.auth", config.getProperty("mail.smtp.auth"));
 
-				// Define email properties
-				Properties props = new Properties();
-				props.put("mail.smtp.user", config.getProperty("mail.smtp.user"));
-				props.put("mail.smtp.password", config.getProperty("mail.smtp.password"));
-				props.put("mail.smtp.host", config.getProperty("mail.smtp.host"));
-				props.put("mail.smtp.port", config.getProperty("mail.smtp.port"));
-				props.put("mail.smtp.starttls.enable", config.getProperty("mail.smtp.starttls.enable"));
-				props.put("mail.smtp.auth", config.getProperty("mail.smtp.auth"));
+        // Create Message Body
+        StringBuffer messageBody = new StringBuffer();
+        int counter = 1;
+        for (String triplet : dups.keySet()) {
+          Set<TerminologyVersion> termVers = dups.get(triplet);
+          TerminologyVersion tvForPrintout = termVers.iterator().next();
 
-				// Create Message Body
-				StringBuffer messageBody = new StringBuffer();
-				int counter = 1;
-				for (String triplet : dups.keySet()) {
-					Set<TerminologyVersion> termVers = dups.get(triplet);
-					TerminologyVersion tvForPrintout = termVers.iterator().next();
+          messageBody.append(
+              "Warning: Duplicate terminology-version pairs found on AWS");
+          messageBody.append(System.getProperty("line.separator"));
+          messageBody.append(System.getProperty("line.separator"));
+          messageBody.append("DUPLICATE #" + counter++);
+          messageBody.append(System.getProperty("line.separator"));
+          messageBody.append("TERMINOLOGY: " + tvForPrintout.getTerminology());
+          messageBody.append(System.getProperty("line.separator"));
+          messageBody.append("VERSION: " + tvForPrintout.getVersion());
+          messageBody.append(System.getProperty("line.separator"));
+          if (tvForPrintout.getScope() != null) {
+            messageBody.append("For Scope: " + tvForPrintout.getScope());
+            messageBody.append(System.getProperty("line.separator"));
+          }
 
-					messageBody.append("Warning: Duplicate terminology-version pairs found on AWS");
-					messageBody.append(System.getProperty("line.separator"));
-					messageBody.append(System.getProperty("line.separator"));
-					messageBody.append("DUPLICATE #" + counter++);
-					messageBody.append(System.getProperty("line.separator"));
-					messageBody.append("TERMINOLOGY: " + tvForPrintout.getTerminology());
-					messageBody.append(System.getProperty("line.separator"));
-					messageBody.append("VERSION: " + tvForPrintout.getVersion());
-					messageBody.append(System.getProperty("line.separator"));
-					if (tvForPrintout.getScope() != null) {
-						messageBody.append("For Scope: " + tvForPrintout.getScope());
-						messageBody.append(System.getProperty("line.separator"));
-					}
+          messageBody.append(System.getProperty("line.separator"));
 
-					messageBody.append(System.getProperty("line.separator"));
+          int fileCounter = 1;
+          for (TerminologyVersion tv : termVers) {
+            messageBody.append(
+                "\tAWS FILE #" + fileCounter++ + ": " + tv.getAwsZipFileName());
+            messageBody.append(System.getProperty("line.separator"));
+          }
+          messageBody.append(System.getProperty("line.separator"));
+          messageBody.append(System.getProperty("line.separator"));
+        }
 
-					int fileCounter = 1;
-					for (TerminologyVersion tv : termVers) {
-						messageBody.append("\tAWS FILE #" + fileCounter++ + ": " + tv.getAwsZipFileName());
-						messageBody.append(System.getProperty("line.separator"));
-					}
-					messageBody.append(System.getProperty("line.separator"));
-					messageBody.append(System.getProperty("line.separator"));
-				}
-
-				ConfigUtility.sendEmail("IHTSDO Mapping Tool Duplicate Terminologies Warning", sender,
-						notificationRecipients, messageBody.toString(), props,
-						"true".equals(config.getProperty("mail.smtp.auth")));
-			}
-		}
-	}
+        ConfigUtility.sendEmail(
+            "IHTSDO Mapping Tool Duplicate Terminologies Warning", sender,
+            notificationRecipients, messageBody.toString(), props,
+            "true".equals(config.getProperty("mail.smtp.auth")));
+      }
+    }
+  }
 }

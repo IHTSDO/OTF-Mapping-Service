@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.mapping.reports;
 
 import java.util.Date;
@@ -5,6 +8,7 @@ import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -24,7 +28,7 @@ public class ReportNoteJpa implements ReportNote {
 
   /** The id. */
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   /** The note. */
@@ -36,6 +40,7 @@ public class ReportNoteJpa implements ReportNote {
   @Column(nullable = false)
   private Date timestamp = new Date();
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -46,6 +51,7 @@ public class ReportNoteJpa implements ReportNote {
     return id;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -56,6 +62,7 @@ public class ReportNoteJpa implements ReportNote {
     this.id = id;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -66,6 +73,7 @@ public class ReportNoteJpa implements ReportNote {
     return note;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -76,6 +84,7 @@ public class ReportNoteJpa implements ReportNote {
     this.note = note;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -86,6 +95,7 @@ public class ReportNoteJpa implements ReportNote {
     return timestamp;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -96,6 +106,7 @@ public class ReportNoteJpa implements ReportNote {
     this.timestamp = timestamp;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -109,6 +120,7 @@ public class ReportNoteJpa implements ReportNote {
     return result;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 

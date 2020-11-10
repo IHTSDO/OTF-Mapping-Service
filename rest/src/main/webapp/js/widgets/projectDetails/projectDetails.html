@@ -1321,7 +1321,7 @@
       </tr>
       <tr>
         <td>
-          <button ng-disabled="!(termLoad.version && termLoad.scope)"
+          <button ng-disabled=true
             class="btn btn-primary btn-xs" ng-click="reloadTerminologyAwsRf2Snapshot(focusProject.sourceTerminology, termLoad.version, termLoad.scope)">Reload {{focusProject.sourceTerminology}}</button>
         </td>
         <td>Reloads selected {{focusProject.sourceTerminology}} version and sets projects to it.
@@ -1353,7 +1353,7 @@
       </tr>
       <tr>
         <td>
-          <button
+          <button  ng-disabled=true
             class="btn btn-primary btn-xs" ng-click="loadRefsetMembers()">Reload Refset Members</button>
         </td>
         <td>Reloads refset members from last release.

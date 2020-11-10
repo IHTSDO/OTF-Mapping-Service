@@ -1,5 +1,5 @@
 /*
- *    Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.jpa.services;
 
@@ -18,7 +18,7 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
-import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.Query;
 import org.hibernate.search.SearchFactory;
 import org.hibernate.search.jpa.FullTextEntityManager;
@@ -456,9 +456,8 @@ public class ContentServiceJpa extends RootServiceJpa
   @Override
   public Long getRelationshipId(String terminologyId, String terminology,
     String terminologyVersion) throws Exception {
-    final javax.persistence.Query query = manager
-        .createQuery(
-            "select r.id from RelationshipJpa r where terminologyId=:terminologyId and terminology=:terminology and terminologyVersion=:terminologyVersion")
+    final javax.persistence.Query query = manager.createQuery(
+        "select r.id from RelationshipJpa r where terminologyId=:terminologyId and terminology=:terminology and terminologyVersion=:terminologyVersion")
         .setParameter("terminologyId", terminologyId)
         .setParameter("terminology", terminology)
         .setParameter("terminologyVersion", terminologyVersion);
@@ -1537,20 +1536,18 @@ public class ContentServiceJpa extends RootServiceJpa
   @Override
   public TreePositionList getRootTreePositions(String terminology,
     String terminologyVersion) throws Exception {
-    List<TreePosition> treePositions = manager
-        .createQuery(
-            "select tp from TreePositionJpa tp where ancestorPath = '' and terminologyVersion = :terminologyVersion and terminology = :terminology")
+    List<TreePosition> treePositions = manager.createQuery(
+        "select tp from TreePositionJpa tp where ancestorPath = '' and terminologyVersion = :terminologyVersion and terminology = :terminology")
         .setParameter("terminology", terminology)
         .setParameter("terminologyVersion", terminologyVersion).getResultList();
 
     // if only one result (single root), use the children of that concept
     // instead
     if (treePositions.size() == 1) {
-      treePositions = manager
-          .createQuery(
-              "select tp from TreePositionJpa tp where ancestorPath = '"
-                  + treePositions.iterator().next().getTerminologyId()
-                  + "' and terminologyVersion = :terminologyVersion and terminology = :terminology")
+      treePositions = manager.createQuery(
+          "select tp from TreePositionJpa tp where ancestorPath = '"
+              + treePositions.iterator().next().getTerminologyId()
+              + "' and terminologyVersion = :terminologyVersion and terminology = :terminology")
           .setParameter("terminology", terminology)
           .setParameter("terminologyVersion", terminologyVersion)
           .getResultList();
@@ -1574,9 +1571,8 @@ public class ContentServiceJpa extends RootServiceJpa
   @SuppressWarnings("unchecked")
   private TreePositionList getChildTreePositions(TreePosition treePosition)
     throws Exception {
-    final List<TreePosition> treePositions = manager
-        .createQuery(
-            "select tp from TreePositionJpa tp where ancestorPath = :ancestorPath and terminology = :terminology and terminologyVersion = :terminologyVersion")
+    final List<TreePosition> treePositions = manager.createQuery(
+        "select tp from TreePositionJpa tp where ancestorPath = :ancestorPath and terminology = :terminology and terminologyVersion = :terminologyVersion")
         .setParameter("ancestorPath",
             (treePosition.getAncestorPath().length() == 0 ? ""
                 : treePosition.getAncestorPath() + "~")
@@ -1597,9 +1593,8 @@ public class ContentServiceJpa extends RootServiceJpa
     String terminology, String terminologyVersion) throws Exception {
 
     @SuppressWarnings("unchecked")
-    final List<TreePosition> treePositions = manager
-        .createQuery(
-            "select tp from TreePositionJpa tp where terminologyVersion = :terminologyVersion and terminology = :terminology and terminologyId = :terminologyId")
+    final List<TreePosition> treePositions = manager.createQuery(
+        "select tp from TreePositionJpa tp where terminologyVersion = :terminologyVersion and terminology = :terminology and terminologyId = :terminologyId")
         .setParameter("terminology", terminology)
         .setParameter("terminologyVersion", terminologyVersion)
         .setParameter("terminologyId", terminologyId).getResultList();
@@ -1667,9 +1662,8 @@ public class ContentServiceJpa extends RootServiceJpa
     String terminology, String terminologyVersion) throws Exception {
     // get tree positions for concept (may be multiple)
     @SuppressWarnings("unchecked")
-    List<TreePosition> treePositions = manager
-        .createQuery(
-            "select tp from TreePositionJpa tp where terminologyVersion = :terminologyVersion and terminology = :terminology and terminologyId = :terminologyId")
+    List<TreePosition> treePositions = manager.createQuery(
+        "select tp from TreePositionJpa tp where terminologyVersion = :terminologyVersion and terminology = :terminology and terminologyId = :terminologyId")
         .setParameter("terminology", terminology)
         .setParameter("terminologyVersion", terminologyVersion)
         .setParameter("terminologyId", terminologyId).getResultList();
@@ -1706,9 +1700,8 @@ public class ContentServiceJpa extends RootServiceJpa
     String terminology, String terminologyVersion) throws Exception {
     // get tree positions for concept (may be multiple)
     @SuppressWarnings("unchecked")
-    List<TreePosition> treePositions = manager
-        .createQuery(
-            "select tp from TreePositionJpa tp where terminologyVersion = :terminologyVersion and terminology = :terminology and terminologyId = :terminologyId")
+    List<TreePosition> treePositions = manager.createQuery(
+        "select tp from TreePositionJpa tp where terminologyVersion = :terminologyVersion and terminology = :terminology and terminologyId = :terminologyId")
         .setParameter("terminology", terminology)
         .setParameter("terminologyVersion", terminologyVersion)
         .setParameter("terminologyId", terminologyId).setMaxResults(1)
@@ -1941,11 +1934,12 @@ public class ContentServiceJpa extends RootServiceJpa
     for (final Description desc : concept.getDescriptions()) {
       final String descType = desc.getTypeId().toString();
 
-      // May not want all descriptions listed. May only want non-description attributes. This is determined by the descTypes available
+      // May not want all descriptions listed. May only want non-description
+      // attributes. This is determined by the descTypes available
       if (descTypes.get(descType) == null) {
-    	  continue;
+        continue;
       }
-      
+
       // get or create the description group for this description type
       TreePositionDescriptionGroup descGroup = null;
       if (descGroups.containsKey(descType)) {
@@ -2181,9 +2175,8 @@ public class ContentServiceJpa extends RootServiceJpa
   @Override
   public Set<String> getAllRelationshipTerminologyIds(String terminology,
     String terminologyVersion) {
-    javax.persistence.Query query = manager
-        .createQuery(
-            "select c.terminologyId from RelationshipJpa c where terminology=:terminology and terminologyVersion=:terminologyVersion")
+    javax.persistence.Query query = manager.createQuery(
+        "select c.terminologyId from RelationshipJpa c where terminology=:terminology and terminologyVersion=:terminologyVersion")
         .setParameter("terminology", terminology)
         .setParameter("terminologyVersion", terminologyVersion);
 
@@ -2198,9 +2191,8 @@ public class ContentServiceJpa extends RootServiceJpa
   @Override
   public Set<String> getAllDescriptionTerminologyIds(String terminology,
     String terminologyVersion) {
-    javax.persistence.Query query = manager
-        .createQuery(
-            "select c.terminologyId from DescriptionJpa c where terminology=:terminology and terminologyVersion=:terminologyVersion")
+    javax.persistence.Query query = manager.createQuery(
+        "select c.terminologyId from DescriptionJpa c where terminology=:terminology and terminologyVersion=:terminologyVersion")
         .setParameter("terminology", terminology)
         .setParameter("terminologyVersion", terminologyVersion);
 
@@ -2215,9 +2207,8 @@ public class ContentServiceJpa extends RootServiceJpa
   @Override
   public Set<String> getAllLanguageRefSetMemberTerminologyIds(
     String terminology, String terminologyVersion) {
-    javax.persistence.Query query = manager
-        .createQuery(
-            "select c.terminologyId from LanguageRefSetMemberJpa c where terminology=:terminology and terminologyVersion=:terminologyVersion")
+    javax.persistence.Query query = manager.createQuery(
+        "select c.terminologyId from LanguageRefSetMemberJpa c where terminology=:terminology and terminologyVersion=:terminologyVersion")
         .setParameter("terminology", terminology)
         .setParameter("terminologyVersion", terminologyVersion);
 
@@ -2250,16 +2241,14 @@ public class ContentServiceJpa extends RootServiceJpa
   public ComplexMapRefSetMemberList getComplexMapRefSetMembersForRefSetId(
     String refSetId) throws Exception {
     // Attempt to get complex members
-    final List<ComplexMapRefSetMember> members = manager
-        .createQuery(
-            "select c from ComplexMapRefSetMemberJpa c where refSetId = :refSetId")
+    final List<ComplexMapRefSetMember> members = manager.createQuery(
+        "select c from ComplexMapRefSetMemberJpa c where refSetId = :refSetId")
         .setParameter("refSetId", refSetId).getResultList();
 
     // If not found, try for simple
     if (members.size() == 0) {
-      final List<SimpleMapRefSetMember> simpleMembers = manager
-          .createQuery(
-              "select c from SimpleMapRefSetMemberJpa c where refSetId = :refSetId")
+      final List<SimpleMapRefSetMember> simpleMembers = manager.createQuery(
+          "select c from SimpleMapRefSetMemberJpa c where refSetId = :refSetId")
           .setParameter("refSetId", refSetId).getResultList();
       // Convert to complex map refset members
       for (final SimpleMapRefSetMember simpleMember : simpleMembers) {
@@ -2272,6 +2261,16 @@ public class ContentServiceJpa extends RootServiceJpa
     return list;
   }
 
+  /**
+   * Indicates whether or not descendant of path is the case.
+   *
+   * @param ancestorPath the ancestor path
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   * @throws Exception the exception
+   */
   /* see superclass */
   @Override
   public boolean isDescendantOfPath(String ancestorPath, String terminologyId,
@@ -2340,7 +2339,8 @@ public class ContentServiceJpa extends RootServiceJpa
         // TODO: this should really have a project specific handler aspect
         // also see directives.js - treeSearchResult
         if (terminology.toLowerCase().startsWith("icd")
-            || terminology.toLowerCase().startsWith("gmdn")) {
+            || terminology.toLowerCase().startsWith("gmdn")
+            || terminology.toLowerCase().startsWith("atc")) {
           Collections.sort(treePositions, new Comparator<TreePosition>() {
             @Override
             public int compare(TreePosition o1, TreePosition o2) {
@@ -2372,9 +2372,8 @@ public class ContentServiceJpa extends RootServiceJpa
   @Override
   public List<SimpleMapRefSetMember> getSimpleMapRefSetMembersForConcept(
     Long conceptId) {
-    javax.persistence.Query query = manager
-        .createQuery(
-            "select r from SimpleMapRefSetMemberJpa r where concept_id = :conceptId")
+    javax.persistence.Query query = manager.createQuery(
+        "select r from SimpleMapRefSetMemberJpa r where concept_id = :conceptId")
         .setParameter("conceptId", conceptId);
 
     List<SimpleMapRefSetMember> members = query.getResultList();
@@ -2387,9 +2386,8 @@ public class ContentServiceJpa extends RootServiceJpa
   @Override
   public List<ComplexMapRefSetMember> getComplexMapRefSetMembersForConcept(
     Long conceptId) {
-    javax.persistence.Query query = manager
-        .createQuery(
-            "select r from ComplexMapRefSetMemberJpa r where concept_id = :conceptId")
+    javax.persistence.Query query = manager.createQuery(
+        "select r from ComplexMapRefSetMemberJpa r where concept_id = :conceptId")
         .setParameter("conceptId", conceptId);
 
     List<ComplexMapRefSetMember> members = query.getResultList();

@@ -1,5 +1,11 @@
 /*
- *    Copyright 2015 West Coast Informatics, LLC
+ * Copyright 2020 Wci Informatics - All Rights Reserved.
+ *
+ * NOTICE:  All information contained herein is, and remains the property of Wci Informatics
+ * The intellectual and technical concepts contained herein are proprietary to
+ * Wci Informatics and may be covered by U.S. and Foreign Patents, patents in process,
+ * and are protected by trade secret or copyright law.  Dissemination of this information
+ * or reproduction of this material is strictly forbidden.
  */
 package org.ihtsdo.otf.mapping.model;
 
@@ -59,6 +65,20 @@ public interface MapProject {
   public boolean isPublic();
 
   /**
+   * Sets whether the project's map notes are viewable by public roles.
+   *
+   * @param mapNotesPublic the map notes public
+   */
+  public void setMapNotesPublic(boolean mapNotesPublic);
+
+  /**
+   * Checks if the project's map notes are viewable by public roles.
+   *
+   * @return true, if is public
+   */
+  public boolean isMapNotesPublic();
+
+  /**
    * Sets whether the project is viewable by public roles.
    *
    * @param isPublic the new public
@@ -106,7 +126,7 @@ public interface MapProject {
    * @param moduleId the module id
    */
   public void setModuleId(String moduleId);
-  
+
   /**
    * Returns the module id.
    * 
@@ -116,11 +136,10 @@ public interface MapProject {
 
   /**
    * Sets the module id.
-   * 
-   * @param moduleId the module id
+   *
+   * @param refSetId the ref set id
    */
   public void setRefSetId(String refSetId);
-
 
   /**
    * Returns the ref set name.
@@ -330,8 +349,7 @@ public interface MapProject {
    * 
    * @param destinationTerminologyVersion the destination terminology version
    */
-  public void setDestinationTerminologyVersion(
-    String destinationTerminologyVersion);
+  public void setDestinationTerminologyVersion(String destinationTerminologyVersion);
 
   /**
    * Gets the map relation style.
@@ -353,8 +371,7 @@ public interface MapProject {
    * @param mapPrincipleSourceDocumentName the map principle source document
    *          name
    */
-  public void setMapPrincipleSourceDocumentName(
-    String mapPrincipleSourceDocumentName);
+  public void setMapPrincipleSourceDocumentName(String mapPrincipleSourceDocumentName);
 
   /**
    * Returns the map principle source document name.
@@ -379,12 +396,14 @@ public interface MapProject {
 
   /**
    * Returns the map behavior type (e.g. COMPLEX_MAP)
+   * 
    * @return the map type
    */
   public MapRefsetPattern getMapRefsetPattern();
 
   /**
    * Sets the map behavior type (e.g. COMPLEX_MAP)
+   * 
    * @param mapRefsetPattern the map type
    */
   public void setMapRefsetPattern(MapRefsetPattern mapRefsetPattern);
@@ -514,8 +533,7 @@ public interface MapProject {
    * @param projectSpecificAlgorithmHandlerClass the new project specific
    *          algorithm handler class
    */
-  public void setProjectSpecificAlgorithmHandlerClass(
-    String projectSpecificAlgorithmHandlerClass);
+  public void setProjectSpecificAlgorithmHandlerClass(String projectSpecificAlgorithmHandlerClass);
 
   /**
    * Gets the workflow type.
@@ -600,8 +618,7 @@ public interface MapProject {
    *
    * @param propagationDescendantThreshold the propagation descendant threshold
    */
-  public void setPropagationDescendantThreshold(
-    Integer propagationDescendantThreshold);
+  public void setPropagationDescendantThreshold(Integer propagationDescendantThreshold);
 
   /**
    * Indicates whether or not propagated flag is the case.
@@ -653,7 +670,7 @@ public interface MapProject {
    * @return <code>true</code> if so, <code>false</code> otherwise
    */
   public boolean isTeamBased();
-  
+
   /**
    * Sets the team based.
    *

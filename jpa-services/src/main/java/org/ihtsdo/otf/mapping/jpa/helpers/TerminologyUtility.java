@@ -1,5 +1,5 @@
 /*
- *    Copyright 2016 West Coast Informatics, LLC
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.jpa.helpers;
 
@@ -267,7 +267,7 @@ public class TerminologyUtility {
 
           // if relationship is active, typeId equals the provided typeId, and
           // the source concept is active
-          if (rel.isActive() && rel.getTypeId().equals(new Long(typeId))
+          if (rel.isActive() && rel.getTypeId().equals(Long.valueOf(typeId))
               && rel.getSourceConcept().isActive()) {
 
             // get source concept from inverse relationship (i.e. child of

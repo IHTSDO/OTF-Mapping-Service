@@ -565,7 +565,7 @@ public class MappingServiceJpaTest {
     // TODO test records
 
     // get project (id)
-    MapProject p = service.getMapProject(new Long(2));
+    MapProject p = service.getMapProject(Long.valueOf(2));
 
     if (p.getRefSetId().compareTo("5781347179") != 0) {
       fail("Retrieval - getMapProject(Long id): refSetId invalid");
@@ -591,12 +591,12 @@ public class MappingServiceJpaTest {
     }
 
     // test project retrieval by user (lead/specialist)
-    MapUser s = service.getMapUser(new Long(1));
+    MapUser s = service.getMapUser(Long.valueOf(1));
     if (service.getMapProjectsForMapUser(s).getCount() != 2) {
       fail("Retrieval - getMapProjectsForMapUser(MapUser mapUser): Failed to retrieve projects");
     }
 
-    s = service.getMapUser(new Long(2));
+    s = service.getMapUser(Long.valueOf(2));
     if (service.getMapProjectsForMapUser(s).getCount() != 1) {
       fail("Retrieval - getMapProjectsForMapUser(MapUser mapUser):  Failed to retrieve projects");
     }

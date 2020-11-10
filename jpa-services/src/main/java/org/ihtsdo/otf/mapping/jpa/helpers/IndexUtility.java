@@ -1,5 +1,5 @@
-/**
- * Copyright 2015 West Coast Informatics, LLC
+/*
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.jpa.helpers;
 
@@ -18,13 +18,16 @@ import javax.persistence.OneToOne;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queryParser.MultiFieldQueryParser;
-import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
-import org.apache.lucene.util.Version;
+import org.apache.lucene.search.Weight;
 import org.hibernate.search.SearchFactory;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
@@ -380,7 +383,7 @@ public class IndexUtility {
   }
 
   /**
-   * Apply pfs to lucene query2, allows disabling of query log
+   * Apply pfs to lucene query2, allows disabling of query log.
    *
    * @param clazz the clazz
    * @param fieldNamesKey the field names key
@@ -415,9 +418,8 @@ public class IndexUtility {
     SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
 
     Query luceneQuery;
-    QueryParser queryParser = new MultiFieldQueryParser(
-        Version.LUCENE_36, IndexUtility
-            .getIndexedFieldNames(fieldNamesKey, true).toArray(new String[] {}),
+    QueryParser queryParser = new MultiFieldQueryParser(IndexUtility
+        .getIndexedFieldNames(fieldNamesKey, true).toArray(new String[] {}),
         searchFactory.getAnalyzer(clazz));
 
     queryParser.setLowercaseExpandedTerms(false);
@@ -437,14 +439,22 @@ public class IndexUtility {
     // Validate query terms
     luceneQuery = luceneQuery.rewrite(fullTextEntityManager.getSearchFactory()
         .getIndexReaderAccessor().open(clazz));
-    Set<Term> terms = new HashSet<>();
-    luceneQuery.extractTerms(terms);
-    for (Term t : terms) {
-      if (t.field() != null && !t.field().isEmpty() && !IndexUtility
-          .getIndexedFieldNames(fieldNamesKey, false).contains(t.field())) {
-        throw new LocalException(
-            "Query references invalid field name " + t.field() + ", "
-                + IndexUtility.getIndexedFieldNames(fieldNamesKey, false));
+
+    final Set<Term> terms = new HashSet<>();
+    try (IndexReader reader = fullTextEntityManager.getSearchFactory()
+        .getIndexReaderAccessor().open(clazz).getContext().reader();) {
+      IndexSearcher searcher = new IndexSearcher(reader);
+
+      Weight w = searcher.createWeight(luceneQuery, false);
+      w.extractTerms(terms);
+
+      for (final Term t : terms) {
+        if (t.field() != null && !t.field().isEmpty() && !IndexUtility
+            .getIndexedFieldNames(clazz, false).contains(t.field())) {
+          throw new ParseException(
+              "Query references invalid field name " + t.field() + ", "
+                  + IndexUtility.getIndexedFieldNames(clazz, false));
+        }
       }
     }
 
@@ -463,7 +473,7 @@ public class IndexUtility {
         Map<String, Boolean> nameToAnalyzedMap = IndexUtility
             .getNameAnalyzedPairsFromAnnotation(clazz, pfs.getSortField());
         String sortField = null;
-        
+
         if (nameToAnalyzedMap.size() == 0) {
           throw new Exception(clazz.getName()
               + " does not have declared, annotated method for field "
@@ -484,7 +494,7 @@ public class IndexUtility {
                 .equals(false)) {
           sortField = pfs.getSortField() + "Sort";
         }
-        
+
         // if none, throw exception
         if (sortField == null) {
           throw new Exception(
@@ -493,7 +503,8 @@ public class IndexUtility {
         }
 
         // Reverse sort by default - for last modified
-        Sort sort = new Sort(new SortField(sortField, SortField.STRING, (pfs.isAscending()) ? true : false));
+        Sort sort = new Sort(new SortField(sortField, SortField.Type.STRING,
+            (pfs.isAscending()) ? true : false));
         fullTextQuery.setSort(sort);
       }
     }
