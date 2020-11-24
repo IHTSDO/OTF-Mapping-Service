@@ -499,11 +499,11 @@ public class DefaultProjectSpecificAlgorithmHandler
 
         // if first entry target null
         if (entries.get(i).getTargetId() == null
-            || entries.get(i).getTargetId() == "") {
+            || entries.get(i).getTargetId().equals("")) {
 
           // if both null, check relations
           if (entries.get(j).getTargetId() == null
-              || entries.get(j).getTargetId() == "") {
+              || entries.get(j).getTargetId().equals("")) {
 
             if (entries.get(i).getMapRelation() != null
                 && entries.get(j).getMapRelation() != null
