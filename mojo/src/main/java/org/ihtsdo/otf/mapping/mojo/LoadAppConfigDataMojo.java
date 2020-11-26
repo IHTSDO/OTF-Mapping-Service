@@ -364,7 +364,7 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
           principle.setSectionRef(principleDef.getSectionRef());
           principle.setPrincipleId(principleDef.getPrincipleId());
 
-          mappingService.getMapPrinciples().addMapPrinciple(principle);
+          mappingService.addMapPrinciple(principle);
         } else {
           getLog().info(" Map Principle '" + principleDef.getName()
               + "' already exists.");
@@ -446,7 +446,7 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
           mapUser.setApplicationRole(
               MapUserRole.valueOf(userDef.getApplicationRole().name()));
 
-          getLog().info("ADDING USER " + userDef.getUserName());
+          getLog().info("ADDING USER " + mapUser);
           securityService.addMapUser(mapUser);
 
         } else {
@@ -476,7 +476,7 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
               .setAllowableForNullTarget(adviceDef.isAllowableForNullTarget());
           advice.setComputed(adviceDef.isComputed());
 
-          mappingService.getMapAdvices().addMapAdvice(advice);
+          mappingService.addMapAdvice(advice);
         } else {
           getLog().info(
               " Map Advice '" + adviceDef.getName() + "' already exists.");
@@ -505,7 +505,7 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
               relationDef.isAllowableForNullTarget());
           relation.setComputed(relationDef.isComputed());
 
-          mappingService.getMapRelations().addMapRelation(relation);
+          mappingService.addMapRelation(relation);
         } else {
           getLog().info(
               " Map Relation '" + relationDef.getName() + "' already exists.");
@@ -535,7 +535,7 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
           ageRange.setUpperUnits(ageRangeDef.getUpperUnits());
           ageRange.setUpperValue(ageRangeDef.getUpperValue());
 
-          mappingService.getMapAgeRanges().addMapAgeRange(ageRange);
+          mappingService.addMapAgeRange(ageRange);
         } else {
           getLog().info(
               " Map AgeRange '" + ageRangeDef.getName() + "' already exists.");
