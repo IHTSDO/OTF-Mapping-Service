@@ -528,6 +528,31 @@
         </plugins>
       </build>
     </profile>
+    
+    <profile>
+      <id>ConvertICD10CA</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>convert-icd10ca</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>convert-icd10ca</goal>
+                </goals>
+                <configuration>
+                  <inputDir>${input.dir}</inputDir>
+                  <outputDir>${output.dir}</outputDir>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
     <!-- Compute workflow for a map project -Drun.config=.. must also be specified. -->
     <profile>

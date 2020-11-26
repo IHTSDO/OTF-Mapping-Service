@@ -45,6 +45,7 @@
       <artifactId>mapping-rest</artifactId>
       <classifier>classes</classifier>
     </dependency>
+    
 
     <!-- Maven invoker -->
     <dependency>
@@ -112,6 +113,11 @@
       <groupId>sax</groupId>
       <artifactId>sax</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.jsoup</groupId>
+      <artifactId>jsoup</artifactId>
+    </dependency>
+    
     
   </dependencies>
 

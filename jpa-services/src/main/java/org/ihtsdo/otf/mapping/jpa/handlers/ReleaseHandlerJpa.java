@@ -1872,7 +1872,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       String[] comparatorComponents; // used for parsing age rules
 
       // if map target is blank use map relation
-      if (mapEntry.getTargetId() == null || mapEntry.getTargetId() == "") {
+      if (mapEntry.getTargetId() == null || mapEntry.getTargetId().equals("")) {
         return mapEntry.getMapRelation().getName();
       }
 
