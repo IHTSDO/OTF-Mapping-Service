@@ -255,9 +255,11 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
               mapProject.getProjectSpecificAlgorithmHandlerClass());
           project.setPropagatedFlag(mapProject.getPropagatedFlag());
           project.setPublic(mapProject.getIsPublic());
+          project.setRuleBased(mapProject.getIsRuleBased());
           project.setTeamBased(mapProject.getIsTeamBased());
           project.setRefSetId(mapProject.getRefSetId());
           project.setRefSetName(mapProject.getRefSetName());
+          project.setModuleId(mapProject.getModuleId());
           project.setSourceTerminology(mapProject.getSourceTerminology());
           project.setSourceTerminologyVersion(
               mapProject.getSourceTerminologyVersion());
