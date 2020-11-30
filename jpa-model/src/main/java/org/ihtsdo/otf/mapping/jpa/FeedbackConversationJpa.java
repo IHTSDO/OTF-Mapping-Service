@@ -84,15 +84,15 @@ public class FeedbackConversationJpa implements FeedbackConversation {
   private Long mapRecordId;
 
   /** The terminology. */
-  @Column(nullable = false, length = 4000)
+  @Column(nullable = false)
   private String terminology;
 
   /** The terminology id. */
-  @Column(nullable = false, length = 4000)
+  @Column(nullable = false)
   private String terminologyId;
 
   /** The terminology version. */
-  @Column(nullable = false, length = 4000)
+  @Column(nullable = false)
   private String terminologyVersion;
 
   /** The title. */
@@ -100,7 +100,7 @@ public class FeedbackConversationJpa implements FeedbackConversation {
   private String title;
 
   /** The default preferred name. */
-  @Column(nullable = true, length = 4000)
+  @Column(nullable = true)
   private String defaultPreferredName;
 
   /** The map project id. */
@@ -108,7 +108,7 @@ public class FeedbackConversationJpa implements FeedbackConversation {
   private Long mapProjectId;
 
   /** The associated record owner's userName */
-  @Column(nullable = true, length = 4000)
+  @Column(nullable = true)
   private String userName;
 
   /**
