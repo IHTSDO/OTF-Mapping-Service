@@ -24,9 +24,11 @@ public class ConfigModels {
     private String projectSpecificAlgorithmHandlerClass;
     private Boolean propagatedFlag;
     private Boolean isPublic;
+    private Boolean isRuleBased;
     private Boolean isTeamBased;
     private String refSetId;
     private String refSetName;
+    private String moduleId;
     private String sourceTerminology;
     private String sourceTerminologyVersion;
     private String workflowType;
@@ -60,9 +62,11 @@ public class ConfigModels {
      * @param projectSpecificAlgorithmHandlerClass
      * @param propagatedFlag
      * @param isPublic
+     * @param isRuleBased
      * @param isTeamBased
      * @param refSetId
      * @param refSetName
+     * @param moduleId
      * @param sourceTerminology
      * @param sourceTerminologyVersion
      * @param workflowType
@@ -85,9 +89,11 @@ public class ConfigModels {
         @JsonProperty("projectSpecificAlgorithmHandlerClass") String projectSpecificAlgorithmHandlerClass,
         @JsonProperty("propagatedFlag") Boolean propagatedFlag,
         @JsonProperty("isPublic") Boolean isPublic,
+        @JsonProperty("isRuleBased") Boolean isRuleBased,
         @JsonProperty("isTeamBased") Boolean isTeamBased,
         @JsonProperty("refSetId") String refSetId,
         @JsonProperty("refSetName") String refSetName,
+        @JsonProperty("moduleId") String moduleId,
         @JsonProperty("sourceTerminology") String sourceTerminology,
         @JsonProperty("sourceTerminologyVersion") String sourceTerminologyVersion,
         @JsonProperty("workflowType") String workflowType,
@@ -110,9 +116,11 @@ public class ConfigModels {
       this.projectSpecificAlgorithmHandlerClass = projectSpecificAlgorithmHandlerClass;
       this.propagatedFlag = propagatedFlag;
       this.isPublic = isPublic;
+      this.isRuleBased = isRuleBased;
       this.isTeamBased = isTeamBased;
       this.refSetId = refSetId;
       this.refSetName = refSetName;
+      this.moduleId = moduleId;
       this.sourceTerminology = sourceTerminology;
       this.sourceTerminologyVersion = sourceTerminologyVersion;
       this.workflowType = workflowType;
@@ -208,6 +216,14 @@ public class ConfigModels {
       this.isPublic = isPublic;
     }
 
+    public Boolean getIsRuleBased() {
+      return isRuleBased;
+    }
+
+    public void setIsRuleBased(Boolean isRuleBased) {
+      this.isRuleBased = isRuleBased;
+    }    
+
     public Boolean getIsTeamBased() {
       return isTeamBased;
     }
@@ -234,6 +250,14 @@ public class ConfigModels {
 
     public String getSourceTerminology() {
       return sourceTerminology;
+    }
+
+    public String getModuleId() {
+      return moduleId;
+    }
+
+    public void setModuleId(String moduleId) {
+      this.moduleId = moduleId;
     }
 
     public void setSourceTerminology(String sourceTerminology) {

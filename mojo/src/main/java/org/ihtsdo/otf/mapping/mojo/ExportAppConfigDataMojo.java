@@ -182,6 +182,7 @@ public class ExportAppConfigDataMojo extends AbstractOtfMappingMojo {
         lmp.setExcludeScopeConcepts(mp.getScopeExcludedConcepts());
         lmp.setGroupStructure(mp.isGroupStructure());
         lmp.setIsPublic(mp.isPublic());
+        lmp.setIsRuleBased(mp.isRuleBased());
         lmp.setIsTeamBased(mp.isTeamBased());
         lmp.setMapRefsetPattern(mp.getMapRefsetPattern().name());
         lmp.setMapRelationStyle(mp.getMapRelationStyle().name());
@@ -191,6 +192,7 @@ public class ExportAppConfigDataMojo extends AbstractOtfMappingMojo {
         lmp.setPropagatedFlag(mp.isPropagatedFlag());
         lmp.setRefSetId(mp.getRefSetId());
         lmp.setRefSetName(mp.getRefSetName());
+        lmp.setModuleId(mp.getModuleId());
         lmp.setScopeDescendantsFlag(mp.isScopeDescendantsFlag());
 
         lmp.setIncludeScopeConcepts(mp.getScopeConcepts());
