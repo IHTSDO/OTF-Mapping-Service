@@ -426,6 +426,7 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
 
       List<ReportDefinition> reportDefinitions =
           reportService.getReportDefinitions().getReportDefinitions();
+      reportDefinitions.addAll(reportService.getQACheckDefinitions().getReportDefinitions());
 
       for (ReportDefinition reportDef : reports) {
         getLog().info("ReportDefinition json:" + mapper
