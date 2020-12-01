@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.maven.plugin.MojoExecutionException;
@@ -18,7 +19,6 @@ import org.ihtsdo.otf.mapping.helpers.MapRefsetPattern;
 import org.ihtsdo.otf.mapping.helpers.MapRelationList;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.RelationStyle;
-import org.ihtsdo.otf.mapping.helpers.ReportDefinitionList;
 import org.ihtsdo.otf.mapping.helpers.ReportFrequency;
 import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultType;
@@ -232,8 +232,10 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
 
       mappingService.setTransactionPerOperation(false);
 
-      final ReportDefinitionList existingReports =
-          reportService.getReportDefinitions();
+      final List<ReportDefinition> existingReports = new ArrayList<>();
+      existingReports.addAll(reportService.getReportDefinitions().getReportDefinitions());
+      existingReports.addAll(reportService.getQACheckDefinitions().getReportDefinitions());
+
       final MapAdviceList existingAdvices = mappingService.getMapAdvices();
       final MapRelationList existingRelations = mappingService.getMapRelations();
       final MapAgeRangeList existingAgeRanges = mappingService.getMapAgeRanges();      
@@ -329,7 +331,7 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
           }
 
           for (String reportName : mapProject.getReports()) {
-            for (ReportDefinition rd : existingReports.getReportDefinitions()) {
+            for (ReportDefinition rd : existingReports) {
               if (rd.getName().equals(reportName)) {
                 getLog().info("adding report to project: " + reportName + " to "
                     + project.getName());
