@@ -13,7 +13,9 @@ import java.util.List;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
+import org.ihtsdo.otf.mapping.helpers.MapAgeRangeList;
 import org.ihtsdo.otf.mapping.helpers.MapRefsetPattern;
+import org.ihtsdo.otf.mapping.helpers.MapRelationList;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.RelationStyle;
 import org.ihtsdo.otf.mapping.helpers.ReportDefinitionList;
@@ -233,6 +235,8 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
       final ReportDefinitionList existingReports =
           reportService.getReportDefinitions();
       final MapAdviceList existingAdvices = mappingService.getMapAdvices();
+      final MapRelationList existingRelations = mappingService.getMapRelations();
+      final MapAgeRangeList existingAgeRanges = mappingService.getMapAgeRanges();      
       final List<MapProject> mapProjects =
           mappingService.getMapProjects().getMapProjects();
 
@@ -335,7 +339,6 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
             }
           }
           
-
           for (String adviceName : mapProject.getAdvices()) {
             for (MapAdvice advice : existingAdvices.getMapAdvices()) {
               if (advice.getName().equals(adviceName)) {
@@ -346,6 +349,29 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
               }
             }
           }
+          
+          for (String relationName : mapProject.getRelations()) {
+            for (MapRelation relation : existingRelations.getMapRelations()) {
+              if (relation.getName().equals(relationName)) {
+                getLog().info("adding relation to project: " + relationName + " to "
+                    + project.getName());
+                project.getMapRelations().add(relation);
+                break;
+              }
+            }
+          }
+          
+          for (String ageRangeName : mapProject.getAgeRanges()) {
+            for (MapAgeRange ageRange : existingAgeRanges.getMapAgeRanges()) {
+              if (ageRange.getName().equals(ageRangeName)) {
+                getLog().info("adding relation to project: " + ageRangeName + " to "
+                    + project.getName());
+                project.getPresetAgeRanges().add(ageRange);
+                break;
+              }
+            }
+          }
+
 
           for (String errorMessage : mapProject.getErrorMessages()) {
             project.getErrorMessages().add(errorMessage);

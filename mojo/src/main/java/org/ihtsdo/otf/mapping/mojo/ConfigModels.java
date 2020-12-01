@@ -40,6 +40,8 @@ public class ConfigModels {
     private Set<String> excludeScopeConcepts = new HashSet<>();
     private Set<String> reports = new HashSet<>();
     private Set<String> advices = new HashSet<>();
+    private Set<String> relations = new HashSet<>();
+    private Set<String> ageRanges = new HashSet<>();
     private Set<String> leads = new HashSet<>();
     private Set<String> specialists = new HashSet<>();
     private Set<String> errorMessages = new HashSet<>();
@@ -73,11 +75,15 @@ public class ConfigModels {
      * @param workflowType
      * @param mapRelationStyle
      * @param scopeDescendantsFlag
-     * @param scopeConcepts
+     * @param includeScopeConcepts
+     * @param excludeScopeConcepts
      * @param reports
      * @param advices
+     * @param relations
+     * @param ageRanges
      * @param leads
      * @param specialists
+     * @param errorMessages
      */
     @JsonCreator
     public MapProjectConfiguration(
@@ -105,6 +111,8 @@ public class ConfigModels {
         @JsonProperty("excludeScopeConcepts") Set<String> excludeScopeConcepts,
         @JsonProperty("reports") Set<String> reports,
         @JsonProperty("advices") Set<String> advices,
+        @JsonProperty("relations") Set<String> relations,
+        @JsonProperty("ageRanges") Set<String> ageRanges,
         @JsonProperty("leads") Set<String> leads,
         @JsonProperty("specialists") Set<String> specialists,
         @JsonProperty("errorMessages") Set<String> errorMessages) {
@@ -133,6 +141,8 @@ public class ConfigModels {
       this.excludeScopeConcepts = excludeScopeConcepts;
       this.reports = reports;
       this.advices = advices;
+      this.relations = relations;
+      this.ageRanges = ageRanges;
       this.leads = leads;
       this.specialists = specialists;
       this.errorMessages = errorMessages;
@@ -330,6 +340,22 @@ public class ConfigModels {
 
     public void setAdvices(Set<String> advices) {
       this.advices = advices;
+    }
+
+    public Set<String> getRelations() {
+      return relations;
+    }
+
+    public void setRelations(Set<String> relations) {
+      this.relations = relations;
+    }
+
+    public Set<String> getAgeRanges() {
+      return ageRanges;
+    }
+
+    public void setAgeRanges(Set<String> ageRanges) {
+      this.ageRanges = ageRanges;
     }
 
     public Set<String> getLeads() {
