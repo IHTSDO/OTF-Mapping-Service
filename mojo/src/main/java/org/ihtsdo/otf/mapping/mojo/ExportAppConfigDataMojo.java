@@ -226,6 +226,18 @@ public class ExportAppConfigDataMojo extends AbstractOtfMappingMojo {
           advices.add(advice.getName());
         }
         lmp.setAdvices(advices);
+       
+        Set<String> relations = new HashSet<>();
+        for (MapRelation relation : mp.getMapRelations()) {
+          relations.add(relation.getName());
+        }
+        lmp.setRelations(relations);
+       
+        Set<String> ageRanges = new HashSet<>();
+        for (MapAgeRange ageRange : mp.getPresetAgeRanges()) {
+          ageRanges.add(ageRange.getName());
+        }
+        lmp.setAgeRanges(ageRanges);
 
         mapProjectConfigurations.add(lmp);
       }
