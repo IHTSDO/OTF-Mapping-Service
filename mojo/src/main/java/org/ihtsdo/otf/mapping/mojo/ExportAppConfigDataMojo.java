@@ -220,6 +220,12 @@ public class ExportAppConfigDataMojo extends AbstractOtfMappingMojo {
           reports.add(report.getName());
         }
         lmp.setReports(reports);
+        
+        Set<String> advices = new HashSet<>();
+        for (MapAdvice advice : mp.getMapAdvices()) {
+          advices.add(advice.getName());
+        }
+        lmp.setAdvices(advices);
 
         mapProjectConfigurations.add(lmp);
       }
