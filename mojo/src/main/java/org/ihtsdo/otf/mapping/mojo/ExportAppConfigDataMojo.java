@@ -244,16 +244,18 @@ public class ExportAppConfigDataMojo extends AbstractOtfMappingMojo {
     return mapPrincipleList.getMapPrinciples();
   }
 
-  // Reports
+  // Reports and QA Checks
   private List<ReportDefinition> exportReports() throws Exception {
 
-    final ReportDefinitionList reportDefinitionList;
+    final List<ReportDefinition> reportDefinitions = new ArrayList<>();
 
     try (ReportService reportService = new ReportServiceJpa()) {
       getLog().info(" exporting report definition config");
-      reportDefinitionList = reportService.getReportDefinitions();
+      reportDefinitions.addAll(reportService.getReportDefinitions().getReportDefinitions());
+      reportDefinitions.addAll(reportService.getQACheckDefinitions().getReportDefinitions());
     }
-    return reportDefinitionList.getReportDefinitions();
+    
+    return reportDefinitions;
   }
 
   // Users
