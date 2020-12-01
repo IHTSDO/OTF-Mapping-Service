@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapRefsetPattern;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.RelationStyle;
@@ -231,6 +232,7 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
 
       final ReportDefinitionList existingReports =
           reportService.getReportDefinitions();
+      final MapAdviceList existingAdvices = mappingService.getMapAdvices();
       final List<MapProject> mapProjects =
           mappingService.getMapProjects().getMapProjects();
 
@@ -328,6 +330,18 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
                 getLog().info("adding report to project: " + reportName + " to "
                     + project.getName());
                 project.getReportDefinitions().add(rd);
+                break;
+              }
+            }
+          }
+          
+
+          for (String adviceName : mapProject.getAdvices()) {
+            for (MapAdvice advice : existingAdvices.getMapAdvices()) {
+              if (advice.getName().equals(adviceName)) {
+                getLog().info("adding advice to project: " + adviceName + " to "
+                    + project.getName());
+                project.getMapAdvices().add(advice);
                 break;
               }
             }

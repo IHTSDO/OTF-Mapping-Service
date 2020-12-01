@@ -39,6 +39,7 @@ public class ConfigModels {
     private Set<String> includeScopeConcepts = new HashSet<>();
     private Set<String> excludeScopeConcepts = new HashSet<>();
     private Set<String> reports = new HashSet<>();
+    private Set<String> advices = new HashSet<>();
     private Set<String> leads = new HashSet<>();
     private Set<String> specialists = new HashSet<>();
     private Set<String> errorMessages = new HashSet<>();
@@ -74,6 +75,7 @@ public class ConfigModels {
      * @param scopeDescendantsFlag
      * @param scopeConcepts
      * @param reports
+     * @param advices
      * @param leads
      * @param specialists
      */
@@ -102,6 +104,7 @@ public class ConfigModels {
         @JsonProperty("includeScopeConcepts") Set<String> includeScopeConcepts,
         @JsonProperty("excludeScopeConcepts") Set<String> excludeScopeConcepts,
         @JsonProperty("reports") Set<String> reports,
+        @JsonProperty("advices") Set<String> advices,
         @JsonProperty("leads") Set<String> leads,
         @JsonProperty("specialists") Set<String> specialists,
         @JsonProperty("errorMessages") Set<String> errorMessages) {
@@ -129,6 +132,7 @@ public class ConfigModels {
       this.includeScopeConcepts = includeScopeConcepts;
       this.excludeScopeConcepts = excludeScopeConcepts;
       this.reports = reports;
+      this.advices = advices;
       this.leads = leads;
       this.specialists = specialists;
       this.errorMessages = errorMessages;
@@ -318,6 +322,14 @@ public class ConfigModels {
 
     public void setReports(Set<String> reports) {
       this.reports = reports;
+    }
+
+    public Set<String> getAdvices() {
+      return advices;
+    }
+
+    public void setAdvices(Set<String> advices) {
+      this.advices = advices;
     }
 
     public Set<String> getLeads() {
