@@ -211,359 +211,359 @@ public class ICD10CAProjectSpecificAlgorithmHandler
       // Only process these rules if these is a single entry per group
       if (concepts.keySet().size() == mapRecord.getMapEntries().size()) {
 
-        //
-        // PREDICATE: primary map target is an asterisk code with secondary map
-        // code as a dagger code.
-        // GUIDANCE: Switch order of codes (this was eventually automated)
-        //
-        if (mapRecord.getMapEntries().size() == 2
-            && TerminologyUtility.isDaggerForAsterisk(concepts.get(1).get(0),
-                concepts.get(2).get(0), contentService)) {
-          result.addWarning("Primary asterisk with secondary dagger"
-              + " code, consider switching order.");
-        }
-
-        //
-        // PREDICATE: primary map target is a dagger code with an asterisk
-        // reference in the preferred rubric AND there is no secondary code
-        // matching that asterisk code
-        // GUIDANCE: Add the secondary code
-        //
-        if (concepts.get(1).get(0) != null
-            && daggerCodes.contains(primaryCode)) {
-
-          // iterate through descriptions/relationships and see if there is an
-          // asterisk code
-          String asteriskCode = null;
-          for (final Description desc : concepts.get(1).get(0)
-              .getDescriptions()) {
-            // "preferred" type - TODO: this could be improved upon by accessing
-            // metadata
-            if (desc.getTypeId().equals("4")) {
-              for (final Relationship rel : concepts.get(1).get(0)
-                  .getRelationships()) {
-                // the relationship terminologyId will match the description id
-                if (rel.getTerminologyId()
-                    .startsWith(desc.getTerminologyId() + "~")) {
-                  asteriskCode = rel.getDestinationConcept().getTerminologyId();
-                }
-              }
-            }
-          }
-          if (asteriskCode != null) {
-            // if there is no secondary code matching asterisk
-            if (concepts.keySet().size() == 1 || !concepts.get(2).get(0)
-                .getTerminologyId().equals(asteriskCode)) {
-              result.addWarning(
-                  "Remap, primary dagger code should have a secondary asterisk "
-                      + "code mapping indicated by the preferred rubric ("
-                      + asteriskCode + ")");
-            }
-          }
-        }
-
-        //
-        // PREDICATE: primary map target is a 4th digit ICD code having a fifth
-        // digit option of 0 (open) or 1 (closed).
-        // GUIDANCE: Remap to 5 digits and consider “MAPPED FOLLOWING WHO
-        // GUIDANCE" if SNOMED does not indicate open or "closed"
-        //
-        final List<Concept> children =
-            TerminologyUtility.getActiveChildren(concepts.get(1).get(0));
-        if (concepts.get(1).get(0) != null && primaryCode.length() == 5
-            && children.size() > 1
-            && (children.get(0).getDefaultPreferredName().endsWith("open")
-                || children.get(0).getDefaultPreferredName()
-                    .endsWith("closed"))) {
-          result.addError(
-              "Remap to 5 digits and add \"MAPPED FOLLOWING WHO GUIDANCE\" "
-                  + "advice if SNOMED does not indicate open or closed");
-
-        }
-
-        //
-        // PREDICATE: primary map target is a 5th digit ICD code for "open"
-        // where SNOMED doesn't indicate "open" or "closed".
-        // GUIDANCE: Remap to "open" and add MAPPED FOLLOWING WHO GUIDANCE
-        //
-        if (concepts.get(1).get(0) != null && primaryCode.length() == 6
-            && concepts.get(1).get(0).getDefaultPreferredName().endsWith("open")
-            && !mapRecord.getConceptName().toLowerCase().contains("open")
-            && !mapRecord.getConceptName().toLowerCase().contains("closed")) {
-          result.addWarning("Remap fracture to \"closed\" and "
-              + "add \"MAPPED FOLLOWING WHO GUIDANCE\" advice");
-        }
-        if (concepts.get(1).get(0) != null && primaryCode.length() == 6
-            && concepts.get(1).get(0).getDefaultPreferredName().endsWith("open")
-            && mapRecord.getConceptName().toLowerCase().contains("closed")) {
-          result.addWarning("Possible closed fracture mapped to 'open'");
-        }
-        if (concepts.get(1).get(0) != null && primaryCode.length() == 6
-            && concepts.get(1).get(0).getDefaultPreferredName()
-                .endsWith("closed")
-            && mapRecord.getConceptName().toLowerCase().contains("open")) {
-          result.addWarning("Possible open fracture mapped to 'closed'");
-        }
-
-        //
-        // PREDICATE: primary map target is a Chapter XX code and there is a non
-        // Chapter XX secondary code (e.g. V, W, X, or Y code)
-        // GUIDANCE: Remap, Chapter XX codes should either be on their own (when
-        // mapping events), or used as secondary codes.
-        //
-        if (concepts.get(1).get(0) != null
-            && mapRecord.getMapEntries().size() > 1
-            && primaryCode.matches("^[VWXY].*")) {
-          result.addError("Remap, Chapter XX codes should either be on their "
-              + "own, or used as secondary codes.");
-        }
-
-        //
-        // PREDICATE: primary map target has a coding hint matching one of these
-        // patterns: “Use additional code, if desired, to identify infectious
-        // agent or disease”, “Use additional code (B95-B97), if desired, to
-        // identify infectious agent”, “Use additional code (B95-B96), if
-        // desired,
-        // to identify bacterial agent” AND does not have “POSSIBLE REQUIREMENT
-        // FOR CAUSATIVE AGENT CODE” and contains the words “infection”,
-        // “infectious”, or “bacterial”.
-        // GUIDANCE: Review to consider a second code or the advice.
-        //
-
-        // FOR NOW, this is left out due to complexity
-        // if (concepts.get(1).get(0) != null
-        // && concepts.get(1).get(0).getTerminologyId().matches("^T8[0-8].*")
-        // && hasUseAdditional(concepts.get(1).get(0))) {
-        // result
-        // .addWarning("For T80-T88 with \"use additional code\" advice, "
-        // +
-        // "add \"POSSIBLE REQUIREMENT FOR CAUSATIVE AGENT CODE\" advice or a "
-        // + "secondary code unless the concept specifically says infection "
-        // + "is the cause of the complication.");
-        // }
-
-        //
-        // PREDICATE: map target is a 4 digit in Chapter XIII, Diseases of the
-        // Musculskeletal System and Connective Tissue (for which there is a
-        // codable 5th level) and there is no “FIFTH CHARACTER REQUIRED TO
-        // FURTHER
-        // SPECIFY THE SITE” advice.
-        // GUIDANCE: Consider adding a 5th digit, or adding the advice
-        //
-        // check each code
-        for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
-          if (concepts.get(i + 1).get(0) != null) {
-            final Concept concept = concepts.get(i + 1).get(0);
-            if (concept.getTerminologyId().startsWith("M")
-                && concept.getTerminologyId().length() == 5
-                && TerminologyUtility.hasActiveChildren(concept)
-                && !TerminologyUtility.hasAdvice(
-                    mapRecord.getMapEntries().get(
-                        i),
-                    "FIFTH CHARACTER REQUIRED TO FURTHER SPECIFY THE SITE")) {
-              result.addWarning(
-                  "4 digit M code entry may require 5th digit or \"FIFTH "
-                      + "CHARACTER REQUIRED TO FURTHER SPECIFY THE SITE\" advice");
-              break;
-            }
-          }
-        }
-
-        //
-        // PREDICATE: Code range T90.0 through T98.3 must have either an
-        // external cause code from range Y85.0 - Y89.9 or advice POSSIBLE
-        // REQUIREMENT FOR EXTERNAL CAUSE CODE.
-        //
-        if (primaryCode != null && (primaryCode.matches("^T9[0-7].*")
-            || primaryCode.startsWith("T98.0")
-            || primaryCode.startsWith("T98.1")
-            || primaryCode.startsWith("T98.2")
-            || primaryCode.startsWith("T98.3"))) {
-
-          boolean hasAdvice =
-              TerminologyUtility.hasAdvice(mapRecord.getMapEntries().get(0),
-                  "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE");
-          boolean hasExternalCauseCode = false;
-          boolean hasOtherExternalCauseCode = false;
-          for (final MapEntry entry : mapRecord.getMapEntries()) {
-            if (entry.getTargetId().matches("^Y8[5-9].*")) {
-              hasExternalCauseCode = true;
-              break;
-            } else if (entry.getTargetId().matches("^[VWXY].*")) {
-              hasOtherExternalCauseCode = true;
-            }
-
-          }
-          if (hasOtherExternalCauseCode
-              || (!hasAdvice && !hasExternalCauseCode)) {
-            result
-                .addError("Code range T90.0 through T98.3 must have either an "
-                    + "external cause code from range Y85.0 - Y89.9 or "
-                    + "advice \"POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE\"");
-          }
-        }
-
-        // PREDICATE: Code K52.1 must have either an
-        // external cause code or advice POSSIBLE
-        // REQUIREMENT FOR EXTERNAL CAUSE CODE.
-        //
-        if (primaryCode != null && primaryCode.equals("K52.1")) {
-
-          boolean hasAdvice =
-              TerminologyUtility.hasAdvice(mapRecord.getMapEntries().get(0),
-                  "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE");
-          boolean hasExternalCauseCode = false;
-          for (final MapEntry entry : mapRecord.getMapEntries()) {
-            if (entry.getTargetId().matches("^[VWXY].*")) {
-              hasExternalCauseCode = true;
-              break;
-            }
-          }
-          if (!hasExternalCauseCode && !hasAdvice) {
-            result.addError("Code K52.13 must have either an "
-                + "external cause code or "
-                + "advice \"POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE\"");
-          }
-        }
-
-        //
-        // PREDICATE: SNOMED CT concept to map is a poisoning concept
-        // (descendant of “Poisoning” 75478009 or "Adverse reaction to drug"
-        // 62014003) and there is not a secondary (or higher) map
-        // target from the list of external cause codes applicable to poisonings
-        // (as derived from columns 2,3, and 5 from TEIL3.ASC index file).
-        // GUIDANCE: Remap to include the (required) external cause code.
-        //
-        boolean isPoisoning = mapRecord.getConceptId().equals("75478009")
-            || mapRecord.getConceptId().equals("62014003")
-            || contentService.isDescendantOf(mapRecord.getConceptId(),
-                mapProject.getSourceTerminology(),
-                mapProject.getSourceTerminologyVersion(),
-                Arrays.asList(new String[] {
-                    "75478009", "62014003"
-                }));
-        if (concepts.get(1).get(0) != null
-            && mapRecord.getMapEntries().size() == 1 && isPoisoning) {
-          result.addWarning(
-              "Remap, poisoning requires an external cause code from the TEIL3.ASC index");
-        }
-        // Validate external cause code presence and not primary position
-        else if (concepts.get(1).get(0) != null
-            && mapRecord.getMapEntries().size() > 1 && isPoisoning) {
-
-          // cause code in primary position
-          if (getIcd10ExternalCauseCodes()
-              .contains(mapRecord.getMapEntries().get(0).getTargetId())) {
-            result.addWarning(
-                "Remap, poisoning requires an external cause code in a secondary position");
-          }
-
-          // Validate the external cause code
-          else {
-
-            Set<String> cmpCodes = getIcd10ExternalCauseCodes();
-            String type = "unspecified";
-            String column = "accidental";
-            // accidental
-            if (mapRecord.getConceptName().toLowerCase().contains("accidental")
-                && mapRecord.getConceptName().toLowerCase()
-                    .contains("poisoning")) {
-              type = "accidental";
-              column = type;
-              cmpCodes = getIcd10AccidentalPoisoningCodes();
-            }
-
-            // intensional
-            else if (mapRecord.getConceptName().toLowerCase()
-                .contains("intensional")
-                && mapRecord.getConceptName().toLowerCase()
-                    .contains("poisoning")) {
-              type = "intensional";
-              column = type;
-              cmpCodes = getIcd10IntentionalPoisoningCodes();
-            }
-
-            // undetermined
-            else if (mapRecord.getConceptName().toLowerCase()
-                .contains("undetermined")
-                && mapRecord.getConceptName().toLowerCase()
-                    .contains("undetermined")) {
-              type = "undetermined";
-              column = type;
-              cmpCodes = getIcd10UndeterminedPoisoningCodes();
-
-            }
-
-            // adverse reaction
-            else if (mapRecord.getConceptName().toLowerCase()
-                .contains("adverse")
-                && mapRecord.getConceptName().toLowerCase()
-                    .contains("reaction")) {
-              type = "adverse reaction";
-              column = "adverse reaction";
-              cmpCodes = getIcd10AdverseEffectPoisoningCodes();
-
-            }
-
-            boolean found = false;
-            for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
-              final String targetId =
-                  mapRecord.getMapEntries().get(i).getTargetId();
-              if (cmpCodes.contains(targetId)) {
-                found = true;
-                break;
-              }
-            }
-            if (!found) {
-              // check each of higher map entries looking for code in the valid
-              // index list
-              // Unfortunately index data is not loaded, so we need a static
-              // list.
-              result.addWarning("Remap poisoning, " + type
-                  + " poisoning requires an external cause code from the '"
-                  + column + "' column of the TEIL3.ASC index");
-            }
-          }
-        }
-
-        //
-        // PREDICATE: J40, J20.0, J20.1, J20.2, J20.3, J20.4, J20.5, J20.6,
-        // J20.7,
-        // J20.8, J20.9, A50.2
-        // and no "current patient age" rule
-        // GUIDANCE: Recommend using a "current patient age" map rule
-        //
-        for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
-          final Concept concept = concepts.get(i + 1).get(0);
-          if (concept != null) {
-            final MapEntry entry = mapRecord.getMapEntries().get(i);
-
-            if (Arrays.asList(new String[] {
-                "J40", "J20.0", "J20.1", "J20.2", "J20.3", "J20.4", "J20.5",
-                "J20.6", "J20.7", "J20.8", "J20.9", "A50.2"
-            }).contains(concept.getTerminologyId())
-                && !entry.getRule().contains("Current chronological age")) {
-              result.addWarning(
-                  "Consider adding a \"Current chronological age\" rule to entry "
-                      + i);
-            }
-          }
-        }
-
-        //
-        // PREDICATE: All descendants of Tumor Stage finding: SCTID: 385356007
-        // should be mapped to NC
-        // GUIDANCE: require map to NC
-        //
-        boolean isTumorStageFinding =
-            mapRecord.getConceptId().equals("385356007")
-                || contentService.isDescendantOf(mapRecord.getConceptId(),
-                    mapProject.getSourceTerminology(),
-                    mapProject.getSourceTerminologyVersion(), "385356007");
-        if (isTumorStageFinding && concepts.get(1).get(0) != null) {
-          result.addWarning(
-              "Generally, descendants of tumor stage finding are mapped to NC");
-        }
+//        //
+//        // PREDICATE: primary map target is an asterisk code with secondary map
+//        // code as a dagger code.
+//        // GUIDANCE: Switch order of codes (this was eventually automated)
+//        //
+//        if (mapRecord.getMapEntries().size() == 2
+//            && TerminologyUtility.isDaggerForAsterisk(concepts.get(1).get(0),
+//                concepts.get(2).get(0), contentService)) {
+//          result.addWarning("Primary asterisk with secondary dagger"
+//              + " code, consider switching order.");
+//        }
+//
+//        //
+//        // PREDICATE: primary map target is a dagger code with an asterisk
+//        // reference in the preferred rubric AND there is no secondary code
+//        // matching that asterisk code
+//        // GUIDANCE: Add the secondary code
+//        //
+//        if (concepts.get(1).get(0) != null
+//            && daggerCodes.contains(primaryCode)) {
+//
+//          // iterate through descriptions/relationships and see if there is an
+//          // asterisk code
+//          String asteriskCode = null;
+//          for (final Description desc : concepts.get(1).get(0)
+//              .getDescriptions()) {
+//            // "preferred" type - TODO: this could be improved upon by accessing
+//            // metadata
+//            if (desc.getTypeId().equals("4")) {
+//              for (final Relationship rel : concepts.get(1).get(0)
+//                  .getRelationships()) {
+//                // the relationship terminologyId will match the description id
+//                if (rel.getTerminologyId()
+//                    .startsWith(desc.getTerminologyId() + "~")) {
+//                  asteriskCode = rel.getDestinationConcept().getTerminologyId();
+//                }
+//              }
+//            }
+//          }
+//          if (asteriskCode != null) {
+//            // if there is no secondary code matching asterisk
+//            if (concepts.keySet().size() == 1 || !concepts.get(2).get(0)
+//                .getTerminologyId().equals(asteriskCode)) {
+//              result.addWarning(
+//                  "Remap, primary dagger code should have a secondary asterisk "
+//                      + "code mapping indicated by the preferred rubric ("
+//                      + asteriskCode + ")");
+//            }
+//          }
+//        }
+//
+//        //
+//        // PREDICATE: primary map target is a 4th digit ICD code having a fifth
+//        // digit option of 0 (open) or 1 (closed).
+//        // GUIDANCE: Remap to 5 digits and consider “MAPPED FOLLOWING WHO
+//        // GUIDANCE" if SNOMED does not indicate open or "closed"
+//        //
+//        final List<Concept> children =
+//            TerminologyUtility.getActiveChildren(concepts.get(1).get(0));
+//        if (concepts.get(1).get(0) != null && primaryCode.length() == 5
+//            && children.size() > 1
+//            && (children.get(0).getDefaultPreferredName().endsWith("open")
+//                || children.get(0).getDefaultPreferredName()
+//                    .endsWith("closed"))) {
+//          result.addError(
+//              "Remap to 5 digits and add \"MAPPED FOLLOWING WHO GUIDANCE\" "
+//                  + "advice if SNOMED does not indicate open or closed");
+//
+//        }
+//
+//        //
+//        // PREDICATE: primary map target is a 5th digit ICD code for "open"
+//        // where SNOMED doesn't indicate "open" or "closed".
+//        // GUIDANCE: Remap to "open" and add MAPPED FOLLOWING WHO GUIDANCE
+//        //
+//        if (concepts.get(1).get(0) != null && primaryCode.length() == 6
+//            && concepts.get(1).get(0).getDefaultPreferredName().endsWith("open")
+//            && !mapRecord.getConceptName().toLowerCase().contains("open")
+//            && !mapRecord.getConceptName().toLowerCase().contains("closed")) {
+//          result.addWarning("Remap fracture to \"closed\" and "
+//              + "add \"MAPPED FOLLOWING WHO GUIDANCE\" advice");
+//        }
+//        if (concepts.get(1).get(0) != null && primaryCode.length() == 6
+//            && concepts.get(1).get(0).getDefaultPreferredName().endsWith("open")
+//            && mapRecord.getConceptName().toLowerCase().contains("closed")) {
+//          result.addWarning("Possible closed fracture mapped to 'open'");
+//        }
+//        if (concepts.get(1).get(0) != null && primaryCode.length() == 6
+//            && concepts.get(1).get(0).getDefaultPreferredName()
+//                .endsWith("closed")
+//            && mapRecord.getConceptName().toLowerCase().contains("open")) {
+//          result.addWarning("Possible open fracture mapped to 'closed'");
+//        }
+//
+//        //
+//        // PREDICATE: primary map target is a Chapter XX code and there is a non
+//        // Chapter XX secondary code (e.g. V, W, X, or Y code)
+//        // GUIDANCE: Remap, Chapter XX codes should either be on their own (when
+//        // mapping events), or used as secondary codes.
+//        //
+//        if (concepts.get(1).get(0) != null
+//            && mapRecord.getMapEntries().size() > 1
+//            && primaryCode.matches("^[VWXY].*")) {
+//          result.addError("Remap, Chapter XX codes should either be on their "
+//              + "own, or used as secondary codes.");
+//        }
+//
+//        //
+//        // PREDICATE: primary map target has a coding hint matching one of these
+//        // patterns: “Use additional code, if desired, to identify infectious
+//        // agent or disease”, “Use additional code (B95-B97), if desired, to
+//        // identify infectious agent”, “Use additional code (B95-B96), if
+//        // desired,
+//        // to identify bacterial agent” AND does not have “POSSIBLE REQUIREMENT
+//        // FOR CAUSATIVE AGENT CODE” and contains the words “infection”,
+//        // “infectious”, or “bacterial”.
+//        // GUIDANCE: Review to consider a second code or the advice.
+//        //
+//
+//        // FOR NOW, this is left out due to complexity
+//        // if (concepts.get(1).get(0) != null
+//        // && concepts.get(1).get(0).getTerminologyId().matches("^T8[0-8].*")
+//        // && hasUseAdditional(concepts.get(1).get(0))) {
+//        // result
+//        // .addWarning("For T80-T88 with \"use additional code\" advice, "
+//        // +
+//        // "add \"POSSIBLE REQUIREMENT FOR CAUSATIVE AGENT CODE\" advice or a "
+//        // + "secondary code unless the concept specifically says infection "
+//        // + "is the cause of the complication.");
+//        // }
+//
+//        //
+//        // PREDICATE: map target is a 4 digit in Chapter XIII, Diseases of the
+//        // Musculskeletal System and Connective Tissue (for which there is a
+//        // codable 5th level) and there is no “FIFTH CHARACTER REQUIRED TO
+//        // FURTHER
+//        // SPECIFY THE SITE” advice.
+//        // GUIDANCE: Consider adding a 5th digit, or adding the advice
+//        //
+//        // check each code
+//        for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+//          if (concepts.get(i + 1).get(0) != null) {
+//            final Concept concept = concepts.get(i + 1).get(0);
+//            if (concept.getTerminologyId().startsWith("M")
+//                && concept.getTerminologyId().length() == 5
+//                && TerminologyUtility.hasActiveChildren(concept)
+//                && !TerminologyUtility.hasAdvice(
+//                    mapRecord.getMapEntries().get(
+//                        i),
+//                    "FIFTH CHARACTER REQUIRED TO FURTHER SPECIFY THE SITE")) {
+//              result.addWarning(
+//                  "4 digit M code entry may require 5th digit or \"FIFTH "
+//                      + "CHARACTER REQUIRED TO FURTHER SPECIFY THE SITE\" advice");
+//              break;
+//            }
+//          }
+//        }
+//
+//        //
+//        // PREDICATE: Code range T90.0 through T98.3 must have either an
+//        // external cause code from range Y85.0 - Y89.9 or advice POSSIBLE
+//        // REQUIREMENT FOR EXTERNAL CAUSE CODE.
+//        //
+//        if (primaryCode != null && (primaryCode.matches("^T9[0-7].*")
+//            || primaryCode.startsWith("T98.0")
+//            || primaryCode.startsWith("T98.1")
+//            || primaryCode.startsWith("T98.2")
+//            || primaryCode.startsWith("T98.3"))) {
+//
+//          boolean hasAdvice =
+//              TerminologyUtility.hasAdvice(mapRecord.getMapEntries().get(0),
+//                  "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE");
+//          boolean hasExternalCauseCode = false;
+//          boolean hasOtherExternalCauseCode = false;
+//          for (final MapEntry entry : mapRecord.getMapEntries()) {
+//            if (entry.getTargetId().matches("^Y8[5-9].*")) {
+//              hasExternalCauseCode = true;
+//              break;
+//            } else if (entry.getTargetId().matches("^[VWXY].*")) {
+//              hasOtherExternalCauseCode = true;
+//            }
+//
+//          }
+//          if (hasOtherExternalCauseCode
+//              || (!hasAdvice && !hasExternalCauseCode)) {
+//            result
+//                .addError("Code range T90.0 through T98.3 must have either an "
+//                    + "external cause code from range Y85.0 - Y89.9 or "
+//                    + "advice \"POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE\"");
+//          }
+//        }
+//
+//        // PREDICATE: Code K52.1 must have either an
+//        // external cause code or advice POSSIBLE
+//        // REQUIREMENT FOR EXTERNAL CAUSE CODE.
+//        //
+//        if (primaryCode != null && primaryCode.equals("K52.1")) {
+//
+//          boolean hasAdvice =
+//              TerminologyUtility.hasAdvice(mapRecord.getMapEntries().get(0),
+//                  "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE");
+//          boolean hasExternalCauseCode = false;
+//          for (final MapEntry entry : mapRecord.getMapEntries()) {
+//            if (entry.getTargetId().matches("^[VWXY].*")) {
+//              hasExternalCauseCode = true;
+//              break;
+//            }
+//          }
+//          if (!hasExternalCauseCode && !hasAdvice) {
+//            result.addError("Code K52.13 must have either an "
+//                + "external cause code or "
+//                + "advice \"POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE\"");
+//          }
+//        }
+//
+//        //
+//        // PREDICATE: SNOMED CT concept to map is a poisoning concept
+//        // (descendant of “Poisoning” 75478009 or "Adverse reaction to drug"
+//        // 62014003) and there is not a secondary (or higher) map
+//        // target from the list of external cause codes applicable to poisonings
+//        // (as derived from columns 2,3, and 5 from TEIL3.ASC index file).
+//        // GUIDANCE: Remap to include the (required) external cause code.
+//        //
+//        boolean isPoisoning = mapRecord.getConceptId().equals("75478009")
+//            || mapRecord.getConceptId().equals("62014003")
+//            || contentService.isDescendantOf(mapRecord.getConceptId(),
+//                mapProject.getSourceTerminology(),
+//                mapProject.getSourceTerminologyVersion(),
+//                Arrays.asList(new String[] {
+//                    "75478009", "62014003"
+//                }));
+//        if (concepts.get(1).get(0) != null
+//            && mapRecord.getMapEntries().size() == 1 && isPoisoning) {
+//          result.addWarning(
+//              "Remap, poisoning requires an external cause code from the TEIL3.ASC index");
+//        }
+//        // Validate external cause code presence and not primary position
+//        else if (concepts.get(1).get(0) != null
+//            && mapRecord.getMapEntries().size() > 1 && isPoisoning) {
+//
+//          // cause code in primary position
+//          if (getIcd10ExternalCauseCodes()
+//              .contains(mapRecord.getMapEntries().get(0).getTargetId())) {
+//            result.addWarning(
+//                "Remap, poisoning requires an external cause code in a secondary position");
+//          }
+//
+//          // Validate the external cause code
+//          else {
+//
+//            Set<String> cmpCodes = getIcd10ExternalCauseCodes();
+//            String type = "unspecified";
+//            String column = "accidental";
+//            // accidental
+//            if (mapRecord.getConceptName().toLowerCase().contains("accidental")
+//                && mapRecord.getConceptName().toLowerCase()
+//                    .contains("poisoning")) {
+//              type = "accidental";
+//              column = type;
+//              cmpCodes = getIcd10AccidentalPoisoningCodes();
+//            }
+//
+//            // intensional
+//            else if (mapRecord.getConceptName().toLowerCase()
+//                .contains("intensional")
+//                && mapRecord.getConceptName().toLowerCase()
+//                    .contains("poisoning")) {
+//              type = "intensional";
+//              column = type;
+//              cmpCodes = getIcd10IntentionalPoisoningCodes();
+//            }
+//
+//            // undetermined
+//            else if (mapRecord.getConceptName().toLowerCase()
+//                .contains("undetermined")
+//                && mapRecord.getConceptName().toLowerCase()
+//                    .contains("undetermined")) {
+//              type = "undetermined";
+//              column = type;
+//              cmpCodes = getIcd10UndeterminedPoisoningCodes();
+//
+//            }
+//
+//            // adverse reaction
+//            else if (mapRecord.getConceptName().toLowerCase()
+//                .contains("adverse")
+//                && mapRecord.getConceptName().toLowerCase()
+//                    .contains("reaction")) {
+//              type = "adverse reaction";
+//              column = "adverse reaction";
+//              cmpCodes = getIcd10AdverseEffectPoisoningCodes();
+//
+//            }
+//
+//            boolean found = false;
+//            for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
+//              final String targetId =
+//                  mapRecord.getMapEntries().get(i).getTargetId();
+//              if (cmpCodes.contains(targetId)) {
+//                found = true;
+//                break;
+//              }
+//            }
+//            if (!found) {
+//              // check each of higher map entries looking for code in the valid
+//              // index list
+//              // Unfortunately index data is not loaded, so we need a static
+//              // list.
+//              result.addWarning("Remap poisoning, " + type
+//                  + " poisoning requires an external cause code from the '"
+//                  + column + "' column of the TEIL3.ASC index");
+//            }
+//          }
+//        }
+//
+//        //
+//        // PREDICATE: J40, J20.0, J20.1, J20.2, J20.3, J20.4, J20.5, J20.6,
+//        // J20.7,
+//        // J20.8, J20.9, A50.2
+//        // and no "current patient age" rule
+//        // GUIDANCE: Recommend using a "current patient age" map rule
+//        //
+//        for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+//          final Concept concept = concepts.get(i + 1).get(0);
+//          if (concept != null) {
+//            final MapEntry entry = mapRecord.getMapEntries().get(i);
+//
+//            if (Arrays.asList(new String[] {
+//                "J40", "J20.0", "J20.1", "J20.2", "J20.3", "J20.4", "J20.5",
+//                "J20.6", "J20.7", "J20.8", "J20.9", "A50.2"
+//            }).contains(concept.getTerminologyId())
+//                && !entry.getRule().contains("Current chronological age")) {
+//              result.addWarning(
+//                  "Consider adding a \"Current chronological age\" rule to entry "
+//                      + i);
+//            }
+//          }
+//        }
+//
+//        //
+//        // PREDICATE: All descendants of Tumor Stage finding: SCTID: 385356007
+//        // should be mapped to NC
+//        // GUIDANCE: require map to NC
+//        //
+//        boolean isTumorStageFinding =
+//            mapRecord.getConceptId().equals("385356007")
+//                || contentService.isDescendantOf(mapRecord.getConceptId(),
+//                    mapProject.getSourceTerminology(),
+//                    mapProject.getSourceTerminologyVersion(), "385356007");
+//        if (isTumorStageFinding && concepts.get(1).get(0) != null) {
+//          result.addWarning(
+//              "Generally, descendants of tumor stage finding are mapped to NC");
+//        }
 
       }
 
