@@ -75,10 +75,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 })
 @Audited
 @Indexed
-@AnalyzerDef(name = "noStopWord", tokenizer = @TokenizerDef(factory = StandardTokenizerFactory.class), filters = {
-    @TokenFilterDef(factory = StandardFilterFactory.class),
-    @TokenFilterDef(factory = LowerCaseFilterFactory.class)
-})
+@AnalyzerDef(name = "noStopWord",
+    tokenizer = @TokenizerDef(factory = StandardTokenizerFactory.class), filters = {
+        @TokenFilterDef(factory = StandardFilterFactory.class),
+        @TokenFilterDef(factory = LowerCaseFilterFactory.class)
+    })
 @XmlRootElement(name = "mapRecord")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MapRecordJpa implements MapRecord {
@@ -120,18 +121,22 @@ public class MapRecordJpa implements MapRecord {
   private String conceptName;
 
   /** The map entries. */
-  @OneToMany(mappedBy = "mapRecord", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = MapEntryJpa.class)
+  @OneToMany(mappedBy = "mapRecord", cascade = CascadeType.ALL, fetch = FetchType.EAGER,
+      orphanRemoval = true, targetEntity = MapEntryJpa.class)
   @IndexedEmbedded(targetElement = MapEntryJpa.class)
   private List<MapEntry> mapEntries = new ArrayList<>();
 
   /** The map notes. */
-  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity = MapNoteJpa.class)
-  @CollectionTable(name = "map_records_map_notes", joinColumns = @JoinColumn(name = "map_records_id"))
+  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true,
+      targetEntity = MapNoteJpa.class)
+  @CollectionTable(name = "map_records_map_notes",
+      joinColumns = @JoinColumn(name = "map_records_id"))
   private Set<MapNote> mapNotes = new HashSet<>();
 
   /** The map principles. */
   @ManyToMany(targetEntity = MapPrincipleJpa.class, fetch = FetchType.LAZY)
-  @CollectionTable(name = "map_records_map_principles", joinColumns = @JoinColumn(name = "map_records_id"))
+  @CollectionTable(name = "map_records_map_principles",
+      joinColumns = @JoinColumn(name = "map_records_id"))
   @IndexedEmbedded(targetElement = MapPrincipleJpa.class)
   private Set<MapPrinciple> mapPrinciples = new HashSet<>();
 
@@ -210,6 +215,9 @@ public class MapRecordJpa implements MapRecord {
     // copy objects/collections excluded from deep copy (i.e. retain persistence
     // references)
     for (MapPrinciple mapPrinciple : mapRecord.getMapPrinciples()) {
+      if (mapPrinciple == null) {
+        continue;
+      }
       addMapPrinciple(new MapPrincipleJpa(mapPrinciple));
     }
 
@@ -943,29 +951,21 @@ public class MapRecordJpa implements MapRecord {
     final int prime = 31;
     int result = 1;
     result = prime * result + ((conceptId == null) ? 0 : conceptId.hashCode());
-    result =
-        prime * result + ((conceptName == null) ? 0 : conceptName.hashCode());
+    result = prime * result + ((conceptName == null) ? 0 : conceptName.hashCode());
     result = prime * result + (flagForConsensusReview ? 1231 : 1237);
     result = prime * result + (flagForEditorialReview ? 1231 : 1237);
     result = prime * result + (flagForMapLeadReview ? 1231 : 1237);
-    result =
-        prime * result + ((lastModified == null) ? 0 : lastModified.hashCode());
-    result = prime * result
-        + ((lastModifiedBy == null) ? 0 : lastModifiedBy.hashCode());
-    result =
-        prime * result + ((mapEntries == null) ? 0 : mapEntries.hashCode());
-    result = prime * result
-        + ((mapPrinciples == null) ? 0 : mapPrinciples.hashCode());
-    result =
-        prime * result + ((mapProjectId == null) ? 0 : mapProjectId.hashCode());
+    result = prime * result + ((lastModified == null) ? 0 : lastModified.hashCode());
+    result = prime * result + ((lastModifiedBy == null) ? 0 : lastModifiedBy.hashCode());
+    result = prime * result + ((mapEntries == null) ? 0 : mapEntries.hashCode());
+    result = prime * result + ((mapPrinciples == null) ? 0 : mapPrinciples.hashCode());
+    result = prime * result + ((mapProjectId == null) ? 0 : mapProjectId.hashCode());
     result = prime * result + ((originIds == null) ? 0 : originIds.hashCode());
     result = prime * result + ((owner == null) ? 0 : owner.hashCode());
     result = prime * result + ((timestamp == null) ? 0 : timestamp.hashCode());
-    result = prime * result
-        + ((workflowStatus == null) ? 0 : workflowStatus.hashCode());
+    result = prime * result + ((workflowStatus == null) ? 0 : workflowStatus.hashCode());
     result = prime * result + ((labels == null) ? 0 : labels.hashCode());
-    result = prime * result
-        + ((reasonsForConflict == null) ? 0 : reasonsForConflict.hashCode());
+    result = prime * result + ((reasonsForConflict == null) ? 0 : reasonsForConflict.hashCode());
     return result;
   }
 
@@ -1064,17 +1064,15 @@ public class MapRecordJpa implements MapRecord {
   /* see superclass */
   @Override
   public String toString() {
-    return "MapRecordJpa [id=" + id + ", owner=" + owner + ", timestamp="
-        + timestamp + ", lastModifiedBy=" + lastModifiedBy + ", lastModified="
-        + lastModified + ", mapProjectId=" + mapProjectId + ", conceptId="
-        + conceptId + ", conceptName=" + conceptName + ", mapEntries="
-        + mapEntries.size() + ", mapNotes=" + mapNotes + ", mapPrinciples="
-        + mapPrinciples + ", originIds=" + originIds + ", flagForMapLeadReview="
-        + flagForMapLeadReview + ", flagForEditorialReview="
-        + flagForEditorialReview + ", flagForConsensusReview="
-        + flagForConsensusReview + ", workflowStatus=" + workflowStatus
-        + ", labels=" + labels + ", reasonsForConflict=" + reasonsForConflict
-        + "]";
+    return "MapRecordJpa [id=" + id + ", owner=" + owner + ", timestamp=" + timestamp
+        + ", lastModifiedBy=" + lastModifiedBy + ", lastModified=" + lastModified
+        + ", mapProjectId=" + mapProjectId + ", conceptId=" + conceptId + ", conceptName="
+        + conceptName + ", mapEntries=" + mapEntries.size() + ", mapNotes=" + mapNotes
+        + ", mapPrinciples=" + mapPrinciples + ", originIds=" + originIds
+        + ", flagForMapLeadReview=" + flagForMapLeadReview + ", flagForEditorialReview="
+        + flagForEditorialReview + ", flagForConsensusReview=" + flagForConsensusReview
+        + ", workflowStatus=" + workflowStatus + ", labels=" + labels + ", reasonsForConflict="
+        + reasonsForConflict + "]";
   }
 
 }
