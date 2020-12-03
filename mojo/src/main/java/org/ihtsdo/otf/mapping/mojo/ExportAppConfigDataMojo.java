@@ -182,6 +182,7 @@ public class ExportAppConfigDataMojo extends AbstractOtfMappingMojo {
         lmp.setExcludeScopeConcepts(mp.getScopeExcludedConcepts());
         lmp.setGroupStructure(mp.isGroupStructure());
         lmp.setIsPublic(mp.isPublic());
+        lmp.setIsRuleBased(mp.isRuleBased());
         lmp.setIsTeamBased(mp.isTeamBased());
         lmp.setMapRefsetPattern(mp.getMapRefsetPattern().name());
         lmp.setMapRelationStyle(mp.getMapRelationStyle().name());
@@ -191,6 +192,7 @@ public class ExportAppConfigDataMojo extends AbstractOtfMappingMojo {
         lmp.setPropagatedFlag(mp.isPropagatedFlag());
         lmp.setRefSetId(mp.getRefSetId());
         lmp.setRefSetName(mp.getRefSetName());
+        lmp.setModuleId(mp.getModuleId());
         lmp.setScopeDescendantsFlag(mp.isScopeDescendantsFlag());
 
         lmp.setIncludeScopeConcepts(mp.getScopeConcepts());
@@ -218,6 +220,24 @@ public class ExportAppConfigDataMojo extends AbstractOtfMappingMojo {
           reports.add(report.getName());
         }
         lmp.setReports(reports);
+        
+        Set<String> advices = new HashSet<>();
+        for (MapAdvice advice : mp.getMapAdvices()) {
+          advices.add(advice.getName());
+        }
+        lmp.setAdvices(advices);
+       
+        Set<String> relations = new HashSet<>();
+        for (MapRelation relation : mp.getMapRelations()) {
+          relations.add(relation.getName());
+        }
+        lmp.setRelations(relations);
+       
+        Set<String> ageRanges = new HashSet<>();
+        for (MapAgeRange ageRange : mp.getPresetAgeRanges()) {
+          ageRanges.add(ageRange.getName());
+        }
+        lmp.setAgeRanges(ageRanges);
 
         mapProjectConfigurations.add(lmp);
       }
@@ -236,16 +256,18 @@ public class ExportAppConfigDataMojo extends AbstractOtfMappingMojo {
     return mapPrincipleList.getMapPrinciples();
   }
 
-  // Reports
+  // Reports and QA Checks
   private List<ReportDefinition> exportReports() throws Exception {
 
-    final ReportDefinitionList reportDefinitionList;
+    final List<ReportDefinition> reportDefinitions = new ArrayList<>();
 
     try (ReportService reportService = new ReportServiceJpa()) {
       getLog().info(" exporting report definition config");
-      reportDefinitionList = reportService.getReportDefinitions();
+      reportDefinitions.addAll(reportService.getReportDefinitions().getReportDefinitions());
+      reportDefinitions.addAll(reportService.getQACheckDefinitions().getReportDefinitions());
     }
-    return reportDefinitionList.getReportDefinitions();
+    
+    return reportDefinitions;
   }
 
   // Users
