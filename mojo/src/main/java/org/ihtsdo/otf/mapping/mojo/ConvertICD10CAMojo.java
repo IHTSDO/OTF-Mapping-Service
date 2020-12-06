@@ -10,16 +10,28 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.nodes.TextNode;
+import org.jsoup.safety.Whitelist;
 import org.jsoup.select.Elements;
+
+
 
 
 /**
@@ -46,9 +58,13 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
    */
   private String outputDir;
 
-  private BufferedReader projectReader = null;
+  // file writers
   private BufferedWriter conceptWriter = null;
   private BufferedWriter parentChildWriter = null;
+  private BufferedWriter conceptAttributeWriter = null;
+  
+  // ignore attributes for these codes - malformed or complex html
+  private Set<String> codesToIgnoreAttributes = new HashSet<>();
 	
   /**
    * Executes the plugin.
@@ -75,6 +91,9 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 				throw new MojoFailureException("Specified output directory does not exist");
 			}
 
+			// ignore attributes for these codes
+			codesToIgnoreAttributes.add("J96");
+			
 			writeConcepts(inputDirFile, outputDirFile);
 			writeParentChild(inputDirFile, outputDirFile);
 
@@ -86,8 +105,9 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 			throw new MojoExecutionException("Converting of icd10ca html files failed.", e);
 		} finally {
 			try {
-				projectReader.close();
+				//projectReader.close();
 				conceptWriter.close();
+				conceptAttributeWriter.close();
 				parentChildWriter.close();
 			} catch (IOException e1) {
 				// do nothing
@@ -95,6 +115,8 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 		}
 
 	}
+  
+  
   
   	/**
 	   * Write each ICD10CA conceptId and term to the concepts.txt file.
@@ -110,6 +132,17 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 			conceptsFile.createNewFile();
 		}
 		conceptWriter = new BufferedWriter(new FileWriter(conceptsFile.getAbsoluteFile()));
+		
+		File attributesFile = new File(outputDirFile, "concept-attributes.txt");
+		// if file doesn't exist, then create it
+		if (!attributesFile.exists()) {
+			attributesFile.createNewFile();
+		}
+		conceptAttributeWriter = new BufferedWriter(new FileWriter(attributesFile.getAbsoluteFile()));
+		conceptAttributeWriter.write("exclude\n");
+		conceptAttributeWriter.write("include\n");
+		conceptAttributeWriter.write("note\n");
+		conceptAttributeWriter.write("codealso\n");
 
 		// get all relevant icd10ca .html files
 		FilenameFilter projectFilter = new FilenameFilter() {
@@ -120,6 +153,8 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 						!(lowercaseName.startsWith("6") && lowercaseName.length() >= 11)
 						// keep only .html files
 						&& lowercaseName.endsWith(".html")
+						// ignore conceptDetail files
+						&& !lowercaseName.startsWith("conceptdetail") 
 						// remove documentation file
 						&& !lowercaseName.contentEquals("371216.html")
 						// remove tabulation index
@@ -138,14 +173,14 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 		Map<String, String> conceptMap = new HashMap<>();
 		
 		// iterate through relevant files
-		for (File child : projectFiles) {
-			projectReader = new BufferedReader(new FileReader(child));
+		for (File file : projectFiles) {
 
-			org.jsoup.nodes.Document doc = Jsoup.parse(child, null);
+			org.jsoup.nodes.Document doc = Jsoup.parse(file, null);
 			if (doc.select("table").size() == 0) {
 				continue;
 			}
 
+			String previousCode = "";
 			Element table = doc.select("table").get(0); // select the first table.
 			Elements rows = table.select("tr");
 			
@@ -159,6 +194,19 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 			for (int i = 2; i < rows.size(); i++) { 
 				Element row = rows.get(i);
 				Elements cols = row.select("td");
+				
+				// write any attributes for the previousCode
+				Elements includes = row.select("[class='include']");
+				Elements excludes = row.select("[class='exclude']");
+				Elements notes = row.select("[class='note']");
+				Elements codealsos = row.select("[class='codealso']");
+				
+				if (!codesToIgnoreAttributes.contains(previousCode)) {
+					processAttributes(includes, previousCode, "include");
+					processAttributes(excludes, previousCode, "exclude");
+					processAttributes(notes, previousCode, "note");
+					processAttributes(codealsos, previousCode, "codealso");
+				}
 
 				// Get chapter header concepts
 				if (cols.size() >=1 && cols.get(0).text().startsWith("Chapter")) {
@@ -168,26 +216,103 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 					int stop = colText.indexOf("(") != -1 ? colText.indexOf("(") -1 : colText.length();
 					String term = colText.substring(colText.indexOf("-") + 2, stop);
 					if (!conceptMap.containsKey(code)) {
-					  conceptWriter.write(code + "\t" + term + "\n");
+					  conceptWriter.write(code + "|" + term + "\n");
 					  conceptMap.put(code, term);
+					  previousCode = code;
 					}
 				} 
+				
 				// if not chapter header
 				else if (cols.size() >= 2) {
 					// ensure no duplicates
 					// ensure no run-on codes (due to embedded tables)
-					if (cols.get(0).hasText() && cols.get(1).hasText() && !conceptMap.containsKey(cleanCode(cols.get(0).text()))
+					if (cols.get(0).hasText() && cols.get(1).hasText()
 							&& Pattern.matches("[A-Z][0-9][0-9].*", cleanCode(cols.get(0).text())) && cols.get(0).text().length() < 10) {
 						
-						conceptWriter.write(cleanCode(cols.get(0).text()) + "\t" + cols.get(1).text() + "\n");
-						conceptMap.put(cleanCode(cols.get(0).text()), cols.get(1).text());
+						if (!conceptMap.containsKey(cleanCode(cols.get(0).text()))) {
+						  conceptWriter.write(cleanCode(cols.get(0).text()) + "|" + cols.get(1).text() + "\n");
+						  conceptMap.put(cleanCode(cols.get(0).text()), cols.get(1).text());
+						}
+						previousCode = cleanCode(cols.get(0).text());
+					} else if (cols.get(0).hasText() && cols.get(0).className().contentEquals("bl1")) {
+					    previousCode = cleanCode(cols.get(0).text()).substring(cleanCode(cols.get(0).text()).lastIndexOf("(") + 1,
+					    		cleanCode(cols.get(0).text()).lastIndexOf(")"));	
 					}
 				}
 			}
 		}
-  	}
+	}
 
-  	
+	private void processAttributes(Elements includes, String previousCode, String type) throws Exception {
+		if (includes != null && includes.size() >= 1) {
+			for (Element clude : includes) {
+				String previousText = "";
+				// skip embedded tables
+				if (clude.select("table").size() > 0) {
+					continue;
+				}
+				if (!clude.text().isEmpty()) {
+					for (Node child : clude.childNodes()) {
+						if (child instanceof Element) {
+							String bullet1 = "";
+							String bullet2 = "";
+							String bullet3 = "";
+							// process code blocks of listed bullets
+							if (((Element) child).select("ul > li").size() > 0) {
+								Elements children = ((Element) child).select("ul > li");
+								for (int c = 0; c < children.size(); c++) {
+									Element bullet = children.get(c);
+									Element nextBullet = c + 1 < children.size() ? children.get(c + 1) : null;
+									if (bullet.parent().parent().parent().tagName().contentEquals("ul")) {
+										bullet3 = bullet.text().trim();
+										conceptAttributeWriter.write(previousCode + "|" + type + "|" + previousText
+												+ (previousText.isEmpty() ? "" : " ") + bullet1 + " " + bullet2 + " "
+												+ bullet3 + "\n");
+									} else if (bullet.parent().parent().tagName().contentEquals("ul")) {
+										bullet2 = bullet.text().trim();
+										// if next bullet isn't level 3, print
+										if (nextBullet == null || !nextBullet.parent().parent().parent().tagName()
+												.contentEquals("ul")) {
+											conceptAttributeWriter.write(previousCode + "|" + type + "|" + previousText
+													+ (previousText.isEmpty() ? "" : " ") + bullet1 + " " + bullet2
+													+ "\n");
+										}
+									} else {
+										bullet1 = bullet.text().trim();
+										// if next bullet isn't level 2, print
+										if (nextBullet == null
+												|| !nextBullet.parent().parent().tagName().contentEquals("ul")) {
+											conceptAttributeWriter.write(previousCode + "|" + type + "|" + previousText
+													+ (previousText.isEmpty() ? "" : " ") + bullet1 + "\n");
+										}
+									}
+								}
+								previousText = "";
+								// process line breaks
+							} else if (((Element) child).tagName().contentEquals("br")) {
+								conceptAttributeWriter.write(previousCode + "|" + type + "|" + previousText + "\n");
+								previousText = "";
+								// otherwise, append text and process next child
+							} else {
+								previousText = previousText + (previousText.isEmpty() ? "" : " ")
+										+ ((Element) child).text();
+							}
+							// if TextNode, append text and process next child
+						} else if (child instanceof TextNode) {
+							previousText = previousText + (previousText.isEmpty() ? "" : " ")
+									+ ((TextNode) child).getWholeText().trim();
+						}
+					}
+					if (!previousText.isBlank()) {
+						conceptAttributeWriter.write(previousCode + "|" + type + "|" + previousText + "\n");
+					}
+				}
+			}
+		}
+}
+	  
+	  
+
   	/**
 	   * Write parent-child.txt file with parentId childId tuples.
 	   *
@@ -212,6 +337,8 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 						!(lowercaseName.startsWith("6") && lowercaseName.length() >= 11)
 						// keep only .html files
 						&& lowercaseName.endsWith(".html")
+						// ignore conceptDetail files
+						&& !lowercaseName.startsWith("conceptdetail") 
 						// remove documentation file
 						&& !lowercaseName.contentEquals("371216.html")
 						// remove tabulation index
@@ -230,7 +357,7 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 		
 		// iterate through relevant files
 		for (File child : projectFiles) {
-			projectReader = new BufferedReader(new FileReader(child));
+			//projectReader = new BufferedReader(new FileReader(child));
 
 			org.jsoup.nodes.Document doc = Jsoup.parse(child, null);
 			if (doc.select("table").size() == 0) {
@@ -264,7 +391,7 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 					chapterCode = colText.substring(0, colText.indexOf("-") -1);
 
 					getLog().info(cols.get(0).text());
-					parentChildWriter.write("root" + "\t" + chapterCode + "\n");
+					parentChildWriter.write("root" + "|" + chapterCode + "\n");
 				}
 				
 				// Get sub-headers
@@ -276,7 +403,7 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 					if (Pattern.matches("[A-Z][0-9][0-9]", subChapterRange)) {
 						subChapterRange = subChapterRange + "-" + subChapterRange;
 					}
-					parentChildWriter.write(chapterCode + "\t" + cleanCode(subChapterRange) + "\n");
+					parentChildWriter.write(chapterCode + "|" + cleanCode(subChapterRange) + "\n");
 					prevStack.clear();
 					prevStack.push(cleanCode(subChapterRange));
 				}
@@ -290,21 +417,21 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 						String currentCode = cleanCode(cols.get(0).text());
 						
 						if (prevStack.peek().contentEquals(subChapterRange) ) {
-							parentChildWriter.write(prevStack.peek() + "\t" + currentCode + "\n");
+							parentChildWriter.write(prevStack.peek() + "|" + currentCode + "\n");
 							prevStack.push(currentCode);
 					    } else if (currentCode.length() == prevStack.peek().length()) {
 							prevStack.pop();
-							parentChildWriter.write(prevStack.peek() + "\t" + currentCode + "\n");
+							parentChildWriter.write(prevStack.peek() + "|" + currentCode + "\n");
 							prevStack.push(currentCode);
 						} else if (currentCode.length() < prevStack.peek().length()){
 							while(stripChars(currentCode).length() <= stripChars(prevStack.peek()).length() &&
 									!Pattern.matches("[A-Z][0-9][0-9]-[A-Z][0-9][0-9]", prevStack.peek())) {
 								prevStack.pop();
 							}							
-							parentChildWriter.write(prevStack.peek() + "\t" + currentCode + "\n");
+							parentChildWriter.write(prevStack.peek() + "|" + currentCode + "\n");
 							prevStack.push(currentCode);
 						} else if (currentCode.length() > prevStack.peek().length()) {
-							parentChildWriter.write(prevStack.peek() + "\t" + currentCode + "\n");
+							parentChildWriter.write(prevStack.peek() + "|" + currentCode + "\n");
 							prevStack.push(currentCode);
 						}					
 					}
