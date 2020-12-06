@@ -8,14 +8,17 @@ import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
+import org.ihtsdo.otf.mapping.helpers.MapAgeRangeList;
 import org.ihtsdo.otf.mapping.helpers.MapRefsetPattern;
+import org.ihtsdo.otf.mapping.helpers.MapRelationList;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.RelationStyle;
-import org.ihtsdo.otf.mapping.helpers.ReportDefinitionList;
 import org.ihtsdo.otf.mapping.helpers.ReportFrequency;
 import org.ihtsdo.otf.mapping.helpers.ReportQueryType;
 import org.ihtsdo.otf.mapping.helpers.ReportResultType;
@@ -229,8 +232,13 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
 
       mappingService.setTransactionPerOperation(false);
 
-      final ReportDefinitionList existingReports =
-          reportService.getReportDefinitions();
+      final List<ReportDefinition> existingReports = new ArrayList<>();
+      existingReports.addAll(reportService.getReportDefinitions().getReportDefinitions());
+      existingReports.addAll(reportService.getQACheckDefinitions().getReportDefinitions());
+
+      final MapAdviceList existingAdvices = mappingService.getMapAdvices();
+      final MapRelationList existingRelations = mappingService.getMapRelations();
+      final MapAgeRangeList existingAgeRanges = mappingService.getMapAgeRanges();      
       final List<MapProject> mapProjects =
           mappingService.getMapProjects().getMapProjects();
 
@@ -255,9 +263,11 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
               mapProject.getProjectSpecificAlgorithmHandlerClass());
           project.setPropagatedFlag(mapProject.getPropagatedFlag());
           project.setPublic(mapProject.getIsPublic());
+          project.setRuleBased(mapProject.getIsRuleBased());
           project.setTeamBased(mapProject.getIsTeamBased());
           project.setRefSetId(mapProject.getRefSetId());
           project.setRefSetName(mapProject.getRefSetName());
+          project.setModuleId(mapProject.getModuleId());
           project.setSourceTerminology(mapProject.getSourceTerminology());
           project.setSourceTerminologyVersion(
               mapProject.getSourceTerminologyVersion());
@@ -321,7 +331,7 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
           }
 
           for (String reportName : mapProject.getReports()) {
-            for (ReportDefinition rd : existingReports.getReportDefinitions()) {
+            for (ReportDefinition rd : existingReports) {
               if (rd.getName().equals(reportName)) {
                 getLog().info("adding report to project: " + reportName + " to "
                     + project.getName());
@@ -330,6 +340,40 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
               }
             }
           }
+          
+          for (String adviceName : mapProject.getAdvices()) {
+            for (MapAdvice advice : existingAdvices.getMapAdvices()) {
+              if (advice.getName().equals(adviceName)) {
+                getLog().info("adding advice to project: " + adviceName + " to "
+                    + project.getName());
+                project.getMapAdvices().add(advice);
+                break;
+              }
+            }
+          }
+          
+          for (String relationName : mapProject.getRelations()) {
+            for (MapRelation relation : existingRelations.getMapRelations()) {
+              if (relation.getName().equals(relationName)) {
+                getLog().info("adding relation to project: " + relationName + " to "
+                    + project.getName());
+                project.getMapRelations().add(relation);
+                break;
+              }
+            }
+          }
+          
+          for (String ageRangeName : mapProject.getAgeRanges()) {
+            for (MapAgeRange ageRange : existingAgeRanges.getMapAgeRanges()) {
+              if (ageRange.getName().equals(ageRangeName)) {
+                getLog().info("adding relation to project: " + ageRangeName + " to "
+                    + project.getName());
+                project.getPresetAgeRanges().add(ageRange);
+                break;
+              }
+            }
+          }
+
 
           for (String errorMessage : mapProject.getErrorMessages()) {
             project.getErrorMessages().add(errorMessage);
@@ -382,6 +426,7 @@ public class LoadAppConfigDataMojo extends AbstractOtfMappingMojo {
 
       List<ReportDefinition> reportDefinitions =
           reportService.getReportDefinitions().getReportDefinitions();
+      reportDefinitions.addAll(reportService.getQACheckDefinitions().getReportDefinitions());
 
       for (ReportDefinition reportDef : reports) {
         getLog().info("ReportDefinition json:" + mapper
