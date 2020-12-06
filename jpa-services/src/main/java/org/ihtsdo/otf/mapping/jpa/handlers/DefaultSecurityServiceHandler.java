@@ -8,6 +8,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -73,9 +74,9 @@ public class DefaultSecurityServiceHandler implements SecurityServiceHandler {
       user.setEmail(userName + "@example.com");
       return user;
     }
+    
+    throw new LocalException("Unable to authenticate user = " + userName);
 
-    // if user not specified, return null
-    return null;
   }
 
   /* see superclass */
