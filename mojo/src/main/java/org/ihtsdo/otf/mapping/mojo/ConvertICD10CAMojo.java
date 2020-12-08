@@ -26,6 +26,8 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.nodes.TextNode;
 import org.jsoup.safety.Whitelist;
 import org.jsoup.select.Elements;
 
@@ -56,10 +58,13 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
    */
   private String outputDir;
 
-  //private BufferedReader projectReader = null;
+  // file writers
   private BufferedWriter conceptWriter = null;
   private BufferedWriter parentChildWriter = null;
   private BufferedWriter conceptAttributeWriter = null;
+  
+  // ignore attributes for these codes - malformed or complex html
+  private Set<String> codesToIgnoreAttributes = new HashSet<>();
 	
   /**
    * Executes the plugin.
@@ -86,6 +91,9 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 				throw new MojoFailureException("Specified output directory does not exist");
 			}
 
+			// ignore attributes for these codes
+			codesToIgnoreAttributes.add("J96");
+			
 			writeConcepts(inputDirFile, outputDirFile);
 			writeParentChild(inputDirFile, outputDirFile);
 
@@ -134,6 +142,7 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 		conceptAttributeWriter.write("exclude\n");
 		conceptAttributeWriter.write("include\n");
 		conceptAttributeWriter.write("note\n");
+		conceptAttributeWriter.write("codealso\n");
 
 		// get all relevant icd10ca .html files
 		FilenameFilter projectFilter = new FilenameFilter() {
@@ -164,18 +173,9 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 		Map<String, String> conceptMap = new HashMap<>();
 		
 		// iterate through relevant files
-		for (File child : projectFiles) {
-			
-			//File modifiedChild = new File(child.getAbsoluteFile() + ".update");
-			//Files.copy(child.toPath(), modifiedChild.toPath(), StandardCopyOption.COPY_ATTRIBUTES);
-			
-			modifyFile(child.getAbsolutePath(), "<br/>", "bbrr");
-			modifyFile(child.getAbsolutePath(), "</ul>", "</ul>bbrr");
-			modifyFile(child.getAbsolutePath(), "<ul", "uul-<ul");
-			modifyFile(child.getAbsolutePath(), "</ul>", "</ul>-llu"); 
+		for (File file : projectFiles) {
 
-
-			org.jsoup.nodes.Document doc = Jsoup.parse(child, null);
+			org.jsoup.nodes.Document doc = Jsoup.parse(file, null);
 			if (doc.select("table").size() == 0) {
 				continue;
 			}
@@ -194,48 +194,20 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 			for (int i = 2; i < rows.size(); i++) { 
 				Element row = rows.get(i);
 				Elements cols = row.select("td");
+				
+				// write any attributes for the previousCode
 				Elements includes = row.select("[class='include']");
 				Elements excludes = row.select("[class='exclude']");
 				Elements notes = row.select("[class='note']");
+				Elements codealsos = row.select("[class='codealso']");
 				
+				if (!codesToIgnoreAttributes.contains(previousCode)) {
+					processAttributes(includes, previousCode, "include");
+					processAttributes(excludes, previousCode, "exclude");
+					processAttributes(notes, previousCode, "note");
+					processAttributes(codealsos, previousCode, "codealso");
+				}
 
-				if (includes != null && includes.size() >= 1) {
-					for (Element clude : includes) {
-						if (!clude.text().isEmpty()) {
-							String newString = clude.text().replaceAll("uul-.+-llu", "");
-							for (String str : newString.split("bbrr")) {
-								if (!previousCode.isEmpty() && !str.isEmpty()) {
-								  conceptAttributeWriter.write(previousCode + "|include|" + str +  "\n");
-								}
-							}
-
-						}
-					}
-				}
-				if (excludes != null && excludes.size() >= 1) {
-					for (Element clude : excludes) {
-						if (!clude.text().isEmpty()) {
-							String newString = clude.text().replaceAll("uul-.+-llu", "");
-							for (String str : newString.split("bbrr")) {
-								if (!previousCode.isEmpty() && !str.isEmpty()) {
-									conceptAttributeWriter.write(previousCode + "|exclude|" + str +  "\n");
-								}
-							}
-						}
-					}
-				}
-				if (notes != null && notes.size() >= 1) {
-					for (Element note : notes) {
-						if (!note.text().isEmpty()) {
-							String newString = note.text().replaceAll("uul-.+-llu", "");
-							for (String str : newString.split("bbrr")) {
-								if (!previousCode.isEmpty() && !str.isEmpty()) {
-									conceptAttributeWriter.write(previousCode + "|note|" + str +  "\n");
-								}
-							}
-						}
-					}
-				}
 				// Get chapter header concepts
 				if (cols.size() >=1 && cols.get(0).text().startsWith("Chapter")) {
 					String colText = cols.get(0).text();
@@ -262,74 +234,85 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 						  conceptMap.put(cleanCode(cols.get(0).text()), cols.get(1).text());
 						}
 						previousCode = cleanCode(cols.get(0).text());
+					} else if (cols.get(0).hasText() && cols.get(0).className().contentEquals("bl1")) {
+					    previousCode = cleanCode(cols.get(0).text()).substring(cleanCode(cols.get(0).text()).lastIndexOf("(") + 1,
+					    		cleanCode(cols.get(0).text()).lastIndexOf(")"));	
 					}
 				}
 			}
 		}
-  	}
+	}
 
-	  static void modifyFile(String filePath, String oldString, String newString)
-	    {
-	        File fileToBeModified = new File(filePath);
-	         
-	        String oldContent = "";
-	         
-	        BufferedReader reader = null;
-	         
-	        FileWriter writer = null;
-	         
-	        try
-	        {
-	        	if(!fileToBeModified.canRead())
-	        		fileToBeModified.setReadable(true);
-	        	
-	        	if(!fileToBeModified.canWrite())
-	        		fileToBeModified.setWritable(true);
-	        	
-	            reader = new BufferedReader(new FileReader(fileToBeModified));
-	             
-	            //Reading all the lines of input text file into oldContent
-	             
-	            String line = reader.readLine();
-	             
-	            while (line != null) 
-	            {
-	                oldContent = oldContent + line + System.lineSeparator();
-	                 
-	                line = reader.readLine();
-	            }
-	             
-	            //Replacing oldString with newString in the oldContent
-	             
-	            String newContent = oldContent.replaceAll(oldString, newString);
-	             
-	            //Rewriting the input text file with newContent
-	             
-	            writer = new FileWriter(fileToBeModified);
-	             
-	            writer.write(newContent);
-	        }
-	        catch (IOException e)
-	        {
-	            e.printStackTrace();
-	        }
-	        finally
-	        {
-	            try
-	            {
-	                //Closing the resources
-	                 
-	                reader.close();
-	                 
-	                writer.close();
-	            } 
-	            catch (IOException e) 
-	            {
-	                e.printStackTrace();
-	            }
-	        }
-	    }
+	private void processAttributes(Elements includes, String previousCode, String type) throws Exception {
+		if (includes != null && includes.size() >= 1) {
+			for (Element clude : includes) {
+				String previousText = "";
+				// skip embedded tables
+				if (clude.select("table").size() > 0) {
+					continue;
+				}
+				if (!clude.text().isEmpty()) {
+					for (Node child : clude.childNodes()) {
+						if (child instanceof Element) {
+							String bullet1 = "";
+							String bullet2 = "";
+							String bullet3 = "";
+							// process code blocks of listed bullets
+							if (((Element) child).select("ul > li").size() > 0) {
+								Elements children = ((Element) child).select("ul > li");
+								for (int c = 0; c < children.size(); c++) {
+									Element bullet = children.get(c);
+									Element nextBullet = c + 1 < children.size() ? children.get(c + 1) : null;
+									if (bullet.parent().parent().parent().tagName().contentEquals("ul")) {
+										bullet3 = bullet.text().trim();
+										conceptAttributeWriter.write(previousCode + "|" + type + "|" + previousText
+												+ (previousText.isEmpty() ? "" : " ") + bullet1 + " " + bullet2 + " "
+												+ bullet3 + "\n");
+									} else if (bullet.parent().parent().tagName().contentEquals("ul")) {
+										bullet2 = bullet.text().trim();
+										// if next bullet isn't level 3, print
+										if (nextBullet == null || !nextBullet.parent().parent().parent().tagName()
+												.contentEquals("ul")) {
+											conceptAttributeWriter.write(previousCode + "|" + type + "|" + previousText
+													+ (previousText.isEmpty() ? "" : " ") + bullet1 + " " + bullet2
+													+ "\n");
+										}
+									} else {
+										bullet1 = bullet.text().trim();
+										// if next bullet isn't level 2, print
+										if (nextBullet == null
+												|| !nextBullet.parent().parent().tagName().contentEquals("ul")) {
+											conceptAttributeWriter.write(previousCode + "|" + type + "|" + previousText
+													+ (previousText.isEmpty() ? "" : " ") + bullet1 + "\n");
+										}
+									}
+								}
+								previousText = "";
+								// process line breaks
+							} else if (((Element) child).tagName().contentEquals("br")) {
+								conceptAttributeWriter.write(previousCode + "|" + type + "|" + previousText + "\n");
+								previousText = "";
+								// otherwise, append text and process next child
+							} else {
+								previousText = previousText + (previousText.isEmpty() ? "" : " ")
+										+ ((Element) child).text();
+							}
+							// if TextNode, append text and process next child
+						} else if (child instanceof TextNode) {
+							previousText = previousText + (previousText.isEmpty() ? "" : " ")
+									+ ((TextNode) child).getWholeText().trim();
+						}
+					}
+					if (!previousText.isBlank()) {
+						conceptAttributeWriter.write(previousCode + "|" + type + "|" + previousText + "\n");
+					}
+				}
+			}
+		}
+}
 	  
+	  
+
   	/**
 	   * Write parent-child.txt file with parentId childId tuples.
 	   *
