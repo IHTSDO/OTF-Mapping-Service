@@ -60,6 +60,10 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
   final private String PARENT_CHILD_FILE_NAME = "parent-child.txt";
 
   final private String CONCEPT_ATTRIBUTES_FILE_NAME = "concept-attributes.txt";
+  
+  final private String SIMPLE_REFSET_MEMBERS_FILE_NAME = "simple-refset-members.txt";
+  
+  final private String RELATIONSHIPS_FILE_NAME = "concept-relationships.txt";
 
   private int objCt = 1001;
 
@@ -110,6 +114,8 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
 
     boolean parChdFileExists = false;
     boolean conAttrFileExists = false;
+    boolean simpleRefsetFileExists = false;
+    boolean relationshipFileExists = false;
 
     // Check the input directory
     File inputDirFile = new File(this.inputDir);
@@ -129,6 +135,12 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
     }
     if (new File(this.inputDir, CONCEPT_ATTRIBUTES_FILE_NAME).exists()) {
       conAttrFileExists = true;
+    }
+    if (new File(this.inputDir, SIMPLE_REFSET_MEMBERS_FILE_NAME).exists()) {
+      simpleRefsetFileExists = true;
+    }
+    if (new File(this.inputDir, RELATIONSHIPS_FILE_NAME).exists()) {
+      relationshipFileExists = true;
     }
 
     log.info("Starting loading simple data");
@@ -253,6 +265,51 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
 
       }
 
+      if (relationshipFileExists) {
+		log.info("  Load relationships");
+
+
+		try (final BufferedReader relationships = new BufferedReader(
+				new FileReader(new File(inputDir, RELATIONSHIPS_FILE_NAME)));) {
+
+			// Create terminology-specific metadata concept, if it wasn't created by concept-attributes processing
+			Concept targetTerminologyMetadataConcept = null;
+			
+			if (conceptMap.get(terminology + " metadata") != null) {
+				targetTerminologyMetadataConcept = conceptMap.get(terminology + " metadata");
+			} else {
+				targetTerminologyMetadataConcept = helper.createNewActiveConcept(terminology + " metadata",
+					conceptMap.get("Metadata"));
+				conceptMap.put(terminology + " metadata", targetTerminologyMetadataConcept);
+			}
+
+			while ((line = relationships.readLine()) != null) {
+				final String[] fields = parseLine(line);
+
+				if (fields.length == 1) {
+					addMetadata(helper, targetTerminologyMetadataConcept, conceptMap, fields);
+				} else if (fields.length != 4) {
+					throw new Exception("Unexpected number of fields: " + fields.length);
+				} else {
+					final Concept con = conceptMap.get(fields[0]);
+					if (con == null) {
+						throw new Exception("Unable to find concept " + line);
+					}
+
+					final String targetId = fields[1];
+					final String relType = fields[2];
+					final String label = fields[3];
+					
+					helper.createRelationship(conceptMap.get(targetId), con, objCt++ + "", conceptMap.get(relType).getId(),
+						 label, terminology, version, now); 
+					
+
+				}
+			}
+			relationships.close();
+		}
+      }
+      
       // If there is a par/chd file, need to create all those
       // relationships now
       if (parChdFileExists) {
@@ -288,6 +345,16 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
         loadConceptAttributes(helper, conceptMap, now);
       }
 
+      contentService.commit();
+      contentService.clear();
+      contentService.beginTransaction();
+      
+      // If there is a simple refset member file, need to create all those
+      // members now
+      if (simpleRefsetFileExists) {
+        loadSimpleRefsetMembers(helper, conceptMap, now);
+      }
+      
       concepts.close();
       contentService.commit();
 
@@ -334,7 +401,7 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
         final String[] fields = parseLine(line);
 
         if (fields.length == 1) {
-          addConceptAttributesMetadata(helper, targetTerminologyMetadataConcept,
+          addMetadata(helper, targetTerminologyMetadataConcept,
               conceptMap, fields);
         } else if (fields.length != 3) {
           throw new Exception("Unexpected number of fields: " + fields.length);
@@ -352,11 +419,54 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa
               value, version, objCt++, now);
         }
       }
-
+      conAttr.close();
     }
   }
+  
+	private void loadSimpleRefsetMembers(SimpleMetadataHelper helper, Map<String, Concept> conceptMap, Date now)
+			throws Exception {
+		log.info("  Load simple refset members");
 
-  private void addConceptAttributesMetadata(SimpleMetadataHelper helper,
+		String line;
+		try (final BufferedReader member = new BufferedReader(
+				new FileReader(new File(inputDir, SIMPLE_REFSET_MEMBERS_FILE_NAME)));) {
+
+			// Create terminology-specific metadata concept, if it wasn't created by concept-attributes processing
+			Concept targetTerminologyMetadataConcept = null;
+			
+			if (conceptMap.get(terminology + " metadata") != null) {
+				targetTerminologyMetadataConcept = conceptMap.get(terminology + " metadata");
+			} else {
+				targetTerminologyMetadataConcept = helper.createNewActiveConcept(terminology + " metadata",
+					conceptMap.get("Metadata"));
+				conceptMap.put(terminology + " metadata", targetTerminologyMetadataConcept);
+			}
+
+			while ((line = member.readLine()) != null) {
+				final String[] fields = parseLine(line);
+
+				if (fields.length == 1) {
+					addMetadata(helper, targetTerminologyMetadataConcept, conceptMap, fields);
+				} else if (fields.length != 2) {
+					throw new Exception("Unexpected number of fields: " + fields.length);
+				} else {
+					final Concept con = conceptMap.get(fields[0]);
+					if (con == null) {
+						throw new Exception("Unable to find concept " + line);
+					}
+
+					final String refsetType = fields[1];
+
+					helper.createSimpleRefsetMember(con, conceptMap.get(refsetType).getTerminologyId(),
+							version, objCt++, now);
+				}
+			}
+			member.close();
+		}
+	}
+
+	
+  private void addMetadata(SimpleMetadataHelper helper,
     Concept parentConcept, Map<String, Concept> conceptMap, String[] fields)
     throws Exception {
     // Create metadata concept from terminology input file

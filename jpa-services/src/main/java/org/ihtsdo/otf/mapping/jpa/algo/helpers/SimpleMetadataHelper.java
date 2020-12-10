@@ -13,9 +13,11 @@ import java.util.Set;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.Relationship;
+import org.ihtsdo.otf.mapping.rf2.SimpleRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipJpa;
+import org.ihtsdo.otf.mapping.rf2.jpa.SimpleRefSetMemberJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 
 /**
@@ -484,4 +486,72 @@ public class SimpleMetadataHelper {
     sy.setTypeId(typeId);
     concept.addDescription(sy);
   }
+  
+	/**
+	 * Creates the simple refset member.
+	 *
+	 * @param concept the concept
+	 * @param refsetId the refset id
+	 * @param version the version
+	 * @param objCt the obj ct
+	 * @param now the now
+	 */
+	public void createSimpleRefsetMember(Concept concept, String refsetId, String version, int objCt, Date now) throws Exception {
+		final SimpleRefSetMember member = new SimpleRefSetMemberJpa();
+		member.setTerminologyId(objCt + "");
+		member.setEffectiveTime(now);
+		member.setActive(true);
+		member.setModuleId(Long.parseLong(conceptMap.get("defaultModule").getTerminologyId()));
+		member.setTerminology(terminology);
+		member.setTerminologyVersion(version);
+		member.setRefSetId(refsetId);
+		member.setConcept(concept);
+		concept.addSimpleRefSetMember(member);
+		if (concept.getId() != null) {
+            // Add member
+            contentService.addSimpleRefSetMember(member);
+        }
+	}
+	
+	/**
+	 * Creates the relationship.
+	 *
+	 * @param destinationConcept the destination concept
+	 * @param sourceConcept the source concept
+	 * @param terminologyId the terminology id
+	 * @param relType the rel type
+	 * @param terminology the terminology
+	 * @param terminologyVersion the terminology version
+	 * @param effectiveTime the effective time
+	 * @throws Exception the exception
+	 */
+	public void createRelationship(Concept destinationConcept, Concept sourceConcept, String terminologyId, Long relTypeId,
+			String label, String terminology, String terminologyVersion, Date effectiveTime) throws Exception {
+		if (destinationConcept == null) {
+			throw new Exception("Destination concept may not be null");
+		}
+		final Relationship relationship = new RelationshipJpa();
+		relationship.setTerminologyId(terminologyId);
+		relationship.setEffectiveTime(effectiveTime);
+		relationship.setActive(true);
+		relationship.setModuleId(Long.valueOf(conceptMap.get("defaultModule").getTerminologyId()));
+		relationship.setLabel(label);
+		relationship.setTerminology(terminology);
+		relationship.setTerminologyVersion(terminologyVersion);
+		// default characteristic type
+		relationship
+				.setCharacteristicTypeId(Long.valueOf(conceptMap.get("defaultCharacteristicType").getTerminologyId()));
+		// default modifier
+		relationship.setModifierId(Long.valueOf(conceptMap.get("defaultModifier").getTerminologyId()));
+		relationship.setDestinationConcept(destinationConcept);
+		relationship.setSourceConcept(sourceConcept);
+		relationship.setTypeId(relTypeId);
+		relationship.setRelationshipGroup(0);
+
+		if (sourceConcept.getRelationships() == null) {
+			final Set<Relationship> rels = new HashSet<>();
+			sourceConcept.setRelationships(rels);
+		}
+		sourceConcept.getRelationships().add(relationship);
+	}
 }
