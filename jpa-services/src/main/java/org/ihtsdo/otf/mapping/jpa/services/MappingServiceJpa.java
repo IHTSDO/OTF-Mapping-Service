@@ -943,8 +943,8 @@ public class MappingServiceJpa extends RootServiceJpa
       editedRecordsToKeep.addAll(editedRecords.subList(
           (localPfsParameter.getStartIndex() < 0) ? 0
               : localPfsParameter.getStartIndex(),
-          (localPfsParameter.getMaxResults() < editedRecords.size())
-              ? localPfsParameter.getMaxResults() : editedRecords.size()));
+          (localPfsParameter.getMaxResults() + localPfsParameter.getStartIndex() < editedRecords.size())
+              ? localPfsParameter.getMaxResults() + localPfsParameter.getStartIndex() : editedRecords.size()));
     }
 
     // create the mapRecordList and set total size
