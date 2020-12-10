@@ -8,6 +8,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -28,16 +29,19 @@ public class DefaultSecurityServiceHandler implements SecurityServiceHandler {
     throws Exception {
 
     // userName must not be null
-    if (userName == null)
-      return null;
-
+    if (userName == null) {
+      throw new LocalException("Username must not be null");
+    }
+    
     // password must not be null
-    if (password == null)
-      return null;
+    if (password == null) {
+      throw new LocalException("Password must not be null");
+    }
 
     // for default security service, the password must equal the user name
-    if (!userName.equals(password))
-      return null;
+    if (!userName.equals(password)) {
+      throw new LocalException("Username/Password combination is not correct");
+    }
 
     // check properties
     if (properties == null) {
@@ -73,9 +77,9 @@ public class DefaultSecurityServiceHandler implements SecurityServiceHandler {
       user.setEmail(userName + "@example.com");
       return user;
     }
+    
+    throw new LocalException("Unable to authenticate user = " + userName);
 
-    // if user not specified, return null
-    return null;
   }
 
   /* see superclass */
