@@ -138,6 +138,7 @@
         <td style="width: 72%; padding: 5px;">{{result.value}}</td>
         <td style="width: 3%; padding: 5px;">
           <span><a title="Send feedback to author"
+            ng-show="sendFeedbackToAuthorEnabled === true"
             ng-click="createJiraTicket(result)">
             <i class="glyphicon glyphicon glyphicon-export"></i>
           </a>
@@ -280,6 +281,7 @@
         <td style="width: 77%; padding: 5px;">{{result.value}}</td>
         <td style="width: 3%; padding: 5px;">
           <a title="Send feedback to author"
+            ng-show="sendFeedbackToAuthorEnabled === true"
             ng-click="createJiraTicket(result)">
             <i class="glyphicon glyphicon glyphicon-export"></i>
           </a>
@@ -421,6 +423,7 @@
         <td style="width: 77%; padding: 5px;">{{result.value}}</td>
         <td style="width: 3%; padding: 5px;">
           <a title="Send feedback to author"
+            ng-show="sendFeedbackToAuthorEnabled === true"
             ng-click="createJiraTicket(result)">
             <i class="glyphicon glyphicon glyphicon-export"></i>
           </a>
@@ -657,6 +660,7 @@
         </td>
         <td style="width: 3%; padding: 5px;">
           <a title="Send feedback to author"
+            ng-show="sendFeedbackToAuthorEnabled === true"
             ng-click="createJiraTicket(result)">
             <i class="glyphicon glyphicon glyphicon-export"></i>
           </a>
