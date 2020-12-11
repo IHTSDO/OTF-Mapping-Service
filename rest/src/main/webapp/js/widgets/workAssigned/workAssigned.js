@@ -13,7 +13,7 @@ angular
   })
   .controller(
     'workAssignedCtrl',
-    function($scope, $rootScope, $http, $location, $uibModal, $timeout, localStorageService, gpService) {
+    function($scope, $rootScope, $http, $location, $uibModal, $timeout, localStorageService, gpService, appConfig) {
 
       // on initialization, explicitly assign to null and/or empty array
       $scope.currentUser = null;
@@ -84,6 +84,8 @@ angular
       // whether
       // search was performed
 
+      $scope.sendFeedbackToAuthorEnabled = (appConfig["deploy.show.feedback.to.author.button"] === 'false') ? false : true;
+
       // function to change tab
       $scope.setTab = function(tabNumber) {
         if (tabNumber == null) {
@@ -105,7 +107,7 @@ angular
         
         $scope.getRadio();
       };
-      
+            
       $scope.getRadio = function() {
     	// retrieve the user preferences
         $http({
@@ -1008,7 +1010,7 @@ angular
             $rootScope.handleHttpError(data, status, headers, config);
           });
         }
-
+        
         // Load the current record
         $scope.loadRecord = function() {
 
