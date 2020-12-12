@@ -45,11 +45,20 @@
         <th style="width: 3%; padding: 5px;"><a title="Resolved">
             <i class="glyphicon glyphicon-ok"></i>
           </a></th>
-        <th style="width: 14%; padding: 5px;">Id</th>
-        <th style="width: 35%; padding: 5px;">Preferred Name</th>
-        <th style="width: 20%; padding: 5px;">Type</th>
-        <th style="width: 7%; padding: 5px;">Owner</th>
-        <th style="width: 18%; padding: 5px;">Last Modified</th>
+        <th class="pointer" style="width: 14%; padding: 5px;" ng-click="setSortField('feedback','terminologyId')">
+          Id<span ng-bind="getSortIndicator('feedback','terminologyId')"></th>
+        
+        <th class="pointer" style="width: 35%; padding: 5px;" ng-click="setSortField('feedback','defaultPreferredName')">
+          Preferred Name<span ng-bind="getSortIndicator('feedback','defaultPreferredName')"></th>
+        
+        <th class="pointer" style="width: 20%; padding: 5px;" ng-click="setSortField('feedback','title')">
+          Type<span ng-bind="getSortIndicator('feedback','title')"></th>
+        
+        <th class="pointer" style="width: 7%; padding: 5px;" ng-click="setSortField('feedback','userName')">
+          Owner<span ng-bind="getSortIndicator('feedback','userName')"></th>
+        
+        <th class="pointer" style="width: 18%; padding: 5px;" ng-click="setSortField('feedback','lastModified')">
+          Last Modified<span ng-bind="getSortIndicator('feedback','lastModified')"></th>
       </tr>
 
     </thead>

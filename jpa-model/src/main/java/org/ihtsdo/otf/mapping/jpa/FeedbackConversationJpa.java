@@ -24,8 +24,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
+import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
@@ -270,6 +272,7 @@ public class FeedbackConversationJpa implements FeedbackConversation {
    */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
   public String getTerminologyId() {
     return terminologyId;
   }
@@ -350,7 +353,8 @@ public class FeedbackConversationJpa implements FeedbackConversation {
    * org.ihtsdo.otf.mapping.model.FeedbackConversation#getDefaultPreferredName()
    */
   @Override
-  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
   public String getDefaultPreferredName() {
     return defaultPreferredName;
   }
@@ -361,7 +365,8 @@ public class FeedbackConversationJpa implements FeedbackConversation {
   }
 
   @Override
-  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
   public String getUserName() {
     return userName;
   }
@@ -384,7 +389,8 @@ public class FeedbackConversationJpa implements FeedbackConversation {
    * @see org.ihtsdo.otf.mapping.model.FeedbackConversation#getTitle()
    */
   @Override
-  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
   public String getTitle() {
     return title;
   }
