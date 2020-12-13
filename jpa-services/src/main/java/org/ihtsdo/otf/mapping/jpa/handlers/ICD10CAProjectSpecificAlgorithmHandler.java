@@ -1658,66 +1658,64 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
       Map<String, String> simpleRefSets = metadataService.getSimpleRefSets(
           mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
 
-      // Removing dagger and asterisk (possibly temporarily)
       
-      // // find the dagger/asterisk types
-      // for (final String key : simpleRefSets.keySet()) {
-      // if (simpleRefSets.get(key).equals("Asterisk refset"))
-      // asteriskRefSetId = key;
-      // if (simpleRefSets.get(key).equals("Dagger refset"))
-      // daggerRefSetId = key;
-      // }
-      //
-      // if (asteriskRefSetId == null)
-      // Logger.getLogger(ICD10CAProjectSpecificAlgorithmHandler.class)
-      // .warn("Could not find Asterisk refset");
-      //
-      // if (daggerRefSetId == null)
-      // Logger.getLogger(ICD10CAProjectSpecificAlgorithmHandler.class)
-      // .warn("Could not find Dagger refset");
-      //
-      // // Look up asterisk codes
-      // final javax.persistence.Query asteriskQuery =
-      // manager.createQuery("select m.concept from SimpleRefSetMemberJpa m "
-      // + "where m.terminology = :terminology "
-      // + "and m.terminologyVersion = :terminologyVersion "
-      // + "and m.refSetId = :refSetId ");
-      // asteriskQuery.setParameter("terminology",
-      // mapProject.getDestinationTerminology());
-      // asteriskQuery.setParameter("terminologyVersion",
-      // mapProject.getDestinationTerminologyVersion());
-      // asteriskQuery.setParameter("refSetId", asteriskRefSetId);
-      // List<Concept> concepts = asteriskQuery.getResultList();
-      // for (final Concept concept : concepts) {
-      // asteriskCodes.add(concept.getTerminologyId());
-      // }
-      //
-      // // Look up dagger codes
-      // final javax.persistence.Query daggerQuery =
-      // manager.createQuery("select m.concept from SimpleRefSetMemberJpa m "
-      // + "where m.terminology = :terminology "
-      // + "and m.terminologyVersion = :terminologyVersion "
-      // + "and m.refSetId = :refSetId ");
-      // daggerQuery.setParameter("terminology",
-      // mapProject.getDestinationTerminology());
-      // daggerQuery.setParameter("terminologyVersion",
-      // mapProject.getDestinationTerminologyVersion());
-      // daggerQuery.setParameter("refSetId", daggerRefSetId);
-      // concepts = daggerQuery.getResultList();
-      // for (final Concept concept : concepts) {
-      // daggerCodes.add(concept.getTerminologyId());
-      // }
+      
+       // find the dagger/asterisk types
+       for (final String key : simpleRefSets.keySet()) {
+    	   if (simpleRefSets.get(key).equals("Asterisk refset"))
+    		   asteriskRefSetId = key;
+    	   if (simpleRefSets.get(key).equals("Dagger refset"))
+    		   daggerRefSetId = key;
+       }
+      
+       if (asteriskRefSetId == null)
+    	   Logger.getLogger(ICD10CAProjectSpecificAlgorithmHandler.class)
+    	   	.warn("Could not find Asterisk refset");
+      
+       if (daggerRefSetId == null)
+    	   Logger.getLogger(ICD10CAProjectSpecificAlgorithmHandler.class)
+    	   	.warn("Could not find Dagger refset");
+      
+       // Look up asterisk codes
+       final javax.persistence.Query asteriskQuery =
+       manager.createQuery("select m.concept from SimpleRefSetMemberJpa m "
+       + "where m.terminology = :terminology "
+       + "and m.terminologyVersion = :terminologyVersion "
+       + "and m.refSetId = :refSetId ");
+       asteriskQuery.setParameter("terminology",
+       mapProject.getDestinationTerminology());
+       asteriskQuery.setParameter("terminologyVersion",
+       mapProject.getDestinationTerminologyVersion());
+       asteriskQuery.setParameter("refSetId", asteriskRefSetId);
+       List<Concept> concepts = asteriskQuery.getResultList();
+       for (final Concept concept : concepts) {
+    	   asteriskCodes.add(concept.getTerminologyId());
+       }
+      
+       // Look up dagger codes
+       final javax.persistence.Query daggerQuery =
+       manager.createQuery("select m.concept from SimpleRefSetMemberJpa m "
+       + "where m.terminology = :terminology "
+       + "and m.terminologyVersion = :terminologyVersion "
+       + "and m.refSetId = :refSetId ");
+       daggerQuery.setParameter("terminology",
+       mapProject.getDestinationTerminology());
+       daggerQuery.setParameter("terminologyVersion",
+       mapProject.getDestinationTerminologyVersion());
+       daggerQuery.setParameter("refSetId", daggerRefSetId);
+       concepts = daggerQuery.getResultList();
+       for (final Concept concept : concepts) {
+    	   daggerCodes.add(concept.getTerminologyId());
+       }
 
-      // Look up valid 3 digit codes. This is actually just a manual list
-      // derived from this query:
-      // select terminologyId from concepts
-      // where terminology = 'ICD10CA'
-      // and length(terminologyId) = 3
-      // and terminologyId NOT IN
-      // (select substring_index(ancestorPath, '~',-1)
-      // from tree_positions
-      // where terminology='ICD10CA');
-      //
+		/*
+		 * Look up valid 3 digit codes. This is actually just a manual list derived from
+		 * this query: select terminologyId from concepts where terminology = 'ICD10CA'
+		 * and length(terminologyId) = 3 and terminologyId NOT IN (select
+		 * substring_index(ancestorPath, '~',-1) from tree_positions where
+		 * terminology='ICD10CA');
+		 */
+      
       valid3DigitCodes.addAll(Arrays.asList(new String[] {
           "A33", "A34", "A35", "A38", "A46", "A55", "A57", "A58", "A64", "A65", "A70", "A78", "A86",
           "A89", "A94", "A99", "B03", "B04", "B07", "B09", "B24", "B49", "B54", "B64", "B72", "B73",
@@ -1783,7 +1781,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
           "Z59", "Z60", "Z61", "Z62", "Z63", "Z64", "Z65", "Z70", "Z71", "Z72", "Z73", "Z74", "Z75",
           "Z76", "Z80", "Z81", "Z82", "Z83", "Z84", "Z85", "Z86", "Z87", "Z88", "Z89", "Z90", "Z91",
           "Z92", "Z93", "Z94", "Z95", "Z96", "Z97", "Z98", "Z99"
-      }));
+      })); 
 
       // Report to log
       // Logger.getLogger(getClass()).info(" asterisk codes = " +

@@ -129,7 +129,27 @@ public class ICD10CAMetadataServiceJpaHelper extends RootServiceJpa
   @Override
   public Map<String, String> getSimpleRefSets(String terminology,
     String version) throws NumberFormatException, Exception {
-    return new HashMap<>();
+	    try (ContentService contentService = new ContentServiceJpa();) {
+	        String rootId = null;
+	        SearchResultList results = contentService
+	            .findConceptsForQuery("Simple refsets", new PfsParameterJpa());
+	        for (SearchResult result : results.getSearchResults()) {
+	          if (result.getTerminology().equals(terminology)
+	              && result.getTerminologyVersion().equals(version)
+	              && result.getValue().equals("Simple refsets")) {
+	            rootId = result.getTerminologyId();
+	            break;
+	          }
+	        }
+	        if (rootId == null)
+	          throw new Exception("Simple refsets concept cannot be found for "
+	              + terminology + " " + version + ".\n" + results.getSearchResults());
+
+	        Map<String, String> result =
+	            getDescendantMap(contentService, rootId, terminology, version);
+
+	        return result;
+	      }
   }
 
   /* see superclass */
