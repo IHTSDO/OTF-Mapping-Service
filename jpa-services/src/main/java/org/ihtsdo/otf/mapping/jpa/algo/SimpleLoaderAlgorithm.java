@@ -68,7 +68,7 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
   final private String CONCEPT_RELATIONSHIPS_FILE_NAME = "concept-relationships.txt";
 
   /** The simple refsets file name. */
-  final private String SIMPLE_REFSETS_FILE_NAME = "simple-refsets.txt";
+  final private String SIMPLE_REFSETS_FILE_NAME = "simple-refset-members.txt";
 
   /** The obj ct. */
   private int objCt = 1001;
@@ -305,6 +305,22 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
           helper.createNewActiveConcept(terminology + " metadata", conceptMap.get("Metadata"));
       conceptMap.put(terminology + " metadata", targetTerminologyMetadataConcept);
 
+      final Concept refsetsConcept =
+  	        helper.createNewActiveConcept("Refsets", targetTerminologyMetadataConcept);
+      conceptMap.put("Refsets", refsetsConcept);
+      
+    final Concept simpleRefsetsConcept =
+  	        helper.createNewActiveConcept("Simple refsets", refsetsConcept);
+    conceptMap.put("Simple refsets", simpleRefsetsConcept);
+    
+    final Concept asteriskRefsetConcept =
+  	        helper.createNewActiveConcept("Asterisk refset", simpleRefsetsConcept);
+    conceptMap.put("Asterisk refset", asteriskRefsetConcept);
+    
+    final Concept daggerRefsetConcept =
+  	        helper.createNewActiveConcept("Dagger refset", simpleRefsetsConcept);
+    conceptMap.put("Dagger refset", daggerRefsetConcept);
+    
       // If there is a concept attributes file, need to create all those
       // attributes now
       if (conAttrFileExists) {
@@ -358,6 +374,7 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
 
       final Concept targetTerminologyMetadataConcept = conceptMap.get(terminology + " metadata");
 
+      
       while ((line = conAttr.readLine()) != null) {
         final String[] fields = parseLine(line);
 
@@ -417,7 +434,6 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
         new BufferedReader(new FileReader(new File(inputDir, CONCEPT_RELATIONSHIPS_FILE_NAME)));) {
 
       final Concept targetTerminologyMetadataConcept = conceptMap.get(terminology + " metadata");
-      int ct = 1;
       while ((line = conAttr.readLine()) != null) {
         final String[] fields = parseLine(line);
 
@@ -438,7 +454,7 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
 
           final String type = fields[2];
           final String label = fields[3];
-          helper.createRelationship(sourceCon, destinationCon, label, type, "" + ct++, terminology,
+          helper.createRelationship(sourceCon, destinationCon, label, type, "" + objCt++, terminology,
               version, dateFormat.format(now));
         }
       }
@@ -469,25 +485,18 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
     String line;
     try (final BufferedReader conAttr =
         new BufferedReader(new FileReader(new File(inputDir, SIMPLE_REFSETS_FILE_NAME)));) {
-
-      final Concept targetTerminologyMetadataConcept = conceptMap.get(terminology + " metadata");
-
-      int ct = 1;
+	    
       while ((line = conAttr.readLine()) != null) {
         final String[] fields = parseLine(line);
 
-        if (fields.length == 1) {
-          addSimpleRefsetMetadata(helper, targetTerminologyMetadataConcept, conceptMap, fields);
-        } else if (fields.length != 4) {
-          throw new Exception("Unexpected number of fields: " + fields.length);
-        } else {
+        if (fields.length == 2) {
           final Concept con = conceptMap.get(fields[0]);
           if (con == null) {
             throw new Exception("Unable to find concept " + line);
           }
 
           final String refsetName = fields[1];
-          helper.createRefsetMember(con, refsetName, "" + ct++, terminology, version,
+          helper.createRefsetMember(con, refsetName, "" + objCt++, terminology, version,
               dateFormat.format(now));
 
         }

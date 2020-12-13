@@ -139,10 +139,10 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 			attributesFile.createNewFile();
 		}
 		conceptAttributeWriter = new BufferedWriter(new FileWriter(attributesFile.getAbsoluteFile()));
-		conceptAttributeWriter.write("exclude\n");
-		conceptAttributeWriter.write("include\n");
-		conceptAttributeWriter.write("note\n");
-		conceptAttributeWriter.write("codealso\n");
+		conceptAttributeWriter.write("Exclusion\n");
+		conceptAttributeWriter.write("Inclusion\n");
+		conceptAttributeWriter.write("Note\n");
+		conceptAttributeWriter.write("Coding hint\n");
 
 		// get all relevant icd10ca .html files
 		FilenameFilter projectFilter = new FilenameFilter() {
@@ -202,10 +202,10 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 				Elements codealsos = row.select("[class='codealso']");
 				
 				if (!codesToIgnoreAttributes.contains(previousCode)) {
-					processAttributes(includes, previousCode, "include");
-					processAttributes(excludes, previousCode, "exclude");
-					processAttributes(notes, previousCode, "note");
-					processAttributes(codealsos, previousCode, "codealso");
+					processAttributes(includes, previousCode, "Inclusion");
+					processAttributes(excludes, previousCode, "Exclusion");
+					processAttributes(notes, previousCode, "Note");
+					processAttributes(codealsos, previousCode, "Coding hint");
 				}
 
 				// Get chapter header concepts
