@@ -148,10 +148,10 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 		}
 		conceptAttributeWriter = new BufferedWriter(new OutputStreamWriter(
 				new FileOutputStream(attributesFile.getAbsolutePath()), StandardCharsets.UTF_8));
-		conceptAttributeWriter.write("exclude\n");
-		conceptAttributeWriter.write("include\n");
-		conceptAttributeWriter.write("note\n");
-		conceptAttributeWriter.write("codealso\n");
+		conceptAttributeWriter.write("Exclusion\n");
+		conceptAttributeWriter.write("Inclusion\n");
+		conceptAttributeWriter.write("Note\n");
+		conceptAttributeWriter.write("Coding hint\n");
 
 		File simpleRefsetMemberFile = new File(outputDirFile, "simple-refset-members.txt");
 		// if file doesn't exist, then create it
@@ -160,8 +160,6 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 		}
 		simpleRefsetMemberWriter = new BufferedWriter(new OutputStreamWriter(
 				new FileOutputStream(simpleRefsetMemberFile.getAbsolutePath()), StandardCharsets.UTF_8));
-		simpleRefsetMemberWriter.write("dagger\n");
-		simpleRefsetMemberWriter.write("asterisk\n");
 		
 		File relationshipFile = new File(outputDirFile, "concept-relationships.txt");
 		// if file doesn't exist, then create it
@@ -170,10 +168,6 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 		}
 		relationshipWriter = new BufferedWriter(new OutputStreamWriter(
 				new FileOutputStream(relationshipFile.getAbsolutePath()), StandardCharsets.UTF_8));
-		relationshipWriter.write("Asterisk to dagger\n");
-		relationshipWriter.write("Dagger to asterisk\n");
-		relationshipWriter.write("Asterisk to asterisk\n");
-		relationshipWriter.write("Dagger to dagger\n");
 		
 		// get all relevant icd10ca .html files
 		FilenameFilter projectFilter = new FilenameFilter() {
@@ -235,10 +229,10 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 				Elements codealsos = row.select("[class='codealso']");
 				
 				if (!codesToIgnoreAttributes.contains(previousCode)) {
-					processAttributes(includes, previousCode, "include");
-					processAttributes(excludes, previousCode, "exclude");
-					processAttributes(notes, previousCode, "note");
-					processAttributes(codealsos, previousCode, "codealso");
+					processAttributes(includes, previousCode, "Inclusion");
+					processAttributes(excludes, previousCode, "Exclusion");
+					processAttributes(notes, previousCode, "Note");
+					processAttributes(codealsos, previousCode, "Coding hint");
 				}
 
 				// Get chapter header concepts
@@ -262,10 +256,10 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 					if (cols.get(0).hasText() && cols.get(1).hasText()
 							&& Pattern.matches("[A-Z][0-9][0-9].*", cleanCode(cols.get(0).text())) && cols.get(0).text().length() < 10) {
 						if (cols.get(0).text().endsWith("*")) {
-							  simpleRefsetMemberSet.add(cleanCode(cols.get(0).text()) + "|asterisk");
+							  simpleRefsetMemberSet.add(cleanCode(cols.get(0).text()) + "|Asterisk refset");
 							  writeRelationship(cols.get(0).text(), cols.get(1).text());
 						  } else if (cols.get(0).text().endsWith("†")) {
-							  simpleRefsetMemberSet.add(cleanCode(cols.get(0).text()) + "|dagger");
+							  simpleRefsetMemberSet.add(cleanCode(cols.get(0).text()) + "|Dagger refset");
 							  writeRelationship(cols.get(0).text(), cols.get(1).text());
 						  }			
 						if (!conceptMap.containsKey(cleanCode(cols.get(0).text()))) {
@@ -511,14 +505,16 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 				for (String code2 : targetIds) {
 					// asterisk to dagger
 					if (previousCode.contains("*") && bullet.contains("†")) {
-						relationshipWriter.write(cleanCode(previousCode) + "|" + code2.trim() + "|Asterisk to dagger|" + label + "\n");
+						relationshipWriter.write(cleanCode(previousCode) + "|" + code2.trim() + "|Dagger to asterisk|" + label + "\n");
 					// dagger to asterisk
 					} else if (previousCode.contains("†") && bullet.contains("*)")) {
-						relationshipWriter.write(cleanCode(previousCode) + "|" + code2.trim() + "|Dagger to asterisk|" + label + "\n");
+						relationshipWriter.write(cleanCode(previousCode) + "|" + code2.trim() + "|Asterisk to dagger|" + label + "\n");
 					} else if (previousCode.contains("*") && bullet.contains("*)")) {
 						relationshipWriter.write(cleanCode(previousCode) + "|" + code2.trim() + "|Asterisk to asterisk|" + label + "\n");
 					} else if (previousCode.contains("†") && bullet.contains("†")) {
 						relationshipWriter.write(cleanCode(previousCode) + "|" + code2.trim() + "|Dagger to dagger|" + label + "\n");
+					} else {
+						relationshipWriter.write(cleanCode(previousCode) + "|" + code2.trim() + "|Reference|" + label + "\n");
 					}
 				}
 			}
