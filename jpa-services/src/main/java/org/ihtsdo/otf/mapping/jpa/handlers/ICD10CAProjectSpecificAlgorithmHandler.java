@@ -824,19 +824,19 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
         advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP03));
       }
 
-      //
-      // PREDICATE: Map target is in the range C00-D48 and does not have the
-      // advice "POSSIBLE REQUIREMENT FOR MORPHOLOGY CODE"
-      // ACTION: add the advice
-      //
-      final String adviceP05 = "POSSIBLE REQUIREMENT FOR MORPHOLOGY CODE";
-      if (mapEntry.getTargetId().matches("(C..|D[0-3].|D4[0-8]).*")) {
-        if (!TerminologyUtility.hasAdvice(mapEntry, adviceP05)) {
-          advices.add(TerminologyUtility.getAdvice(mapProject, adviceP05));
-        }
-      } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP05)) {
-        advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP05));
-      }
+//      //
+//      // PREDICATE: Map target is in the range C00-D48 and does not have the
+//      // advice "POSSIBLE REQUIREMENT FOR MORPHOLOGY CODE"
+//      // ACTION: add the advice
+//      //
+//      final String adviceP05 = "POSSIBLE REQUIREMENT FOR MORPHOLOGY CODE";
+//      if (mapEntry.getTargetId().matches("(C..|D[0-3].|D4[0-8]).*")) {
+//        if (!TerminologyUtility.hasAdvice(mapEntry, adviceP05)) {
+//          advices.add(TerminologyUtility.getAdvice(mapProject, adviceP05));
+//        }
+//      } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP05)) {
+//        advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP05));
+//      }
 
       //
       // PREDICATE: Primary map target is T31 or T32 and does not have the
