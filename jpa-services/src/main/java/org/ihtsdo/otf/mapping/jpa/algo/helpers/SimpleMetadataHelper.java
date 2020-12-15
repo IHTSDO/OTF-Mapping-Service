@@ -138,6 +138,7 @@ public class SimpleMetadataHelper {
         terminologyVersion, "Isa", effectiveTime);
     conceptMap.put("isa", isaConcept);
     contentService.addConcept(isaConcept);
+    
 
     //
     // Go back and fill in missing references
