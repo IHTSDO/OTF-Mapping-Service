@@ -1977,7 +1977,7 @@ public class ContentServiceJpa extends RootServiceJpa
       // description's terminology id
       // TODO: make this part of project specific algorithm handler
       // only ICD10 cares about dagger/asterisk and "references" relationships
-      if (treePosition.getTerminology().equals("ICD10")) {
+      if (treePosition.getTerminology().equals("ICD10") || treePosition.getTerminology().equals("ICD10CA")) {
         for (final Relationship rel : concept.getRelationships()) {
           if (rel.getTerminologyId()
               .startsWith(desc.getTerminologyId() + "~")) {
