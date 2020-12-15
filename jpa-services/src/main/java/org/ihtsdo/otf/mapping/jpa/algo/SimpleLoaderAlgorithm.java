@@ -3,16 +3,24 @@ package org.ihtsdo.otf.mapping.jpa.algo;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.algo.Algorithm;
+import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
+import org.ihtsdo.otf.mapping.helpers.SearchResult;
+import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.jpa.algo.helpers.SimpleMetadataHelper;
 import org.ihtsdo.otf.mapping.jpa.helpers.LoggerUtility;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
@@ -208,8 +216,11 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
       // code\tpreferred\t[synonym\t,..]
       log.info("  Load concepts");
       String line;
-      final BufferedReader concepts =
-          new BufferedReader(new FileReader(new File(inputDir, CONCEPT_FILE_NAME)));
+      FileInputStream fis = new FileInputStream(new File(inputDir, CONCEPT_FILE_NAME));
+      InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+      BufferedReader concepts = new BufferedReader(isr);
+      //final BufferedReader concepts =
+      //    new BufferedReader(new FileReader(new File(inputDir, CONCEPT_FILE_NAME)));
 
       while ((line = concepts.readLine()) != null) {
         final String[] fields = parseLine(line);
@@ -321,6 +332,33 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
   	        helper.createNewActiveConcept("Dagger refset", simpleRefsetsConcept);
     conceptMap.put("Dagger refset", daggerRefsetConcept);
     
+    //
+    // Relationship types
+    //
+
+    
+    Concept relationshipTypeConcept = conceptMap.get("relationshipType");
+    
+    final Concept asteriskToDaggerConcept =
+  	        helper.createNewActiveConcept("Asterisk to dagger", relationshipTypeConcept);
+    conceptMap.put("Asterisk to dagger", asteriskToDaggerConcept);
+
+    final Concept daggerToAsteriskConcept =
+  	        helper.createNewActiveConcept("Dagger to asterisk", relationshipTypeConcept);
+    conceptMap.put("Dagger to asterisk", daggerToAsteriskConcept);
+    
+    final Concept asteriskToAsteriskConcept =
+  	        helper.createNewActiveConcept("Asterisk to asterisk", relationshipTypeConcept);
+    conceptMap.put("Asterisk to asterisk", asteriskToAsteriskConcept);
+
+    final Concept daggerToDaggerConcept =
+  	        helper.createNewActiveConcept("Dagger to dagger", relationshipTypeConcept);
+    conceptMap.put("Dagger to dagger", daggerToDaggerConcept);   
+    
+    final Concept referenceConcept =
+  	        helper.createNewActiveConcept("Reference", relationshipTypeConcept);
+    conceptMap.put("Reference", referenceConcept);   
+    
       // If there is a concept attributes file, need to create all those
       // attributes now
       if (conAttrFileExists) {
@@ -330,6 +368,14 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
       // If there is a concept relationships file, load now
       if (conRelFileExists) {
         loadConceptRelationships(helper, conceptMap, now);
+        
+        for (Concept cpt : conceptMap.values()) {
+        	for (Description d : cpt.getDescriptions()) {
+        		if (d.getTerm().contains("(") && d.getTerm().contains(")")) {
+        			d.setTerm(d.getTerm().substring(0, d.getTerm().lastIndexOf("(")));
+        		}
+        	}
+        }
       }
 
       // If there is a simple refsets file , load now
@@ -369,8 +415,9 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
     log.info("  Load concept attributes");
 
     String line;
-    try (final BufferedReader conAttr =
-        new BufferedReader(new FileReader(new File(inputDir, CONCEPT_ATTRIBUTES_FILE_NAME)));) {
+    try (FileInputStream fis = new FileInputStream(new File(inputDir, CONCEPT_ATTRIBUTES_FILE_NAME));
+    	       InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+    	       BufferedReader conAttr = new BufferedReader(isr)) {
 
       final Concept targetTerminologyMetadataConcept = conceptMap.get(terminology + " metadata");
 
@@ -437,12 +484,13 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
       while ((line = conAttr.readLine()) != null) {
         final String[] fields = parseLine(line);
 
-        if (fields.length == 1) {
-          addConceptRelationshipsMetadata(helper, targetTerminologyMetadataConcept, conceptMap,
-              fields);
-        } else if (fields.length != 4) {
-          throw new Exception("Unexpected number of fields: " + fields.length);
-        } else {
+		/*
+		 * if (fields.length == 1) { addConceptRelationshipsMetadata(helper,
+		 * targetTerminologyMetadataConcept, conceptMap, fields); } else if
+		 * (fields.length != 4) { throw new Exception("Unexpected number of fields: " +
+		 * fields.length); } else
+		 */
+        if (fields.length == 4) {
           final Concept sourceCon = conceptMap.get(fields[0]);
           if (sourceCon == null) {
             throw new Exception("Unable to find source concept " + line);
@@ -452,9 +500,24 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
             throw new Exception("Unable to find source concept " + line);
           }
 
+          // relationship's terminologyId must reference the terminology of the matching description
+          String terminologyId = "";
+          Set<String> terminologyIds = new HashSet<>();
+          Set<Description> descriptions = sourceCon.getDescriptions();
           final String type = fields[2];
           final String label = fields[3];
-          helper.createRelationship(sourceCon, destinationCon, label, type, "" + objCt++, terminology,
+          for (Description d : descriptions) {
+        	  if (d.getTerm().contains(label)) {
+        		  if (!terminologyIds.contains(terminologyId)) {
+        		    terminologyId = d.getTerminologyId() + "~1";
+        		    terminologyIds.add(terminologyId);
+        		  }
+        	  }
+          }
+          if (terminologyId.contentEquals("")) {
+        	  terminologyId = objCt++ + "";
+          }
+          helper.createRelationship(sourceCon, destinationCon, label, type, terminologyId, terminology,
               version, dateFormat.format(now));
         }
       }
