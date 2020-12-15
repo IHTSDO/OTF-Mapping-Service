@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +81,9 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
 
   /** The obj ct. */
   private int objCt = 1001;
+  
+
+  Map<String, Integer> terminologyIds = new HashMap<>();
 
   /**
    * Instantiates a {@link SimpleLoaderAlgorithm} from the specified parameters.
@@ -495,22 +499,26 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
           if (sourceCon == null) {
             throw new Exception("Unable to find source concept " + line);
           }
-          final Concept destinationCon = conceptMap.get(fields[2]);
+          final Concept destinationCon = conceptMap.get(fields[1]);
           if (destinationCon == null) {
-            throw new Exception("Unable to find source concept " + line);
+            //throw new Exception("Unable to find source concept " + line);
+        	  System.out.println("Unable to find source concept " + fields[0] + " " + fields[1]);
+        	  continue;
           }
 
           // relationship's terminologyId must reference the terminology of the matching description
           String terminologyId = "";
-          Set<String> terminologyIds = new HashSet<>();
           Set<Description> descriptions = sourceCon.getDescriptions();
           final String type = fields[2];
           final String label = fields[3];
           for (Description d : descriptions) {
         	  if (d.getTerm().contains(label)) {
-        		  if (!terminologyIds.contains(terminologyId)) {
+        		  if (terminologyIds.containsKey(d.getTerminologyId())) {
+        			  terminologyId = d.getTerminologyId() + "~" + ((Integer)terminologyIds.get(d.getTerminologyId())) + 1;
+        			  terminologyIds.put(d.getTerminologyId(), ((Integer)terminologyIds.get(d.getTerminologyId())) + 1);
+        		  } else {       		  
         		    terminologyId = d.getTerminologyId() + "~1";
-        		    terminologyIds.add(terminologyId);
+        		    terminologyIds.put(d.getTerminologyId(), Integer.parseInt("1"));
         		  }
         	  }
           }
