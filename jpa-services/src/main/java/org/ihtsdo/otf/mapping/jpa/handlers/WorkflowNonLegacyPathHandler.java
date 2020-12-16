@@ -135,7 +135,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
             WorkflowAction.UNASSIGN)));
 
     // STATE: Lead review (incomplete)
-    leadEditingState = new WorkflowPathState("Lead Conflict Review Incomplet)");
+    leadEditingState = new WorkflowPathState("Lead Conflict Review Incomplete");
     leadEditingState.addWorkflowCombination(new WorkflowStatusCombination(
         Arrays.asList(WorkflowStatus.CONFLICT_DETECTED,
             WorkflowStatus.CONFLICT_DETECTED, WorkflowStatus.CONFLICT_NEW)));
