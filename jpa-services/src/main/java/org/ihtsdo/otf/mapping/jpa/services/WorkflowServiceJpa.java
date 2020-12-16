@@ -1770,7 +1770,22 @@ public class WorkflowServiceJpa extends MappingServiceJpa
         fc.setUserName(null);
       }
     }
-
+    
+    // userNames were updated - re-sort
+    if ("userName".equals(pfs.getSortField())) {
+      if (pfs.isAscending()) {
+        feedbackConversations
+            .sort(Comparator.comparing(FeedbackConversation::getUserName,
+                Comparator.nullsFirst(Comparator.naturalOrder())));
+      } else {
+        feedbackConversations
+            .sort(Comparator
+                .comparing(FeedbackConversation::getUserName,
+                    Comparator.nullsFirst(Comparator.naturalOrder()))
+                .reversed());
+      }
+    }
+    
     // filter for owned by me or not owned by me
     if (ownedByMe != null) {
       Logger.getLogger(getClass()).debug("owned: " + ownedByMe);
