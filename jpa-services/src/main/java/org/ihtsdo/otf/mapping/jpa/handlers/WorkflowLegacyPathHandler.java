@@ -127,7 +127,7 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
 
     // STATE: Lead review (incomplete)
     conflictEditingState =
-        new WorkflowPathState("Lead Conflict Review Incomplet)");
+        new WorkflowPathState("Lead Conflict Review Incomplete");
     conflictEditingState.addWorkflowCombination(new WorkflowStatusCombination(
         Arrays.asList(WorkflowStatus.REVISION, WorkflowStatus.CONFLICT_DETECTED,
             WorkflowStatus.CONFLICT_DETECTED, WorkflowStatus.CONFLICT_NEW)));

@@ -23,7 +23,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
       $scope.reviewedTypes = [ 'All', 'Viewed', 'Unviewed' ];
       $scope.resolvedTypes = [ 'All', 'Active', 'Resolved' ];
       $scope.ownedByList = [ 'All', 'Owned By Me', 'Not Owned By Me' ];
-
+      
       // initialize as empty to indicate still initializing database connection
       $scope.currentUser = localStorageService.get('currentUser');
       $scope.currentUserToken = localStorageService.get('userToken');
@@ -42,7 +42,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
       $scope.searchPerformed = false; // initialize variable to track whether
       // search was performed
       $scope.feedbackType = 'All Feedback';
-      $scope.resolvedType = 'All';
+      $scope.resolvedType = 'Active';
       $scope.reviewedType = 'All';
       $scope.ownedByMe = 'All';
       $scope.recordIdOwnerMap = new Array();
@@ -50,6 +50,27 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
       // pagination variables
       $scope.recordsPerPage = 10;
       $scope.recordPage = 1;
+      
+      
+      //sort direction
+      var sortAscending = [];
+      var sortField = [];
+      
+      $scope.getSortIndicator = function(table, field){
+		if (sortField[table] !== field) return '';
+		if (sortField[table] === field && sortAscending[table]) return '▴';
+		if (sortField[table] === field && !sortAscending[table]) return '▾';
+      };
+
+      //sort field and get data
+      $scope.setSortField = function(table, field) {
+    	  sortAscending[table] = !sortAscending[table];
+    	  sortField[table] = field;
+    	  if (table === 'feedback') {
+    		  $scope.retrieveFeedback(1, $scope.feedbackType, $scope.reviewedType,
+                  $scope.resolvedType, $scope.ownedByMe, $scope.query);
+    	  }
+      };
 
       // watch for project change
       $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
@@ -125,7 +146,8 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
         var pfsParameterObj = {
           'startIndex' : (page - 1) * $scope.recordsPerPage,
           'maxResults' : $scope.recordsPerPage,
-          'sortField' : 'lastModified'      
+          'sortField' : (sortField['feedback']) ? sortField['feedback'] : 'lastModified',
+          'ascending' : sortAscending['feedback'],   
         };
         
         console.log("pfsParameterObj", pfsParameterObj);
