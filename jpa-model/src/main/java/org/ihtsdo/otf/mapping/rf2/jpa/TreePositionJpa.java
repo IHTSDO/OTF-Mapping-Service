@@ -133,6 +133,7 @@ public class TreePositionJpa implements TreePosition {
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
   public String getAncestorPath() {
     return ancestorPath;
   }
