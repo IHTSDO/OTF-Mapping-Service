@@ -973,6 +973,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
           WorkflowAction.ASSIGN_FROM_SCRATCH);
 
     } catch (Exception e) {
+    	// deal with custom message for case when two users have claimed a concept already and it is attempted to
+    	// be assigned to a third due to the display not getting updated.
+    	final MapProject mapProject = workflowService.getMapProject(mapProjectId);   	
+    	if (mapProject.getWorkflowType() == WorkflowType.CONFLICT_PROJECT &&
+    			e.getMessage().startsWith("Workflow action ASSIGN_FROM_SCRATCH could not be performed on concept")) {
+    	  e = new LocalException("Concept " + terminologyId + " is no longer available for assigning - please refresh to get up to date information.");
+    	}
       handleException(e, "trying to assign work", userName, project,
           terminologyId);
     } finally {

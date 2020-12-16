@@ -94,8 +94,17 @@ public class OtfErrorHandler {
         }
         // if no code specified, build and throw a 500
       } else {
+    	  	// Ensure message has quotes.
+    	    // When migrating from jersey 1 to jersey 2, messages no longer
+    	    // had quotes around them when returned to client and angular
+    	    // could not parse them as json.
+    	    String message = e.getMessage();
+    	    if (message != null && !message.startsWith("\"")) {
+    	      message = "\"" + message + "\"";
+    	    }
+    	    
         throw new WebApplicationException(
-            Response.status(500).entity(e.getMessage()).build());
+            Response.status(500).entity(message).type("text/plain").build());
       }
     }
 
