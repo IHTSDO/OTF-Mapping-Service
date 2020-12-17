@@ -156,43 +156,12 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
       final Date now = new Date();
       SimpleMetadataHelper helper =
           new SimpleMetadataHelper(terminology, version, dateFormat.format(now), contentService);
-      log.info("  Create concept metadata");
+      log.info("  Create concept metadata and root concept");
       helper.setMetadataCounter(metadataCounter);
       Map<String, Concept> conceptMap = helper.createMetadata();
 
-      // Create the root concept
-      log.info("  Create the root concept");
-      Concept rootConcept = new ConceptJpa();
-      rootConcept.setTerminologyId("root");
-      rootConcept.setEffectiveTime(now);
-      // assume active
-      rootConcept.setActive(true);
-      rootConcept.setModuleId(Long.parseLong(conceptMap.get("defaultModule").getTerminologyId()));
-      rootConcept.setDefinitionStatusId(
-          Long.parseLong(conceptMap.get("defaultDefinitionStatus").getTerminologyId()));
-      rootConcept.setTerminology(terminology);
-      rootConcept.setTerminologyVersion(version);
-      rootConcept.setDefaultPreferredName(terminology + " Root Concept");
-
-      final Description rootDesc = new DescriptionJpa();
-      rootDesc.setTerminologyId("root");
-      rootDesc.setEffectiveTime(now);
-      rootDesc.setActive(true);
-      rootDesc.setModuleId(Long.parseLong(conceptMap.get("defaultModule").getTerminologyId()));
-      rootDesc.setTerminology(terminology);
-      rootDesc.setTerminologyVersion(version);
-      rootDesc.setTerm(terminology + " Root Concept");
-      rootDesc.setConcept(rootConcept);
-      rootDesc.setCaseSignificanceId(
-          Long.valueOf(conceptMap.get("defaultCaseSignificance").getTerminologyId()));
-      rootDesc.setLanguageCode("en");
-      rootDesc.setTypeId(Long.parseLong(conceptMap.get("preferred").getTerminologyId()));
-      rootConcept.addDescription(rootDesc);
-      rootConcept = contentService.addConcept(rootConcept);
-      conceptMap.put(rootConcept.getTerminologyId(), rootConcept);
-
       // load concepts from concepts.txt
-      loadConcepts(helper, conceptMap, now, rootConcept);
+      loadConcepts(helper, conceptMap, now, conceptMap.get("root"));
 
       // If there is a par/chd file, need to create all those
       // relationships now
@@ -200,54 +169,7 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
     	  loadParentChild(helper, conceptMap, now);
       }
 
-      // Create terminology-specific metadata concept - for any metadata created
-      // with attr/rel/refsets
-      final Concept targetTerminologyMetadataConcept =
-          helper.createNewActiveConcept(terminology + " metadata", conceptMap.get("Metadata"));
-      conceptMap.put(terminology + " metadata", targetTerminologyMetadataConcept);
 
-      final Concept refsetsConcept =
-  	        helper.createNewActiveConcept("Refsets", targetTerminologyMetadataConcept);
-      conceptMap.put("Refsets", refsetsConcept);
-      
-    final Concept simpleRefsetsConcept =
-  	        helper.createNewActiveConcept("Simple refsets", refsetsConcept);
-    conceptMap.put("Simple refsets", simpleRefsetsConcept);
-    
-    final Concept asteriskRefsetConcept =
-  	        helper.createNewActiveConcept("Asterisk refset", simpleRefsetsConcept);
-    conceptMap.put("Asterisk refset", asteriskRefsetConcept);
-    
-    final Concept daggerRefsetConcept =
-  	        helper.createNewActiveConcept("Dagger refset", simpleRefsetsConcept);
-    conceptMap.put("Dagger refset", daggerRefsetConcept);
-    
-    //
-    // Relationship types
-    //
-
-    
-    Concept relationshipTypeConcept = conceptMap.get("relationshipType");
-    
-    final Concept asteriskToDaggerConcept =
-  	        helper.createNewActiveConcept("Asterisk to dagger", relationshipTypeConcept);
-    conceptMap.put("Asterisk to dagger", asteriskToDaggerConcept);
-
-    final Concept daggerToAsteriskConcept =
-  	        helper.createNewActiveConcept("Dagger to asterisk", relationshipTypeConcept);
-    conceptMap.put("Dagger to asterisk", daggerToAsteriskConcept);
-    
-    final Concept asteriskToAsteriskConcept =
-  	        helper.createNewActiveConcept("Asterisk to asterisk", relationshipTypeConcept);
-    conceptMap.put("Asterisk to asterisk", asteriskToAsteriskConcept);
-
-    final Concept daggerToDaggerConcept =
-  	        helper.createNewActiveConcept("Dagger to dagger", relationshipTypeConcept);
-    conceptMap.put("Dagger to dagger", daggerToDaggerConcept);   
-    
-    final Concept referenceConcept =
-  	        helper.createNewActiveConcept("Reference", relationshipTypeConcept);
-    conceptMap.put("Reference", referenceConcept);   
     
       // If there is a concept attributes file, need to create all those
       // attributes now
@@ -298,30 +220,30 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
    * @throws Exception the exception
    */
   private void validateInput() throws Exception {
-	    File inputDirFile = new File(this.inputDir);
-	    if (!inputDirFile.exists()) {
-	      throw new Exception("Specified input directory does not exist");
-	    }
-	    if (!new File(this.inputDir, CONCEPT_FILE_NAME).exists()) {
-	      throw new Exception(
-	          "The " + CONCEPT_FILE_NAME + " file of the input directory does not exist");
-	    }
-	    if (!new File(this.inputDir, PARENT_CHILD_FILE_NAME).exists()) {
-	      log.info("The " + PARENT_CHILD_FILE_NAME
-	          + " file of the input directory does not exist. Making default isa relationships to root.");
-	      parChdFileExists = false;
-	    } else {
-	      parChdFileExists = true;
-	    }
-	    if (new File(this.inputDir, CONCEPT_ATTRIBUTES_FILE_NAME).exists()) {
-	      conAttrFileExists = true;
-	    }
-	    if (new File(this.inputDir, CONCEPT_RELATIONSHIPS_FILE_NAME).exists()) {
-	      conRelFileExists = true;
-	    }
-	    if (new File(this.inputDir, SIMPLE_REFSETS_FILE_NAME).exists()) {
-	      simpleRefsetFileExists = true;
-	    }
+    File inputDirFile = new File(this.inputDir);
+    if (!inputDirFile.exists()) {
+      throw new Exception("Specified input directory does not exist");
+    }
+    if (!new File(this.inputDir, CONCEPT_FILE_NAME).exists()) {
+      throw new Exception(
+          "The " + CONCEPT_FILE_NAME + " file of the input directory does not exist");
+    }
+    if (!new File(this.inputDir, PARENT_CHILD_FILE_NAME).exists()) {
+      log.info("The " + PARENT_CHILD_FILE_NAME
+          + " file of the input directory does not exist. Making default isa relationships to root.");
+      parChdFileExists = false;
+    } else {
+      parChdFileExists = true;
+    }
+    if (new File(this.inputDir, CONCEPT_ATTRIBUTES_FILE_NAME).exists()) {
+      conAttrFileExists = true;
+    }
+    if (new File(this.inputDir, CONCEPT_RELATIONSHIPS_FILE_NAME).exists()) {
+      conRelFileExists = true;
+    }
+    if (new File(this.inputDir, SIMPLE_REFSETS_FILE_NAME).exists()) {
+      simpleRefsetFileExists = true;
+    }
 
   }
   
@@ -371,76 +293,76 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
    * @param rootConcept the root concept
    * @throws Exception the exception
    */
-  private void loadConcepts(SimpleMetadataHelper helper, Map<String, Concept> conceptMap,
-		    Date now, Concept rootConcept) throws Exception {
-      //
-      // Open the concepts file and process the data
-      // code\tpreferred\t[synonym\t,..]
-      log.info("  Load concepts");
-      String line;
-      FileInputStream fis = new FileInputStream(new File(inputDir, CONCEPT_FILE_NAME));
-      InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
-      BufferedReader concepts = new BufferedReader(isr);
+  private void loadConcepts(SimpleMetadataHelper helper, Map<String, Concept> conceptMap, Date now,
+    Concept rootConcept) throws Exception {
+    //
+    // Open the concepts file and process the data
+    // code\tpreferred\t[synonym\t,..]
+    log.info("  Load concepts");
+    String line;
+    FileInputStream fis = new FileInputStream(new File(inputDir, CONCEPT_FILE_NAME));
+    InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+    BufferedReader concepts = new BufferedReader(isr);
 
-      while ((line = concepts.readLine()) != null) {
-        final String[] fields = parseLine(line);
+    while ((line = concepts.readLine()) != null) {
+      final String[] fields = parseLine(line);
 
-        // skip header
-        if (fields[0].equals("code")) {
-          continue;
-        }
-
-        if (fields.length < 2) {
-          throw new Exception("Unexpected line, not enough fields: " + line);
-        }
-        final String code = fields[0];
-        final String preferred = fields[1];
-        Concept concept = new ConceptJpa();
-        concept.setTerminologyId(code);
-        concept.setEffectiveTime(now);
-        // assume active
-        concept.setActive(true);
-        concept.setModuleId(Long.parseLong(conceptMap.get("defaultModule").getTerminologyId()));
-        concept.setDefinitionStatusId(
-            Long.parseLong(conceptMap.get("defaultDefinitionStatus").getTerminologyId()));
-        concept.setTerminology(terminology);
-        concept.setTerminologyVersion(version);
-        concept.setDefaultPreferredName(preferred);
-
-        final Description pref = new DescriptionJpa();
-        pref.setTerminologyId(objCt++ + "");
-        pref.setEffectiveTime(now);
-        pref.setActive(true);
-        pref.setModuleId(Long.parseLong(conceptMap.get("defaultModule").getTerminologyId()));
-        pref.setTerminology(terminology);
-        pref.setTerminologyVersion(version);
-        pref.setTerm(preferred);
-        pref.setConcept(concept);
-        pref.setCaseSignificanceId(
-            Long.valueOf(conceptMap.get("defaultCaseSignificance").getTerminologyId()));
-        pref.setLanguageCode("en");
-        pref.setTypeId(Long.parseLong(conceptMap.get("preferred").getTerminologyId()));
-        concept.addDescription(pref);
-
-        for (int i = 2; i < fields.length; i++) {
-          helper.createAttributeValue(concept,
-              Long.parseLong(conceptMap.get("synonym").getTerminologyId()), fields[i], version,
-              objCt++, now);
-        }
-
-        log.info(
-            "  concept = " + concept.getTerminologyId() + ", " + concept.getDefaultPreferredName());
-        concept = contentService.addConcept(concept);
-        conceptMap.put(concept.getTerminologyId(), concept);
-        concept = contentService.getConcept(concept.getId());
-
-        // If no par/chd file, make isa relationships to the root
-        if (!parChdFileExists) {
-          helper.createIsaRelationship(rootConcept, concept, objCt++ + "", terminology, version,
-              dateFormat.format(now));
-        }
+      // skip header
+      if (fields[0].equals("code")) {
+        continue;
       }
-      concepts.close();
+
+      if (fields.length < 2) {
+        throw new Exception("Unexpected line, not enough fields: " + line);
+      }
+      final String code = fields[0];
+      final String preferred = fields[1];
+      Concept concept = new ConceptJpa();
+      concept.setTerminologyId(code);
+      concept.setEffectiveTime(now);
+      // assume active
+      concept.setActive(true);
+      concept.setModuleId(Long.parseLong(conceptMap.get("defaultModule").getTerminologyId()));
+      concept.setDefinitionStatusId(
+          Long.parseLong(conceptMap.get("defaultDefinitionStatus").getTerminologyId()));
+      concept.setTerminology(terminology);
+      concept.setTerminologyVersion(version);
+      concept.setDefaultPreferredName(preferred);
+
+      final Description pref = new DescriptionJpa();
+      pref.setTerminologyId(objCt++ + "");
+      pref.setEffectiveTime(now);
+      pref.setActive(true);
+      pref.setModuleId(Long.parseLong(conceptMap.get("defaultModule").getTerminologyId()));
+      pref.setTerminology(terminology);
+      pref.setTerminologyVersion(version);
+      pref.setTerm(preferred);
+      pref.setConcept(concept);
+      pref.setCaseSignificanceId(
+          Long.valueOf(conceptMap.get("defaultCaseSignificance").getTerminologyId()));
+      pref.setLanguageCode("en");
+      pref.setTypeId(Long.parseLong(conceptMap.get("preferred").getTerminologyId()));
+      concept.addDescription(pref);
+
+      for (int i = 2; i < fields.length; i++) {
+        helper.createAttributeValue(concept,
+            Long.parseLong(conceptMap.get("synonym").getTerminologyId()), fields[i], version,
+            objCt++, now);
+      }
+
+      log.info(
+          "  concept = " + concept.getTerminologyId() + ", " + concept.getDefaultPreferredName());
+      concept = contentService.addConcept(concept);
+      conceptMap.put(concept.getTerminologyId(), concept);
+      concept = contentService.getConcept(concept.getId());
+
+      // If no par/chd file, make isa relationships to the root
+      if (!parChdFileExists) {
+        helper.createIsaRelationship(rootConcept, concept, objCt++ + "", terminology, version,
+            dateFormat.format(now));
+      }
+    }
+    concepts.close();
   }
   
   
@@ -457,13 +379,13 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
     log.info("  Load concept attributes");
 
     String line;
-    try (FileInputStream fis = new FileInputStream(new File(inputDir, CONCEPT_ATTRIBUTES_FILE_NAME));
-    	       InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
-    	       BufferedReader conAttr = new BufferedReader(isr)) {
+    try (
+        FileInputStream fis = new FileInputStream(new File(inputDir, CONCEPT_ATTRIBUTES_FILE_NAME));
+        InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+        BufferedReader conAttr = new BufferedReader(isr)) {
 
       final Concept targetTerminologyMetadataConcept = conceptMap.get(terminology + " metadata");
 
-      
       while ((line = conAttr.readLine()) != null) {
         final String[] fields = parseLine(line);
 
@@ -526,12 +448,6 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
       while ((line = conAttr.readLine()) != null) {
         final String[] fields = parseLine(line);
 
-		/*
-		 * if (fields.length == 1) { addConceptRelationshipsMetadata(helper,
-		 * targetTerminologyMetadataConcept, conceptMap, fields); } else if
-		 * (fields.length != 4) { throw new Exception("Unexpected number of fields: " +
-		 * fields.length); } else
-		 */
         if (fields.length == 4) {
           final Concept sourceCon = conceptMap.get(fields[0]);
           if (sourceCon == null) {
@@ -567,7 +483,6 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
               version, dateFormat.format(now));
         }
       }
-
     }
   }
 

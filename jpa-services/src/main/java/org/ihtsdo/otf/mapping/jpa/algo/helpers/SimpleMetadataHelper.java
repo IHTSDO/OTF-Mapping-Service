@@ -300,18 +300,83 @@ public class SimpleMetadataHelper {
     createIsaRelationship(moduleConcept, defaultModuleConcept,
         Integer.valueOf(metadataCounter++).toString(), terminology, terminologyVersion,
         effectiveTime);
+    
+    //
+    // Create the root concept
+    //
+    Concept rootConcept = new ConceptJpa();
+    rootConcept.setTerminologyId("root");
+    rootConcept.setEffectiveTime(dt.parse(effectiveTime));
+    // assume active
+    rootConcept.setActive(true);
+    rootConcept.setModuleId(Long.parseLong(conceptMap.get("defaultModule").getTerminologyId()));
+    rootConcept.setDefinitionStatusId(
+        Long.parseLong(conceptMap.get("defaultDefinitionStatus").getTerminologyId()));
+    rootConcept.setTerminology(terminology);
+    rootConcept.setTerminologyVersion(terminologyVersion);
+    rootConcept.setDefaultPreferredName(terminology + " Root Concept");
 
+    final Description rootDesc = new DescriptionJpa();
+    rootDesc.setTerminologyId("root");
+    rootDesc.setEffectiveTime(dt.parse(effectiveTime));
+    rootDesc.setActive(true);
+    rootDesc.setModuleId(Long.parseLong(conceptMap.get("defaultModule").getTerminologyId()));
+    rootDesc.setTerminology(terminology);
+    rootDesc.setTerminologyVersion(terminologyVersion);
+    rootDesc.setTerm(terminology + " Root Concept");
+    rootDesc.setConcept(rootConcept);
+    rootDesc.setCaseSignificanceId(
+        Long.valueOf(conceptMap.get("defaultCaseSignificance").getTerminologyId()));
+    rootDesc.setLanguageCode("en");
+    rootDesc.setTypeId(Long.parseLong(conceptMap.get("preferred").getTerminologyId()));
+    rootConcept.addDescription(rootDesc);
+    rootConcept = contentService.addConcept(rootConcept);
+    conceptMap.put(rootConcept.getTerminologyId(), rootConcept);
+    
+    
     //
     // Refsets
     //
-    final Concept refsetsConcept = createNewActiveConcept("" + metadataCounter++, terminology,
-        terminologyVersion, "Refsets", effectiveTime);
-    conceptMap.put("refsets", refsetsConcept);
-    contentService.addConcept(refsetsConcept);
+    final Concept targetTerminologyMetadataConcept =
+        createNewActiveConcept(terminology + " metadata", conceptMap.get("Metadata"));
+    conceptMap.put(terminology + " metadata", targetTerminologyMetadataConcept);
 
-    createIsaRelationship(metadataConcept, refsetsConcept,
-        Integer.valueOf(metadataCounter++).toString(), terminology, terminologyVersion,
-        effectiveTime);
+    final Concept refsetsConcept =
+        createNewActiveConcept("Refsets", targetTerminologyMetadataConcept);
+    conceptMap.put("Refsets", refsetsConcept);
+
+    final Concept simpleRefsetsConcept = createNewActiveConcept("Simple refsets", refsetsConcept);
+    conceptMap.put("Simple refsets", simpleRefsetsConcept);
+
+    final Concept asteriskRefsetConcept =
+        createNewActiveConcept("Asterisk refset", simpleRefsetsConcept);
+    conceptMap.put("Asterisk refset", asteriskRefsetConcept);
+
+    final Concept daggerRefsetConcept =
+        createNewActiveConcept("Dagger refset", simpleRefsetsConcept);
+    conceptMap.put("Dagger refset", daggerRefsetConcept);
+
+    //
+    // Relationship types
+    //
+    final Concept asteriskToDaggerConcept =
+        createNewActiveConcept("Asterisk to dagger", relationshipTypeConcept);
+    conceptMap.put("Asterisk to dagger", asteriskToDaggerConcept);
+
+    final Concept daggerToAsteriskConcept =
+        createNewActiveConcept("Dagger to asterisk", relationshipTypeConcept);
+    conceptMap.put("Dagger to asterisk", daggerToAsteriskConcept);
+
+    final Concept asteriskToAsteriskConcept =
+        createNewActiveConcept("Asterisk to asterisk", relationshipTypeConcept);
+    conceptMap.put("Asterisk to asterisk", asteriskToAsteriskConcept);
+
+    final Concept daggerToDaggerConcept =
+        createNewActiveConcept("Dagger to dagger", relationshipTypeConcept);
+    conceptMap.put("Dagger to dagger", daggerToDaggerConcept);
+
+    final Concept referenceConcept = createNewActiveConcept("Reference", relationshipTypeConcept);
+    conceptMap.put("Reference", referenceConcept);
 
     return conceptMap;
   }
