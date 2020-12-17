@@ -26,6 +26,7 @@ import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.helpers.TreePositionDescriptionGroup;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
@@ -133,6 +134,7 @@ public class TreePositionJpa implements TreePosition {
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
   public String getAncestorPath() {
     return ancestorPath;
   }
