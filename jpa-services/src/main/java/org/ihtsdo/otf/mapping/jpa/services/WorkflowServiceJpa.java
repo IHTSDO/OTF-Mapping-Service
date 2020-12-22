@@ -18,6 +18,8 @@ import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import javax.persistence.NoResultException;
 
@@ -1717,49 +1719,32 @@ public class WorkflowServiceJpa extends MappingServiceJpa
             FeedbackConversationJpa.class, FeedbackConversationJpa.class, pfs,
             totalCt);
 
-    if (pfsParameter != null && query.contains("viewed")) {
-
-      // Handle viewed flag
-      final List<FeedbackConversation> conversationsToKeep = new ArrayList<>();
-      for (final FeedbackConversation fc : feedbackConversations) {
-        if (query.contains("viewed:false")) {
-          for (final Feedback feedback : fc.getFeedbacks()) {
-            final Set<MapUser> alreadyViewedBy = feedback.getViewedBy();
-            boolean found = false;
-            for (final MapUser user : alreadyViewedBy) {
-              if (user.getUserName().equals(userName)) {
-                found = true;
-                break;
-              }
-            }
-            // add if not found
-            if (!found)
-              conversationsToKeep.add(fc);
-          }
+    final List<FeedbackConversation> conversationsToKeep = new ArrayList<>();
+    // all feedbacks in a conversation need to be viewed by the user
+    // in order for the conversation to be marked as viewed
+    feedbackConversations.stream().forEach(conversation -> {
+      final AtomicInteger fbCount = new AtomicInteger();
+      conversation.getFeedbacks().stream().forEach(feedback -> {
+        if (feedback.getViewedBy().parallelStream()
+            .anyMatch(mapUser -> mapUser.getUserName().equals(userName))) {
+          fbCount.getAndIncrement();
         }
-        if (query.contains("viewed:true")) {
-          boolean found = false;
-          for (final Feedback feedback : fc.getFeedbacks()) {
-            Set<MapUser> alreadyViewedBy = feedback.getViewedBy();
-            for (final MapUser user : alreadyViewedBy) {
-              if (user.getUserName().equals(userName)) {
-                found = true;
-                break;
-              }
-            }
-            if (!found)
-              break;
-          }
-          if (found)
-            conversationsToKeep.add(fc);
-        }
-      }
-
+      });
+      conversation.setIsViewed(fbCount.get() == conversation.getFeedbacks().size());
+    });
+    
+    if (pfsParameter != null && query.contains("viewed:")) {
+      final boolean filterViewed = query.contains("viewed:true");
+      
+      conversationsToKeep.addAll(feedbackConversations.parallelStream()
+          .filter(conversations -> conversations.isViewed() == filterViewed)
+          .collect(Collectors.toList()));
+      
       feedbackConversations = new ArrayList<>();
       feedbackConversations.addAll(conversationsToKeep);
       conversationsToKeep.clear();
     }
-
+    
     // replace username with owned by
     for (final FeedbackConversation fc : feedbackConversations) {
       final MapRecord mrl = this.getLatestMapRecordForConcept(
@@ -1781,7 +1766,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
         feedbackConversations
             .sort(Comparator
                 .comparing(FeedbackConversation::getUserName,
-                    Comparator.nullsFirst(Comparator.naturalOrder()))
+                    Comparator.nullsLast(Comparator.naturalOrder()))
                 .reversed());
       }
     }
@@ -1789,8 +1774,9 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     // filter for owned by me or not owned by me
     if (ownedByMe != null) {
       Logger.getLogger(getClass()).debug("owned: " + ownedByMe);
-      final List<FeedbackConversation> conversationsToKeep = new ArrayList<>();
-
+      //final List<FeedbackConversation> conversationsToKeep = new ArrayList<>();
+      conversationsToKeep.clear();
+      
       for (final FeedbackConversation fc : feedbackConversations) {
 
         Logger.getLogger(getClass()).debug("CHECK id: " + fc.getTerminologyId()
