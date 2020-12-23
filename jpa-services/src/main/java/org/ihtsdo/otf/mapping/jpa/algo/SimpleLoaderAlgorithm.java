@@ -181,10 +181,13 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
       if (conRelFileExists) {
         loadConceptRelationships(helper, conceptMap, now);
         
+        Concept codingHintConcept = conceptMap.get("Coding hint");
         for (Concept cpt : conceptMap.values()) {
         	for (Description d : cpt.getDescriptions()) {
         		if (d.getTerm().contains("(") && d.getTerm().contains(")")) {
-        			d.setTerm(d.getTerm().substring(0, d.getTerm().lastIndexOf("(")));
+        		  String firstSegment = d.getTerm().substring(0, d.getTerm().lastIndexOf("("));
+        		  String secondSegment = d.getTerm().substring(d.getTerm().lastIndexOf(")") + 1);
+        		  d.setTerm(firstSegment + secondSegment);
         		}
         	}
         }
@@ -377,7 +380,7 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
   private void loadConceptAttributes(SimpleMetadataHelper helper, Map<String, Concept> conceptMap,
     Date now) throws Exception {
     log.info("  Load concept attributes");
-
+    
     String line;
     try (
         FileInputStream fis = new FileInputStream(new File(inputDir, CONCEPT_ATTRIBUTES_FILE_NAME));
