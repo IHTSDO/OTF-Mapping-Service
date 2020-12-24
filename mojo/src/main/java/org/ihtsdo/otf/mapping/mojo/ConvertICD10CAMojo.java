@@ -76,6 +76,9 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 
   // store output to ensure unique values
   private Set<String> conceptRelationshipSet = new HashSet<>();
+  
+  // store output to ensure unique values
+  private Set<String> conceptAttributeSet = new HashSet<>();
 
   /**
    * Executes the plugin.
@@ -109,6 +112,13 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 
       writeConcepts(inputDirFile, outputDirFile);
       writeParentChild(inputDirFile, outputDirFile);
+      
+      for (String member : conceptAttributeSet) {
+        // don't write out any blank attributes/descriptions
+        if (!member.trim().replaceAll("\\u00A0", "").endsWith("|")) {
+          conceptAttributeWriter.write(member + "\n");
+        }
+      }
 
       for (String member : simpleRefsetMemberSet) {
         simpleRefsetMemberWriter.write(member + "\n");
@@ -369,9 +379,9 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
                     writeRelationship(previousCode,
                         previousText + (previousText.isEmpty() ? "" : " ") + bullet1 + " " + bullet2
                             + " " + bullet3);
-                    conceptAttributeWriter.write(cleanCode(previousCode) + "|" + type + "|"
+                    conceptAttributeSet.add(cleanCode(previousCode) + "|" + type + "|"
                         + previousText + (previousText.isEmpty() ? "" : " ") + bullet1 + " "
-                        + bullet2 + " " + bullet3 + "\n");
+                        + bullet2 + " " + bullet3);
                   } else if (bullet.parent().parent().tagName().contentEquals("ul")) {
                     bullet2 = bullet.text().trim();
                     writeRelationship(previousCode, previousText
@@ -379,9 +389,9 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
                     // if next bullet isn't level 3, print
                     if (nextBullet == null
                         || !nextBullet.parent().parent().parent().tagName().contentEquals("ul")) {
-                      conceptAttributeWriter.write((cleanCode(previousCode) + "|" + type + "|"
+                      conceptAttributeSet.add((cleanCode(previousCode) + "|" + type + "|"
                           + previousText + (previousText.isEmpty() ? "" : " ") + bullet1 + " "
-                          + bullet2 + "\n"));
+                          + bullet2));
                     }
                   } else {
                     bullet1 = bullet.text().trim();
@@ -390,8 +400,8 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
                     // if next bullet isn't level 2, print
                     if (nextBullet == null
                         || !nextBullet.parent().parent().tagName().contentEquals("ul")) {
-                      conceptAttributeWriter.write((cleanCode(previousCode) + "|" + type + "|"
-                          + previousText + (previousText.isEmpty() ? "" : " ") + bullet1 + "\n"));
+                      conceptAttributeSet.add((cleanCode(previousCode) + "|" + type + "|"
+                          + previousText + (previousText.isEmpty() ? "" : " ") + bullet1));
                     }
                   }
                 }
@@ -399,8 +409,7 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
                 // process line breaks
               } else if (((Element) child).tagName().contentEquals("br")) {
                 writeRelationship(previousCode, previousText);
-                conceptAttributeWriter
-                    .write((cleanCode(previousCode) + "|" + type + "|" + previousText + "\n"));
+                conceptAttributeSet.add((cleanCode(previousCode) + "|" + type + "|" + previousText));
                 previousText = "";
                 // otherwise, append text and process next child
               } else {
@@ -416,8 +425,7 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
           }
           if (!previousText.isBlank()) {
             writeRelationship(previousCode, previousText);
-            conceptAttributeWriter
-                .write(cleanCode(previousCode) + "|" + type + "|" + previousText + "\n");
+            conceptAttributeSet.add(cleanCode(previousCode) + "|" + type + "|" + previousText);
           }
         }
       }
