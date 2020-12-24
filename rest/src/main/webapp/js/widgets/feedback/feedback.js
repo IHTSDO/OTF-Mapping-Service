@@ -217,6 +217,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
           conversation.feedback[i].viewedBy = alreadyViewedBy;
         }
         updateFeedbackConversation(conversation);
+        $scope.retrieveFeedback($scope.ppage, $scope.feedbackType, $scope.reviewedType, $scope.resolvedType, $scope.ownedByMe, $scope.pquery);
       };
       
       function updateFeedbackConversation(conversation) {
