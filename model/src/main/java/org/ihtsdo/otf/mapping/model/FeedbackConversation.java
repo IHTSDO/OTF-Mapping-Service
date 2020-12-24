@@ -209,5 +209,20 @@ public interface FeedbackConversation {
    * @return feedbackMessage
    */
   public void removeFeedback(Feedback feedbackMessage);
+  
+  
+  /**
+   * Sets the isViewed.
+   * 
+   * @param isViewed the is viewed
+   */
+  public void setIsViewed(boolean isViewed);
+
+  /**
+   * Indicates if the feedback conversation has been viewed by the user.
+   * 
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isViewed();
 
 }

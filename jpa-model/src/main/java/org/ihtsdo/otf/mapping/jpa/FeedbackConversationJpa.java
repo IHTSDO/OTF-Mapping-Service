@@ -18,16 +18,15 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
-import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
-import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
@@ -112,6 +111,10 @@ public class FeedbackConversationJpa implements FeedbackConversation {
   /** The associated record owner's userName */
   @Column(nullable = true)
   private String userName;
+  
+  /** Flag for whether this feed conversation is viewed by specific user */
+  @Transient
+  private boolean isViewed;
 
   /**
    * Returns the id.
@@ -318,7 +321,7 @@ public class FeedbackConversationJpa implements FeedbackConversation {
   public String getTerminology() {
     return terminology;
   }
-
+  
   /*
    * (non-Javadoc)
    * 
@@ -428,6 +431,29 @@ public class FeedbackConversationJpa implements FeedbackConversation {
   public void setMapProjectId(Long mapProjectId) {
     this.mapProjectId = mapProjectId;
   }
+  
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.model.FeedbackConversation#isViewed()
+   */
+  @Override
+  public boolean isViewed() {
+    return isViewed;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.model.FeedbackConversation#setIsViewed(boolean)
+   */
+  @Override
+  public void setIsViewed(boolean isViewed) {
+    this.isViewed = isViewed;
+  }
 
   /*
    * (non-Javadoc)
@@ -516,4 +542,17 @@ public class FeedbackConversationJpa implements FeedbackConversation {
       return false;
     return true;
   }
+
+  @Override
+  public String toString() {
+    return "FeedbackConversationJpa [id=" + id + ", feedbacks=" + feedbacks
+        + ", isResolved=" + isResolved + ", isDiscrepancyReview="
+        + isDiscrepancyReview + ", lastModified=" + lastModified
+        + ", mapRecordId=" + mapRecordId + ", terminology=" + terminology
+        + ", terminologyId=" + terminologyId + ", terminologyVersion="
+        + terminologyVersion + ", title=" + title + ", defaultPreferredName="
+        + defaultPreferredName + ", mapProjectId=" + mapProjectId
+        + ", userName=" + userName + ", isViewed=" + isViewed + "]";
+  }
+
 }
