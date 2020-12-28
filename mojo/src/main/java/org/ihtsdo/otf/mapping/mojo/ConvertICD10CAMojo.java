@@ -79,6 +79,11 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
   
   // store output to ensure unique values
   private Set<String> conceptAttributeSet = new HashSet<>();
+  
+  //store output to ensure unique values
+  private Set<String> parentChildSet = new HashSet<>();
+  
+  private Map<String, String> conceptMap = new HashMap<>();
 
   /**
    * Executes the plugin.
@@ -106,13 +111,19 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 
       // ignore attributes for these codes
       codesToIgnoreAttributes.add("J96");
-
+      
       ignoreEmbedded.add("T31");
       ignoreEmbedded.add("T32");
+
+      
 
       writeConcepts(inputDirFile, outputDirFile);
       writeParentChild(inputDirFile, outputDirFile);
       
+      for (String member : parentChildSet) {
+        parentChildWriter.write(member + "\n");
+      }
+    
       for (String member : conceptAttributeSet) {
         // don't write out any blank attributes/descriptions
         if (!member.trim().replaceAll("\\u00A0", "").endsWith("|")) {
@@ -221,7 +232,6 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
       }
     };
     File[] projectFiles = inputDirFile.listFiles(projectFilter);
-    Map<String, String> conceptMap = new HashMap<>();
 
     // iterate through relevant files
     for (File file : projectFiles) {
@@ -326,9 +336,14 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
                   if (j == 0) {
                     String firstColumn = columns.get(j).text();
                     String firstColumnCode = firstColumn.substring(0, firstColumn.indexOf(" "));
-                    firstColumnText =
+                    if (Pattern.matches("[A-Z][0-9][0-9].*", cleanCode(firstColumnCode))) {
+                      firstColumnText =
                         firstColumn.substring(firstColumn.indexOf(" ") + 1).replace("++", "");
-                    if (!conceptMap.containsKey(firstColumnCode)) {
+                    } else {
+                      firstColumnText = firstColumn;
+                    }
+                      
+                    if (!conceptMap.containsKey(firstColumnCode) && Pattern.matches("[A-Z][0-9][0-9].*", cleanCode(firstColumnCode))) {
                       conceptWriter
                           .write(cleanCode(firstColumnCode) + "|" + firstColumnText + "\n");
                       conceptMap.put(cleanCode(firstColumnCode), firstColumnText);
@@ -337,11 +352,12 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
                   } else {
                     // skip any cell with "---"
                     if (!columns.get(j).text().contentEquals("---")
-                        && !conceptMap.containsKey(cleanCode(columns.get(j).text()))) {
-                      conceptWriter.write(cleanCode(columns.get(j).text()) + "|" + firstColumnText
+                        && !conceptMap.containsKey(cleanCode(columns.get(j).text()))
+                        && Pattern.matches("[A-Z][0-9][0-9].*", cleanCode(columns.get(j).text()))) {
+                        conceptWriter.write(cleanCode(columns.get(j).text()) + "|" + firstColumnText
                           + " " + headers.get(j - 1) + "\n");
-                      conceptMap.put(cleanCode(columns.get(j).text()),
-                          firstColumnText + " " + headers.get(j - 1));
+                        conceptMap.put(cleanCode(columns.get(j).text()),
+                          firstColumnText + " " + headers.get(j - 1));                   
                     }
                   }
                 }
@@ -512,7 +528,7 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
           chapterCode = colText.substring(0, colText.indexOf("-") - 1);
 
           getLog().info(cols.get(0).text());
-          parentChildWriter.write("root" + "|" + chapterCode + "\n");
+          parentChildSet.add("root" + "|" + chapterCode);
         }
 
         // Get sub-headers
@@ -525,7 +541,7 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
           if (Pattern.matches("[A-Z][0-9][0-9]", subChapterRange)) {
             subChapterRange = subChapterRange + "-" + subChapterRange;
           }
-          parentChildWriter.write(chapterCode + "|" + cleanCode(subChapterRange) + "\n");
+          parentChildSet.add(chapterCode + "|" + cleanCode(subChapterRange));
           prevStack.clear();
           prevStack.push(cleanCode(subChapterRange));
         }
@@ -539,21 +555,21 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
             String currentCode = cleanCode(cols.get(0).text());
 
             if (prevStack.peek().contentEquals(subChapterRange)) {
-              parentChildWriter.write(prevStack.peek() + "|" + currentCode + "\n");
+              parentChildSet.add(prevStack.peek() + "|" + currentCode);
               prevStack.push(currentCode);
             } else if (currentCode.length() == prevStack.peek().length()) {
               prevStack.pop();
-              parentChildWriter.write(prevStack.peek() + "|" + currentCode + "\n");
+              parentChildSet.add(prevStack.peek() + "|" + currentCode);
               prevStack.push(currentCode);
             } else if (currentCode.length() < prevStack.peek().length()) {
               while (stripChars(currentCode).length() <= stripChars(prevStack.peek()).length()
                   && !Pattern.matches("[A-Z][0-9][0-9]-[A-Z][0-9][0-9]", prevStack.peek())) {
                 prevStack.pop();
               }
-              parentChildWriter.write(prevStack.peek() + "|" + currentCode + "\n");
+              parentChildSet.add(prevStack.peek() + "|" + currentCode);
               prevStack.push(currentCode);
             } else if (currentCode.length() > prevStack.peek().length()) {
-              parentChildWriter.write(prevStack.peek() + "|" + currentCode + "\n");
+              parentChildSet.add(prevStack.peek() + "|" + currentCode);
               prevStack.push(currentCode);
             }
             // process embedded table
@@ -582,15 +598,18 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
                   if (j == 0) {
                     String firstColumn = columns.get(j).text();
                     firstColumnCode = firstColumn.substring(0, firstColumn.indexOf(" "));
-
-                    parentChildWriter.write(prevStack.peek() + "|" + firstColumnCode + "\n");
-
+                    if (Pattern.matches("[A-Z][0-9][0-9].*", firstColumnCode)) {
+                      parentChildSet.add(prevStack.peek() + "|" + firstColumnCode);
+                    }
                     // process codes in second through n columns
                   } else {
                     // skip any cell with "---"
                     if (!columns.get(j).text().contentEquals("---")) {
-                      parentChildWriter
-                          .write(firstColumnCode + "|" + cleanCode(columns.get(j).text()) + "\n");
+                      if (Pattern.matches("[A-Z][0-9][0-9].*", firstColumnCode)) {
+                        parentChildSet.add(firstColumnCode + "|" + cleanCode(columns.get(j).text()));
+                      } else {
+                        parentChildSet.add(prevStack.peek() + "|" + cleanCode(columns.get(j).text()));
+                      }
 
                     }
                   }
@@ -621,6 +640,9 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
           targetIds.add(label);
         }
         for (String code2 : targetIds) {
+          if (code2.startsWith("U")) {
+            continue;
+          }
           if (previousCode.contains("*") && bullet.contains("†")) {
             conceptRelationshipSet.add(
                 cleanCode(previousCode) + "|" + formatCode(code2) + "|Dagger to asterisk|" + label);
