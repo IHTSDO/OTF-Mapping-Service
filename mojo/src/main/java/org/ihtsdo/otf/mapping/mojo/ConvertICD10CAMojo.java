@@ -643,6 +643,7 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
           if (code2.startsWith("U")) {
             continue;
           }
+          label = label.replaceAll(" ([,\\.\\-])","$1"); 
           if (previousCode.contains("*") && bullet.contains("†")) {
             conceptRelationshipSet.add(
                 cleanCode(previousCode) + "|" + formatCode(code2) + "|Dagger to asterisk|" + label);
