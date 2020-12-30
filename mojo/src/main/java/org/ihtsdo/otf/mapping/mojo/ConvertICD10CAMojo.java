@@ -124,6 +124,7 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
         parentChildWriter.write(member + "\n");
       }
     
+      // write concept-attributes.txt
       for (String member : conceptAttributeSet) {
         // don't write out any blank attributes/descriptions
         if (!member.trim().replaceAll("\\u00A0", "").endsWith("|")) {
@@ -131,12 +132,29 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
         }
       }
 
+      // write simple-refset-members.txt
       for (String member : simpleRefsetMemberSet) {
         simpleRefsetMemberWriter.write(member + "\n");
       }
 
+      // write concept-relationships.txt
+      Set<String> code1Code2 = new HashSet<>();
       for (String member : conceptRelationshipSet) {
-        relationshipWriter.write(member + "\n");
+        String[] fields = member.split("\\|");
+        // check for invalid range in code2, if found, modify to single target code
+        if (fields[1].contains("-")) {
+          if (!conceptMap.containsKey(fields[1])) {
+            System.out.println("codeRange invalid " + fields[1]);
+            fields[1] = fields[1].substring(0, fields[1].indexOf("-"));
+            relationshipWriter.write(fields[0] + "|" + fields[1] + "|" + fields[2] + "|" + fields[3] + "\n");
+            continue;
+          }
+        }
+        // only keep one rel for each code1|code2 tuple
+        if (!code1Code2.contains(fields[0] + "|" + fields[1] + "|" + fields[2])) {
+          relationshipWriter.write(member + "\n");
+          code1Code2.add(fields[0] + "|" + fields[1] + "|" + fields[2]);
+        }
       }
 
       getLog().info("done ...");
@@ -640,6 +658,7 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
           targetIds.add(label);
         }
         for (String code2 : targetIds) {
+          // skip relationships to emergency use codes
           if (code2.startsWith("U")) {
             continue;
           }
