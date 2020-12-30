@@ -87,7 +87,7 @@ public class ICD10CMSQLConflictReportMojo extends AbstractOtfMappingMojo {
       final String dateStamp = dateFormat.format(new Date());
 
       File resultFile = new File(System.getProperty("java.io.tmpdir")
-          + "/sqlReport_" + dateStamp + ".txt");
+          + "/sqlConflictReport_" + dateStamp + ".txt");
       System.out
           .println("Created result file: " + resultFile.getAbsolutePath());
 
@@ -100,7 +100,7 @@ public class ICD10CMSQLConflictReportMojo extends AbstractOtfMappingMojo {
 
       // Zip results file
       File zipFile = new File(System.getProperty("java.io.tmpdir")
-          + "/sqlReport_" + dateStamp + ".zip");
+          + "/sqlConflictReport_" + dateStamp + ".zip");
 
       try (FileOutputStream fos = new FileOutputStream(zipFile);
           ZipOutputStream zipOut =
