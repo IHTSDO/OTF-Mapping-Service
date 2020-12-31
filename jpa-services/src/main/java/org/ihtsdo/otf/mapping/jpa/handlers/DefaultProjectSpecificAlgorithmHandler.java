@@ -73,6 +73,14 @@ public class DefaultProjectSpecificAlgorithmHandler
 
   /* see superclass */
   @Override
+  public MapRecord computeInitialMapRecord(MapRecord mapRecord) throws Exception {
+    // Only specific projects require this - by default, do nothing
+    return null;
+  }
+  
+  
+  /* see superclass */
+  @Override
   public ValidationResult validateRecord(MapRecord mapRecord) throws Exception {
 
     // Universal checks

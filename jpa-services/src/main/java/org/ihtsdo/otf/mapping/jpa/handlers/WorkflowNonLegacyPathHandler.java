@@ -29,6 +29,7 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowStatusCombination;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.RootServiceJpa;
+import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -474,6 +475,15 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
           handler.setMapProject(mapProject);
           newRecord.setLastModifiedBy(mapUser);
           handler.computeIdentifyAlgorithms(newRecord);
+          
+          // Check if this concept has legacy map records, and populate if so
+          MapRecord existingMapRecord = handler.computeInitialMapRecord(newRecord);
+          if(existingMapRecord != null) {
+            newRecord.setMapEntries(existingMapRecord.getMapEntries());
+            for(MapEntry mapEntry : newRecord.getMapEntries()) {
+              mapEntry.setMapRecord(newRecord);
+            }
+          }
 
         }
         // otherwise, if this is a tracking record with conflict
