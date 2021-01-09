@@ -172,7 +172,7 @@ public class ExportAppConfigDataMojo extends AbstractOtfMappingMojo {
         getLog().info("  project : " + mp.getName());
 
         MapProjectConfiguration lmp = new MapProjectConfiguration();
-        lmp.setDateFormat("YYYYMMDD");
+        lmp.setDateFormat("yyyyMMdd");
         lmp.setDestinationTerminology(mp.getDestinationTerminology());
         lmp.setDestinationTerminologyVersion(
             mp.getDestinationTerminologyVersion());

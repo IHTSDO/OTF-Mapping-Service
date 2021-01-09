@@ -370,7 +370,7 @@ public class TerminologyUtility {
         return mapAdvice;
       }
     }
-    throw new Exception("Unalbe to find advice - " + advice);
+    throw new Exception("Unable to find advice - " + advice);
   }
 
   /**

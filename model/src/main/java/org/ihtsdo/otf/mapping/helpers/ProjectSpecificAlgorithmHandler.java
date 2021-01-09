@@ -1,3 +1,12 @@
+/*
+ * Copyright 2020 Wci Informatics - All Rights Reserved.
+ *
+ * NOTICE:  All information contained herein is, and remains the property of Wci Informatics
+ * The intellectual and technical concepts contained herein are proprietary to
+ * Wci Informatics and may be covered by U.S. and Foreign Patents, patents in process,
+ * and are protected by trade secret or copyright law.  Dissemination of this information
+ * or reproduction of this material is strictly forbidden.
+ */
 package org.ihtsdo.otf.mapping.helpers;
 
 import java.util.List;
@@ -53,8 +62,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @return the validation result
    * @throws Exception the exception
    */
-  public ValidationResult validateTargetCodes(MapRecord mapRecord)
-    throws Exception;
+  public ValidationResult validateTargetCodes(MapRecord mapRecord) throws Exception;
 
   /**
    * Checks if is target code valid for this project.
@@ -73,8 +81,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @throws Exception the exception
    */
   public boolean isMapRecordLineValid(String line) throws Exception;
-  
-  
+
   /**
    * Validate semantic checks.
    *
@@ -82,8 +89,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @return the validation result
    * @throws Exception the exception
    */
-  public ValidationResult validateSemanticChecks(MapRecord mapRecord)
-    throws Exception;
+  public ValidationResult validateSemanticChecks(MapRecord mapRecord) throws Exception;
 
   /**
    * Compute map advice and map relations. Must be overwritten for each project
@@ -94,8 +100,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @return the list
    * @throws Exception the exception
    */
-  public MapAdviceList computeMapAdvice(MapRecord mapRecord, MapEntry mapEntry)
-    throws Exception;
+  public MapAdviceList computeMapAdvice(MapRecord mapRecord, MapEntry mapEntry) throws Exception;
 
   /**
    * Compute map relations.
@@ -105,8 +110,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @return the list
    * @throws Exception the exception
    */
-  public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry)
-    throws Exception;
+  public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry) throws Exception;
 
   /**
    * Compute map record conflicts.
@@ -125,8 +129,17 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @param treePositions the tree positions
    * @throws Exception the exception
    */
-  public void computeTargetTerminologyNotes(List<TreePosition> treePositions)
-    throws Exception;
+  public void computeTargetTerminologyNotes(List<TreePosition> treePositions) throws Exception;
+
+  /**
+   * Compute initial map record.  Read in published map records from an RF2 file,
+   * and if the concept has been mapped there, return that map record to pre-populate the 
+   * map record for this project
+   *
+   * @param mapRecord the map record
+   * @throws Exception the exception
+   */
+  public MapRecord computeInitialMapRecord(MapRecord mapRecord) throws Exception;
 
   /**
    * Called after "assign from scratch" to give handlers the opportunity to
@@ -158,8 +171,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @return the validation result
    * @throws Exception the exception
    */
-  public ValidationResult validateForRelease(ComplexMapRefSetMember member)
-    throws Exception;
+  public ValidationResult validateForRelease(ComplexMapRefSetMember member) throws Exception;
 
   /**
    * Returns the default up propagated map relation.
@@ -193,14 +205,14 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @return the list
    */
   public List<TreePosition> limitTreePositions(List<TreePosition> treePositions);
-  
+
   /**
    * Checks if is one to one constrained.
    *
    * @return true, if is one to one constrained
    */
   public boolean isOneToOneConstrained();
-  
+
   /**
    * Record violates one to one constraint.
    *
@@ -217,5 +229,5 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @throws Exception the exception
    */
   public String getReleaseFile3rdElement() throws Exception;
-  
+
 }

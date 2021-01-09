@@ -301,7 +301,7 @@
 
 </uib-tab> <!-- Review tab --> <uib-tab heading="{{tabs[2].title}}"
   active="tabs[2].active" select="setTab(2)"
-  ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
+  ng-show="(currentRole === 'Lead' || currentRole === 'Administrator') && !(focusProject.workflowType === 'CONFLICT_PROJECT' || focusProject.workflowType === 'LEGACY_PATH')">
 
 <table style="margin-top: 10px; margin-bottom: 10px;">
   <tr>
