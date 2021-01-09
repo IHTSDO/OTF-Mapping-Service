@@ -1691,7 +1691,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       Calendar calendar = Calendar.getInstance();
       calendar.add(Calendar.YEAR, -1);
       Date yearAgo = calendar.getTime();
-      DateFormat dateFormat = new SimpleDateFormat("YYYYMMDD");
+      DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
       String sinceDate = dateFormat.format(yearAgo);
       sb.append(" AND lastModified:[" + sinceDate + " TO *]");
     }
