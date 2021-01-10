@@ -379,7 +379,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
               }
             }
             if (!hasExternalCauseCode && !hasAdvice) {
-              result.addError("Code K52.13 must have either an "
+              result.addError("Code K52.1 must have either an "
                   + "external cause code or "
                   + "advice \"POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE\"");
             }
