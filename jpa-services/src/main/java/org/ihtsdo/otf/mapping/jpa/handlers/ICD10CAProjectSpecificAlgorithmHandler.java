@@ -108,6 +108,14 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
    */
   // private MapRuleParser parser = new MapRuleParser();
 
+  /* see superclass */
+  @Override
+  public void initialize() throws Exception {
+    Logger.getLogger(getClass()).info("Running initialize for " + getClass().getName());
+    // Populate any project-specific caches.
+    cacheExistingMaps();
+  }
+  
   /**
    * For ICD10, a target code is valid if: - Concept exists - Concept has at
    * least 3 characters - The second character is a number (e.g. XVII is
