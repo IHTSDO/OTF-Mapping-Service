@@ -174,8 +174,11 @@ Principles <i class="pull-right glyphicon"
   is-open="isFlagsOpen"> <uib-accordion-heading>
 Flags <i class="pull-right glyphicon"
   ng-class="{'glyphicon-chevron-down': isFlagsOpen, 'glyphicon-chevron-right': !isFlagsOpen}"></i>
-</uib-accordion-heading> <input type="checkbox" ng-model="record.flagForConsensusReview"> Flag
+</uib-accordion-heading> 
+<span ng-show="project.destinationTerminology != 'ICD10CA'">
+<input type="checkbox" ng-model="record.flagForConsensusReview"> Flag
 for consensus review<br>
+</span>
 <span ng-show="project.destinationTerminology != 'ICD10CA'">
 <input type="checkbox" ng-model="record.flagForEditorialReview"> Flag
 for editorial review<br>
