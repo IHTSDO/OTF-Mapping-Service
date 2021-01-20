@@ -1,5 +1,11 @@
 /*
- *    Copyright 2019 West Coast Informatics, LLC
+ * Copyright 2020 Wci Informatics - All Rights Reserved.
+ *
+ * NOTICE:  All information contained herein is, and remains the property of Wci Informatics
+ * The intellectual and technical concepts contained herein are proprietary to
+ * Wci Informatics and may be covered by U.S. and Foreign Patents, patents in process,
+ * and are protected by trade secret or copyright law.  Dissemination of this information
+ * or reproduction of this material is strictly forbidden.
  */
 package org.ihtsdo.otf.mapping.rest.impl;
 
@@ -14,6 +20,10 @@ import org.apache.log4j.Logger;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.jsonp.JsonProcessingFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
+import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.model.MapProject;
+import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
@@ -32,6 +42,32 @@ public class MappingServerApplication extends Application {
   public final static String API_VERSION = "1.0.0";
 
   /**
+   * Run project specific handlers' initialize method for all projects
+   *
+   * @throws Exception the exception
+   */
+  public static void initializeHandlers() throws Exception {
+    final MappingService service = new MappingServiceJpa();
+    try {
+
+      for (MapProject mapProject : service.getMapProjects().getMapProjects()) {
+        ProjectSpecificAlgorithmHandler handler = (ProjectSpecificAlgorithmHandler) Class
+            .forName(mapProject.getProjectSpecificAlgorithmHandlerClass()).getDeclaredConstructor()
+            .newInstance();
+
+        handler.setMapProject(mapProject);
+        handler.initialize();
+
+      }
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      service.close();
+    }
+
+  }
+
+  /**
    * Instantiates an empty {@link MappingServerApplication}.
    * 
    * @throws Exception the exception
@@ -46,8 +82,7 @@ public class MappingServerApplication extends Application {
     beanConfig.setDescription("RESTful calls for mapping server");
     beanConfig.setVersion(API_VERSION);
 
-    final URL url =
-        new URL(ConfigUtility.getConfigProperties().getProperty("base.url"));
+    final URL url = new URL(ConfigUtility.getConfigProperties().getProperty("base.url"));
     final String host = url.getHost() + ":" + url.getPort();
 
     if (new ConfigureServiceRestImpl().isConfigured()) {
@@ -63,6 +98,8 @@ public class MappingServerApplication extends Application {
 
     // this makes Swagger honor JAXB annotations
     Json.mapper().registerModule(new JaxbAnnotationModule());
+
+    initializeHandlers();
 
   }
 
