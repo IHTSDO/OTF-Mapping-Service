@@ -30,6 +30,8 @@ import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
+import java.util.Map.Entry;
+
 /**
  * Converts icd10ca html files into format required for SimpleLoaderAlgorithm.
  * 
@@ -116,13 +118,124 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
       ignoreEmbedded.add("T32");
 
       
-
+      // write concepts.txt
       writeConcepts(inputDirFile, outputDirFile);
+      
+      for (Entry<String, String> entry : conceptMap.entrySet()) {
+        conceptWriter.write(entry.getKey() + "|" + entry.getValue() + "\n");
+      }
+      
+      // write parent-child.txt
       writeParentChild(inputDirFile, outputDirFile);
       
+      Set<String> superSpans = new HashSet<>();
+      superSpans.add("V01-X59|V01-V99");
+      superSpans.add("V01-X59|W00-X59");
+
+      superSpans.add("W00-X59|W00-W19");
+      superSpans.add("W00-X59|W20-W49");
+      superSpans.add("W00-X59|W50-W64");
+      superSpans.add("W00-X59|W65-W74");
+      superSpans.add("W00-X59|W75-W84");
+      superSpans.add("W00-X59|W85-W99");
+      superSpans.add("W00-X59|X00-X09");
+      superSpans.add("W00-X59|X10-X19");
+      superSpans.add("W00-X59|X20-X29");
+      superSpans.add("W00-X59|X30-X39");
+      superSpans.add("W00-X59|X40-X49");
+      superSpans.add("W00-X59|X50-X57");
+      superSpans.add("W00-X59|X58-X59");
+
+      superSpans.add("V01-V99|V01-V09");
+      superSpans.add("V01-V99|V10-V19");
+      superSpans.add("V01-V99|V20-V29");
+      superSpans.add("V01-V99|V30-V39");
+      superSpans.add("V01-V99|V40-V49");
+      superSpans.add("V01-V99|V50-V59");
+      superSpans.add("V01-V99|V60-V69");
+      superSpans.add("V01-V99|V70-V79");
+      superSpans.add("V01-V99|V80-V89");
+      superSpans.add("V01-V99|V90-V94");
+      superSpans.add("V01-V99|V95-V97");
+      superSpans.add("V01-V99|V98-V99");
+
+      superSpans.add("C00-C97|C00-C75");
+      superSpans.add("C00-C97|C76-C80");
+      superSpans.add("C00-C97|C81-C96");
+      superSpans.add("C00-C97|C97-C97");
+
+      superSpans.add("C00-C75|C00-C14");
+      superSpans.add("C00-C75|C15-C26");
+      superSpans.add("C00-C75|C30-C39");
+      superSpans.add("C00-C75|C40-C41");
+      superSpans.add("C00-C75|C43-C44");
+      superSpans.add("C00-C75|C45-C49");
+      superSpans.add("C00-C75|C50-C50");
+      superSpans.add("C00-C75|C51-C58");
+      superSpans.add("C00-C75|C60-C63");
+      superSpans.add("C00-C75|C64-C68");
+      superSpans.add("C00-C75|C69-C72");
+      superSpans.add("C00-C75|C73-C75");
+
+      superSpans.add("Y40-Y84|Y40-Y59");
+      superSpans.add("Y40-Y84|Y60-Y69");
+      superSpans.add("Y40-Y84|Y70-Y82");
+      superSpans.add("Y40-Y84|Y83-Y84");
+
+      superSpans.add("M00-M25|M00-M03");
+      superSpans.add("M00-M25|M05-M14");
+      superSpans.add("M00-M25|M15-M19");
+      superSpans.add("M00-M25|M20-M25");
+
+      superSpans.add("M40-M54|M40-M43");
+      superSpans.add("M40-M54|M45-M49");
+      superSpans.add("M40-M54|M50-M54");
+
+      superSpans.add("M60-M79|M60-M63");
+      superSpans.add("M60-M79|M65-M68");
+      superSpans.add("M60-M79|M70-M79");
+
+      superSpans.add("M80-M94|M80-M85");
+      superSpans.add("M80-M94|M86-M90");
+      superSpans.add("M80-M94|M91-M94");
+
+      superSpans.add("T20-T32|T20-T25");
+      superSpans.add("T20-T32|T26-T28");
+      superSpans.add("T20-T32|T29-T32");
+
+      
       for (String member : parentChildSet) {
+        boolean found = false;
+        for (String span : superSpans) {        
+          if(span.endsWith("|" + member.substring(member.indexOf("|") + 1))) {
+            found = true;
+            System.out.println("skipped member: " + member);
+            continue;
+          }
+        }
+        if (!found) {
+          parentChildWriter.write(member + "\n");
+        }
+        /*
+         * if (superSpans.values().contains(member.substring(member.indexOf("|")
+         * + 1))) { System.out.println("skipped member: " + member); } else {
+         * 
+         * }
+         */
+      }
+      for (String member : superSpans) {
         parentChildWriter.write(member + "\n");
       }
+      /**for (String member : parentChildSet) {
+        // don't print rows where child range doesn't have children
+        if (Pattern.matches(".*\\|([A-Z][0-9][0-9]-[A-Z][0-9][0-9])+$", member)) {
+          if (!hasChildren(member.substring(member.indexOf("|") + 1))) {
+            System.out.println("skip parent range - has no children: " + member);
+            continue;
+          }
+        }
+        parentChildWriter.write(member + "\n");
+      }*/
     
       // write concept-attributes.txt
       for (String member : conceptAttributeSet) {
@@ -176,6 +289,15 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
 
   }
 
+  private boolean hasChildren(String member) {
+    for (String entry : parentChildSet) {
+      if (entry.startsWith(member + "|")) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
   /**
    * Write each ICD10CA conceptId and term to the concepts.txt file. Also calls
    * processing for the concept-attributes.txt and concept-relationships.txt
@@ -297,7 +419,6 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
           int stop = colText.indexOf("(") != -1 ? colText.indexOf("(") - 1 : colText.length();
           String term = colText.substring(colText.indexOf("-") + 2, stop);
           if (!conceptMap.containsKey(code)) {
-            conceptWriter.write(code + "|" + term + "\n");
             conceptMap.put(code, term);
             previousCode = code;
           }
@@ -318,7 +439,6 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
             }
             // ensure no duplicates
             if (!conceptMap.containsKey(cleanCode(cols.get(0).text()))) {
-              conceptWriter.write(cleanCode(cols.get(0).text()) + "|" + cols.get(1).text() + "\n");
               conceptMap.put(cleanCode(cols.get(0).text()), cols.get(1).text());
             }
             previousCode = cols.get(0).text();
@@ -362,8 +482,6 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
                     }
                       
                     if (!conceptMap.containsKey(firstColumnCode) && Pattern.matches("[A-Z][0-9][0-9].*", cleanCode(firstColumnCode))) {
-                      conceptWriter
-                          .write(cleanCode(firstColumnCode) + "|" + firstColumnText + "\n");
                       conceptMap.put(cleanCode(firstColumnCode), firstColumnText);
                     }
                     // process codes in second through n columns
@@ -372,8 +490,6 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
                     if (!columns.get(j).text().contentEquals("---")
                         && !conceptMap.containsKey(cleanCode(columns.get(j).text()))
                         && Pattern.matches("[A-Z][0-9][0-9].*", cleanCode(columns.get(j).text()))) {
-                        conceptWriter.write(cleanCode(columns.get(j).text()) + "|" + firstColumnText
-                          + " " + headers.get(j - 1) + "\n");
                         conceptMap.put(cleanCode(columns.get(j).text()),
                           firstColumnText + " " + headers.get(j - 1));                   
                     }
