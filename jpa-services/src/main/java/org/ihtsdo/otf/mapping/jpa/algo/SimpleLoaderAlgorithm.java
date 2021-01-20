@@ -181,7 +181,7 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
       if (conRelFileExists) {
         loadConceptRelationships(helper, conceptMap, now);
         
-        Concept codingHintConcept = conceptMap.get("Coding hint");
+        /**Concept codingHintConcept = conceptMap.get("Coding hint");
         for (Concept cpt : conceptMap.values()) {
         	for (Description d : cpt.getDescriptions()) {
         		if (d.getTerm().contains("(") && d.getTerm().contains(")")) {
@@ -190,7 +190,7 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
         		  d.setTerm(firstSegment + secondSegment);
         		}
         	}
-        }
+        }*/
       }
 
       // If there is a simple refsets file , load now
