@@ -132,9 +132,9 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
   public void computeTargetTerminologyNotes(List<TreePosition> treePositions) throws Exception;
 
   /**
-   * Compute initial map record.  Read in published map records from an RF2 file,
-   * and if the concept has been mapped there, return that map record to pre-populate the 
-   * map record for this project
+   * Compute initial map record. Read in published map records from an RF2 file,
+   * and if the concept has been mapped there, return that map record to
+   * pre-populate the map record for this project
    *
    * @param mapRecord the map record
    * @throws Exception the exception
@@ -229,5 +229,12 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @throws Exception the exception
    */
   public String getReleaseFile3rdElement() throws Exception;
+
+  /**
+   * Initialize.
+   *
+   * @throws Exception the exception
+   */
+  public void initialize() throws Exception;
 
 }
