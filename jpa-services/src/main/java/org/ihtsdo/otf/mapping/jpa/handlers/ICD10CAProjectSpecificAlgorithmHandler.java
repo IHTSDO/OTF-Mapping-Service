@@ -28,6 +28,7 @@ import org.ihtsdo.otf.mapping.helpers.ConceptList;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceListJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
+import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
@@ -88,9 +89,6 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
 
   /** The asterisk codes. */
   private static Set<String> asteriskCodes = new HashSet<>();
-
-  /** The valid3 digit codes. */
-  private static Set<String> valid3DigitCodes = new HashSet<>();
 
   /** The asterisk ref set id. */
   private static String asteriskRefSetId;
@@ -974,63 +972,24 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
       // check that code has at least three characters, that the second
       // character
       // is a number, and does not contain a dash
-      if (!terminologyId.matches(".[0-9].*") || terminologyId.contains("-")) { // "(.*?[0-9]){3,}")
-        // ||
-        // terminologyId.contains("-"))
-        // {
+      if (!terminologyId.matches(".[0-9].*") || terminologyId.contains("-")) { 
         return false;
-      }
-
-      // if a three digit code
-      if (terminologyId.matches(".[0-9].")) {
-
-        // SPECIFIC CASE for W00-W19, X00-X09, Y10-Y34, fourth digit not
-        // required,
-        // return true for codes with 3 or more digits
-        if (terminologyId.toUpperCase().matches("W..|X..|Y[0-2].|Y3[0-4]")
-            && !terminologyId.toUpperCase().startsWith("W26")
-            && !terminologyId.toUpperCase().startsWith("Y06")
-            && !terminologyId.toUpperCase().startsWith("Y07")
-            && !terminologyId.toUpperCase().startsWith("Y35")
-            && !terminologyId.toUpperCase().startsWith("Y36")
-            && !terminologyId.toUpperCase().startsWith("X34")
-            && !terminologyId.toUpperCase().startsWith("X59")) {
-          // n/a
-        }
-
-        // Check other 3 digit codes
-        else {
-
-          cacheCodes();
-
-          // Is it a valid 3 digit code?
-          return valid3DigitCodes.contains(terminologyId.toUpperCase());
-
-        }
-      }
-
-      // if a four digit code is all
-      else if (terminologyId.matches(".[0-9].\\..")) {
-
-        // SPECIFIC CASE for W00-W19, X00-X09, Y10-Y34, fourth digit not
-        // required,
-        // return true for codes with 3 or more digits
-        if (terminologyId.toUpperCase().matches("(W..|X..|Y[0-2].|Y3[0-4])..")
-            && !terminologyId.toUpperCase().startsWith("W26")
-            && !terminologyId.toUpperCase().startsWith("Y06")
-            && !terminologyId.toUpperCase().startsWith("Y07")
-            && !terminologyId.toUpperCase().startsWith("Y35")
-            && !terminologyId.toUpperCase().startsWith("Y36")
-            && !terminologyId.toUpperCase().startsWith("X34")
-            && !terminologyId.toUpperCase().startsWith("X59")) {
-          return false;
-        }
-
       }
 
       // verify concept exists in database
       final Concept concept = contentService.getConcept(terminologyId,
-          mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
+          mapProject.getDestinationTerminology(),
+          mapProject.getDestinationTerminologyVersion());
+
+      // Only leaf nodes (concepts with no descendants) are valid 
+      TreePositionList list = contentService.getTreePositions(terminologyId,
+          mapProject.getDestinationTerminology(),
+          mapProject.getDestinationTerminologyVersion());
+      for (TreePosition tp : list.getTreePositions()) {
+        if (tp.getDescendantCount() > 0) {
+          return false;
+        }
+      }
 
       if (concept == null) {
         return false;
@@ -1467,7 +1426,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
   private void cacheCodes() throws Exception {
 
     // lazy initialize
-    if (!valid3DigitCodes.isEmpty()) {
+    if (!asteriskCodes.isEmpty()) {
       return;
     }
     final ContentServiceJpa contentService = new ContentServiceJpa();
@@ -1519,21 +1478,9 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
         daggerCodes.add(concept.getTerminologyId());
       }
 
-      // Look up valid 3 digit codes
-      final javax.persistence.Query threeDigitQuery =
-          manager.createNativeQuery("select terminologyId from concepts where "
-              + "terminology = 'ICD10CA' and length(terminologyId) = 3 and terminologyId "
-              + "NOT IN (select substring_index(ancestorPath, '~',-1) from "
-              + "tree_positions where terminology='ICD10CA')");
-      List<String> terminologyIds = threeDigitQuery.getResultList();
-      for (final String terminologyId : terminologyIds) {
-        valid3DigitCodes.add(terminologyId);
-      }
-
       // Report to log
       Logger.getLogger(getClass()).info(" asterisk codes = " + asteriskCodes);
       Logger.getLogger(getClass()).info(" dagger codes = " + daggerCodes);
-      Logger.getLogger(getClass()).info("  valid 3 digit codes = " + valid3DigitCodes);
     } catch (Exception e) {
       throw e;
     } finally {
