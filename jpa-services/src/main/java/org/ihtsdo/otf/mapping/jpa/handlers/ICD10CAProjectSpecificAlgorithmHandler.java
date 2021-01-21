@@ -1816,6 +1816,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
     Logger.getLogger(getClass()).info("Done caching maps");
 
     preloadMapReader.close();
+    contentService.close();
 
   }
 
