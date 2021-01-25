@@ -3,9 +3,16 @@
  */
 package org.ihtsdo.otf.mapping.rest.impl;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import javax.servlet.ServletInputStream;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -13,6 +20,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -20,6 +28,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.rest.SecurityServiceRest;
+import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
@@ -37,6 +46,11 @@ import io.swagger.annotations.ApiParam;
 })
 public class SecurityServiceRestImpl extends RootServiceRestImpl implements SecurityServiceRest {
 
+  /** The HTTP request */
+  // @Resource
+  @Context
+  private HttpServletRequest httpServletRequest;
+  
   /* (non-Javadoc)
    * @see org.ihtsdo.otf.mapping.rest.impl.SecurityServiceRest#authenticate(java.lang.String, java.lang.String)
    */
@@ -128,4 +142,85 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements Secu
     }
     return null;
   }
+  
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.SecurityServiceRest#getConfigProperties()
+   */
+  @Override
+  //@GET
+  @Path("/callback")
+  @Produces({
+    MediaType.APPLICATION_JSON
+  })
+  @ApiOperation(value = "", notes = "Handle callback from OAuth2", response = String.class)
+  public Response callback() throws Exception {
+    Logger.getLogger(getClass()).info("RESTful call /security/callback");
+    try {
+      
+      //Log everything for now
+      Logger.getLogger(getClass()).info("REQUEST DETAILS");
+      Logger.getLogger(getClass()).info("\tHTTP Method: " + httpServletRequest.getMethod());
+      Logger.getLogger(getClass()).info("\tQuery String: " + httpServletRequest.getQueryString());
+      httpServletRequest.getHeaderNames().asIterator().forEachRemaining(headerName ->
+      {
+        Logger.getLogger(getClass()).info("\tHeader: " + headerName + " value: " + httpServletRequest.getHeader(headerName));
+      });
+      httpServletRequest.getParameterNames().asIterator().forEachRemaining(param ->
+      {
+        Logger.getLogger(getClass()).info("\tParams: " + param + " value: " + httpServletRequest.getHeader(param));
+      });
+      
+      Logger.getLogger(getClass()).info("\tBody: " + getHttpServletRequestBody(httpServletRequest));
+      
+      final String body = getHttpServletRequestBody(httpServletRequest);
+      
+      //TODO: Pass JSON into password field
+      authenticate("guest", body);
+      
+      return Response.ok().build();
+    }
+    catch(Exception e) {
+      handleException(e, "callback");
+      return Response.serverError().build();
+    }
+    finally {
+      
+    }
+  }
+  
+  //temporary until the callback method knows exactly what it is getting
+  private String getHttpServletRequestBody(HttpServletRequest request) { 
+    StringBuilder stringBuilder = new StringBuilder();  
+    BufferedReader bufferedReader = null;  
+  
+    try {  
+        InputStream inputStream = request.getInputStream(); 
+  
+        if (inputStream != null) {  
+            bufferedReader = new BufferedReader(new InputStreamReader(inputStream));  
+  
+            char[] charBuffer = new char[128];  
+            int bytesRead = -1;  
+  
+            while ((bytesRead = bufferedReader.read(charBuffer)) > 0) {  
+                stringBuilder.append(charBuffer, 0, bytesRead);  
+            }  
+        } else {  
+            stringBuilder.append("");  
+        }  
+    } catch (IOException ex) {  
+      Logger.getLogger(getClass()).error("Error reading the request body...");  
+    } finally {  
+        if (bufferedReader != null) {  
+            try {  
+                bufferedReader.close();  
+            } catch (IOException ex) {  
+              Logger.getLogger(getClass()).error("Error closing bufferedReader...");  
+            }  
+        }  
+    }  
+  
+    return stringBuilder.toString();  
+  }
 }
+  
