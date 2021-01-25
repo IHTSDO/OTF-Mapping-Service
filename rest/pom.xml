@@ -22,7 +22,8 @@
 
     <!-- Specify the config artifact parameters -->
     <config.groupId>org.ihtsdo.otf.mapping</config.groupId>
-    <config.artifactId>mapping-config-prod</config.artifactId>
+    <!-- <config.artifactId>mapping-config-prod</config.artifactId> -->
+    <config.artifactId>mapping-config-cihi</config.artifactId>
     <config.version>${project.version}</config.version>
     
 		<tomcat7-maven-plugin-version>2.1</tomcat7-maven-plugin-version>

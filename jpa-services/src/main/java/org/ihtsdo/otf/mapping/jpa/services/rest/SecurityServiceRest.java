@@ -2,6 +2,8 @@ package org.ihtsdo.otf.mapping.jpa.services.rest;
 
 import java.util.Map;
 
+import javax.ws.rs.core.Response;
+
 public interface SecurityServiceRest {
 
 	/**
@@ -29,5 +31,13 @@ public interface SecurityServiceRest {
 	   * @return the config properties
 	   */
 	Map<String, String> getConfigProperties();
+	
+	
+	/**
+	 * Callback function for OAuth2 login
+	 * 
+	 * @return
+	 */
+	public Response callback() throws Exception;
 
 }

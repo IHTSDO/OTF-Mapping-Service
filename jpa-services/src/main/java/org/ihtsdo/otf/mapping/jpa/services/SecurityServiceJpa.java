@@ -45,7 +45,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
 
   /** The timeout. */
   private static int timeout;
-
+  
   /**
    * Instantiates an empty {@link SecurityServiceJpa}.
    *

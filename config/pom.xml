@@ -22,6 +22,7 @@
     <module>prod</module>
     <module>wci</module>
     <module>nlm</module>
+    <module>cihi</module>
   </modules>
 </project>
 
