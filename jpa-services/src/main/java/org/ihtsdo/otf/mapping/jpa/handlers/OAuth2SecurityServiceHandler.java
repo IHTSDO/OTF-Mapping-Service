@@ -52,46 +52,43 @@ public class OAuth2SecurityServiceHandler implements SecurityServiceHandler {
     ObjectMapper mapper = new ObjectMapper();
     JsonNode doc = mapper.readTree(password);
     Logger.getLogger(getClass()).info("");
-    // e.g.
+    
     // {
-    // "login": "pgranvold",
-    // "password": null,
-    // "firstName": "Patrick",
-    // "lastName": "Granvold",
-    // "email": "***REMOVED***",
-    // "langKey": null,
-    // "roles": [
-    // "ROLE_confluence-users",
-    // "ROLE_ihtsdo-ops-admin",
-    // "ROLE_ihtsdo-sca-author",
-    // "ROLE_ihtsdo-tba-author",
-    // "ROLE_ihtsdo-tech-group",
-    // "ROLE_ihtsdo-users",
-    // "ROLE_jira-developers",
-    // "ROLE_jira-users",
-    // "ROLE_mapping-dev-team"
-    // ]
+    // "@odata.context":"https://graph.microsoft.com/v1.0/$metadata#users/$entity",
+    //    "id":"12345678-73a6-4952-a53a-e9916737ff7f",
+    //    "businessPhones":[
+    //        "+1 555555555"
+    //    ],
+    //    "displayName":"Chris Green",
+    //    "givenName":"Chris",
+    //    "jobTitle":"Software Engineer",
+    //    "mail":null,
+    //    "mobilePhone":"+1 5555555555",
+    //    "officeLocation":"Seattle Office",
+    //    "preferredLanguage":null,
+    //    "surname":"Green",
+    //    "userPrincipalName":"ChrisG@contoso.onmicrosoft.com"
     // }
 
     // Construct user from document
     MapUser user = new MapUserJpa();
-    user.setName(doc.get("firstName").asText() + " "
-        + doc.get("lastName").asText());
-    user.setUserName(doc.get("login").asText());
-    user.setEmail(doc.get("email").asText());
+    user.setName(doc.get("givenName").asText() + " "
+        + doc.get("surname").asText());
+    user.setUserName(doc.get("userPrincipalName").asText());
+    user.setEmail(doc.get("userPrincipalName").asText());
     user.setApplicationRole(MapUserRole.VIEWER);
-    user.setAuthToken(doc.get("auth_token").asText());
+    user.setAuthToken(doc.get("access_token").asText());
     
-    Iterator<JsonNode> iter = doc.get("roles").elements();
-    while (iter.hasNext()) {
-      JsonNode role = iter.next();
-      if (role.asText().equals("ROLE_mapping-administrators")) {
-        user.setApplicationRole(MapUserRole.ADMINISTRATOR);
-      }
-      // if (role.asText().equals("ROLE_mapping-users")) {
-      // user.setApplicationRole(MapUserRole.USER);
-      // }
-    }
+    // Iterator<JsonNode> iter = doc.get("roles").elements();
+    // while (iter.hasNext()) {
+    // JsonNode role = iter.next();
+    // if (role.asText().equals("ROLE_mapping-administrators")) {
+    // user.setApplicationRole(MapUserRole.ADMINISTRATOR);
+    // }
+    // // if (role.asText().equals("ROLE_mapping-users")) {
+    // // user.setApplicationRole(MapUserRole.USER);
+    // // }
+    // }
 
     return user;
   }
