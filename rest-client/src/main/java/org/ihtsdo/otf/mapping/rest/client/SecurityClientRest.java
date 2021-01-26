@@ -5,6 +5,8 @@ package org.ihtsdo.otf.mapping.rest.client;
 
 import java.util.Map;
 
+import javax.ws.rs.core.Response;
+
 import org.ihtsdo.otf.mapping.jpa.services.rest.SecurityServiceRest;
 
 /**
@@ -29,6 +31,12 @@ public class SecurityClientRest extends RootClientRest implements SecurityServic
 	public Map<String, String> getConfigProperties() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	@Override
+	public Response callback() throws Exception {
+	  // NOT Used
+	  return null;
 	}
 
 }
