@@ -30,15 +30,12 @@ mapProjectAppControllers.controller('LoginCtrl', [
     // Login button, redirect to security.handler.OAUTH2.url
     $scope.login = function() {
     
-      var url = appConfig['security.handler.OAUTH2.url']
+      var url = appConfig['security.handler.OAUTH2.url.authorize']
   		+ '?client_id=' + appConfig['security.handler.OAUTH2.client_id']
   		+ '&response_type=' + appConfig['security.handler.OAUTH2.response_type']
   		+ '&redirect_uri=' + appConfig['security.handler.OAUTH2.redirect_uri']
   		+ '&response_mode=' + appConfig['security.handler.OAUTH2.response_mode']
-  		+ '&scope=' + appConfig['security.handler.OAUTH2.scope']
-  		+ '&code_challenge=' + appConfig['security.handler.OAUTH2.code_challenge']
-  		+ '&code_challenge_method=' + appConfig['security.handler.OAUTH2.code_challenge_method']
-  		// + '&state=' + appConfig['security.handler.OAUTH2.state'] 
+  		+ '&scope=' + appConfig['security.handler.OAUTH2.scope'] 
   
       console.debug("url =", url);
       window.location.href = url; 	
