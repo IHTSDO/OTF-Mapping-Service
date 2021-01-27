@@ -180,17 +180,18 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements Secu
       // 1. READ AUTHORIZATION RESPONSE 
       
       //final String body = getHttpServletRequestBody();
-      final String queryString = httpServletRequest.getQueryString();
-      List<NameValuePair> params = URLEncodedUtils.parse(queryString, Charset.forName("UTF-8"));
+      final Map<String, String[]> params = httpServletRequest.getParameterMap();
       
       // 1A. HANDLE FAILURE FROM AUTHORIZATION RESPONSE - throw error
       // ex: GET https://localhost/security/callback
       //   ?error=access_denied&error_description=the+user+canceled+the+authentication
-      if (params.contains("error")) {
-        final String errorMsg = "Error: " + params.get(params.indexOf("error")).getValue()
-            + " Error Description: " + params.get(params.indexOf("error_description")).getValue();
+      if (params.containsKey("error")) {
+        final String errorMsg = "Error: " + params.get("error")[0]
+            + " Error Description: " + params.get("error_description")[0];
         Logger.getLogger(getClass()).error(errorMsg);
         throw new Exception(errorMsg);
+      } else if (!params.containsKey("code")) {
+        throw new Exception("Unexpected condition.  Code missing from querystring");
       }
       
       final Properties config = ConfigUtility.getConfigProperties();      
@@ -198,7 +199,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements Secu
       // 1B. HANDLE SUCCESS FROM AUTHORIZATION RESPONSE
       // ex: GET https://localhost/security/callback
       //   ?code=AwABAAAAvPM1KaPlrEqdFSBzjqfTGBCmLdgfSTLEMPGYuNHSUYBrq...&state=12345
-      final String code = params.get(params.indexOf("code")).getValue();
+      final String code = params.get("code")[0];
       
       
       // 2. GET ACCESS TOKEN
@@ -248,13 +249,6 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements Secu
       
       final URL userInfoUrl = new URL(config.getProperty("security.handler.OAUTH2.url.user_info"));
       JSONObject userResponse = retrieveJsonGet(userInfoUrl, accessToken, tokenType);
-      
-      if (userResponse.getString("error") != null) {
-        final String errorMsg = "Error: " + params.get(params.indexOf("error")).getValue()
-            + " Error Description: " + params.get(params.indexOf("error_description")).getValue();
-        Logger.getLogger(getClass()).error("Full response: " + userResponse.toString());
-        throw new Exception(errorMsg);
-      }
             
       //response
       // HTTP/1.1 200 OK
