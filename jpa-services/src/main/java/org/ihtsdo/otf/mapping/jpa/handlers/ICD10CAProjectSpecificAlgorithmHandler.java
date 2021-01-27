@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
@@ -81,6 +82,9 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
   /** The icd10 external cause codes. */
   private static Map<String, Set<String>> externalCauseCodesMap = new HashMap<>();
 
+  /** The code to advices map. */
+  private static Map<String, Set<String>> codeToAdvicesMap = new HashMap<>();
+
   /** The icd10 maps for preloading. */
   private static Map<String, MapRecord> existingIcd10Maps = new HashMap<>();
 
@@ -112,6 +116,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
     // Populate any project-specific caches.
     cacheExistingMaps();
     cacheCodes();
+    cacheCodeToAdvices();
   }
 
   /**
@@ -830,8 +835,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
           || mapEntry.getTargetId().matches("(^I6[0-4]).*"))
           && !TerminologyUtility.hasAdvice(mapEntry, hypertensionAdvice)) {
         advices.add(TerminologyUtility.getAdvice(mapProject, hypertensionAdvice));
-      }
-      else if (TerminologyUtility.hasAdvice(mapEntry, hypertensionAdvice)) {
+      } else if (TerminologyUtility.hasAdvice(mapEntry, hypertensionAdvice)) {
         advices.remove(TerminologyUtility.getAdvice(mapProject, hypertensionAdvice));
       }
 
@@ -893,7 +897,9 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
         }
         if (!found && hasExternalCauseCodeAdvice) {
           advices.remove(TerminologyUtility.getAdvice(mapProject, externalCauseCodeAdvice));
-          advices.add(TerminologyUtility.getAdvice(mapProject, mandatoryExternalCauseCodeAdvice));
+          if (!TerminologyUtility.hasAdvice(mapEntry, mandatoryExternalCauseCodeAdvice)) {
+            advices.add(TerminologyUtility.getAdvice(mapProject, mandatoryExternalCauseCodeAdvice));
+          }
           hasExternalCauseCodeAdvice = false;
         }
       }
@@ -916,8 +922,27 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
         }
       }
 
+      //
+      // PREDICATE: code is listed in CODE_TO_ADVICES.txt
+      // ACTION: add the listed advice(s)
+      //
+      if (codeToAdvicesMap.containsKey(mapEntry.getTargetId())) {
+        for (final String adviceStr : codeToAdvicesMap.get(mapEntry.getTargetId())) {
+          if (!TerminologyUtility.hasAdvice(mapEntry, adviceStr)) {
+            advices.add(TerminologyUtility.getAdvice(mapProject, adviceStr));
+          }
+        }
+      }
+
+      // Deduplicate advices
+
       MapAdviceList mapAdviceList = new MapAdviceListJpa();
-      mapAdviceList.setMapAdvices(advices);
+      for (MapAdvice mapAdvice : advices) {
+        if (!mapAdviceList.contains(mapAdvice)) {
+          mapAdviceList.addMapAdvice(mapAdvice);
+        }
+      }
+
       return mapAdviceList;
     } catch (Exception e) {
       throw e;
@@ -943,7 +968,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
       if (existingMapRecord != null) {
         List<MapEntry> updatedMapEntries = new ArrayList<>();
 
-        for (MapEntry mapEntry : mapRecord.getMapEntries()) {
+        for (MapEntry mapEntry : existingMapRecord.getMapEntries()) {
           MapRelation mapRelation = computeMapRelation(mapRecord, mapEntry);
           MapAdviceList mapAdvices = computeMapAdvice(mapRecord, mapEntry);
           mapEntry.setMapRelation(mapRelation);
@@ -951,7 +976,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
           updatedMapEntries.add(mapEntry);
         }
 
-        mapRecord.setMapEntries(updatedMapEntries);
+        existingMapRecord.setMapEntries(updatedMapEntries);
       }
 
       return existingMapRecord;
@@ -972,19 +997,17 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
       // check that code has at least three characters, that the second
       // character
       // is a number, and does not contain a dash
-      if (!terminologyId.matches(".[0-9].*") || terminologyId.contains("-")) { 
+      if (!terminologyId.matches(".[0-9].*") || terminologyId.contains("-")) {
         return false;
       }
 
       // verify concept exists in database
       final Concept concept = contentService.getConcept(terminologyId,
-          mapProject.getDestinationTerminology(),
-          mapProject.getDestinationTerminologyVersion());
+          mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
 
-      // Only leaf nodes (concepts with no descendants) are valid 
+      // Only leaf nodes (concepts with no descendants) are valid
       TreePositionList list = contentService.getTreePositions(terminologyId,
-          mapProject.getDestinationTerminology(),
-          mapProject.getDestinationTerminologyVersion());
+          mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
       for (TreePosition tp : list.getTreePositions()) {
         if (tp.getDescendantCount() > 0) {
           return false;
@@ -1429,6 +1452,10 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
     if (!asteriskCodes.isEmpty()) {
       return;
     }
+
+    Logger.getLogger(ICD10CAProjectSpecificAlgorithmHandler.class)
+        .info("Caching the asterisk and dagger codes");
+
     final ContentServiceJpa contentService = new ContentServiceJpa();
     final MetadataService metadataService = new MetadataServiceJpa();
     final EntityManager manager = contentService.getEntityManager();
@@ -1487,6 +1514,56 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
       contentService.close();
       metadataService.close();
     }
+  }
+
+  /**
+   * Cache the explicit code to advices map.
+   *
+   * @throws Exception the exception
+   */
+  private void cacheCodeToAdvices() throws Exception {
+
+    // Check if map is already cached
+    if (!codeToAdvicesMap.isEmpty()) {
+      return;
+    }
+
+    Logger.getLogger(ICD10CAProjectSpecificAlgorithmHandler.class)
+        .info("Caching the code to advices map");
+
+    codeToAdvicesMap = new HashMap<>();
+
+    final Properties config = ConfigUtility.getConfigProperties();
+    final String dataDir = config.getProperty("data.dir");
+    if (dataDir == null) {
+      throw new Exception("Config file must specify a data.dir property");
+    }
+
+    // Check preconditions
+    if (!new File(dataDir + "/ICD10CA/CODES_TO_ADVICES.txt").exists()) {
+      throw new Exception(
+          "Specified input file missing: " + dataDir + "/ICD10CA/CODES_TO_ADVICES.txt");
+    }
+
+    // Open reader and service
+    BufferedReader codeListReader =
+        new BufferedReader(new FileReader(new File(dataDir + "/ICD10CA/CODES_TO_ADVICES.txt")));
+
+    String line = null;
+
+    while ((line = codeListReader.readLine()) != null) {
+      String tokens[] = line.split("\t");
+      final String code = tokens[0].trim();
+      final String advice = tokens[1].trim();
+      if (codeToAdvicesMap.get(code) == null) {
+        codeToAdvicesMap.put(code, new HashSet<>());
+      }
+      final Set<String> advices = codeToAdvicesMap.get(code);
+      advices.add(advice);
+      codeToAdvicesMap.put(code, advices);
+    }
+
+    codeListReader.close();
   }
 
   /**
@@ -1771,12 +1848,11 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
 
       // Add "USE ADDITIONAL CODE TO IDENTIFY THE PRESENCE OF HYPERTENSION" to
       // any target code from I20-I25 and I60-64
-      if ((mapTarget.trim().matches("(^I2[0-5]).*")
-          || mapTarget.trim().matches("(^I6[0-4]).*"))) {
+      if ((mapTarget.trim().matches("(^I2[0-5]).*") || mapTarget.trim().matches("(^I6[0-4]).*"))) {
         advices.add(TerminologyUtility.getAdvice(mapProject,
             "USE ADDITIONAL CODE TO IDENTIFY THE PRESENCE OF HYPERTENSION"));
       }
-      
+
       mapEntry.setMapAdvices(advices);
 
       // Add the entry to the record, and put the updated record in the map
