@@ -170,6 +170,7 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
       }
     
       // write concept-attributes.txt
+      writeConceptDetails(inputDirFile);
       for (String member : conceptAttributeSet) {
         // don't write out any blank attributes/descriptions
         if (!member.trim().replaceAll("\\u00A0", "").endsWith("|")) {
@@ -201,6 +202,8 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
           code1Code2.add(fields[0] + "|" + fields[1] + "|" + fields[2]);
         }
       }
+      
+      
 
       getLog().info("done ...");
 
@@ -743,6 +746,60 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
     }
   }
 
+  private void writeConceptDetails(File inputDirFile) throws Exception {
+
+      // get all relevant conceptDetail .html files
+      FilenameFilter projectFilter = new FilenameFilter() {
+        @Override
+        public boolean accept(File dir, String name) {
+          String lowercaseName = name.toLowerCase();
+          if (
+              // conceptDetail files
+              lowercaseName.startsWith("conceptdetail")) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      };
+      File[] projectFiles = inputDirFile.listFiles(projectFilter);
+
+      // iterate through relevant files
+      for (File child : projectFiles) {
+
+        org.jsoup.nodes.Document doc = Jsoup.parse(child, null);
+        if (doc.select("table").size() == 0) {
+          continue;
+        }
+        Elements elmts = doc.select("title");
+        String title = elmts.get(0).text();
+        System.out.println("concpt detail " + title);
+
+        Element table = doc.select("table").get(0); // select the first table.
+        Elements rows = table.select("tr");
+
+        // for each row in the table
+        for (int i = 2; i < rows.size(); i++) {
+          Element row = rows.get(i);
+          Elements cols = row.select("td");
+
+          // write any attributes for the previousCode
+          Elements includes = row.select("[class='include']");
+          Elements excludes = row.select("[class='exclude']");
+          Elements notes = row.select("[class='note']");
+          Elements codealsos = row.select("[class='codealso']");
+          
+          if (!codesToIgnoreAttributes.contains(title)) {
+            processAttributes(includes, title, "Inclusion");
+            processAttributes(excludes, title, "Exclusion");
+            processAttributes(notes, title, "Note");
+            processAttributes(codealsos, title, "Coding hint");
+          }
+        }
+
+      }
+  }
+  
   private String cleanCode(String input) {
     return input.replace("*", "").replace("†", "").replace("++", "");
   }
