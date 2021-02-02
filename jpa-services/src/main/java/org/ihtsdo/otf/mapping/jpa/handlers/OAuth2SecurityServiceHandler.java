@@ -47,49 +47,58 @@ public class OAuth2SecurityServiceHandler implements SecurityServiceHandler {
       return user;
     }
 
-    // password contains the IMS user document
-
+    // password contains the OAuth2 user document
+    // {  "aud":"https://graph.microsoft.com",
+    //    "iss":"https://sts.windows.net/c1ef41f7-df50-4222-a5fd-476d69ffe429/"
+    //    "iat":1611774348,
+    //    "nbf":1611774348,
+    //    "exp":1611778248,
+    //    "acct":0,
+    //    "acr":"1",
+    //    "acrs":["urn:user:registersecurityinfo",
+    //        "urn:microsoft:req1", "urn:microsoft:req2", "urn:microsoft:req3",
+    //        "c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","c12","c13","c14","c15","c16","c17","c18","c19","c20","c21","c22","c23","c24","c25"
+    //    ],
+    //    "aio":"E2JgYFCP/iYhf6qtikEh/XUvu5jbY1nDjdlH/XZtvp9p8ejrEQ0A",
+    //    "amr":["pwd","wia"],
+    //    "app_displayname":"WCI MappingTool",
+    //    "appid":"f77af9df-3ec3-4c60-ac68-1650ebc35fc2",
+    //    "appidacr":"1",
+    //    "family_name":"LAST",
+    //    "given_name":"FIRST",
+    //    "idtyp":"user",
+    //    "ipaddr":"192.168.1.1",
+    //    "name":"FIRST LAST",
+    //    "oid":"7531c39e-8e42-4bb2-8a6d-f068e638b5db",
+    //    "onprem_sid":"S-1-5-21-69083081-1352353885-1600587428-14942",
+    //    "platf":"3",
+    //    "puid":"1003BFFDA96E931D",
+    //    "rh":"0.AAAA90HvwVDfIkKl_Udtaf_kKd_5evfDPmBMrGgWUOvDX8JuAII.",
+    //    "scp":"User.Read profile openid email",
+    //    "signin_state":["inknownntwk"],
+    //    "sub":"0iWQxTVc2cbgTBVkJ4K9o1q7_uOBpVMi6MhDvLd3opU",
+    //    "tenant_region_scope":"NA",
+    //    "tid":"c1ef41f7-df50-4222-a5fd-476d69ffe429",
+    //    "unique_name":"************", // email removed
+    //    "upn":"************", // email removed
+    //    "uti":"AC7kcFhSAkqb8FUwEbiTAA",
+    //    "ver":"1.0",
+    //    "wids":["b79fbf4d-3ef9-4689-8143-76b194e85509"],
+    //    "xms_st":{"sub":"tJj-QCTaB2IeQJTVoRVq6oKqqYN0iN9CGcmbA6Yc12g"},
+    //    "xms_tcdt":1469199133,
+    //    "access_token": "***REMOVED***"
+    // }
     ObjectMapper mapper = new ObjectMapper();
     JsonNode doc = mapper.readTree(password);
-    Logger.getLogger(getClass()).info("");
-    
-    // {
-    // "@odata.context":"https://graph.microsoft.com/v1.0/$metadata#users/$entity",
-    //    "id":"12345678-73a6-4952-a53a-e9916737ff7f",
-    //    "businessPhones":[
-    //        "+1 555555555"
-    //    ],
-    //    "displayName":"Chris Green",
-    //    "givenName":"Chris",
-    //    "jobTitle":"Software Engineer",
-    //    "mail":null,
-    //    "mobilePhone":"+1 5555555555",
-    //    "officeLocation":"Seattle Office",
-    //    "preferredLanguage":null,
-    //    "surname":"Green",
-    //    "userPrincipalName":"ChrisG@contoso.onmicrosoft.com"
-    // }
 
     // Construct user from document
     MapUser user = new MapUserJpa();
-    user.setName(doc.get("givenName").asText() + " "
-        + doc.get("surname").asText());
-    user.setUserName(doc.get("userPrincipalName").asText());
-    user.setEmail(doc.get("userPrincipalName").asText());
+    user.setName(doc.get("name").asText());
+    user.setUserName(userName);
+    user.setEmail(doc.get("upn").asText());
     user.setApplicationRole(MapUserRole.VIEWER);
     user.setAuthToken(doc.get("access_token").asText());
     
-    // Iterator<JsonNode> iter = doc.get("roles").elements();
-    // while (iter.hasNext()) {
-    // JsonNode role = iter.next();
-    // if (role.asText().equals("ROLE_mapping-administrators")) {
-    // user.setApplicationRole(MapUserRole.ADMINISTRATOR);
-    // }
-    // // if (role.asText().equals("ROLE_mapping-users")) {
-    // // user.setApplicationRole(MapUserRole.USER);
-    // // }
-    // }
-
     return user;
   }
 
@@ -102,8 +111,8 @@ public class OAuth2SecurityServiceHandler implements SecurityServiceHandler {
 
   /* see superclass */
   @Override
-  public String computeTokenForUser(String user) {
-    return user;
+  public String computeTokenForUser(MapUser mapUser) {
+    return mapUser.getAuthToken();
   }
 
   /* see superclass */

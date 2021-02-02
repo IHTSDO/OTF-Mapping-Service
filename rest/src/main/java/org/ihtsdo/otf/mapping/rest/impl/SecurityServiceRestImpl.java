@@ -14,6 +14,7 @@ import java.net.URL;
 import java.net.http.HttpHeaders;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.log4j.Logger;
@@ -165,33 +168,30 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements Secu
   @Produces({
     MediaType.APPLICATION_JSON
   })
-  @ApiOperation(value = "", notes = "Handle callback from OAuth2", response = String.class)
+  @ApiOperation(value = "OAuth2 callback", notes = "Handle callback from OAuth2. Response is a redirect back to the application")
   public Response callback() throws Exception {
     Logger.getLogger(getClass()).info("RESTful call /security/callback");
-    // FOR DOCUMENATION SEE
+    // For OAuth2 documentation see
     // https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow
     try {
       
-      //TODO: Most of this should be in the OAuth2SecurityHandler
-      
-      //log everything
+      // log everything
       logHttpRequest("CALLBACK");
-      
-      // 1. READ AUTHORIZATION RESPONSE 
-      
-      //final String body = getHttpServletRequestBody();
+
+      // 1. READ AUTHORIZATION RESPONSE
       final Map<String, String[]> params = httpServletRequest.getParameterMap();
-      
+
       // 1A. HANDLE FAILURE FROM AUTHORIZATION RESPONSE - throw error
       // ex: GET https://localhost/security/callback
-      //   ?error=access_denied&error_description=the+user+canceled+the+authentication
+      // ?error=access_denied&error_description=the+user+canceled+the+authentication
       if (params.containsKey("error")) {
         final String errorMsg = "Error: " + params.get("error")[0]
             + " Error Description: " + params.get("error_description")[0];
         Logger.getLogger(getClass()).error(errorMsg);
-        throw new Exception(errorMsg);
+        throw new LocalException(errorMsg);
       } else if (!params.containsKey("code")) {
-        throw new Exception("Unexpected condition.  Code missing from querystring");
+        throw new LocalException(
+            "Unexpected condition.  Code missing from querystring");
       }
       
       final Properties config = ConfigUtility.getConfigProperties();      
@@ -215,15 +215,16 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements Secu
       // &grant_type=authorization_code
       // &client_secret=***REMOVED*** // NOTE: Only required for web
       // apps
-      
+
       final String accessTokenParams = String.format(
-          "?client_id=%s&scope=%s&code=%s&redirect_uri=%s&grant_type=%s",
+          "client_id=%s&scope=%s&code=%s&redirect_uri=%s&grant_type=%s",
           config.get("security.handler.OAUTH2.client_id"),
-          config.get("security.handler.OAUTH2.scope"), config.get(code),
+          config.get("security.handler.OAUTH2.scope"), code,
           config.get("security.handler.OAUTH2.redirect_uri"),
           config.get("security.handler.OAUTH2.url.grant_type"));
-      
-      Logger.getLogger(getClass()).info("Access Token params" + accessTokenParams);
+
+      Logger.getLogger(getClass())
+          .info("Access Token params " + accessTokenParams);
       
       // 2. HANDLE RESPONSE FROM GET ACCESS TOKEN
       final URL accessTokenUrl = new URL(config.getProperty("security.handler.OAUTH2.url.access_token"));
@@ -238,51 +239,22 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements Secu
       //    "access_token": "***REMOVED***",
       //    "refresh_token": "***REMOVED***"
       // }
-      final String accessToken = tokenResponse.getString("access_token");
-      final String tokenType = tokenResponse.getString("token_type");
 
-      // 3. GET USER INFORMATION
-      // ex:
-      // GET https://graph.microsoft.com/v1.0/me
-      //  Authorization: Bearer eyJ0eXAiO ... 0X2tnSQLEANnSPHY0gKcgw
-      //  Host: graph.microsoft.com
+      final String accessToken = tokenResponse.getString("access_token");     
       
-      final URL userInfoUrl = new URL(config.getProperty("security.handler.OAUTH2.url.user_info"));
-      JSONObject userResponse = retrieveJsonGet(userInfoUrl, accessToken, tokenType);
-            
-      //response
-      // HTTP/1.1 200 OK
-      // Content-Type:
-      // application/json;odata.metadata=minimal;odata.streaming=true;IEEE754Compatible=false;charset=utf-8
-      // request-id: f45d08c0-6901-473a-90f5-7867287de97f
-      // client-request-id: f45d08c0-6901-473a-90f5-7867287de97f
-      // OData-Version: 4.0
-      // Duration: 727.0022
-      // Date: Thu, 20 Apr 2017 05:21:18 GMT
-      // Content-Length: 407
-      //
-      // {
-      // "@odata.context":"https://graph.microsoft.com/v1.0/$metadata#users/$entity",
-      //    "id":"12345678-73a6-4952-a53a-e9916737ff7f",
-      //    "businessPhones":[
-      //        "+1 555555555"
-      //    ],
-      //    "displayName":"Chris Green",
-      //    "givenName":"Chris",
-      //    "jobTitle":"Software Engineer",
-      //    "mail":null,
-      //    "mobilePhone":"+1 5555555555",
-      //    "officeLocation":"Seattle Office",
-      //    "preferredLanguage":null,
-      //    "surname":"Green",
-      //    "userPrincipalName":"ChrisG@contoso.onmicrosoft.com"
-      // }
+      // 3. GET USER INFORMATION from accessToken
+      final String temp = StringUtils.substringBetween(accessToken, ".", ".");
+      final String userInfo = new String(Base64.getDecoder().decode(temp));
+      final JSONObject userInfoJson = new JSONObject(userInfo);
       
-      userResponse.append("access_token", accessToken);
-      authenticate(userResponse.getString("userPrincipalName"), userResponse.toString());
+      Logger.getLogger(getClass()).info(userInfoJson.toString());
       
-      //https://host/index.html#login?token=
-      return Response.temporaryRedirect(new URI(config.getProperty("security.handler.OAUTH2.url.redirect") + accessToken)).build();
+      userInfoJson.put("access_token", accessToken);
+      authenticate(userInfoJson.getString("unique_name").toLowerCase(), userInfoJson.toString());
+      
+      // https://<host>/index.html#/autologin?token=
+      Logger.getLogger(getClass()).info("Redirect to " + config.getProperty("security.handler.OAUTH2.url.redirect"));
+      return Response.status(301).location(new URI(config.getProperty("security.handler.OAUTH2.url.redirect") + accessToken)).build();
     }
     catch(Exception e) {
       handleException(e, "callback");
@@ -313,11 +285,12 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements Secu
   }
   
   /**
-   * temporary until the callback method knows exactly what it is getting
-   * @return
+   * Temporary until the callback method knows exactly what it is getting
+   * 
+   * @return String of the body of HttpServletRequest
    */
   private String getHttpServletRequestBody() { 
-    StringBuilder stringBuilder = new StringBuilder();  
+    final StringBuilder stringBuilder = new StringBuilder();  
     BufferedReader bufferedReader = null;  
   
     try {  
@@ -326,7 +299,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements Secu
         if (inputStream != null) {  
             bufferedReader = new BufferedReader(new InputStreamReader(inputStream));  
   
-            char[] charBuffer = new char[128];  
+            final char[] charBuffer = new char[128];  
             int bytesRead = -1;  
   
             while ((bytesRead = bufferedReader.read(charBuffer)) > 0) {  
@@ -400,60 +373,15 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements Secu
         }
       }
     } catch (Exception ex) {
-      throw new Exception("Error retrieving translation.", ex);
+      throw new LocalException("Error from POST to " + url.toString(), ex);
     }
   }
   
-  /**
-   * Forms an HTTP request, sends it using GET method and returns the result of
-   * the request as a JSONObject.
-   * 
-   * @param url The URL to query for a JSONObject.
-   * @param accessToken Access Token
-   * @param tokenType Type of token ex: Bearer, Basic
-   * @return The JSONObject String.
-   * @throws Exception on error.
-   */
-  private JSONObject retrieveJsonGet(final URL url, final String accessToken,
-    final String tokenType) throws Exception {
-    try {
-
-      final HttpURLConnection httpUrlConnection =
-          (HttpURLConnection) url.openConnection();
-      httpUrlConnection.setDoOutput(true);
-      httpUrlConnection.setInstanceFollowRedirects(false);
-      httpUrlConnection.setRequestMethod("GET");
-      httpUrlConnection.setRequestProperty(
-          org.apache.http.HttpHeaders.CONTENT_TYPE, "application/json");
-      httpUrlConnection.setRequestProperty("charset", "utf-8");
-      httpUrlConnection.setRequestProperty("Authorization",
-          tokenType + " " + accessToken);
-      httpUrlConnection.setUseCaches(false);
-      httpUrlConnection.getOutputStream().close();
-
-      try {
-        final String result =
-            inputStreamToString(httpUrlConnection.getInputStream());
-        return new JSONObject(result);
-
-      } finally {
-        // http://java.sun.com/j2se/1.5.0/docs/guide/net/http-keepalive.html
-        if (httpUrlConnection.getInputStream() != null) {
-          httpUrlConnection.getInputStream().close();
-        }
-        if (httpUrlConnection.getErrorStream() != null) {
-          httpUrlConnection.getErrorStream().close();
-        }
-      }
-    } catch (Exception ex) {
-      throw new Exception("Error retrieving json from url " + url.toString(),
-          ex);
-    }
-  }
 
   /**
    * Reads an InputStream and returns its contents as a String. Also effects
    * rate control.
+   * 
    * @param inputStream The InputStream to read from.
    * @return The contents of the InputStream as a String.
    * @throws Exception on error.

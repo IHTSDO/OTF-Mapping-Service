@@ -170,6 +170,11 @@ mapProjectApp.config([ '$rootScopeProvider', '$routeProvider',
       templateUrl : 'partials/otf-dashboard.html',
       controller : 'LoginCtrl'
     });
+    
+    $routeProvider.when('/autologin', {
+      templateUrl : 'partials/otf-dashboard.html',
+      controller : 'LoginCtrl'
+    });
 
     $routeProvider.when('/conversation/recordId/:recordId', {
       templateUrl : 'partials/otf-dashboard.html',
