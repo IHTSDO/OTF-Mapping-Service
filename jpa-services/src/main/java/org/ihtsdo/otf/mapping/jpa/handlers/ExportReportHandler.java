@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CreationHelper;
@@ -46,7 +46,7 @@ public class ExportReportHandler {
     public InputStream exportReport(Report report) throws Exception {
 
         // Create workbook
-        Workbook wb = new HSSFWorkbook();
+        Workbook wb = new XSSFWorkbook();
 
         // Export report
         handleExportReport(report, wb);
@@ -150,7 +150,7 @@ public class ExportReportHandler {
 
                 // limit results so as not to exceeed (hopefully) the 65535 row
                 // limit for HSSF
-                if (result.getCt() < 2000) {
+                if (result.getCt() < 20000) {
 
                     for (ReportResultItem resultItem : result.getReportResultItems()) {
 
@@ -176,7 +176,7 @@ public class ExportReportHandler {
                   // Id
                   cell = row.createCell(cellnum++);
                   cell.setCellStyle(style);
-                  cell.setCellValue(createHelper.createRichTextString("There are too many rows to export (2000 max)"));
+                  cell.setCellValue(createHelper.createRichTextString("There are too many rows to export (20000 max)"));
 
                   // Name
                   cell = row.createCell(cellnum++);
@@ -210,7 +210,7 @@ public class ExportReportHandler {
       Set<String> inactivatedList, Set<String> removedList, List<String> files, List<String> notes) throws Exception {
 
         // Create workbook
-        Workbook wb = new HSSFWorkbook();
+        Workbook wb = new XSSFWorkbook();
 
         // Export report
         handleExportExtendedFileComparisonReport(updatedList, newList, inactivatedList, removedList, files, notes, wb);
@@ -441,7 +441,7 @@ public class ExportReportHandler {
       Set<String> inactivatedList, Set<String> removedList, List<String> files, List<String> notes ) throws Exception {
 
       // Create workbook
-      Workbook wb = new HSSFWorkbook();
+      Workbook wb = new XSSFWorkbook();
 
       // Export report
       handleExportSimpleFileComparisonReport(updatedList, newList, inactivatedList, removedList, files, notes, wb);
