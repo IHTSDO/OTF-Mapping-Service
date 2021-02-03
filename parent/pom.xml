@@ -308,6 +308,11 @@
         <artifactId>poi</artifactId>
         <version>${apache.poi}</version>
       </dependency>
+      <dependency>
+        <groupId>org.apache.poi</groupId>
+        <artifactId>poi-ooxml</artifactId>
+        <version>${apache.poi}</version>
+      </dependency>
 
       <!-- Apache commons-lang3 - for FastDateTime -->
       <dependency>
