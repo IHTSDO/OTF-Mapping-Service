@@ -96,7 +96,8 @@ public class OAuth2SecurityServiceHandler implements SecurityServiceHandler {
     user.setName(doc.get("name").asText());
     user.setUserName(userName);
     user.setEmail(doc.get("upn").asText());
-    user.setApplicationRole(MapUserRole.VIEWER);
+    //TODO: move default role to config file
+    user.setApplicationRole(MapUserRole.SPECIALIST);
     user.setAuthToken(doc.get("access_token").asText());
     
     return user;
