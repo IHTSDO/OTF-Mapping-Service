@@ -207,28 +207,32 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements Secu
       // POST /{tenant}/oauth2/v2.0/token HTTP/1.1
       // Host: https://login.microsoftonline.com
       // Content-Type: application/x-www-form-urlencoded
-      //
       // client_id=6731de76-14a6-49ae-97bc-6eba6914391e
-      // &scope=user.read%20mail.read
+      // &scope=https%3A%2F%2Fgraph.microsoft.com%2Fmail.read
       // &code=OAAABAAAAiL9Kn2Z27UubvWFPbm0gLWQJVzCTE9UkP3pSx1aXxUjq3n8b2JRLk4OxVXr...
       // &redirect_uri=http%3A%2F%2Flocalhost%2Fmyapp%2F
       // &grant_type=authorization_code
+      // &code_verifier=ThisIsntRandomButItNeedsToBe43CharactersLong
       // &client_secret=***REMOVED*** // NOTE: Only required for web
-      // apps
+      // apps. This secret needs to be URL-Encoded.
 
-      final String accessTokenParams = String.format(
-          "client_id=%s&scope=%s&code=%s&redirect_uri=%s&grant_type=%s",
-          config.get("security.handler.OAUTH2.client_id"),
-          config.get("security.handler.OAUTH2.scope"), code,
-          config.get("security.handler.OAUTH2.redirect_uri"),
-          config.get("security.handler.OAUTH2.url.grant_type"));
-
+      final StringBuilder accessTokenParams = new StringBuilder();
+      accessTokenParams.append("client_id=").append(config.get("security.handler.OAUTH2.client_id"));
+      accessTokenParams.append("&scope=").append(config.get("security.handler.OAUTH2.scope"));
+      accessTokenParams.append("&code=").append(code);
+      accessTokenParams.append("&redirect_uri=").append(config.get("security.handler.OAUTH2.redirect_uri"));
+      accessTokenParams.append("&grant_type=").append(config.get("security.handler.OAUTH2.url.grant_type"));
+      accessTokenParams.append("&code_verifier=").append(config.get("security.handler.OAUTH2.url.client_verifier"));
+      if (! StringUtils.isBlank((String) config.get("security.handler.OAUTH2.url.client_secret"))) {
+        accessTokenParams.append("&client_secret=").append(config.get("security.handler.OAUTH2.url.client_secret"));
+      }
+      
       Logger.getLogger(getClass())
-          .info("Access Token params " + accessTokenParams);
+          .info("Access Token params " + accessTokenParams.toString());
       
       // 2. HANDLE RESPONSE FROM GET ACCESS TOKEN
       final URL accessTokenUrl = new URL(config.getProperty("security.handler.OAUTH2.url.access_token"));
-      final JSONObject tokenResponse = retrieveJsonPost(accessTokenUrl, accessTokenParams);
+      final JSONObject tokenResponse = retrieveJsonPost(accessTokenUrl, accessTokenParams.toString());
       Logger.getLogger(getClass()).info("Access Token Reponse " + tokenResponse);
       
       // ex: response
