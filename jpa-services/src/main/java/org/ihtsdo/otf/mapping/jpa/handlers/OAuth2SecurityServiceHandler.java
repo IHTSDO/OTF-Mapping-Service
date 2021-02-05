@@ -3,17 +3,20 @@
  */
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.SecurityServiceHandler;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -88,26 +91,59 @@ public class OAuth2SecurityServiceHandler implements SecurityServiceHandler {
     //    "xms_tcdt":1469199133,
     //    "access_token": "eyJ0eXAiOiJKV1QiLCJub25jZSI6IlYyMUxubGdH...."
     // }
-    ObjectMapper mapper = new ObjectMapper();
-    JsonNode doc = mapper.readTree(password);
 
-    // Construct user from document
     MapUser user = new MapUserJpa();
-    user.setName(doc.get("name").asText());
-    user.setUserName(userName);
-    user.setEmail(doc.get("upn").asText());
-    //TODO: move default role to config file
-    user.setApplicationRole(MapUserRole.SPECIALIST);
-    user.setAuthToken(doc.get("access_token").asText());
     
-    return user;
-  }
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      JsonNode doc = mapper.readTree(password);
 
+      // Construct user from document
+      user.setName(doc.get("name").asText());
+      user.setUserName(userName);
+      user.setEmail(doc.get("upn").asText());
+      user.setApplicationRole(MapUserRole.VIEWER);
+      user.setAuthToken(doc.get("access_token").asText());
+      
+      return user;
+    
+    } catch (JsonParseException e) {
+      
+      //check if user is allowed.
+      final String userAccessKey = ConfigUtility.getConfigProperties().getProperty("security.handler.OAUTH2.users.key");
+      
+      // create mapUser
+      if (getUsersFromConfigFile("security.handler.OAUTH2.users.admin").contains(userName)
+          && userAccessKey.equals(password)) {
+        user.setName(userName);
+        user.setEmail(userName + "@example.com");
+        user.setUserName(userName);
+        user.setApplicationRole(MapUserRole.ADMINISTRATOR);
+        user.setAuthToken(userName);
+
+        return user;
+      }
+      else if (getUsersFromConfigFile("security.handler.OAUTH2.users.viewer").contains(userName)
+          && userAccessKey.equals(password)) {
+        user.setName(userName);
+        user.setEmail(userName + "@example.com");
+        user.setUserName(userName);
+        user.setApplicationRole(MapUserRole.VIEWER);
+        user.setAuthToken(userName);
+
+        return user;
+      }
+    }
+    
+    throw new LocalException("Unable to authenticate user = " + userName);
+    
+  }
+  
   /* see superclass */
   @Override
   public boolean timeoutUser(String user) {
     // Never timeout user
-    return false;
+    return true;
   }
 
   /* see superclass */
@@ -127,6 +163,31 @@ public class OAuth2SecurityServiceHandler implements SecurityServiceHandler {
   public String getLogoutUrl() throws Exception {
     return ConfigUtility.getConfigProperties().getProperty(
         "security.handler.IMS.url.logout");
+  }
+    
+  /**
+   * Returns the users from config file.
+   *
+   * @return the users from config file
+   */
+  private Set<String> getUsersFromConfigFile(String propertyName) throws Exception {
+
+    HashSet<String> userSet = new HashSet<>();
+    String userList = ConfigUtility.getConfigProperties().getProperty(propertyName);
+
+    Logger.getLogger(getClass()).info(ConfigUtility.getConfigProperties().keySet());
+
+    if (userList == null) {
+      Logger
+          .getLogger(getClass())
+          .warn(
+              "Could not retrieve config parameter " + propertyName);
+      return userSet;
+    }
+
+    for (String user : userList.split(","))
+      userSet.add(user);
+    return userSet;
   }
 
 }

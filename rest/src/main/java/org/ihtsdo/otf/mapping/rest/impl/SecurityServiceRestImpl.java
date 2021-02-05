@@ -258,7 +258,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements Secu
       
       // https://<host>/index.html#/autologin?token=
       Logger.getLogger(getClass()).info("Redirect to " + config.getProperty("security.handler.OAUTH2.url.redirect"));
-      return Response.status(301).location(new URI(config.getProperty("security.handler.OAUTH2.url.redirect") + accessToken)).build();
+      return Response.temporaryRedirect(new URI(config.getProperty("security.handler.OAUTH2.url.redirect") + accessToken)).build();
     }
     catch(Exception e) {
       handleException(e, "callback");

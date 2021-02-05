@@ -336,7 +336,42 @@ mapProjectAppControllers.controller('LoginCtrl', [
       // redirect page
       $location.path(path);
     };
-
+    
+    $scope.showLogin = ($routeParams.showlogin === "true") ? true : false;
+    
+    $scope.authUser = function (autologinLocation, refSetId) {
+      
+      if ($scope.userName == null) {
+        alert('You must specify a user');
+      } else if ($scope.password == null) {
+        alert('You must enter a password');
+      } else {
+      	var query_url = root_security + 'authenticate/' + $scope.userName;
+      	gpService.increment();
+      	
+      	$http({
+          url : query_url,
+          dataType : 'json',
+          data : $scope.password,
+          method : 'POST',
+          headers : {
+            'Content-Type' : 'text/plain'
+          // save userToken from authentication
+          }
+        }).success(
+          function(data) {
+          	localStorageService.add('userToken', data);
+            $scope.userToken = localStorageService.get('userToken');
+          }).error(function(data, status, headers, config) {
+          	gpService.decrement();
+          	$rootScope.globalError = data.replace(/"/g, '');
+            $rootScope.handleHttpError(data, status, headers, config);
+          }).then(function(data) {
+            $scope.go();
+          });
+      }
+    };
+    
     // / /
     // Initialize
     // / /
@@ -378,19 +413,19 @@ mapProjectAppControllers.controller('LoginCtrl', [
       $scope.pending = false;
 
     }
-
-    // Otherwise, checked if we are logged in
-    // If so, proceed to location, otherwise call 'goGuest'
-    else {
+    else if ($location.path().includes('autologin') && ($routeParams.token)){
 	  
       $scope.userToken = $routeParams.token;
       $scope.authToken = $routeParams.token;
       $scope.password = $routeParams.token;
-      var t = $scope.parseJwt($routeParams.token);
-      $scope.userName = t.upn.toLowerCase();
+      var token = $scope.parseJwt($routeParams.token);
+      $scope.userName = token.upn.toLowerCase();
       $scope.go();
       $scope.pending = true;
 
     }
-
+    else {
+    	console.debug("DO NOTHING");
+    }
+    
   }]);
