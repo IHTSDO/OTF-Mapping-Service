@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -63,9 +64,12 @@ import io.swagger.annotations.ApiParam;
 public class SecurityServiceRestImpl extends RootServiceRestImpl implements SecurityServiceRest {
 
   /** The HTTP request */
-  // @Resource
   @Context
   private HttpServletRequest httpServletRequest;
+  
+  /** The HTTP response */
+  @Context
+  private HttpServletResponse httpServletResponse;
   
   /* (non-Javadoc)
    * @see org.ihtsdo.otf.mapping.rest.impl.SecurityServiceRest#authenticate(java.lang.String, java.lang.String)
@@ -258,7 +262,8 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements Secu
       
       // https://<host>/index.html#/autologin?token=
       Logger.getLogger(getClass()).info("Redirect to " + config.getProperty("security.handler.OAUTH2.url.redirect"));
-      return Response.temporaryRedirect(new URI(config.getProperty("security.handler.OAUTH2.url.redirect") + accessToken)).build();
+      httpServletResponse.sendRedirect(config.getProperty("security.handler.OAUTH2.url.redirect") + accessToken);
+      return Response.ok().build();
     }
     catch(Exception e) {
       handleException(e, "callback");
