@@ -1062,7 +1062,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
     // Simple lookup here
     if (asteriskCodes.contains(treePosition.getTerminologyId())) {
       treePosition.setTerminologyNote("*");
-    } else if (asteriskCodes.contains(treePosition.getTerminologyId())) {
+    } else if (daggerCodes.contains(treePosition.getTerminologyId())) {
       treePosition.setTerminologyNote("\u2020");
     }
 
