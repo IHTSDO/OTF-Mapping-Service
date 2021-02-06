@@ -14,6 +14,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
     $scope.mapUsers = [];
     $scope.userName = '';
     $scope.pending = true;
+    $scope.password = '';
 
     // $rootScope.globalError = 'rootScopeGlobalError';
     $scope.globalError = $rootScope.globalError;
@@ -379,8 +380,8 @@ mapProjectAppControllers.controller('LoginCtrl', [
     // Controller logic
 
     // If we are not using auto-login, then clear the local cache
-    console.debug($location.path());
-    console.debug($routeParams.token);
+    console.debug('path ' + $location.path());
+    console.debug('token ' + $routeParams.token);
 
     if (!$location.path().includes('autologin')) {
 
@@ -425,7 +426,8 @@ mapProjectAppControllers.controller('LoginCtrl', [
 
     }
     else {
-    	console.debug("DO NOTHING");
+    
     }
     
+
   }]);
