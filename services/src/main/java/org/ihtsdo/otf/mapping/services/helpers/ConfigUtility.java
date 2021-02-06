@@ -246,8 +246,11 @@ public class ConfigUtility {
       if (key.toString().startsWith(property + "." + handlerName + ".")) {
         String shortKey = key.toString()
             .substring((property + "." + handlerName + ".").length());
-        Logger.getLogger(ConfigUtility.class).info(" property " + shortKey
-            + " = " + config.getProperty(key.toString()));
+        if (!shortKey.contains("secret") 
+            && !shortKey.contains("client")) {
+          Logger.getLogger(ConfigUtility.class).info(" property " + shortKey
+              + " = " + config.getProperty(key.toString()));
+        }
         handlerProperties.put(shortKey, config.getProperty(key.toString()));
       }
     }

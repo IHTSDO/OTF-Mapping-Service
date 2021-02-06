@@ -110,10 +110,10 @@ public class OAuth2SecurityServiceHandler implements SecurityServiceHandler {
     } catch (JsonParseException e) {
       
       //check if user is allowed.
-      final String userAccessKey = ConfigUtility.getConfigProperties().getProperty("security.handler.OAUTH2.users.key");
+      final String userAccessKey = ConfigUtility.getConfigProperties().getProperty("security.users.key");
       
       // create mapUser
-      if (getUsersFromConfigFile("security.handler.OAUTH2.users.admin").contains(userName)
+      if (getUsersFromConfigFile("security.users.admin").contains(userName)
           && userAccessKey.equals(password)) {
         user.setName(userName);
         user.setEmail(userName + "@example.com");
@@ -123,7 +123,7 @@ public class OAuth2SecurityServiceHandler implements SecurityServiceHandler {
 
         return user;
       }
-      else if (getUsersFromConfigFile("security.handler.OAUTH2.users.viewer").contains(userName)
+      else if (getUsersFromConfigFile("security.users.viewer").contains(userName)
           && userAccessKey.equals(password)) {
         user.setName(userName);
         user.setEmail(userName + "@example.com");
