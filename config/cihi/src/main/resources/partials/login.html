@@ -21,7 +21,7 @@
         id="guestLoginButton" ng-click="goGuest('/project/records')">View
         Maps</button>
         -->
-        <form ng-if="showLogin==true">
+        <form ng-show="showLogin==true">
         <strong>WCI Login</strong><br>
         <input autofocus style="margin-top: 5px;" id="userField"
           ng-model="userName" type="text" placeholder="Username" /><br> <input
