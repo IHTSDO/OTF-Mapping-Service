@@ -110,7 +110,9 @@ mapProjectApp.run([
         console.debug('Application configuration variables set:');
         for ( var key in appConfig) {
           if (appConfig.hasOwnProperty(key)) {
-            console.debug('  ' + key + ': ' + appConfig[key]);
+            if (!key.includes('security')) {
+            	console.debug('  ' + key + ': ' + appConfig[key]);
+            }
             if (appConfig[key].startsWith('${') && !key.startsWith('projectVersion')) {
               errMsg += 'Configuration property ' + key
                 + ' not set in project or configuration file';
