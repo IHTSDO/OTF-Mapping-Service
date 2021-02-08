@@ -162,10 +162,8 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
       // write out burnConcepts parent-child entries
       for (String burnConcept : burnConcepts) {
         String code = burnConcept.substring(0, burnConcept.indexOf("|"));
-        if (code.contains(".") && Pattern.matches("[A-Z][0-9][0-9].[0-9]", code)) {
-          parentChildWriter.write(code.substring(0, code.indexOf(".") ) + "|" + code + "\n");
-        } else if (code.contains(".") && Pattern.matches("[A-Z][0-9][0-9].[0-9][0-9]", code)) {
-          parentChildWriter.write(code.substring(0, code.indexOf(".") + 2) + "|" + code + "\n");
+        if (code.contains(".") && Pattern.matches("[A-Z][0-9][0-9].[0-9][0-9]", code)) {
+          parentChildWriter.write(code.substring(0, code.indexOf(".")) + "|" + code + "\n");
         }
       }
     
@@ -377,7 +375,6 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
                 cleanCode(cols.get(0).text()).lastIndexOf(")"));
             // process embedded table
           } else if (cols.get(0).getElementsByTag("table").size() > 0) {
-            System.out.println("embedded table on " + previousCode);
             if (ignoreEmbedded.contains(previousCode)) {
               continue;
             }
@@ -449,7 +446,6 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
         String previousText = "";
         // note to notify user that attributes with html brackets are getting skipped
         if (hasBracketImageTag(includes)) {
-          System.out.println("else skipped " + previousCode);
           conceptAttributeSet.add(cleanCode(previousCode) + "|Note|"
               + "Incomplete information, look in HTML or elsewhere for full information.");
           continue;
@@ -738,8 +734,9 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
             conceptRelationshipSet.add(
                 cleanCode(previousCode) + "|" + formatCode(code2) + "|Dagger to dagger|" + label);
           } else {
-            conceptRelationshipSet
+              conceptRelationshipSet
                 .add(cleanCode(previousCode) + "|" + formatCode(code2) + "|Reference|" + label);
+            
           }
         }
       }
@@ -773,7 +770,6 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
         }
         Elements elmts = doc.select("title");
         String title = elmts.get(0).text();
-        System.out.println("concpt detail " + title);
 
         Element table = doc.select("table").get(0); // select the first table.
         Elements rows = table.select("tr");
@@ -893,135 +889,154 @@ public class ConvertICD10CAMojo extends AbstractOtfMappingMojo {
   }
   
   private Set<String> addBurnConcepts(Set<String> burnConcepts) {
-    burnConcepts.add("T31.0|Burns involving less than 10% of body surface");
-    burnConcepts.add("T31.1|Burns involving 10-19% of body surface");
-    burnConcepts.add("T31.10|Burns involving 10-19% of body surface with 0% to 9% third degree burns");
-    burnConcepts.add("T31.11|Burns involving 10-19% of body surface with 10-19% third degree burns");
-    burnConcepts.add("T31.2|Burns involving 20-29% of body surface");
-    burnConcepts.add("T31.20|Burns involving 20-29% of body surface with 0% to 9% third degree burns");
-    burnConcepts.add("T31.21|Burns involving 20-29% of body surface with 10-19% third degree burns");
-    burnConcepts.add("T31.22|Burns involving 20-29% of body surface with 20-29% third degree burns");
-    burnConcepts.add("T31.3|Burns involving 30-39% of body surface");
-    burnConcepts.add("T31.30|Burns involving 30-39% of body surface with 0% to 9% third degree burns");
-    burnConcepts.add("T31.31|Burns involving 30-39% of body surface with 10-19% third degree burns");
-    burnConcepts.add("T31.32|Burns involving 30-39% of body surface with 20-29% third degree burns");
-    burnConcepts.add("T31.33|Burns involving 30-39% of body surface with 30-39% third degree burns");
-    burnConcepts.add("T31.4|Burns involving 40-49% of body surface");
-    burnConcepts.add("T31.40|Burns involving 40-49% of body surface with 0% to 9% third degree burns");
-    burnConcepts.add("T31.41|Burns involving 40-49% of body surface with 10-19% third degree burns");
-    burnConcepts.add("T31.42|Burns involving 40-49% of body surface with 20-29% third degree burns");
-    burnConcepts.add("T31.43|Burns involving 40-49% of body surface with 30-39% third degree burns");
-    burnConcepts.add("T31.44|Burns involving 40-49% of body surface with 40-49% third degree burns");
-    burnConcepts.add("T31.5|Burns involving 50-59% of body surface");
-    burnConcepts.add("T31.50|Burns involving 50-59% of body surface with 0% to 9% third degree burns");
-    burnConcepts.add("T31.51|Burns involving 50-59% of body surface with 10-19% third degree burns");
-    burnConcepts.add("T31.52|Burns involving 50-59% of body surface with 20-29% third degree burns");
-    burnConcepts.add("T31.53|Burns involving 50-59% of body surface with 30-39% third degree burns");
-    burnConcepts.add("T31.54|Burns involving 50-59% of body surface with 40-49% third degree burns");
-    burnConcepts.add("T31.55|Burns involving 50-59% of body surface with 50-59% third degree burns");
-    burnConcepts.add("T31.6|Burns involving 60-69% of body surface");
-    burnConcepts.add("T31.60|Burns involving 60-69% of body surface with 0% to 9% third degree burns");
-    burnConcepts.add("T31.61|Burns involving 60-69% of body surface with 10-19% third degree burns");
-    burnConcepts.add("T31.62|Burns involving 60-69% of body surface with 20-29% third degree burns");
-    burnConcepts.add("T31.63|Burns involving 60-69% of body surface with 30-39% third degree burns");
-    burnConcepts.add("T31.64|Burns involving 60-69% of body surface with 40-49% third degree burns");
-    burnConcepts.add("T31.65|Burns involving 60-69% of body surface with 50-59% third degree burns");
-    burnConcepts.add("T31.66|Burns involving 60-69% of body surface with 60-69% third degree burns");
-    burnConcepts.add("T31.7|Burns involving 70-79% of body surface");
-    burnConcepts.add("T31.70|Burns involving 70-79% of body surface with 0% to 9% third degree burns");
-    burnConcepts.add("T31.71|Burns involving 70-79% of body surface with 10-19% third degree burns");
-    burnConcepts.add("T31.72|Burns involving 70-79% of body surface with 20-29% third degree burns");
-    burnConcepts.add("T31.73|Burns involving 70-79% of body surface with 30-39% third degree burns");
-    burnConcepts.add("T31.74|Burns involving 70-79% of body surface with 40-49% third degree burns");
-    burnConcepts.add("T31.75|Burns involving 70-79% of body surface with 50-59% third degree burns");
-    burnConcepts.add("T31.76|Burns involving 70-79% of body surface with 60-69% third degree burns");
-    burnConcepts.add("T31.77|Burns involving 70-79% of body surface with 70-79% third degree burns");
-    burnConcepts.add("T31.8|Burns involving 80-89% of body surface");
-    burnConcepts.add("T31.80|Burns involving 80-89% of body surface with 0% to 9% third degree burns");
-    burnConcepts.add("T31.81|Burns involving 80-89% of body surface with 10-19% third degree burns");
-    burnConcepts.add("T31.82|Burns involving 80-89% of body surface with 20-29% third degree burns");
-    burnConcepts.add("T31.83|Burns involving 80-89% of body surface with 30-39% third degree burns");
-    burnConcepts.add("T31.84|Burns involving 80-89% of body surface with 40-49% third degree burns");
-    burnConcepts.add("T31.85|Burns involving 80-89% of body surface with 50-59% third degree burns");
-    burnConcepts.add("T31.86|Burns involving 80-89% of body surface with 60-69% third degree burns");
-    burnConcepts.add("T31.87|Burns involving 80-89% of body surface with 70-79% third degree burns");
-    burnConcepts.add("T31.88|Burns involving 80-89% of body surface with 80-89% third degree burns");
-    burnConcepts.add("T31.9|Burns involving 90% or more of body surface");
-    burnConcepts.add("T31.90|Burns involving 90% or more of body surface with 0% to 9% third degree burns");
-    burnConcepts.add("T31.91|Burns involving 90% or more of body surface with 10-19% third degree burns");
-    burnConcepts.add("T31.92|Burns involving 90% or more of body surface with 20-29% third degree burns");
-    burnConcepts.add("T31.93|Burns involving 90% or more of body surface with 30-39% third degree burns");
-    burnConcepts.add("T31.94|Burns involving 90% or more of body surface with 40-49% third degree burns");
-    burnConcepts.add("T31.95|Burns involving 90% or more of body surface with 50-59% third degree burns");
-    burnConcepts.add("T31.96|Burns involving 90% or more of body surface with 60-69% third degree burns");
-    burnConcepts.add("T31.97|Burns involving 90% or more of body surface with 70-79% third degree burns");
-    burnConcepts.add("T31.98|Burns involving 90% or more of body surface with 80-89% third degree burns");
-    burnConcepts.add("T31.99|Burns involving 90% or more of body surface with 90% or more third degree burns");
+    burnConcepts.add("T31.00|Burns involving less than 10% of body surface");
+    burnConcepts.add("T31.01|Burns involving less than 10% of body surface with 0% to 9% third degree burns");
     
-    burnConcepts.add("T32.0|Corrosions involving less than 10% of body surface");
-    burnConcepts.add("T32.1|Corrosions involving 10-19% of body surface");
-    burnConcepts.add("T32.10|Corrosions involving 10-19% of body surface with 0% to 9% third degree corrosion");
-    burnConcepts.add("T32.11|Corrosions involving 10-19% of body surface with 10-19% third degree corrosion");
-    burnConcepts.add("T32.2|Corrosions involving 20-29% of body surface");
-    burnConcepts.add("T32.20|Corrosions involving 20-29% of body surface with 0% to 9% third degree corrosion");
-    burnConcepts.add("T32.21|Corrosions involving 20-29% of body surface with 10-19% third degree corrosion");
-    burnConcepts.add("T32.22|Corrosions involving 20-29% of body surface with 20-29% third degree corrosion");
-    burnConcepts.add("T32.3|Corrosions involving 30-39% of body surface");
-    burnConcepts.add("T32.30|Corrosions involving 30-39% of body surface with 0% to 9% third degree corrosion");
-    burnConcepts.add("T32.31|Corrosions involving 30-39% of body surface with 10-19% third degree corrosion");
-    burnConcepts.add("T32.32|Corrosions involving 30-39% of body surface with 20-29% third degree corrosion");
-    burnConcepts.add("T32.33|Corrosions involving 30-39% of body surface with 30-39% third degree corrosion");
-    burnConcepts.add("T32.4|Corrosions involving 40-49% of body surface");
-    burnConcepts.add("T32.40|Corrosions involving 40-49% of body surface with 0% to 9% third degree corrosion");
-    burnConcepts.add("T32.41|Corrosions involving 40-49% of body surface with 10-19% third degree corrosion");
-    burnConcepts.add("T32.42|Corrosions involving 40-49% of body surface with 20-29% third degree corrosion");
-    burnConcepts.add("T32.43|Corrosions involving 40-49% of body surface with 30-39% third degree corrosion");
-    burnConcepts.add("T32.44|Corrosions involving 40-49% of body surface with 40-49% third degree corrosion");
-    burnConcepts.add("T32.5|Corrosions involving 50-59% of body surface");
-    burnConcepts.add("T32.50|Corrosions involving 50-59% of body surface with 0% to 9% third degree corrosion");
-    burnConcepts.add("T32.51|Corrosions involving 50-59% of body surface with 10-19% third degree corrosion");
-    burnConcepts.add("T32.52|Corrosions involving 50-59% of body surface with 20-29% third degree corrosion");
-    burnConcepts.add("T32.53|Corrosions involving 50-59% of body surface with 30-39% third degree corrosion");
-    burnConcepts.add("T32.54|Corrosions involving 50-59% of body surface with 40-49% third degree corrosion");
-    burnConcepts.add("T32.55|Corrosions involving 50-59% of body surface with 50-59% third degree corrosion");
-    burnConcepts.add("T32.6|Corrosions involving 60-69% of body surface");
-    burnConcepts.add("T32.60|Corrosions involving 60-69% of body surface with 0% to 9% third degree corrosion");
-    burnConcepts.add("T32.61|Corrosions involving 60-69% of body surface with 10-19% third degree corrosion");
-    burnConcepts.add("T32.62|Corrosions involving 60-69% of body surface with 20-29% third degree corrosion");
-    burnConcepts.add("T32.63|Corrosions involving 60-69% of body surface with 30-39% third degree corrosion");
-    burnConcepts.add("T32.64|Corrosions involving 60-69% of body surface with 40-49% third degree corrosion");
-    burnConcepts.add("T32.65|Corrosions involving 60-69% of body surface with 50-59% third degree corrosion");
-    burnConcepts.add("T32.66|Corrosions involving 60-69% of body surface with 60-69% third degree corrosion");
-    burnConcepts.add("T32.7|Corrosions involving 70-79% of body surface");
-    burnConcepts.add("T32.70|Corrosions involving 70-79% of body surface with 0% to 9% third degree corrosion");
-    burnConcepts.add("T32.71|Corrosions involving 70-79% of body surface with 10-19% third degree corrosion");
-    burnConcepts.add("T32.72|Corrosions involving 70-79% of body surface with 20-29% third degree corrosion");
-    burnConcepts.add("T32.73|Corrosions involving 70-79% of body surface with 30-39% third degree corrosion");
-    burnConcepts.add("T32.74|Corrosions involving 70-79% of body surface with 40-49% third degree corrosion");
-    burnConcepts.add("T32.75|Corrosions involving 70-79% of body surface with 50-59% third degree corrosion");
-    burnConcepts.add("T32.76|Corrosions involving 70-79% of body surface with 60-69% third degree corrosion");
-    burnConcepts.add("T32.77|Corrosions involving 70-79% of body surface with 70-79% third degree corrosion");
-    burnConcepts.add("T32.8|Corrosions involving 80-89% of body surface");
-    burnConcepts.add("T32.80|Corrosions involving 80-89% of body surface with 0% to 9% third degree corrosion");
-    burnConcepts.add("T32.81|Corrosions involving 80-89% of body surface with 10-19% third degree corrosion");
-    burnConcepts.add("T32.82|Corrosions involving 80-89% of body surface with 20-29% third degree corrosion");
-    burnConcepts.add("T32.83|Corrosions involving 80-89% of body surface with 30-39% third degree corrosion");
-    burnConcepts.add("T32.84|Corrosions involving 80-89% of body surface with 40-49% third degree corrosion");
-    burnConcepts.add("T32.85|Corrosions involving 80-89% of body surface with 50-59% third degree corrosion");
-    burnConcepts.add("T32.86|Corrosions involving 80-89% of body surface with 60-69% third degree corrosion");
-    burnConcepts.add("T32.87|Corrosions involving 80-89% of body surface with 70-79% third degree corrosion");
-    burnConcepts.add("T32.88|Corrosions involving 80-89% of body surface with 80-89% third degree corrosion");
-    burnConcepts.add("T32.9|Corrosions involving 90% or more of body surface");
-    burnConcepts.add("T32.90|Corrosions involving 90% or more of body surface with 0% to 9% third degree corrosion");
-    burnConcepts.add("T32.91|Corrosions involving 90% or more of body surface with 10-19% third degree corrosion");
-    burnConcepts.add("T32.92|Corrosions involving 90% or more of body surface with 20-29% third degree corrosion");
-    burnConcepts.add("T32.93|Corrosions involving 90% or more of body surface with 30-39% third degree corrosion");
-    burnConcepts.add("T32.94|Corrosions involving 90% or more of body surface with 40-49% third degree corrosion");
-    burnConcepts.add("T32.95|Corrosions involving 90% or more of body surface with 50-59% third degree corrosion");
-    burnConcepts.add("T32.96|Corrosions involving 90% or more of body surface with 60-69% third degree corrosion");
-    burnConcepts.add("T32.97|Corrosions involving 90% or more of body surface with 70-79% third degree corrosion");
-    burnConcepts.add("T32.98|Corrosions involving 90% or more of body surface with 80-89% third degree corrosion");
-    burnConcepts.add("T32.99|Corrosions involving 90% or more of body surface with 90% or more third degree corrosion");
+    burnConcepts.add("T31.10|Burns involving 10-19% of body surface");
+    burnConcepts.add("T31.11|Burns involving 10-19% of body surface with 0% to 9% third degree burns");
+    burnConcepts.add("T31.12|Burns involving 10-19% of body surface with 10-19% third degree burns");
+    
+    burnConcepts.add("T31.20|Burns involving 20-29% of body surface");
+    burnConcepts.add("T31.21|Burns involving 20-29% of body surface with 0% to 9% third degree burns");
+    burnConcepts.add("T31.22|Burns involving 20-29% of body surface with 10-19% third degree burns");
+    burnConcepts.add("T31.23|Burns involving 20-29% of body surface with 20-29% third degree burns");
+    
+    burnConcepts.add("T31.30|Burns involving 30-39% of body surface");
+    burnConcepts.add("T31.31|Burns involving 30-39% of body surface with 0% to 9% third degree burns");
+    burnConcepts.add("T31.32|Burns involving 30-39% of body surface with 10-19% third degree burns");
+    burnConcepts.add("T31.33|Burns involving 30-39% of body surface with 20-29% third degree burns");
+    burnConcepts.add("T31.34|Burns involving 30-39% of body surface with 30-39% third degree burns");
+    
+    burnConcepts.add("T31.40|Burns involving 40-49% of body surface");
+    burnConcepts.add("T31.41|Burns involving 40-49% of body surface with 0% to 9% third degree burns");
+    burnConcepts.add("T31.42|Burns involving 40-49% of body surface with 10-19% third degree burns");
+    burnConcepts.add("T31.43|Burns involving 40-49% of body surface with 20-29% third degree burns");
+    burnConcepts.add("T31.44|Burns involving 40-49% of body surface with 30-39% third degree burns");
+    burnConcepts.add("T31.45|Burns involving 40-49% of body surface with 40-49% third degree burns");
+    
+    burnConcepts.add("T31.50|Burns involving 50-59% of body surface");
+    burnConcepts.add("T31.51|Burns involving 50-59% of body surface with 0% to 9% third degree burns");
+    burnConcepts.add("T31.52|Burns involving 50-59% of body surface with 10-19% third degree burns");
+    burnConcepts.add("T31.53|Burns involving 50-59% of body surface with 20-29% third degree burns");
+    burnConcepts.add("T31.54|Burns involving 50-59% of body surface with 30-39% third degree burns");
+    burnConcepts.add("T31.55|Burns involving 50-59% of body surface with 40-49% third degree burns");
+    burnConcepts.add("T31.56|Burns involving 50-59% of body surface with 50-59% third degree burns");
+    
+    burnConcepts.add("T31.60|Burns involving 60-69% of body surface");
+    burnConcepts.add("T31.61|Burns involving 60-69% of body surface with 0% to 9% third degree burns");
+    burnConcepts.add("T31.62|Burns involving 60-69% of body surface with 10-19% third degree burns");
+    burnConcepts.add("T31.63|Burns involving 60-69% of body surface with 20-29% third degree burns");
+    burnConcepts.add("T31.64|Burns involving 60-69% of body surface with 30-39% third degree burns");
+    burnConcepts.add("T31.65|Burns involving 60-69% of body surface with 40-49% third degree burns");
+    burnConcepts.add("T31.66|Burns involving 60-69% of body surface with 50-59% third degree burns");
+    burnConcepts.add("T31.67|Burns involving 60-69% of body surface with 60-69% third degree burns");
+    
+    burnConcepts.add("T31.70|Burns involving 70-79% of body surface");
+    burnConcepts.add("T31.71|Burns involving 70-79% of body surface with 0% to 9% third degree burns");
+    burnConcepts.add("T31.72|Burns involving 70-79% of body surface with 10-19% third degree burns");
+    burnConcepts.add("T31.73|Burns involving 70-79% of body surface with 20-29% third degree burns");
+    burnConcepts.add("T31.74|Burns involving 70-79% of body surface with 30-39% third degree burns");
+    burnConcepts.add("T31.75|Burns involving 70-79% of body surface with 40-49% third degree burns");
+    burnConcepts.add("T31.76|Burns involving 70-79% of body surface with 50-59% third degree burns");
+    burnConcepts.add("T31.77|Burns involving 70-79% of body surface with 60-69% third degree burns");
+    burnConcepts.add("T31.78|Burns involving 70-79% of body surface with 70-79% third degree burns");
+    
+    burnConcepts.add("T31.80|Burns involving 80-89% of body surface");
+    burnConcepts.add("T31.81|Burns involving 80-89% of body surface with 0% to 9% third degree burns");
+    burnConcepts.add("T31.82|Burns involving 80-89% of body surface with 10-19% third degree burns");
+    burnConcepts.add("T31.83|Burns involving 80-89% of body surface with 20-29% third degree burns");
+    burnConcepts.add("T31.84|Burns involving 80-89% of body surface with 30-39% third degree burns");
+    burnConcepts.add("T31.85|Burns involving 80-89% of body surface with 40-49% third degree burns");
+    burnConcepts.add("T31.86|Burns involving 80-89% of body surface with 50-59% third degree burns");
+    burnConcepts.add("T31.87|Burns involving 80-89% of body surface with 60-69% third degree burns");
+    burnConcepts.add("T31.88|Burns involving 80-89% of body surface with 70-79% third degree burns");
+    burnConcepts.add("T31.89|Burns involving 80-89% of body surface with more than 80% third degree burns");
+    
+    burnConcepts.add("T31.90|Burns involving 90% or more of body surface");
+    burnConcepts.add("T31.91|Burns involving 90% or more of body surface with 0% to 9% third degree burns");
+    burnConcepts.add("T31.92|Burns involving 90% or more of body surface with 10-19% third degree burns");
+    burnConcepts.add("T31.93|Burns involving 90% or more of body surface with 20-29% third degree burns");
+    burnConcepts.add("T31.94|Burns involving 90% or more of body surface with 30-39% third degree burns");
+    burnConcepts.add("T31.95|Burns involving 90% or more of body surface with 40-49% third degree burns");
+    burnConcepts.add("T31.96|Burns involving 90% or more of body surface with 50-59% third degree burns");
+    burnConcepts.add("T31.97|Burns involving 90% or more of body surface with 60-69% third degree burns");
+    burnConcepts.add("T31.98|Burns involving 90% or more of body surface with 70-79% third degree burns");
+    burnConcepts.add("T31.99|Burns involving 90% or more of body surface with more than 80% third degree burns");
+    
+    
+    burnConcepts.add("T32.00|Corrosions involving less than 10% of body surface");
+    burnConcepts.add("T32.01|Corrosions involving less than 10% of body surface with 0% to 9% third degree corrosion");
+    
+    burnConcepts.add("T32.10|Corrosions involving 10-19% of body surface");
+    burnConcepts.add("T32.11|Corrosions involving 10-19% of body surface with 0% to 9% third degree corrosion");
+    burnConcepts.add("T32.12|Corrosions involving 10-19% of body surface with 10-19% third degree corrosion");
+    
+    burnConcepts.add("T32.20|Corrosions involving 20-29% of body surface");
+    burnConcepts.add("T32.21|Corrosions involving 20-29% of body surface with 0% to 9% third degree corrosion");
+    burnConcepts.add("T32.22|Corrosions involving 20-29% of body surface with 10-19% third degree corrosion");
+    burnConcepts.add("T32.23|Corrosions involving 20-29% of body surface with 20-29% third degree corrosion");
+    
+    burnConcepts.add("T32.30|Corrosions involving 30-39% of body surface");
+    burnConcepts.add("T32.31|Corrosions involving 30-39% of body surface with 0% to 9% third degree corrosion");
+    burnConcepts.add("T32.32|Corrosions involving 30-39% of body surface with 10-19% third degree corrosion");
+    burnConcepts.add("T32.33|Corrosions involving 30-39% of body surface with 20-29% third degree corrosion");
+    burnConcepts.add("T32.34|Corrosions involving 30-39% of body surface with 30-39% third degree corrosion");
+    
+    burnConcepts.add("T32.40|Corrosions involving 40-49% of body surface");
+    burnConcepts.add("T32.41|Corrosions involving 40-49% of body surface with 0% to 9% third degree corrosion");
+    burnConcepts.add("T32.42|Corrosions involving 40-49% of body surface with 10-19% third degree corrosion");
+    burnConcepts.add("T32.43|Corrosions involving 40-49% of body surface with 20-29% third degree corrosion");
+    burnConcepts.add("T32.44|Corrosions involving 40-49% of body surface with 30-39% third degree corrosion");
+    burnConcepts.add("T32.45|Corrosions involving 40-49% of body surface with 40-49% third degree corrosion");
+    
+    burnConcepts.add("T32.50|Corrosions involving 50-59% of body surface");
+    burnConcepts.add("T32.51|Corrosions involving 50-59% of body surface with 0% to 9% third degree corrosion");
+    burnConcepts.add("T32.52|Corrosions involving 50-59% of body surface with 10-19% third degree corrosion");
+    burnConcepts.add("T32.53|Corrosions involving 50-59% of body surface with 20-29% third degree corrosion");
+    burnConcepts.add("T32.54|Corrosions involving 50-59% of body surface with 30-39% third degree corrosion");
+    burnConcepts.add("T32.55|Corrosions involving 50-59% of body surface with 40-49% third degree corrosion");
+    burnConcepts.add("T32.56|Corrosions involving 50-59% of body surface with 50-59% third degree corrosion");
+    
+    burnConcepts.add("T32.60|Corrosions involving 60-69% of body surface");
+    burnConcepts.add("T32.61|Corrosions involving 60-69% of body surface with 0% to 9% third degree corrosion");
+    burnConcepts.add("T32.62|Corrosions involving 60-69% of body surface with 10-19% third degree corrosion");
+    burnConcepts.add("T32.63|Corrosions involving 60-69% of body surface with 20-29% third degree corrosion");
+    burnConcepts.add("T32.64|Corrosions involving 60-69% of body surface with 30-39% third degree corrosion");
+    burnConcepts.add("T32.65|Corrosions involving 60-69% of body surface with 40-49% third degree corrosion");
+    burnConcepts.add("T32.66|Corrosions involving 60-69% of body surface with 50-59% third degree corrosion");
+    burnConcepts.add("T32.67|Corrosions involving 60-69% of body surface with 60-69% third degree corrosion");
+    
+    burnConcepts.add("T32.70|Corrosions involving 70-79% of body surface");
+    burnConcepts.add("T32.71|Corrosions involving 70-79% of body surface with 0% to 9% third degree corrosion");
+    burnConcepts.add("T32.72|Corrosions involving 70-79% of body surface with 10-19% third degree corrosion");
+    burnConcepts.add("T32.73|Corrosions involving 70-79% of body surface with 20-29% third degree corrosion");
+    burnConcepts.add("T32.74|Corrosions involving 70-79% of body surface with 30-39% third degree corrosion");
+    burnConcepts.add("T32.75|Corrosions involving 70-79% of body surface with 40-49% third degree corrosion");
+    burnConcepts.add("T32.76|Corrosions involving 70-79% of body surface with 50-59% third degree corrosion");
+    burnConcepts.add("T32.77|Corrosions involving 70-79% of body surface with 60-69% third degree corrosion");
+    burnConcepts.add("T32.78|Corrosions involving 70-79% of body surface with 70-79% third degree corrosion");
+    
+    burnConcepts.add("T32.80|Corrosions involving 80-89% of body surface");
+    burnConcepts.add("T32.81|Corrosions involving 80-89% of body surface with 0% to 9% third degree corrosion");
+    burnConcepts.add("T32.82|Corrosions involving 80-89% of body surface with 10-19% third degree corrosion");
+    burnConcepts.add("T32.83|Corrosions involving 80-89% of body surface with 20-29% third degree corrosion");
+    burnConcepts.add("T32.84|Corrosions involving 80-89% of body surface with 30-39% third degree corrosion");
+    burnConcepts.add("T32.85|Corrosions involving 80-89% of body surface with 40-49% third degree corrosion");
+    burnConcepts.add("T32.86|Corrosions involving 80-89% of body surface with 50-59% third degree corrosion");
+    burnConcepts.add("T32.87|Corrosions involving 80-89% of body surface with 60-69% third degree corrosion");
+    burnConcepts.add("T32.88|Corrosions involving 80-89% of body surface with 70-79% third degree corrosion");
+    burnConcepts.add("T32.89|Corrosions involving 80-89% of body surface with more than 80% third degree corrosion");
+    
+    burnConcepts.add("T32.90|Corrosions involving 90% or more of body surface");
+    burnConcepts.add("T32.91|Corrosions involving 90% or more of body surface with 0% to 9% third degree corrosion");
+    burnConcepts.add("T32.92|Corrosions involving 90% or more of body surface with 10-19% third degree corrosion");
+    burnConcepts.add("T32.93|Corrosions involving 90% or more of body surface with 20-29% third degree corrosion");
+    burnConcepts.add("T32.94|Corrosions involving 90% or more of body surface with 30-39% third degree corrosion");
+    burnConcepts.add("T32.95|Corrosions involving 90% or more of body surface with 40-49% third degree corrosion");
+    burnConcepts.add("T32.96|Corrosions involving 90% or more of body surface with 50-59% third degree corrosion");
+    burnConcepts.add("T32.97|Corrosions involving 90% or more of body surface with 60-69% third degree corrosion");
+    burnConcepts.add("T32.98|Corrosions involving 90% or more of body surface with 70-79% third degree corrosion");
+    burnConcepts.add("T32.99|Corrosions involving 90% or more of body surface with more than 80% third degree corrosion");
   
     return burnConcepts;
   }
