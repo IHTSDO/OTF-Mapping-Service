@@ -417,6 +417,7 @@ mapProjectAppControllers.controller('LoginCtrl', [
     else if ($location.path().includes('autologin') && ($routeParams.token)){
 	  
       $scope.userToken = $routeParams.token;
+      localStorageService.add('userToken', $scope.userToken);
       $scope.authToken = $routeParams.token;
       $scope.password = $routeParams.token;
       var token = $scope.parseJwt($routeParams.token);
@@ -429,5 +430,4 @@ mapProjectAppControllers.controller('LoginCtrl', [
     
     }
     
-
   }]);
