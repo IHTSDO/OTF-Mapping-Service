@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.queryparser.classic.QueryParserBase;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapRecordListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
@@ -430,7 +431,7 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
             // EDITING_DONE
             // record not owned)
             + " (assignedUserCount:2 AND userAndWorkflowStatusPairs:EDITING_DONE_* AND NOT assignedUserNames:"
-            + mapUser.getUserName() + ")"
+            + QueryParserBase.escape(mapUser.getUserName()) + ")"
 
             + ")");
 
@@ -439,7 +440,7 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
             && !mapUser.getTeam().isEmpty()) {
           for (final MapUser user : workflowService
               .getMapUsersForTeam(mapUser.getTeam()).getMapUsers()) {
-            sb.append(" AND NOT assignedUserNames:" + user.getUserName());
+            sb.append(" AND NOT assignedUserNames:" + QueryParserBase.escape(user.getUserName()));
           }
         }
 
