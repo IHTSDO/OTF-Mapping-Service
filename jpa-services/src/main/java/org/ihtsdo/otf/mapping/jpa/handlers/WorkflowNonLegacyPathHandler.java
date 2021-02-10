@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapRecordListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
@@ -849,7 +850,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
           sb.append(" AND assignedTeamName:" + mapUser.getTeam());
         }
 
-        sb.append(" AND NOT assignedUserNames:" + mapUser.getUserName());
+        sb.append(" AND NOT assignedUserNames:" + QueryParser.escape(mapUser.getUserName()));
         sb.append(" AND userAndWorkflowStatusPairs:CONFLICT_DETECTED_*");
         sb.append(" AND NOT (" + "userAndWorkflowStatusPairs:CONFLICT_NEW_* OR "
             + "userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_* OR "
@@ -867,7 +868,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
 
         sb.append(" AND (assignedUserCount:0 OR "
             + "(assignedUserCount:1 AND NOT assignedUserNames:"
-            + mapUser.getUserName() + "))");
+            + QueryParser.escape(mapUser.getUserName()) + "))");
         break;
 
       default:
@@ -935,23 +936,23 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
         switch (type) {
           case "CONFLICT_NEW":
             sb.append(" AND userAndWorkflowStatusPairs:CONFLICT_NEW_"
-                + mapUser.getUserName());
+                + QueryParser.escape(mapUser.getUserName()));
             break;
           case "CONFLICT_IN_PROGRESS":
             sb.append(" AND userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_"
-                + mapUser.getUserName());
+                + QueryParser.escape(mapUser.getUserName()));
             break;
           case "CONFLICT_RESOLVED":
             sb.append(" AND userAndWorkflowStatusPairs:CONFLICT_RESOLVED_"
-                + mapUser.getUserName());
+                + QueryParser.escape(mapUser.getUserName()));
             break;
           default:
             sb.append(" AND (userAndWorkflowStatusPairs:CONFLICT_NEW_"
-                + mapUser.getUserName()
+                + QueryParser.escape(mapUser.getUserName())
                 + " OR userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_"
-                + mapUser.getUserName()
+                + QueryParser.escape(mapUser.getUserName())
                 + " OR userAndWorkflowStatusPairs:CONFLICT_RESOLVED_"
-                + mapUser.getUserName() + ")");
+                + QueryParser.escape(mapUser.getUserName()) + ")");
             break;
         }
 
@@ -1021,26 +1022,26 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
         switch (type) {
           case "NEW":
             sb.append(
-                " AND userAndWorkflowStatusPairs:NEW_" + mapUser.getUserName());
+                " AND userAndWorkflowStatusPairs:NEW_" + QueryParser.escape(mapUser.getUserName()));
             break;
           case "EDITING_IN_PROGRESS":
             sb.append(" AND userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_"
-                + mapUser.getUserName());
+                + QueryParser.escape(mapUser.getUserName()));
             break;
           case "EDITING_DONE":
             sb.append(" AND (userAndWorkflowStatusPairs:EDITING_DONE_"
-                + mapUser.getUserName() + ")");
+                + QueryParser.escape(mapUser.getUserName()) + ")");
             // Don't show records anymore that have moved on to lead workflow
             // + " OR userAndWorkflowStatusPairs:CONFLICT_DETECTED_"
             // + mapUser.getUserName() + ")");
             break;
           default:
             sb.append(
-                " AND (userAndWorkflowStatusPairs:NEW_" + mapUser.getUserName()
+                " AND (userAndWorkflowStatusPairs:NEW_" + QueryParser.escape(mapUser.getUserName())
                     + " OR userAndWorkflowStatusPairs:EDITING_IN_PROGRESS_"
-                    + mapUser.getUserName()
+                    + QueryParser.escape(mapUser.getUserName())
                     + " OR userAndWorkflowStatusPairs:EDITING_DONE_"
-                    + mapUser.getUserName() + ")"
+                    + QueryParser.escape(mapUser.getUserName()) + ")"
             // It's confusing to show ALL for non-legacy because mapper is done
             // working on it,
             // there's no "finish" step.
