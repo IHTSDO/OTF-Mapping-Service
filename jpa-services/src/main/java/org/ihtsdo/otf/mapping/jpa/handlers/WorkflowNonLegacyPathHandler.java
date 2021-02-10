@@ -851,7 +851,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
           sb.append(" AND assignedTeamName:" + mapUser.getTeam());
         }
 
-        sb.append(" AND NOT assignedUserNames:" + QueryParserBase.escape(mapUser.getUserName()));
+        sb.append(" AND NOT assignedUserNames:\"" + QueryParserBase.escape(mapUser.getUserName()) + "\"");
         sb.append(" AND userAndWorkflowStatusPairs:CONFLICT_DETECTED_*");
         sb.append(" AND NOT (" + "userAndWorkflowStatusPairs:CONFLICT_NEW_* OR "
             + "userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_* OR "
@@ -868,8 +868,8 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
         }
 
         sb.append(" AND (assignedUserCount:0 OR "
-            + "(assignedUserCount:1 AND NOT assignedUserNames:"
-            + QueryParserBase.escape(mapUser.getUserName()) + "))");
+            + "(assignedUserCount:1 AND NOT assignedUserNames:\""
+            + QueryParserBase.escape(mapUser.getUserName()) + "\"))");
         break;
 
       default:
