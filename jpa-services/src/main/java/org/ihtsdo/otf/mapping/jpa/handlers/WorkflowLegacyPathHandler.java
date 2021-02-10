@@ -430,8 +430,8 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
             // first specialist has finished work (assignedUserCount 2,
             // EDITING_DONE
             // record not owned)
-            + " (assignedUserCount:2 AND userAndWorkflowStatusPairs:EDITING_DONE_* AND NOT assignedUserNames:"
-            + QueryParserBase.escape(mapUser.getUserName()) + ")"
+            + " (assignedUserCount:2 AND userAndWorkflowStatusPairs:EDITING_DONE_* AND NOT assignedUserNames:\""
+            + QueryParserBase.escape(mapUser.getUserName()) + "\")"
 
             + ")");
 
@@ -440,7 +440,7 @@ public class WorkflowLegacyPathHandler extends AbstractWorkflowPathHandler {
             && !mapUser.getTeam().isEmpty()) {
           for (final MapUser user : workflowService
               .getMapUsersForTeam(mapUser.getTeam()).getMapUsers()) {
-            sb.append(" AND NOT assignedUserNames:" + QueryParserBase.escape(user.getUserName()));
+            sb.append(" AND NOT assignedUserNames:\"" + QueryParserBase.escape(user.getUserName()) + "\"");
           }
         }
 
