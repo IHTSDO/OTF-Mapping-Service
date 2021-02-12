@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.classic.QueryParserBase;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapRecordListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
@@ -849,7 +851,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
           sb.append(" AND assignedTeamName:" + mapUser.getTeam());
         }
 
-        sb.append(" AND NOT assignedUserNames:" + mapUser.getUserName());
+        sb.append(" AND NOT assignedUserNames:\"" + QueryParserBase.escape(mapUser.getUserName()) + "\"");
         sb.append(" AND userAndWorkflowStatusPairs:CONFLICT_DETECTED_*");
         sb.append(" AND NOT (" + "userAndWorkflowStatusPairs:CONFLICT_NEW_* OR "
             + "userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_* OR "
@@ -866,8 +868,8 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
         }
 
         sb.append(" AND (assignedUserCount:0 OR "
-            + "(assignedUserCount:1 AND NOT assignedUserNames:"
-            + mapUser.getUserName() + "))");
+            + "(assignedUserCount:1 AND NOT assignedUserNames:\""
+            + QueryParserBase.escape(mapUser.getUserName()) + "\"))");
         break;
 
       default:
