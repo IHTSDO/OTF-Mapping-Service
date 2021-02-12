@@ -459,7 +459,7 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
           final Concept destinationCon = conceptMap.get(fields[1]);
           if (destinationCon == null) {
             //throw new Exception("Unable to find source concept " + line);
-        	  System.out.println("Unable to find source concept " + fields[0] + " " + fields[1]);
+        	  System.out.println("Unable to find destination concept " + fields[0] + " " + fields[1]);
         	  continue;
           }
 
