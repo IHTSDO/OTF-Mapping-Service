@@ -80,7 +80,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   private Set<AttributeValueRefSetMember> attributeValueRefSetMembers = null;
 
   /** The default preferred name. */
-  @Column(nullable = false, length = 256)
+  @Column(nullable = false, length = 4000)
   private String defaultPreferredName;
 
   /**
