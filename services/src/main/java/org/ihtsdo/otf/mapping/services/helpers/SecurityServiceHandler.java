@@ -45,5 +45,5 @@ public interface SecurityServiceHandler extends Configurable {
    * @param user the user
    * @return the string
    */
-  public String computeTokenForUser(String user);
+  public String computeTokenForUser(MapUser mapUser);
 }

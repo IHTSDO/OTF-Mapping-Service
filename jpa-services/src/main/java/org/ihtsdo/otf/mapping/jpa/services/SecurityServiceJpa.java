@@ -45,7 +45,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
 
   /** The timeout. */
   private static int timeout;
-
+  
   /**
    * Instantiates an empty {@link SecurityServiceJpa}.
    *
@@ -138,7 +138,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     manager.clear();
 
     // Generate application-managed token
-    String token = handler.computeTokenForUser(authMapUser.getUserName());
+    String token = handler.computeTokenForUser(authMapUser);
     tokenMapUsernameMap.put(token, authMapUser.getUserName());
     tokenTimeoutMap.put(token, new Date(new Date().getTime() + timeout));
 

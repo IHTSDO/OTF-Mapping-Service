@@ -220,3 +220,6 @@ pip-log.txt
 #Mr Developer
 .mr.developer.cfg
 /jpa-model/src/main/java/org/ihtsdo/otf/mapping/reports/AbstractMapReport.java
+
+#webapp-runner
+webapp-runner.jar
