@@ -724,7 +724,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
       // ACTION: add the advice
       //
       final String adviceP21a = "MAPPED FOLLOWING CIHI GUIDANCE";
-      final String advice = "CONSIDER AVAILABILITY OF FURTHER CODE SPECIFICITY";
+      final String advice = "CONSIDER AVAILABILITY OF A MORE SPECIFIC CODE";
       boolean isPoisoning = mapRecord.getConceptId().equals("75478009") || contentService
           .isDescendantOf(mapRecord.getConceptId(), mapProject.getSourceTerminology(),
               mapProject.getSourceTerminologyVersion(), "75478009");
