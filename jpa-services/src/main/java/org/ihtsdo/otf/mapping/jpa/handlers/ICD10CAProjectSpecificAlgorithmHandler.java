@@ -221,8 +221,14 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
 
       if (concepts.size() == 0 || concepts.get(1) == null) {
         result.addError("Null concept in entry");
+        return result;
       }
 
+      if (mapRecord.getMapEntries().size() == 2 && concepts.get(2) ==null) {
+        result.addError("Null concept in entry (group 2)");        
+        return result;        
+      }
+      
       // get the primary code (if not NC)
       final String primaryCode =
           concepts.size() == 0 || concepts.get(1) == null || concepts.get(1).get(0) == null ? null

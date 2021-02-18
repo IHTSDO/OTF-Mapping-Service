@@ -110,7 +110,9 @@ mapProjectApp.run([
         console.debug('Application configuration variables set:');
         for ( var key in appConfig) {
           if (appConfig.hasOwnProperty(key)) {
-            console.debug('  ' + key + ': ' + appConfig[key]);
+            if (!key.includes('security')) {
+            	console.debug('  ' + key + ': ' + appConfig[key]);
+            }
             if (appConfig[key].startsWith('${') && !key.startsWith('projectVersion')) {
               errMsg += 'Configuration property ' + key
                 + ' not set in project or configuration file';
@@ -167,6 +169,11 @@ mapProjectApp.config([ '$rootScopeProvider', '$routeProvider',
     });
 
     $routeProvider.when('/record/conceptId/:conceptId/autologin', {
+      templateUrl : 'partials/otf-dashboard.html',
+      controller : 'LoginCtrl'
+    });
+    
+    $routeProvider.when('/autologin', {
       templateUrl : 'partials/otf-dashboard.html',
       controller : 'LoginCtrl'
     });

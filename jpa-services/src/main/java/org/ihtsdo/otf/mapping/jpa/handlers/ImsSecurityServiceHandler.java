@@ -99,8 +99,8 @@ public class ImsSecurityServiceHandler implements SecurityServiceHandler {
 
   /* see superclass */
   @Override
-  public String computeTokenForUser(String user) {
-    return user;
+  public String computeTokenForUser(MapUser mapUser) {
+    return mapUser.getUserName();
   }
 
   /* see superclass */
