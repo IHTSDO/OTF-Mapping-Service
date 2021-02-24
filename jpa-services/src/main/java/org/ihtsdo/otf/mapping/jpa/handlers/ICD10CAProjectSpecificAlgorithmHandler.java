@@ -188,6 +188,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
   @Override
   public ValidationResult validateSemanticChecks(MapRecord mapRecord) throws Exception {
     cacheCodes();
+    cacheCodeToAdvices();
     final ValidationResult result = new ValidationResultJpa();
 
     // Bail immediately if map has no entries (other QA will catch this)
@@ -614,6 +615,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
   @Override
   public MapAdviceList computeMapAdvice(MapRecord mapRecord, MapEntry mapEntry) throws Exception {
     cacheCodes();
+    cacheCodeToAdvices();
     final List<MapAdvice> advices = new ArrayList<>(mapEntry.getMapAdvices());
     final ContentService contentService = new ContentServiceJpa();
 
