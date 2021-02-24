@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 West Coast Informatics, LLC
+ * Copyright 2021 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.test.mojo;
 
@@ -101,7 +101,7 @@ public class ResetDemoDatabase {
     p = new Properties();
     p.setProperty("run.config", System.getProperty("run.config"));
     p.setProperty("terminology", "SNOMEDCT");
-    p.setProperty("version", "20140731");
+    p.setProperty("version", "20210131");
     p.setProperty("input.dir",
         config.getProperty("data.dir") + "/" + "snomedct-20140731-mini");
     request.setProperties(p);
@@ -121,7 +121,7 @@ public class ResetDemoDatabase {
     p = new Properties();
     p.setProperty("run.config", System.getProperty("run.config"));
     p.setProperty("terminology", "RXNORM");
-    p.setProperty("version", "2016AA");
+    p.setProperty("version", "2021AA");
     p.setProperty("input.dir",
         config.getProperty("data.dir") + "/RXNORM");
     request.setProperties(p);
@@ -181,7 +181,7 @@ public class ResetDemoDatabase {
     p = new Properties();
     p.setProperty("run.config", System.getProperty("run.config"));
     p.setProperty("terminology", "ICD10CM");
-    p.setProperty("version", "2016");
+    p.setProperty("version", "2019");
     p.setProperty("input.file", config.getProperty("data.dir") + "/"
         + "icd10cm-2016.xml");
     request.setProperties(p);
