@@ -225,11 +225,11 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
         return result;
       }
 
-      if (mapRecord.getMapEntries().size() == 2 && concepts.get(2) ==null) {
-        result.addError("Null concept in entry (group 2)");        
-        return result;        
+      if (mapRecord.getMapEntries().size() == 2 && concepts.get(2) == null) {
+        result.addError("Null concept in entry (group 2)");
+        return result;
       }
-      
+
       // get the primary code (if not NC)
       final String primaryCode =
           concepts.size() == 0 || concepts.get(1) == null || concepts.get(1).get(0) == null ? null
@@ -840,9 +840,10 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
           "USE ADDITIONAL CODE TO IDENTIFY THE PRESENCE OF HYPERTENSION";
 
       if ((mapEntry.getTargetId().matches("(^I2[0-5]).*")
-          || mapEntry.getTargetId().matches("(^I6[0-4]).*"))
-          && !TerminologyUtility.hasAdvice(mapEntry, hypertensionAdvice)) {
-        advices.add(TerminologyUtility.getAdvice(mapProject, hypertensionAdvice));
+          || mapEntry.getTargetId().matches("(^I6[0-4]).*"))) {
+        if (!TerminologyUtility.hasAdvice(mapEntry, hypertensionAdvice)) {
+          advices.add(TerminologyUtility.getAdvice(mapProject, hypertensionAdvice));
+        }
       } else if (TerminologyUtility.hasAdvice(mapEntry, hypertensionAdvice)) {
         advices.remove(TerminologyUtility.getAdvice(mapProject, hypertensionAdvice));
       }
