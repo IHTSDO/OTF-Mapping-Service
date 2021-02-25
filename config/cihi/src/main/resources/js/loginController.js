@@ -303,8 +303,26 @@ mapProjectAppControllers.controller('LoginCtrl', [
                       });
                 });
             });
-        });
-    };
+    	}).then(function(data) {
+	        $http({
+	            url: root_mapping + 'mapProject/metadata',
+	            dataType: 'json',
+	            method: 'GET',
+	            headers: {
+	                'Content-Type' : 'application/json'
+	            }
+	        }).success(function(response) {
+	            localStorageService.add('mapProjectMetadata', response);
+	            $rootScope.$broadcast('localStorageModule.notification.setMapProjectMetadata', {
+	                key : 'mapProjectMetadata',
+	                value : response
+	            });
+	        }).error(function(data, status, headers, config) {
+	            $rootScope.handleHttpError(data, status, headers, config);
+	        });
+	    });
+	};
+
 
     // function to change project from the header
     $scope.changeFocusProject = function (mapProject) {
