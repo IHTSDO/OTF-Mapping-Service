@@ -183,7 +183,7 @@ public class ResetDemoDatabase {
     p.setProperty("terminology", "ICD10CM");
     p.setProperty("version", "2019");
     p.setProperty("input.file", config.getProperty("data.dir") + "/"
-        + "icd10cm-2016.xml");
+        + "icd10cm-2019.xml");
     request.setProperties(p);
     request.setDebug(false);
     invoker = new DefaultInvoker();
