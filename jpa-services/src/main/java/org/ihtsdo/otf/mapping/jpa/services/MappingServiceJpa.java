@@ -3183,7 +3183,7 @@ public class MappingServiceJpa extends RootServiceJpa
     int recordCount = 0;
     int updatedCount = 0;
 
-    for (final MapRecord mr : mapRecords.getIterable()) {
+    for (final MapRecord mr : publishableMapRecords.getIterable()) {
       recordCount++;
 
       boolean mapRecordChanged = false;
@@ -3209,7 +3209,7 @@ public class MappingServiceJpa extends RootServiceJpa
         }
       }
 
-      if (mapRecordChanged) {
+      if (mapRecordChanged && mr.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)) {
         mr.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
         updateMapRecord(mr);
       }
