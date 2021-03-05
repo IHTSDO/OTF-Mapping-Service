@@ -592,6 +592,9 @@ public class ClamlLoaderAlgorithm extends RootServiceJpa
               Long.valueOf(conceptMap.get("defaultModule").getTerminologyId()));
           desc.setTerminology(terminology);
           desc.setTerminologyVersion(terminologyVersion);
+          if (labelChars.toString().getBytes("UTF-8").length >= 4000) {
+            log.warn("Rubric name too long = " + labelChars.toString());
+          }
           desc.setTerm(labelChars.toString());
           desc.setConcept(concept);
           desc.setCaseSignificanceId(Long.valueOf(
