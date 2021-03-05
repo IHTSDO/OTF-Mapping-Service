@@ -198,7 +198,7 @@ public class GenerateDemoDataMojo extends AbstractOtfMappingMojo {
         .info("Create project ALLERGY to SNOMEDCT with REVIEW");
     MapProject project1 = new MapProjectJpa();
     project1.setDestinationTerminology("SNOMEDCT");
-    project1.setDestinationTerminologyVersion("20140731");
+    project1.setDestinationTerminologyVersion("20210131");
     project1.setGroupStructure(true);
     project1.setMapRefsetPattern(MapRefsetPattern.ComplexMap);
     project1.setName("ALLERGY to SNOMEDCT with REVIEW");
@@ -232,7 +232,7 @@ public class GenerateDemoDataMojo extends AbstractOtfMappingMojo {
         .info("Create project MEDICATION to RXNORM with REVIEW");
     MapProject project2 = new MapProjectJpa();
     project2.setDestinationTerminology("RXNORM");
-    project2.setDestinationTerminologyVersion("2016AA");
+    project2.setDestinationTerminologyVersion("2021AA");
     project2.setGroupStructure(true);
     project2.setMapRefsetPattern(MapRefsetPattern.ComplexMap);
     project2.setName("MEDICATION to RXNORM with REVIEW");
@@ -278,7 +278,7 @@ public class GenerateDemoDataMojo extends AbstractOtfMappingMojo {
     project3.setRefSetId("3333333");
     project3.setRefSetName("SNOMEDCT to ICD10");
     project3.setSourceTerminology("SNOMEDCT");
-    project3.setSourceTerminologyVersion("20140731");
+    project3.setSourceTerminologyVersion("20210131");
     project3.setWorkflowType(WorkflowType.CONFLICT_PROJECT);
     project3.setMapRelationStyle(RelationStyle.MAP_CATEGORY_STYLE);
     project3.getScopeConcepts().add("404684003");
@@ -302,7 +302,7 @@ public class GenerateDemoDataMojo extends AbstractOtfMappingMojo {
         .info("Create project SNOMEDCT to ICD10CM with NON-LEGACY");
     MapProject project4 = new MapProjectJpa();
     project4.setDestinationTerminology("ICD10CM");
-    project4.setDestinationTerminologyVersion("2016");
+    project4.setDestinationTerminologyVersion("2019");
     project4.setGroupStructure(true);
     project4.setMapRefsetPattern(MapRefsetPattern.ExtendedMap);
     project4.setName("SNOMEDCT to ICD10CM with NON-LEGACY");
@@ -313,7 +313,7 @@ public class GenerateDemoDataMojo extends AbstractOtfMappingMojo {
     project4.setRefSetId("3333333");
     project4.setRefSetName("SNOMEDCT to ICD10CM");
     project4.setSourceTerminology("SNOMEDCT");
-    project4.setSourceTerminologyVersion("20140731");
+    project4.setSourceTerminologyVersion("20210131");
     project4.setWorkflowType(WorkflowType.CONFLICT_PROJECT);
     project4.setMapRelationStyle(RelationStyle.MAP_CATEGORY_STYLE);
     project4.getScopeConcepts().add("404684003");
@@ -338,13 +338,13 @@ public class GenerateDemoDataMojo extends AbstractOtfMappingMojo {
 
     // Start editing cycle
     SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");
-    project1.setEditingCycleBeginDate(DATE_FORMAT.parse("20160101"));
+    project1.setEditingCycleBeginDate(DATE_FORMAT.parse("20210101"));
     mappingService.updateMapProject(project1);
-    project2.setEditingCycleBeginDate(DATE_FORMAT.parse("20160101"));
+    project2.setEditingCycleBeginDate(DATE_FORMAT.parse("20210101"));
     mappingService.updateMapProject(project2);
-    project2.setEditingCycleBeginDate(DATE_FORMAT.parse("20160101"));
+    project2.setEditingCycleBeginDate(DATE_FORMAT.parse("20210101"));
     mappingService.updateMapProject(project3);
-    project2.setEditingCycleBeginDate(DATE_FORMAT.parse("20160101"));
+    project2.setEditingCycleBeginDate(DATE_FORMAT.parse("20210101"));
     mappingService.updateMapProject(project4);
 
     // Reports
