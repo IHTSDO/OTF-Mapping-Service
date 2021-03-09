@@ -173,7 +173,7 @@ public class ResetDemoDatabase {
     }
 
     // Load ClaML
-    Logger.getLogger(getClass()).info("Load ICD10");
+    Logger.getLogger(getClass()).info("Load ICD10CM");
     request = new DefaultInvocationRequest();
     request.setPomFile(new File("../admin/loader/pom.xml"));
     request.setProfiles(Arrays.asList("ClaML"));
