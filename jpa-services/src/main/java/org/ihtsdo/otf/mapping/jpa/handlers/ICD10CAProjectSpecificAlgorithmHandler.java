@@ -888,6 +888,9 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
         if (!found && !TerminologyUtility.hasAdvice(mapEntry, mandatoryExternalCauseCodeAdvice)) {
           advices.add(TerminologyUtility.getAdvice(mapProject, mandatoryExternalCauseCodeAdvice));
         }
+        if (found && TerminologyUtility.hasAdvice(mapEntry, mandatoryExternalCauseCodeAdvice)) {
+          advices.remove(TerminologyUtility.getAdvice(mapProject, mandatoryExternalCauseCodeAdvice));
+        }        
       }
 
       //
@@ -955,8 +958,8 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
         List<MapEntry> updatedMapEntries = new ArrayList<>();
 
         for (MapEntry mapEntry : existingMapRecord.getMapEntries()) {
-          MapRelation mapRelation = computeMapRelation(mapRecord, mapEntry);
-          MapAdviceList mapAdvices = computeMapAdvice(mapRecord, mapEntry);
+          MapRelation mapRelation = computeMapRelation(existingMapRecord, mapEntry);
+          MapAdviceList mapAdvices = computeMapAdvice(existingMapRecord, mapEntry);
           mapEntry.setMapRelation(mapRelation);
           mapEntry.getMapAdvices().addAll(mapAdvices.getMapAdvices());
           updatedMapEntries.add(mapEntry);
