@@ -93,19 +93,12 @@ public class MeddraSqlReportMojo extends AbstractOtfMappingMojo {
       final javax.persistence.Query query = manager.createNativeQuery(
           " SELECT DISTINCT " + " mr.conceptId AS referencedComponentId "
               + " , mr.conceptName AS referencedComponentName "
-              + " , mapGroup AS mapGroup " + " , mapPriority AS mapPriority "
               + " , me.targetId AS mapTarget "
               + " , me.targetName AS mapTargetName "
-              + " , rel.name AS mapRelation " + " FROM map_records mr "
+              + " , if(me.targetName = 'No target','UNMAPPABLE','EXACT MATCH') as mapRelation "
+              + " FROM map_records mr "
               + " LEFT OUTER JOIN map_entries me ON mr.id = me.mapRecord_id "
-              + " LEFT OUTER JOIN map_relations rel ON me.mapRelation_id = rel.id "
               + " WHERE mr.mapProjectId = :MAP_PROJECT_ID "
-              + " AND EXISTS (SELECT 1 FROM map_records_AUD mra, map_records_labels_AUD mrla "
-              + " WHERE mra.id = mrla.id AND mra.mapProjectId = :MAP_PROJECT_ID "
-              + " AND mrla.labels = 'Final QA Check MSSO'   AND mr.conceptId = mra.conceptId) "
-              + " AND EXISTS (SELECT 1 FROM map_records_AUD mra, map_records_labels_AUD mrla "
-              + " WHERE mra.id = mrla.id AND mra.mapProjectId = :MAP_PROJECT_ID "
-              + " AND mrla.labels = 'Final QA Check SNOMED' AND mr.conceptId = mra.conceptId) "
               + " AND mr.workflowStatus = 'READY_FOR_PUBLICATION' "
               + " ORDER BY 2; ");
 
@@ -117,7 +110,7 @@ public class MeddraSqlReportMojo extends AbstractOtfMappingMojo {
       List<String> results = new ArrayList<>();
       // Add header row
       results.add(
-          "Referenced Component Id\tReferenced Component Name\tMap Group\tMap Priority\tMap Target\tMap Target Name\tMap Relation");
+          "Referenced Component Id\tReferenced Component Name\tMap Target\tMap Target Name\tMap Relation");
 
       // Add result rows
       for (Object[] array : objects) {
