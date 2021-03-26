@@ -771,36 +771,6 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
       }
 
       //
-      // PREDICATE: S or T code without advice
-      // "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE"
-      // and without secondary external cause code
-      // ACTION: add the advice
-      //
-      if ((mapEntry.getTargetId().startsWith("S") || mapEntry.getTargetId().startsWith("T"))) {
-        if (mapRecord.getMapEntries().size() == 1 && !hasExternalCauseCodeAdvice) {
-          advices.add(TerminologyUtility.getAdvice(mapProject, externalCauseCodeAdvice));
-          hasExternalCauseCodeAdvice = true;
-        } else {
-          boolean found = false;
-          for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
-            // If external cause code found, set flag
-            if (mapRecord.getMapEntries().get(i).getTargetId() != null
-                && mapRecord.getMapEntries().get(i).getTargetId().matches("^[VWXY].*")) {
-              found = true;
-              break;
-            }
-          }
-          if (!found && !hasExternalCauseCodeAdvice) {
-            advices.add(TerminologyUtility.getAdvice(mapProject, externalCauseCodeAdvice));
-            hasExternalCauseCodeAdvice = true;
-          } else if (found && hasExternalCauseCodeAdvice) {
-            advices.remove(TerminologyUtility.getAdvice(mapProject, externalCauseCodeAdvice));
-            hasExternalCauseCodeAdvice = false;
-          }
-        }
-      }
-
-      //
       // PREDICATE: K52.1 code without advice
       // "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE"
       // and without secondary external cause code
@@ -885,16 +855,27 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
       }
 
       //
+      // PREDICATE: code in range S00-T98 with advice
+      // "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE"
+      // ACTION: remove the advice
+      //
+      if ((mapEntry.getTargetId().startsWith("S") || mapEntry.getTargetId().startsWith("T"))
+          && hasExternalCauseCodeAdvice) {
+
+        advices.remove(TerminologyUtility.getAdvice(mapProject, externalCauseCodeAdvice));
+        hasExternalCauseCodeAdvice = false;
+      }
+
+      //
       // PREDICATE: code in range S00-T98 without a subsequent target code from
       // V01-Y98
-      // ACTION: replace "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE" with
-      // "MANDATORY REQUIREMENT FOR AN EXTERNAL CAUSE CODE".
+      // ACTION: add "MANDATORY REQUIREMENT FOR AN EXTERNAL CAUSE CODE".
       //
+
       final String mandatoryExternalCauseCodeAdvice =
           "MANDATORY REQUIREMENT FOR AN EXTERNAL CAUSE CODE";
 
-      if (mapEntry.getTargetId().startsWith("S")
-          || mapEntry.getTargetId().startsWith("T") && hasExternalCauseCodeAdvice) {
+      if (mapEntry.getTargetId().startsWith("S") || mapEntry.getTargetId().startsWith("T")) {
         boolean found = false;
         for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
           // If V01-Y98 code found, set flag
@@ -904,13 +885,12 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
             break;
           }
         }
-        if (!found && hasExternalCauseCodeAdvice) {
-          advices.remove(TerminologyUtility.getAdvice(mapProject, externalCauseCodeAdvice));
-          if (!TerminologyUtility.hasAdvice(mapEntry, mandatoryExternalCauseCodeAdvice)) {
-            advices.add(TerminologyUtility.getAdvice(mapProject, mandatoryExternalCauseCodeAdvice));
-          }
-          hasExternalCauseCodeAdvice = false;
+        if (!found && !TerminologyUtility.hasAdvice(mapEntry, mandatoryExternalCauseCodeAdvice)) {
+          advices.add(TerminologyUtility.getAdvice(mapProject, mandatoryExternalCauseCodeAdvice));
         }
+        if (found && TerminologyUtility.hasAdvice(mapEntry, mandatoryExternalCauseCodeAdvice)) {
+          advices.remove(TerminologyUtility.getAdvice(mapProject, mandatoryExternalCauseCodeAdvice));
+        }        
       }
 
       //
@@ -978,8 +958,8 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
         List<MapEntry> updatedMapEntries = new ArrayList<>();
 
         for (MapEntry mapEntry : existingMapRecord.getMapEntries()) {
-          MapRelation mapRelation = computeMapRelation(mapRecord, mapEntry);
-          MapAdviceList mapAdvices = computeMapAdvice(mapRecord, mapEntry);
+          MapRelation mapRelation = computeMapRelation(existingMapRecord, mapEntry);
+          MapAdviceList mapAdvices = computeMapAdvice(existingMapRecord, mapEntry);
           mapEntry.setMapRelation(mapRelation);
           mapEntry.getMapAdvices().addAll(mapAdvices.getMapAdvices());
           updatedMapEntries.add(mapEntry);
@@ -1872,9 +1852,12 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
 
     // Check all maps with "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE".
     // If the target code is in range S00-T98 without a subsequent target code
-    // from
-    // V01-Y98, the advice needs to be changed to
+    // from V01-Y98, the advice needs to be changed to
     // "MANDATORY REQUIREMENT FOR AN EXTERNAL CAUSE CODE"
+    //
+    // If there is a subsequent target code from V01-Y98, remove
+    // "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE" entirely and don't
+    // replace it with anything.
     for (final String conceptId : conceptIdsForChecking) {
       MapRecord mapRecord = existingIcd10Maps.get(conceptId);
       for (MapEntry mapEntry : mapRecord.getMapEntries()) {
@@ -1893,6 +1876,10 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
                 "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE"));
             mapEntry.getMapAdvices().add(TerminologyUtility.getAdvice(mapProject,
                 "MANDATORY REQUIREMENT FOR AN EXTERNAL CAUSE CODE"));
+          }
+          if (found) {
+            mapEntry.getMapAdvices().remove(TerminologyUtility.getAdvice(mapProject,
+                "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE"));
           }
         }
       }
