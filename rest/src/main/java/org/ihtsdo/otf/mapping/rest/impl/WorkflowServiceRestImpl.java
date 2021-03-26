@@ -1592,14 +1592,25 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl
       final TrackingRecord trackingRecord = workflowService
           .getTrackingRecord(mapProject, concept.getTerminologyId());
 
+      /**Logger.getLogger(WorkflowServiceRestImpl.class).info("trackingRecord: " + trackingRecord);
+      
       for (final MapRecord mr : workflowService
           .getMapRecordsForTrackingRecord(trackingRecord)) {
-        if (mr.getOwner().equals(mapUser)) {
-          return mr;
+        Logger.getLogger(WorkflowServiceRestImpl.class)
+        .info("mr : " + mr.getId() + " " + mr.getOwner().getUserName() + " " + mr.getWorkflowStatus());
+      } */
+      
+      // choose the most recent of map_records that match the mapUser
+      MapRecord mapRecordToReturn = null;
+      for (final MapRecord mr : workflowService
+          .getMapRecordsForTrackingRecord(trackingRecord)) {
+        if (mr.getOwner().equals(mapUser) && 
+            (mapRecordToReturn == null || mapRecordToReturn.getId() < mr.getId())) {
+          mapRecordToReturn = mr;
         }
       }
 
-      return null;
+      return mapRecordToReturn;
     } catch (Exception e) {
       handleException(e, "trying to get an assigned map record", user, project,
           terminologyId);
