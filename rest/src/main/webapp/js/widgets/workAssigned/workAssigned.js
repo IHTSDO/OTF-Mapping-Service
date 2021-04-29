@@ -134,7 +134,7 @@ angular
           if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') { 
             $scope.retrieveAssignedReviewWork(1, null);
             $scope.retrieveAssignedConflicts(1, null);
-            $scope.retrieveAssignedWorkForUser(1, null, $scope.selected.mapUserViewed);
+            $scope.retrieveAssignedWorkForUser(1, $scope.selected.mapUserViewed.userName, null);
           }
         }); 
       }
