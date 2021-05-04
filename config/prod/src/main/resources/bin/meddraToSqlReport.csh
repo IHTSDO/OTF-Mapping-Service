@@ -34,7 +34,7 @@ if (-e /home/mapping-rest/bin/OFF) then
 endif
 
 echo "Taking down the server"
-supervisorctl stop mapping-rest
+sudo supervisorctl stop mapping-rest
 if ($status != 0) then
 	echo "ERROR stopping server"
 	exit 1
@@ -51,12 +51,12 @@ mvn install -PMeddraSqlReport -Drun.config=$MAPPING_CONFIG -Dreport.map.project.
 if ($status != 0) then
     echo "ERROR generating daily reports"
     echo "    Restarting tomcat server ...`/bin/date`"
-    supervisorctl start mapping-rest
+    sudo supervisorctl start mapping-rest
     exit 1
 endif
 
 echo "    Restarting tomcat server ...`/bin/date`"
-supervisorctl start mapping-rest
+sudo supervisorctl start mapping-rest
 
 echo "------------------------------------------------"
 echo "Finished ...`/bin/date`"
