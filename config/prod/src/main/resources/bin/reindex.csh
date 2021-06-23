@@ -7,7 +7,7 @@
 # Minute Hour Day-of-Month Month Day of Week Command
 # 0 0 * * * csh $MAPPING_CODE/admin/lucene/dailyReports.csh > reindex.log
 #
-# Rebuild Lucene indexes for specific objects listed in INDEX_OBJECTS  
+# Rebuild Lucene indexes for specific objects listed in INDEX_OBJECTS
 #
 
 # comma separated list of Jpa objects
@@ -24,13 +24,20 @@ echo "MAPPING_CODE = $MAPPING_CODE"
 echo "MAPPING_DATA = $MAPPING_DATA"
 echo "MAPPING_CONFIG = $MAPPING_CONFIG"
 
-cd $MAPPING_CODE/admin/lucene
-mvn install -PReindex -Drun.config=$MAPPING_CONFIG -Dindexed.objects=$INDEX_OBJECTS >&! reindex.log
+echo "Taking down the server"
+timeout --foreground 30 sudo supervisorctl stop mapping-rest
+
+
+cd $MAPPING_CODE/lucene
+mvn install -PReindex -Drun.config=$MAPPING_CONFIG -Dindexed.objects=$INDEX_OBJECTS
 if ($status != 0) then
     echo "ERROR running lucene"
-    cat reindex.log
     exit 1
 endif
+
+echo "    Restarting application server ...`/bin/date`"
+timeout --foreground 30 sudo supervisorctl start mapping-rest
+
 
 echo "------------------------------------------------"
 echo "Finished ...`/bin/date`"
