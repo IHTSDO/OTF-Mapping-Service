@@ -14,6 +14,9 @@ public enum WorkflowPath {
   /** The legacy path. */
   LEGACY_PATH,
 
+  /** The conflict and review path. */
+  CONFLICT_AND_REVIEW_PATH,
+    
   /** The Project Review path */
   REVIEW_PROJECT_PATH,
 
