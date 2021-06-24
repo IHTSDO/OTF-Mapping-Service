@@ -352,9 +352,30 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       final MapUser mapUser = workflowService.getMapUser(userName);
       user = mapUser.getUserName();
 
+      // if conflict and review path, get only conflict work
+      if (mapProject.getWorkflowType().equals(WorkflowType.CONFLICT_AND_REVIEW_PATH)) {
+
+        // Need to make sure not to return maps that are currently in
+        // review
+        final StringBuilder sb = new StringBuilder();
+        if (query != null && !query.isEmpty() && !query.equals("null")) {
+          sb.append(query).append(" AND ");
+        }
+
+        // Don't include Review or finished conflict records
+        sb.append(
+            " NOT (userAndWorkflowStatusPairs:REVIEW_* OR userAndWorkflowStatusPairs:CONFLICT_FINISHED_*)");
+
+        // get ALL normal workflow work at lead level
+        return workflowService.findAvailableWork(mapProject, mapUser, MapUserRole.LEAD,
+            sb.toString(), pfsParameter);
+      }
+      else {
+      
       // get the workflow tracking records
       return workflowService.findAvailableWork(mapProject, mapUser, MapUserRole.LEAD, query,
           pfsParameter);
+      }
     } catch (Exception e) {
       handleException(e, "trying to find available conflicts", user, project, "");
       return null;
@@ -561,7 +582,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       if (mapProject.getWorkflowType().equals(WorkflowType.CONFLICT_AND_REVIEW_PATH)) {
 
         // Need to make sure not to return maps that are currently in
-        // conflict-review
+        // review
         final StringBuilder sb = new StringBuilder();
         if (query != null && !query.isEmpty() && !query.equals("null")) {
           sb.append(query).append(" AND ");
@@ -668,7 +689,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
         }
 
         sb.append(
-            " NOT (userAndWorkflowStatusPairs:CONFLICT_DETECTED_* AND NOT userAndWorkflowStatusPairs:CONFLICT_RESOLVED_*)");
+            " NOT (userAndWorkflowStatusPairs:CONFLICT_DETECTED_* AND NOT userAndWorkflowStatusPairs:CONFLICT_FINISHED_*)");
 
         // get ALL normal workflow work at lead level
         availableWork = workflowService.findAvailableWork(mapProject, mapUser, MapUserRole.LEAD,
@@ -849,7 +870,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
         }
 
         sb.append(
-            " NOT (userAndWorkflowStatusPairs:CONFLICT_DETECTED_* AND NOT userAndWorkflowStatusPairs:CONFLICT_RESOLVED_*)");
+            " NOT (userAndWorkflowStatusPairs:CONFLICT_DETECTED_* AND NOT userAndWorkflowStatusPairs:CONFLICT_FINISHED_*)");
 
         // get ALL normal workflow work at lead level
         assignedWork.addSearchResults(workflowService.findAssignedWork(mapProject, mapUser,
