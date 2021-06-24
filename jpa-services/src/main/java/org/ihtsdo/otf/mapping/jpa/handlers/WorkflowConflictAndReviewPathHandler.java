@@ -65,23 +65,29 @@ public class WorkflowConflictAndReviewPathHandler extends AbstractWorkflowPathHa
   /** The first lead conflict editing state. */
   private static WorkflowPathState firstLeadConflictEditingState;
 
+  /** The first lead conflict resolved state. */
+  private static WorkflowPathState firstLeadConflictResolvedState;
+
   /** The first lead conflict finished state. */
   private static WorkflowPathState firstLeadConflictFinishedState;
 
   /** The no conflict detected state. */
-  private static WorkflowPathState noConflictDetectedState;  
-  
+  private static WorkflowPathState noConflictDetectedState;
+
   /** The first lead review editing state. */
   private static WorkflowPathState firstLeadReviewEditingState;
+
+  /** The first lead review resolved state. */
+  private static WorkflowPathState firstLeadReviewResolvedState;
 
   /** The first lead review finished state. */
   private static WorkflowPathState firstLeadReviewFinishedState;
 
-  /** The second lead editing state. */
+  /** The second lead review editing state. */
   private static WorkflowPathState secondLeadReviewEditingState;
 
-  /** The second lead finished state. */
-  private static WorkflowPathState secondLeadReviewFinishedState;
+  /** The second lead review resolved state. */
+  private static WorkflowPathState secondLeadReviewResolvedState;
 
   /**
    * Instantiates an empty {@link WorkflowConflictAndReviewPathHandler}.
@@ -131,8 +137,7 @@ public class WorkflowConflictAndReviewPathHandler extends AbstractWorkflowPathHa
     conflictDetectedState.addWorkflowCombination(new WorkflowStatusCombination(
         Arrays.asList(WorkflowStatus.CONFLICT_DETECTED, WorkflowStatus.CONFLICT_DETECTED)));
     trackingRecordStateToActionMap.put(conflictDetectedState,
-        new HashSet<>(
-            Arrays.asList(WorkflowAction.ASSIGN_FROM_SCRATCH)));
+        new HashSet<>(Arrays.asList(WorkflowAction.ASSIGN_FROM_SCRATCH)));
 
     // STATE: First Lead conflict resolution (incomplete)
     firstLeadConflictEditingState =
@@ -147,64 +152,85 @@ public class WorkflowConflictAndReviewPathHandler extends AbstractWorkflowPathHa
         new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING, WorkflowAction.SAVE_FOR_LATER,
             WorkflowAction.UNASSIGN)));
 
-    // STATE: First Lead conflict resolution (complete)
-    firstLeadConflictFinishedState =
-        new WorkflowPathState("First Lead Conflict Resolution Complete");
-    firstLeadConflictFinishedState.addWorkflowCombination(
+    // STATE: First Lead conflict resolution (resolved)
+    firstLeadConflictResolvedState = new WorkflowPathState("First Lead Conflict Resolved");
+    firstLeadConflictResolvedState.addWorkflowCombination(
         new WorkflowStatusCombination(Arrays.asList(WorkflowStatus.CONFLICT_DETECTED,
             WorkflowStatus.CONFLICT_DETECTED, WorkflowStatus.CONFLICT_RESOLVED)));
-    trackingRecordStateToActionMap.put(firstLeadConflictFinishedState,
+    trackingRecordStateToActionMap.put(firstLeadConflictResolvedState,
         new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING, WorkflowAction.SAVE_FOR_LATER,
             WorkflowAction.UNASSIGN)));
+
+    // STATE: First Lead conflict resolution (finished)
+    firstLeadConflictFinishedState = new WorkflowPathState("First Lead Conflict Finished");
+    firstLeadConflictFinishedState.addWorkflowCombination(
+        new WorkflowStatusCombination(Arrays.asList(WorkflowStatus.CONFLICT_DETECTED,
+            WorkflowStatus.CONFLICT_DETECTED, WorkflowStatus.CONFLICT_FINISHED)));
+    trackingRecordStateToActionMap.put(firstLeadConflictFinishedState,
+        new HashSet<>(Arrays.asList(WorkflowAction.ASSIGN_FROM_SCRATCH)));
 
     // STATE: No Conflict Detected
     noConflictDetectedState = new WorkflowPathState("No Conflict Detected");
     noConflictDetectedState.addWorkflowCombination(new WorkflowStatusCombination(
         Arrays.asList(WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_NEEDED)));
     trackingRecordStateToActionMap.put(noConflictDetectedState,
-        new HashSet<>(
-            Arrays.asList(WorkflowAction.ASSIGN_FROM_SCRATCH)));
-    
-    
+        new HashSet<>(Arrays.asList(WorkflowAction.ASSIGN_FROM_SCRATCH)));
+
     // STATE: First Lead review (incomplete)
     firstLeadReviewEditingState = new WorkflowPathState("First Lead Review Incomplete");
-    firstLeadReviewEditingState.addWorkflowCombination(new WorkflowStatusCombination(
-        Arrays.asList(WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_NEW)));
-    firstLeadReviewEditingState.addWorkflowCombination(new WorkflowStatusCombination(
-        Arrays.asList(WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_IN_PROGRESS)));
+    firstLeadReviewEditingState.addWorkflowCombination(new WorkflowStatusCombination(Arrays.asList(
+        WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_NEW)));
+    firstLeadReviewEditingState.addWorkflowCombination(
+        new WorkflowStatusCombination(Arrays.asList(WorkflowStatus.REVIEW_NEEDED,
+            WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_IN_PROGRESS)));
     trackingRecordStateToActionMap.put(firstLeadReviewEditingState,
         new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING, WorkflowAction.SAVE_FOR_LATER,
             WorkflowAction.UNASSIGN)));
 
-    // STATE: First Lead review (complete)
-    firstLeadReviewFinishedState = new WorkflowPathState("First Lead Review Complete");
-    firstLeadReviewFinishedState.addWorkflowCombination(new WorkflowStatusCombination(
-        Arrays.asList(WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_RESOLVED)));
+    // STATE: First Lead review (resolved)
+    firstLeadReviewResolvedState = new WorkflowPathState("First Lead Review Resolved");
+    firstLeadReviewResolvedState.addWorkflowCombination(
+        new WorkflowStatusCombination(Arrays.asList(WorkflowStatus.REVIEW_NEEDED,
+            WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_RESOLVED)));
+    trackingRecordStateToActionMap.put(firstLeadReviewResolvedState,
+        new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING, WorkflowAction.PUBLISH,
+            WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN)));
+
+    // STATE: First Lead review (finished)
+    firstLeadReviewFinishedState = new WorkflowPathState("First Lead Review Finished");
+    firstLeadReviewFinishedState.addWorkflowCombination(
+        new WorkflowStatusCombination(Arrays.asList(WorkflowStatus.REVIEW_NEEDED,
+            WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_FINISHED)));
     trackingRecordStateToActionMap.put(firstLeadReviewFinishedState,
-        new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING, WorkflowAction.SAVE_FOR_LATER,
-            WorkflowAction.UNASSIGN)));
+        new HashSet<>(Arrays.asList(WorkflowAction.ASSIGN_FROM_SCRATCH)));
 
     // STATE: Second Lead review (incomplete)
     secondLeadReviewEditingState = new WorkflowPathState("Second Lead Review Incomplete");
     secondLeadReviewEditingState.addWorkflowCombination(new WorkflowStatusCombination(
-        Arrays.asList(WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_RESOLVED, WorkflowStatus.REVIEW_NEW)));
+        Arrays.asList(WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_NEEDED,
+            WorkflowStatus.REVIEW_FINISHED, WorkflowStatus.REVIEW_NEW)));
     secondLeadReviewEditingState.addWorkflowCombination(new WorkflowStatusCombination(
-        Arrays.asList(WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_RESOLVED, WorkflowStatus.REVIEW_IN_PROGRESS)));
+        Arrays.asList(WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_NEEDED,
+            WorkflowStatus.REVIEW_FINISHED, WorkflowStatus.REVIEW_IN_PROGRESS)));
     secondLeadReviewEditingState.addWorkflowCombination(new WorkflowStatusCombination(
-        Arrays.asList(WorkflowStatus.CONFLICT_DETECTED, WorkflowStatus.CONFLICT_DETECTED, WorkflowStatus.CONFLICT_RESOLVED, WorkflowStatus.REVIEW_NEW)));
+        Arrays.asList(WorkflowStatus.CONFLICT_DETECTED, WorkflowStatus.CONFLICT_DETECTED,
+            WorkflowStatus.CONFLICT_FINISHED, WorkflowStatus.REVIEW_NEW)));
     secondLeadReviewEditingState.addWorkflowCombination(new WorkflowStatusCombination(
-        Arrays.asList(WorkflowStatus.CONFLICT_DETECTED, WorkflowStatus.CONFLICT_DETECTED, WorkflowStatus.CONFLICT_RESOLVED, WorkflowStatus.REVIEW_IN_PROGRESS)));
+        Arrays.asList(WorkflowStatus.CONFLICT_DETECTED, WorkflowStatus.CONFLICT_DETECTED,
+            WorkflowStatus.CONFLICT_FINISHED, WorkflowStatus.REVIEW_IN_PROGRESS)));
     trackingRecordStateToActionMap.put(secondLeadReviewEditingState,
         new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING, WorkflowAction.SAVE_FOR_LATER,
             WorkflowAction.UNASSIGN)));
 
     // STATE: Second Lead review (complete)
-    secondLeadReviewFinishedState = new WorkflowPathState("Second Lead Review Complete");
-    secondLeadReviewFinishedState.addWorkflowCombination(new WorkflowStatusCombination(
-        Arrays.asList(WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_RESOLVED, WorkflowStatus.REVIEW_RESOLVED)));
-    secondLeadReviewFinishedState.addWorkflowCombination(new WorkflowStatusCombination(
-        Arrays.asList(WorkflowStatus.CONFLICT_DETECTED, WorkflowStatus.CONFLICT_DETECTED, WorkflowStatus.CONFLICT_RESOLVED, WorkflowStatus.REVIEW_RESOLVED)));
-    trackingRecordStateToActionMap.put(secondLeadReviewFinishedState,
+    secondLeadReviewResolvedState = new WorkflowPathState("Second Lead Review Complete");
+    secondLeadReviewResolvedState.addWorkflowCombination(new WorkflowStatusCombination(
+        Arrays.asList(WorkflowStatus.REVIEW_NEEDED, WorkflowStatus.REVIEW_NEEDED,
+            WorkflowStatus.REVIEW_FINISHED, WorkflowStatus.REVIEW_RESOLVED)));
+    secondLeadReviewResolvedState.addWorkflowCombination(new WorkflowStatusCombination(
+        Arrays.asList(WorkflowStatus.CONFLICT_DETECTED, WorkflowStatus.CONFLICT_DETECTED,
+            WorkflowStatus.CONFLICT_FINISHED, WorkflowStatus.REVIEW_RESOLVED)));
+    trackingRecordStateToActionMap.put(secondLeadReviewResolvedState,
         new HashSet<>(Arrays.asList(WorkflowAction.FINISH_EDITING, WorkflowAction.PUBLISH,
             WorkflowAction.SAVE_FOR_LATER, WorkflowAction.UNASSIGN)));
 
@@ -398,11 +424,11 @@ public class WorkflowConflictAndReviewPathHandler extends AbstractWorkflowPathHa
         result.addError("Action is not permitted.");
       }
 
-      // STATE: First Lead conflict resolution complete
+      // STATE: First Lead conflict resolution resolved
       // Record requirement : CONFLICT_RESOLVED
       // Permissible actions: SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN
       // Minimum role : Lead
-    } else if (state.equals(firstLeadConflictFinishedState)) {
+    } else if (state.equals(firstLeadConflictResolvedState)) {
 
       // check record
       if (currentRecord == null) {
@@ -422,7 +448,23 @@ public class WorkflowConflictAndReviewPathHandler extends AbstractWorkflowPathHa
           && !action.equals(WorkflowAction.UNASSIGN)) {
         result.addError("Action is not permitted.");
       }
-      
+
+      // STATE: First Lead conflict finished
+      // Record requirement : CONFLICT_FINISHED
+      // Permissible actions: ASSIGN_FROM_SCRATCH
+      // Minimum role : Lead
+    } else if (state.equals(firstLeadConflictFinishedState)) {
+
+      // check role
+      if (!userRole.hasPrivilegesOf(MapUserRole.LEAD)) {
+        result.addError("User does not have required role");
+      }
+
+      // check action
+      if (!action.equals(WorkflowAction.ASSIGN_FROM_SCRATCH)) {
+        result.addError("Action is not permitted");
+      }
+
       // STATE: No conflict detected after both specialists finished
       // Record requirement : No record
       // Permissible actions: ASSIGN_FROM_SCRATCH
@@ -430,121 +472,135 @@ public class WorkflowConflictAndReviewPathHandler extends AbstractWorkflowPathHa
 
     } else if (state.equals(noConflictDetectedState)) {
 
-    // check role
-    if (!userRole.hasPrivilegesOf(MapUserRole.LEAD)) {
-      result.addError("User does not have required role");
+      // check role
+      if (!userRole.hasPrivilegesOf(MapUserRole.LEAD)) {
+        result.addError("User does not have required role");
+      }
+
+      // check action
+      if (!action.equals(WorkflowAction.ASSIGN_FROM_SCRATCH)) {
+        result.addError("Action is not permitted");
+      }
+
+      // STATE: First Lead review
+      // Record requirement : REVIEW_NEW, REVIEW_IN_PROGRESS
+      // Permissible actions: SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN
+      // Minimum role : Lead
+    } else if (state.equals(firstLeadReviewEditingState)) {
+
+      // check record
+      if (currentRecord == null) {
+        result.addError("User must have a record");
+      } else if (!currentRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)
+          && !currentRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_IN_PROGRESS)) {
+        result.addError("User's record does meet requirements");
+      }
+
+      // check role
+      if (!userRole.hasPrivilegesOf(MapUserRole.LEAD)) {
+        result.addError("User does not have required role");
+      }
+
+      // check action
+      if (!action.equals(WorkflowAction.SAVE_FOR_LATER)
+          && !action.equals(WorkflowAction.FINISH_EDITING)
+          && !action.equals(WorkflowAction.UNASSIGN)) {
+        result.addError("Action is not permitted.");
+      }
+
+      // STATE: First Lead review resolved
+      // Record requirement : REVIEW_RESOLVED
+      // Permissible actions: SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN, PUBLISH
+      // Minimum role : Lead
+    } else if (state.equals(firstLeadReviewResolvedState)) {
+
+      // check record
+      if (currentRecord == null) {
+        result.addError("User must have a record");
+      } else if (!currentRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_RESOLVED)) {
+        result.addError("User's record does meet requirements");
+      }
+
+      // check role
+      if (!userRole.hasPrivilegesOf(MapUserRole.LEAD)) {
+        result.addError("User does not have required role");
+      }
+
+      // check action
+      if (!action.equals(WorkflowAction.SAVE_FOR_LATER)
+          && !action.equals(WorkflowAction.FINISH_EDITING)
+          && !action.equals(WorkflowAction.UNASSIGN)
+          && !action.equals(WorkflowAction.PUBLISH)) {
+        result.addError("Action is not permitted.");
+      }
+
+      // STATE: First Lead review finished
+      // Record requirement : REVIEW_FINISHED
+      // Permissible actions: ASSIGN_FROM_SCRATCH
+      // Minimum role : Lead
+    } else if (state.equals(firstLeadReviewFinishedState)) {
+
+      // check role
+      if (!userRole.hasPrivilegesOf(MapUserRole.LEAD)) {
+        result.addError("User does not have required role");
+      }
+
+      // check action
+      if (!action.equals(WorkflowAction.ASSIGN_FROM_SCRATCH)) {
+        result.addError("Action is not permitted");
+      }
+
+      // STATE: Second Lead review
+      // Record requirement : REVIEW_NEW, REVIEW_IN_PROGRESS
+      // Permissible actions: SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN
+      // Minimum role : Lead
+    } else if (state.equals(secondLeadReviewEditingState)) {
+
+      // check record
+      if (currentRecord == null) {
+        result.addError("User must have a record");
+      } else if (!currentRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)
+          && !currentRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_IN_PROGRESS)) {
+        result.addError("User's record does meet requirements");
+      }
+
+      // check role
+      if (!userRole.hasPrivilegesOf(MapUserRole.LEAD)) {
+        result.addError("User does not have required role");
+      }
+
+      // check action
+      if (!action.equals(WorkflowAction.SAVE_FOR_LATER)
+          && !action.equals(WorkflowAction.FINISH_EDITING)
+          && !action.equals(WorkflowAction.UNASSIGN)) {
+        result.addError("Action is not permitted.");
+      }
+
+      // STATE: Second Lead review resolved
+      // Record requirement : REVIEW_RESOLVED
+      // Permissible actions: SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN
+      // Minimum role : Lead
+    } else if (state.equals(secondLeadReviewResolvedState)) {
+
+      // check record
+      if (currentRecord == null) {
+        result.addError("User must have a record");
+      } else if (!currentRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_RESOLVED)) {
+        result.addError("User's record does meet requirements");
+      }
+
+      // check role
+      if (!userRole.hasPrivilegesOf(MapUserRole.LEAD)) {
+        result.addError("User does not have required role");
+      }
+
+      // check action
+      if (!action.equals(WorkflowAction.SAVE_FOR_LATER)
+          && !action.equals(WorkflowAction.FINISH_EDITING)
+          && !action.equals(WorkflowAction.UNASSIGN) && !action.equals(WorkflowAction.PUBLISH)) {
+        result.addError("Action is not permitted.");
+      }
     }
-
-    // check action
-    if (!action.equals(WorkflowAction.ASSIGN_FROM_SCRATCH)) {
-      result.addError("Action is not permitted");
-    }
-
-    // STATE: First Lead review
-    // Record requirement : REVIEW_NEW, REVIEW_IN_PROGRESS
-    // Permissible actions: SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN
-    // Minimum role : Lead
-  } else if (state.equals(firstLeadReviewEditingState)) {
-
-    // check record
-    if (currentRecord == null) {
-      result.addError("User must have a record");
-    } else if (!currentRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)
-        && !currentRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_IN_PROGRESS)) {
-      result.addError("User's record does meet requirements");
-    }
-
-    // check role
-    if (!userRole.hasPrivilegesOf(MapUserRole.LEAD)) {
-      result.addError("User does not have required role");
-    }
-
-    // check action
-    if (!action.equals(WorkflowAction.SAVE_FOR_LATER)
-        && !action.equals(WorkflowAction.FINISH_EDITING)
-        && !action.equals(WorkflowAction.UNASSIGN)) {
-      result.addError("Action is not permitted.");
-    }
-
-    // STATE: First Lead review complete
-    // Record requirement : REVIEW_RESOLVED
-    // Permissible actions: SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN
-    // Minimum role : Lead
-  } else if (state.equals(firstLeadReviewFinishedState)) {
-
-    // check record
-    if (currentRecord == null) {
-      result.addError("User must have a record");
-    } else if (!currentRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_RESOLVED)) {
-      result.addError("User's record does meet requirements");
-    }
-
-    // check role
-    if (!userRole.hasPrivilegesOf(MapUserRole.LEAD)) {
-      result.addError("User does not have required role");
-    }
-
-    // check action
-    if (!action.equals(WorkflowAction.SAVE_FOR_LATER)
-        && !action.equals(WorkflowAction.FINISH_EDITING)
-        && !action.equals(WorkflowAction.UNASSIGN)) {
-      result.addError("Action is not permitted.");
-    }
-    
-    // STATE: Second Lead review
-    // Record requirement : REVIEW_NEW, REVIEW_IN_PROGRESS
-    // Permissible actions: SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN
-    // Minimum role : Lead
-  } else if (state.equals(secondLeadReviewEditingState)) {
-
-    // check record
-    if (currentRecord == null) {
-      result.addError("User must have a record");
-    } else if (!currentRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)
-        && !currentRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_IN_PROGRESS)) {
-      result.addError("User's record does meet requirements");
-    }
-
-    // check role
-    if (!userRole.hasPrivilegesOf(MapUserRole.LEAD)) {
-      result.addError("User does not have required role");
-    }
-
-    // check action
-    if (!action.equals(WorkflowAction.SAVE_FOR_LATER)
-        && !action.equals(WorkflowAction.FINISH_EDITING)
-        && !action.equals(WorkflowAction.UNASSIGN)) {
-      result.addError("Action is not permitted.");
-    }
-
-    // STATE: Second Lead review complete
-    // Record requirement : REVIEW_RESOLVED
-    // Permissible actions: SAVE_FOR_LATER, FINISH_EDITING, UNASSIGN
-    // Minimum role : Lead
-  } else if (state.equals(secondLeadReviewFinishedState)) {
-
-    // check record
-    if (currentRecord == null) {
-      result.addError("User must have a record");
-    } else if (!currentRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_RESOLVED)) {
-      result.addError("User's record does meet requirements");
-    }
-
-    // check role
-    if (!userRole.hasPrivilegesOf(MapUserRole.LEAD)) {
-      result.addError("User does not have required role");
-    }
-
-    // check action
-    if (!action.equals(WorkflowAction.SAVE_FOR_LATER)
-        && !action.equals(WorkflowAction.FINISH_EDITING)
-        && !action.equals(WorkflowAction.UNASSIGN)
-        && !action.equals(WorkflowAction.PUBLISH)) {
-      result.addError("Action is not permitted.");
-    }
-
-  }      
-
 
     else {
       result.addError("Invalid state/could not determine state");
@@ -624,8 +680,11 @@ public class WorkflowConflictAndReviewPathHandler extends AbstractWorkflowPathHa
 
         }
         // otherwise, if this is a tracking record with REVIEW_NEEDED,
+        // CONFLICT_FINISHED, or REVIEW_FINISHED,
         // add a new REVIEW_NEW record
-        else if (getWorkflowStatusFromMapRecords(mapRecords).equals(WorkflowStatus.REVIEW_NEEDED)) {
+        else if (getWorkflowStatusFromMapRecords(mapRecords).equals(WorkflowStatus.REVIEW_NEEDED)
+            || getWorkflowStatusFromMapRecords(mapRecords).equals(WorkflowStatus.CONFLICT_FINISHED)
+            || getWorkflowStatusFromMapRecords(mapRecords).equals(WorkflowStatus.REVIEW_FINISHED)) {
 
           newRecord.setWorkflowStatus(WorkflowStatus.REVIEW_NEW);
 
@@ -748,16 +807,14 @@ public class WorkflowConflictAndReviewPathHandler extends AbstractWorkflowPathHa
                 .debug("CONFLICT_AND_REVIEW_PATH - Only this specialist has completed work");
           }
 
-          // case 2: A lead is finished with a conflict resolution
+          // case 2: A lead hits finish with a conflict resolution for the first
+          // time
           // Determined by workflow status of:
           // CONFLICT_NEW (i.e. conflict was resolved immediately)
           // CONFLICT_IN_PROGRESS (i.e. conflict had been previously saved
           // for later)
-          // CONFLICT_RESOLVED (i.e. conflict marked resolved, but lead
-          // revisited)
         } else if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_NEW)
-            || mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_IN_PROGRESS)
-            || mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_RESOLVED)) {
+            || mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_IN_PROGRESS)) {
 
           Logger.getLogger(getClass())
               .debug("CONFLICT_AND_REVIEW_PATH - Conflict resolution detected");
@@ -766,13 +823,24 @@ public class WorkflowConflictAndReviewPathHandler extends AbstractWorkflowPathHa
           // lead's record
           mapRecord.setWorkflowStatus(WorkflowStatus.CONFLICT_RESOLVED);
 
-          // case 3: A lead is finished with a QA review
+          // case 3: A lead hits finish with a conflict resolution for the
+          // second time
           // Determined by workflow status of:
-          // REVIEW_NEW (i.e. conflict was resolved immediately)
-          // REVIEW_IN_PROGRESS (i.e. conflict had been previously saved
+          // CONFLICT_RESOLVED (i.e. conflict marked resolved)
+        } else if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_RESOLVED)) {
+
+          Logger.getLogger(getClass()).debug("CONFLICT_AND_REVIEW_PATH - Conflict finish detected");
+
+          // once the lead confirms they are finished with the conflict, change
+          // workflow status of just the lead's record
+          mapRecord.setWorkflowStatus(WorkflowStatus.CONFLICT_FINISHED);
+
+          // case 4: A lead hits finish on a QA review for the first time
+          // Determined by workflow status of:
+          // REVIEW_NEW (i.e. review was resolved immediately)
+          // REVIEW_IN_PROGRESS (i.e. review had been previously saved
+          // REVIEW_RESOLVED (i.e. review had been finished but not yet published)
           // for later)
-          // REVIEW_RESOLVED (i.e. conflict marked resolved, but lead
-          // revisited)
         } else if (mapRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEW)
             || mapRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_IN_PROGRESS)
             || mapRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_RESOLVED)) {
@@ -780,8 +848,9 @@ public class WorkflowConflictAndReviewPathHandler extends AbstractWorkflowPathHa
           Logger.getLogger(getClass())
               .debug("CONFLICT_AND_REVIEW_PATH - REVIEW resolution detected");
 
-          // If this is the first lead review (i.e. no conflict was detected), or second lead review,
-          // then set lead's record to REVIEW_NEEDED
+          // If this is the first lead review (i.e. no conflict was detected),
+          // or second lead review,
+          // then set lead's record to REVIEW_RESOLVED
           if (mapRecords.size() == 3 || mapRecords.size() == 4) {
             mapRecord.setWorkflowStatus(WorkflowStatus.REVIEW_RESOLVED);
           } else {
@@ -803,11 +872,22 @@ public class WorkflowConflictAndReviewPathHandler extends AbstractWorkflowPathHa
         Logger.getLogger(getClass())
             .debug("CONFLICT_AND_REVIEW_PATH - Publishing fully reviewed map");
 
-        // Requirements for CONFLICT_AND_REVIEW_PATH publish action:
+        
+        // Although first and second lead can both 'PUBLISH', only the second reviewer's record is truly published.
+        // The first reviewer's record is just set to REVIEW_FINISHED.
+        if (mapRecords.size() == 3) {
+          Logger.getLogger(getClass()).debug("CONFLICT_AND_REVIEW_PATH - 1st Lead Review PUBLISH detected");
+
+          // the 1st lead is confirming they are finished with the review
+          // change workflow status of just the lead's record
+          mapRecord.setWorkflowStatus(WorkflowStatus.REVIEW_FINISHED);
+        }
+        
+        // Second reviewer confirms they are finished with review
         // 4 records, with one marked REVIEW_RESOLVED
-
-        if (mapRecords.size() == 4) {
-
+        else if (mapRecords.size() == 4) {
+          Logger.getLogger(getClass()).debug("CONFLICT_AND_REVIEW_PATH - 2nd Lead Review PUBLISH detected");
+          
           // Check assumption: owned record is REVIEW_RESOLVED
           if (!mapRecord.getWorkflowStatus().equals(WorkflowStatus.REVIEW_RESOLVED)) {
             throw new Exception(
@@ -815,83 +895,63 @@ public class WorkflowConflictAndReviewPathHandler extends AbstractWorkflowPathHa
           }
 
           // Check assumption: two CONFLICT_DETECTED records, one
-          // CONFLICT_RESOLVED record, and one REVIEW_RESOLVED record
-          // OR 
-          // two REVIEW_NEEDED records, and two REVIEW_RESOLVED records
+          // CONFLICT_FINISHED record, and one REVIEW_RESOLVED record
+          // OR
+          // two REVIEW_NEEDED record, one REVIEW_FINISHED records, and one
+          // REVIEW_RESOLVED records
           int nConflictNeededRecords = 0;
-          int nConflictResolvedRecords = 0;
+          int nConflictFinishedRecords = 0;
           int nReviewNeededRecords = 0;
+          int nReviewFinishedRecords = 0;
           int nReviewResolvedRecords = 0;
           for (final MapRecord mr : mapRecords) {
             if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED))
               nConflictNeededRecords++;
-            if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_RESOLVED))
-              nConflictResolvedRecords++;
+            if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_FINISHED))
+              nConflictFinishedRecords++;
             if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED))
               nReviewNeededRecords++;
+            if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_FINISHED))
+              nReviewFinishedRecords++;
             if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_RESOLVED))
               nReviewResolvedRecords++;
           }
 
-          if (!((nConflictNeededRecords == 2 && nConflictResolvedRecords == 1 && nReviewResolvedRecords == 1) || (nReviewNeededRecords == 2 && nReviewResolvedRecords == 2))) {
+          if (!((nConflictNeededRecords == 2 && nConflictFinishedRecords == 1
+              && nReviewResolvedRecords == 1)
+              || (nReviewNeededRecords == 2 && nReviewFinishedRecords == 1
+                  && nReviewResolvedRecords == 1))) {
             throw new Exception("Bad workflow state for concept " + mapRecord.getConceptId()
-                + ":  PUBLISH requires two CONFLICT_DETECTED, one CONFLICT_RESOLVED, and one REVIEW_RESOLVED records, OR two REVIEW_NEEDED and two REVIEW_RESOLVED records.\n\n"
-                + "Concept has: " + nConflictNeededRecords + " CONFLICT_DETECTED, " + nConflictResolvedRecords + " CONFLICT_RESOLVED, " + nReviewNeededRecords
-                + " REVIEW_NEEDED, and " + nReviewResolvedRecords
-                + " REVIEW_RESOLVED records.");
+                + ":  PUBLISH requires two CONFLICT_DETECTED, one CONFLICT_FINISHED, and one REVIEW_RESOLVED records, OR two REVIEW_NEEDED, one REVIEW_FINISHED, and one REVIEW_RESOLVED records.\n\n"
+                + "Concept has: " + nConflictNeededRecords + " CONFLICT_DETECTED, "
+                + nConflictFinishedRecords + " CONFLICT_RESOLVED, " + nReviewNeededRecords
+                + " REVIEW_FINISHED, " + nReviewFinishedRecords + " REVIEW_NEEDED, and "
+                + nReviewResolvedRecords + " REVIEW_RESOLVED records.");
           }
 
           // cycle over the previously existing records
-          MapRecord reviewResolvedToKeep = null;
-          MapRecord reviewResolvedToRemove = null;
           for (final MapRecord mr : mapRecords) {
 
-            // remove the CONFLICT_DETECTED, CONFLICT_RESOLED, and REVIEW_NEEDED records from the
-            // revised set
+            // remove the CONFLICT_DETECTED, CONFLICT_FINISHED, REVIEW_NEEDED,
+            // and REVIEW_FINISHED
+            // records from the revised set
             if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED)
-                || mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_RESOLVED)
-                || mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)) {
+                || mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_FINISHED)
+                || mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)
+                || mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_FINISHED)) {
               newRecords.remove(mr);
 
-              // Identify the REVIEW_RESOLVED record to keep and remove
-              // The REVIEW_RESOLVED record with the higher id number will be kept
-              // to mark READY_FOR_PUBLICATION and update
-            } else if (mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_RESOLVED)){
-              if(reviewResolvedToKeep == null) {
-                reviewResolvedToKeep = mr;
-              }
-              else {
-                if(mr.getId() > reviewResolvedToKeep.getId()) {
-                  reviewResolvedToRemove = reviewResolvedToKeep;
-                  reviewResolvedToKeep = mr;
-                }
-                else {
-                  reviewResolvedToRemove = mr;
-                }
-              }
-              
-            }
-            else {
-              throw new Exception ("Unexpected workflowStatus for publishing concept " + mapRecord.getConceptId() + ": " + mr.getWorkflowStatus());
-            }
+              // set the REVIEW_RESOLVED record to READY_FOR_PUBLICATION and
+              // update
+            } else
+              mr.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
           }
-          
-          if(reviewResolvedToKeep != null) {
-          reviewResolvedToKeep.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
-          }
-          else {
-            throw new Exception (mapRecord.getConceptId() + " is missing a REVIEW_RESOLVED record.");
-          }
-          
-          if(reviewResolvedToRemove != null) {
-            newRecords.remove(reviewResolvedToRemove);
-          }
-          
+
           // otherwise, bad workflow state, throw exception
         } else {
           throw new Exception(
               "Bad workflow state for publishing concept " + mapRecord.getConceptId()
-                  + ":  Expected four records, but found " + mapRecords.size());
+                  + ":  Expected three or four records, but found " + mapRecords.size());
         }
 
         break;
@@ -972,12 +1032,14 @@ public class WorkflowConflictAndReviewPathHandler extends AbstractWorkflowPathHa
         // And has not been picked up by a different lead
         sb.append(" AND NOT (" + "userAndWorkflowStatusPairs:CONFLICT_NEW_* OR "
             + "userAndWorkflowStatusPairs:CONFLICT_IN_PROGRESS_* OR "
-            + "userAndWorkflowStatusPairs:CONFLICT_RESOLVED_*)");
+            + "userAndWorkflowStatusPairs:CONFLICT_RESOLVED_* OR "
+            + "userAndWorkflowStatusPairs:CONFLICT_FINISHED_* )");
 
         sb.append(") OR (");
 
         // Case 2: requires review
-        sb.append(" (userAndWorkflowStatusPairs:REVIEW_NEEDED_* OR userAndWorkflowStatusPairs:CONFLICT_RESOLVED_*)");
+        sb.append(
+            " (userAndWorkflowStatusPairs:REVIEW_NEEDED_* OR userAndWorkflowStatusPairs:CONFLICT_FINISHED_*)");
         // And has not been picked up by a different lead
         sb.append(" AND NOT (userAndWorkflowStatusPairs:REVIEW_NEW_*"
             + " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_*" + ")");
@@ -1281,7 +1343,9 @@ public class WorkflowConflictAndReviewPathHandler extends AbstractWorkflowPathHa
       MapRecord mr = workflowService.getMapRecord(originId);
       try {
         if (mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED)
-            || mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)) {
+            || mr.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_FINISHED)
+            || mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_NEEDED)
+            || mr.getWorkflowStatus().equals(WorkflowStatus.REVIEW_FINISHED)) {
           originRecords.addMapRecord(workflowService.getMapRecord(originId));
         }
       } catch (Exception e) {

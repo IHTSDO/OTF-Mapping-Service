@@ -273,9 +273,14 @@
           </a>
           <!-- Display a checkmark to publish if this record is resolved -->
           <a style="display: inline" title='Publish this resolved conflict'
-            ng-show="result.terminologyVersion === 'CONFLICT_RESOLVED' && (assignedTypes.conflict === 'CONFLICT_RESOLVED' || assignedTypes.conflict === 'ALL')">
+            ng-show="focusProject.workflowType != 'CONFLICT_AND_REVIEW_PATH' && result.terminologyVersion === 'CONFLICT_RESOLVED' && (assignedTypes.conflict === 'CONFLICT_RESOLVED' || assignedTypes.conflict === 'ALL')">
             <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
           </a>
+          <!-- Display a checkmark to finish if this record is resolved (-->
+          <a style="display: inline" title='Finish this resolved conflict'
+            ng-show="focusProject.workflowType === 'CONFLICT_AND_REVIEW_PATH' && result.terminologyVersion === 'CONFLICT_RESOLVED' && (assignedTypes.conflict === 'CONFLICT_RESOLVED' || assignedTypes.conflict === 'ALL')">
+            <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
+          </a>          
         </td>
 
         <td style="width: 77%; padding: 5px;">{{result.value}}</td>
