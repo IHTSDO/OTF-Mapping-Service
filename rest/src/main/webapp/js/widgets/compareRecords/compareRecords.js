@@ -329,8 +329,9 @@ angular
           function(data) {
             gpService.decrement();
 
-			// Handle special-case for CONFLICT_AND_REVIEW workflow
-            if ($scope.project.workflowType === 'CONFLICT_AND_REVIEW_PATH') {
+			// Handle special-case for CONFLICT_AND_REVIEW workflow (QA is handled separately)
+            if ($scope.project.workflowType === 'CONFLICT_AND_REVIEW_PATH' &&
+				data.mapRecord[0].workflowStatus != 'QA_NEEDED') {
 
 				// If there are 3 previous records, this is a 2nd lead review.  
 				// Display the most recent record (1st leads record) 
@@ -357,7 +358,7 @@ angular
 		                $scope.record2.displayName = $scope.record2.owner.name;
 					}
 					
-					// if a review, display one record
+					// if a reviewor QA, display one record
 					else if (data.mapRecord[0].workflowStatus === 'REVIEW_NEEDED'
 	                || data.mapRecord[1].workflowStatus === 'REVIEW_NEEDED') {
 						$scope.record1 = data.mapRecord[0];
