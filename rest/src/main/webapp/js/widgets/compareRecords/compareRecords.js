@@ -336,18 +336,14 @@ angular
 				// If there are 3 previous records, this is a 2nd lead review.  
 				// Display the most recent record (1st lead's record)  
 				if(data.totalCount == 3){
-					// Only use 1st lead's data IFF 2nd lead hasn't made any changes yet
-					if($scope.leadRecord.workflowStatus === 'REVIEW_NEW'){
-						// sort by id
-						data.mapRecord.sort(function (a, b) {
-						  return a.id - b.id;
-						});
-						
-						 // set the origin records (i.e. the records in conflict)
-	                	$scope.record1 = data.mapRecord[2];
-	                	$scope.record1.displayName = $scope.record1.owner.name;
-	              		$scope.record2 = null;						
-					}	
+					// sort by id
+					data.mapRecord.sort(function (a, b) {
+					  return a.id - b.id;
+					});
+					
+                	$scope.record1 = data.mapRecord[2];
+                	$scope.record1.displayName = $scope.record1.owner.name;
+              		$scope.record2 = null;							
 				}
 				else{
 					// if a conflict, set the two records
@@ -407,7 +403,8 @@ angular
             }
 
 			// auto-populate if there is only one, no split-screen
-			if ($scope.record2 == null){
+			// and if this is brand-new record (once the Lead has saved changes, don't populate based on previous records anymore)
+			if ($scope.record1 != null && $scope.record2 == null && $scope.leadRecord.workflowStatus.includes('_NEW')){
 						              
 	          $timeout(function() {
 	            $scope.populateMapRecord($scope.record1);
