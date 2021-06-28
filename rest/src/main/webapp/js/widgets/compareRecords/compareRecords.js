@@ -334,18 +334,20 @@ angular
 				data.mapRecord[0].workflowStatus != 'QA_NEEDED') {
 
 				// If there are 3 previous records, this is a 2nd lead review.  
-				// Display the most recent record (1st leads record) 
+				// Display the most recent record (1st lead's record)  
 				if(data.totalCount == 3){
-					
-					// sort by id
-					data.mapRecord.sort(function (a, b) {
-					  return a.id - b.id;
-					});
-					
-					 // set the origin records (i.e. the records in conflict)
-                	$scope.record1 = data.mapRecord[2];
-                	$scope.record1.displayName = $scope.record1.owner.name;
-              		$scope.record2 = null;
+					// Only use 1st lead's data IFF 2nd lead hasn't made any changes yet
+					if($scope.leadRecord.workflowStatus === 'REVIEW_NEW'){
+						// sort by id
+						data.mapRecord.sort(function (a, b) {
+						  return a.id - b.id;
+						});
+						
+						 // set the origin records (i.e. the records in conflict)
+	                	$scope.record1 = data.mapRecord[2];
+	                	$scope.record1.displayName = $scope.record1.owner.name;
+	              		$scope.record2 = null;						
+					}	
 				}
 				else{
 					// if a conflict, set the two records
