@@ -1042,7 +1042,8 @@ public class WorkflowConflictAndReviewPathHandler extends AbstractWorkflowPathHa
             " (userAndWorkflowStatusPairs:REVIEW_NEEDED_* OR userAndWorkflowStatusPairs:CONFLICT_FINISHED_*)");
         // And has not been picked up by a different lead
         sb.append(" AND NOT (userAndWorkflowStatusPairs:REVIEW_NEW_*"
-            + " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_*" + ")");
+            + " OR userAndWorkflowStatusPairs:REVIEW_IN_PROGRESS_*"
+            + " OR userAndWorkflowStatusPairs:REVIEW_RESOLVED_*" + ")");
 
         sb.append("))");
 
