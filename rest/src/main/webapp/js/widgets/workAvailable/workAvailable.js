@@ -730,6 +730,13 @@ angular
           $scope.errorConflict = 'Work recipient must be selected from list.';
           return;
         }
+        
+        if (batchSize > $scope.availableCount) {
+            $scope.error = 'Batch size is greater than available number of concepts.';
+            return;
+          } else {
+            $scope.error = null;
+          }
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
@@ -826,6 +833,13 @@ angular
           $scope.errorReview = 'Work recipient must be selected from list.';
           return;
         }
+        
+        if (batchSize > $scope.availableCount) {
+            $scope.error = 'Batch size is greater than available number of concepts.';
+            return;
+          } else {
+            $scope.error = null;
+          }
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
@@ -924,6 +938,13 @@ angular
           $scope.errorReview = 'Work recipient must be selected from list.';
           return;
         }
+        
+        if (batchSize > $scope.availableCount) {
+            $scope.error = 'Batch size is greater than available number of concepts.';
+            return;
+          } else {
+            $scope.error = null;
+          }
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
