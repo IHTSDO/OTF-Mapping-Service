@@ -40,6 +40,11 @@ public enum WorkflowStatus {
    * to READY_FOR_PUBLICATION)
    */
   CONFLICT_RESOLVED,
+  
+  /**
+   * Conflict finished.  Ready for review by another lead.
+   */  
+  CONFLICT_FINISHED, 
 
   /** Pre-publication state for review by lead */
   REVIEW_NEEDED, // (can transition to REVIEW_NEW, REVIEW_IN_PROGRESS)
@@ -54,6 +59,11 @@ public enum WorkflowStatus {
    * Review resolved, but not released (can transition to READY_FOR_PUBLICATION)
    */
   REVIEW_RESOLVED,
+  
+  /**
+   * Review finished.  Ready for review by another lead.
+   */
+  REVIEW_FINISHED,
 
   /** Pre-publication state for qa */
   QA_NEEDED, // (can transition to QA_NEW, QA_IN_PROGRESS)

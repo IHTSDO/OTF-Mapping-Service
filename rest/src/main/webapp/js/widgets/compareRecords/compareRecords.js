@@ -328,15 +328,48 @@ angular
           }).success(
           function(data) {
             gpService.decrement();
-            if (data.totalCount == 1) {
+
+			// Handle special-case for CONFLICT_AND_REVIEW workflow (QA is handled separately)
+            if ($scope.project.workflowType === 'CONFLICT_AND_REVIEW_PATH' &&
+				data.mapRecord[0].workflowStatus != 'QA_NEEDED') {
+
+				// If there are 3 previous records, this is a 2nd lead review.  
+				// Display the most recent record (1st lead's record)  
+				if(data.totalCount == 3){
+					// sort by id
+					data.mapRecord.sort(function (a, b) {
+					  return a.id - b.id;
+					});
+					
+                	$scope.record1 = data.mapRecord[2];
+                	$scope.record1.displayName = $scope.record1.owner.name;
+              		$scope.record2 = null;							
+				}
+				else{
+					// if a conflict, set the two records
+	              if (data.mapRecord[0].workflowStatus === 'CONFLICT_DETECTED'
+	                || data.mapRecord[1].workflowStatus === 'CONFLICT_DETECTED') {
+		                // set the origin records (i.e. the records in conflict)
+		                $scope.record1 = data.mapRecord[0];
+		                $scope.record1.displayName = $scope.record1.owner.name;
+		                $scope.record2 = data.mapRecord[1];
+		                $scope.record2.displayName = $scope.record2.owner.name;
+					}
+					
+					// if a reviewor QA, display one record
+					else if (data.mapRecord[0].workflowStatus === 'REVIEW_NEEDED'
+	                || data.mapRecord[1].workflowStatus === 'REVIEW_NEEDED') {
+						$scope.record1 = data.mapRecord[0];
+	                	$scope.record1.displayName = $scope.record1.owner.name;
+	              		$scope.record2 = null;
+					}
+				}
+
+            } else if (data.totalCount == 1) {
+	
               $scope.record1 = data.mapRecord[0];
               $scope.record1.displayName = data.mapRecord[0].owner.name;
               $scope.record2 = null;
-
-              // auto-populate if there is only one, no split-screen
-              $timeout(function() {
-                $scope.populateMapRecord($scope.record1);
-              }, 400);
 
             } else if (data.totalCount == 2) {
 
@@ -344,7 +377,7 @@ angular
               // NOTE: Special case for Simple Path workflow where one record
               // may be EDITING_DONE
               if (data.mapRecord[0].workflowStatus === 'CONFLICT_DETECTED'
-                || data.mapRecord[0].workflowStatus === 'CONFLICT_DETECTED') {
+                || data.mapRecord[1].workflowStatus === 'CONFLICT_DETECTED') {
                 // set the origin records (i.e. the records in conflict)
                 $scope.record1 = data.mapRecord[0];
                 $scope.record1.displayName = $scope.record1.owner.name;
@@ -368,6 +401,16 @@ angular
                 }
               }
             }
+
+			// auto-populate if there is only one, no split-screen
+			// and if this is brand-new record (once the Lead has saved changes, don't populate based on previous records anymore)
+			if ($scope.record1 != null && $scope.record2 == null && $scope.leadRecord.workflowStatus.includes('_NEW')){
+						              
+	          $timeout(function() {
+	            $scope.populateMapRecord($scope.record1);
+	          }, 400);
+			}	
+
 
             if ($scope.record1 != null) {
               gpService.increment();
