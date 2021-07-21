@@ -137,7 +137,7 @@ public class TargetMappingToScopedConceptMojo extends AbstractOtfMappingMojo {
           TrackingRecord tr = workflowService
               .getTrackingRecord(targetMapProject, newScopedConcept.getKey());
 
-          if (tr != null) {
+          if (tr != null  && sourceMapProject.isTeamBased()) {
             tr.setAssignedTeamName(newScopedConcept.getValue());
             workflowService.updateTrackingRecord(tr);
           }

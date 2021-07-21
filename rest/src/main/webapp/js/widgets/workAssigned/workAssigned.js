@@ -1148,6 +1148,16 @@ angular
                   return 'publish';
                 }
 
+				// catch conflict and review case
+                if ($scope.focusProject.workflowType === 'CONFLICT_AND_REVIEW_PATH') {
+                  if (workflowStatus === 'CONFLICT_RESOLVED'){
+						return 'finish';
+					 }
+				  if (workflowStatus === 'REVIEW_RESOLVED'){
+						return 'publish';
+					}
+                }
+
                 // otherwise, distinguish between lead work and specialist work
                 return (workflowStatus === 'CONFLICT_RESOLVED'
                   || workflowStatus === 'REVIEW_RESOLVED' || workflowStatus === 'QA_RESOLVED') ? 'publish'
@@ -1289,9 +1299,16 @@ angular
                   $scope.currentRecord.isFinished = false;
                 }
 
+				// Handle conflict and review case
+				else if ($scope.project.workflowType === 'CONFLICT_AND_REVIEW_PATH'){
+					if(!($scope.currentRecord.workflowStatus === 'REVIEW_FINISHED' 
+						|| $scope.currentRecord.workflowStatus === 'CONFLICT_FINISHED')){
+							$scope.currentRecord.isFinished = false;
+						}
+				}
+
                 // otherwise, this record has been finished/published
-                // via this
-                // modal
+                // via this modal
                 else {
                   $scope.currentRecord.isFinished = true;
                 }

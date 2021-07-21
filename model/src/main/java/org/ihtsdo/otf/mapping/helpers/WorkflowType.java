@@ -13,10 +13,14 @@ public enum WorkflowType {
 
   /** Two specialists map, lead reviews conflicts. */
   CONFLICT_PROJECT("Conflict Project"),
-
+  
   /** One specialist maps, lead reviews result. */
-  REVIEW_PROJECT("Review Project");
+  REVIEW_PROJECT("Review Project"),
 
+  /** Two specialists map, two leads review (with first being conflict review if applicable) */
+  CONFLICT_AND_REVIEW_PATH("Conflict and Review Path");
+ 
+  
   /** The display name. */
   private String displayName = null;
 

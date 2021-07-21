@@ -144,6 +144,9 @@ angular
           displayName : 'Review workflow',
           name : 'REVIEW_PROJECT'
         }, {
+          displayName : 'Conflict and Review workflow',
+          name : 'CONFLICT_AND_REVIEW_PATH'
+        }, {
           displayName : 'Simple workflow',
           name : 'SIMPLE_PATH'
         }, {
