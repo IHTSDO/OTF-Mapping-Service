@@ -2474,12 +2474,27 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         // 1. Mapped concepts that are inactive in current SNOMED release
         // 2. Mapped concepts not in snomed (e.g. because of drip feed issues)//
         if (concept == null) {
-          resultMessages.add(
-              mapProject.getSourceTerminology() + " concept does not exist");
+          addReportError(report, mapProject, mapRecord.getConceptId(),
+                  mapRecord.getConceptName(), mapProject.getSourceTerminology() + " concept does not exist");
           continue;
         } else if (!concept.isActive()) {
           resultMessages
               .add(mapProject.getSourceTerminology() + " concept inactive");
+        }
+        
+        // Check: destination concepts missing
+        
+        Concept conceptCheck = null;
+        for (MapEntry me : mapRecord.getMapEntries()) {
+        	 conceptCheck = contentService.getConcept(me.getTargetId(),
+        	            mapProject.getDestinationTerminology(),
+        	            mapProject.getDestinationTerminologyVersion());
+        	 // exclude map records with empty target IDs from error checks
+        	 if(!me.getTargetId().isEmpty() && conceptCheck == null) {
+        		 logger.info("missing destination = " + me);
+        		 addReportError(report, mapProject, me.getTargetId(),
+        	              "Concept not found", "destination concept doesn't exist");
+        	 }
         }
 
         // Check: Destination terminology codes NOT used in previous version of
@@ -2580,7 +2595,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       // Check: Source terminology concepts in previous version NOT in
       // current version (possibly with RF2 line from previous version map as
-      // the “value”)
+      // the â€œvalueâ€�)
       ComplexMapRefSetMemberList members = contentService
           .getComplexMapRefSetMembersForRefSetId(mapProject.getRefSetId());
       for (ComplexMapRefSetMember member : members
