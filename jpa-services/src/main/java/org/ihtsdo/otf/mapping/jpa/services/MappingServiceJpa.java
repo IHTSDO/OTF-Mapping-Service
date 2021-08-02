@@ -3209,8 +3209,10 @@ public class MappingServiceJpa extends RootServiceJpa
         }
       }
 
-      if (mapRecordChanged && mr.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)) {
+      if (mapRecordChanged) {
+        if (mr.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED)) {
         mr.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+        }
         updateMapRecord(mr);
       }
 
