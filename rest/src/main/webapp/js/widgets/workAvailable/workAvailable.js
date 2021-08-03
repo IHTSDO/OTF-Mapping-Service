@@ -120,6 +120,7 @@ angular
       });
 
       $scope.setTab = function(tabNumber) {
+    	$scope.error = null;
         if (tabNumber == null)
           tabNumber = 0;
         angular.forEach($scope.tabs, function(tab) {
@@ -383,6 +384,7 @@ angular
 
           // set title
           $scope.tabs[3].title = 'QA (' + data.totalCount + ')';
+          $scope.availableCount = data.totalCount;
 
           // set labels
           for (var i = 0; i < $scope.availableQAWork.length; i++) {
@@ -620,6 +622,7 @@ angular
 
       // assign a batch of records to the current user
       $scope.assignBatch = function(mapUser, batchSize, query) {
+    	$scope.error = null;
         // set query to null string if not provided
         if (query == undefined)
           query == null;
@@ -722,6 +725,7 @@ angular
 
       // assign a batch of conflicts to the current user
       $scope.assignBatchConflict = function(mapUser, batchSize, query) {
+    	$scope.error = null;
         // set query to null string if not provided
         if (query == undefined)
           query == null;
@@ -824,6 +828,7 @@ angular
 
       // assign a batch of review work to the current user
       $scope.assignBatchReview = function(mapUser, batchSize, query) {
+    	$scope.error = null;
 
         // set query to null string if not provided
         if (query == undefined)
@@ -929,6 +934,7 @@ angular
 
       // assign a batch of qa work to the current user
       $scope.assignBatchQA = function(mapUser, batchSize, query) {
+    	$scope.error = null;
 
         // set query to null string if not provided
         if (query == undefined)
