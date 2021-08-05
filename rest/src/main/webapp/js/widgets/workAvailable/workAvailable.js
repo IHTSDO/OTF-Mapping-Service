@@ -736,7 +736,7 @@ angular
           return;
         }
         
-        if (batchSize > $scope.availableCount) {
+        if (batchSize > $scope.availableCount[$scope.availableTab]) {
         	alert('Batch size is greater than available number of concepts.');
             return;
           } else {
@@ -944,7 +944,7 @@ angular
           return;
         }
         
-        if (batchSize > $scope.availableCount) {
+        if (batchSize > $scope.availableCount[$scope.availableTab]) {
             alert('Batch size is greater than available number of concepts.');
             return;
           } else {
