@@ -23,6 +23,7 @@ angular
       $scope.batchSize = $scope.batchSizes[2];
       $scope.batchSizeConflict = $scope.batchSizes[4];
       $scope.batchSizeReview = $scope.batchSizes[4];
+      $scope.availableCount = [0, 0, 0, 0]; // holding available count for each tab in assignment
 
       // pagination variables
       $scope.itemsPerPage = 10;
@@ -127,7 +128,7 @@ angular
           tab.active = (tab.id == tabNumber ? true : false);
         });
         localStorageService.add('availableTab', tabNumber);
-
+        $scope.availableTab = tabNumber;
       };
 
       $scope.addAssignment = function(name) {
@@ -266,6 +267,7 @@ angular
 
           // set title
           $scope.tabs[1].title = 'Conflicts (' + data.totalCount + ')';
+          $scope.availableCount[1] = data.totalCount;
         }).error(function(data, status, headers, config) {
           gpService.decrement();
 
@@ -327,7 +329,7 @@ angular
 
           // set title
           $scope.tabs[0].title = 'Concepts (' + data.totalCount + ')';
-          $scope.availableCount = data.totalCount;
+          $scope.availableCount[0] = data.totalCount;
 
         }).error(function(data, status, headers, config) {
           gpService.decrement();
@@ -384,7 +386,7 @@ angular
 
           // set title
           $scope.tabs[3].title = 'QA (' + data.totalCount + ')';
-          $scope.availableCount = data.totalCount;
+          $scope.availableCount[3] = data.totalCount;
 
           // set labels
           for (var i = 0; i < $scope.availableQAWork.length; i++) {
@@ -560,6 +562,7 @@ angular
 
           // set title
           $scope.tabs[2].title = 'Review (' + data.totalCount + ')';
+          $scope.availableCount[2] = data.totalCount;
         }).error(function(data, status, headers, config) {
           gpService.decrement();
 
@@ -622,7 +625,6 @@ angular
 
       // assign a batch of records to the current user
       $scope.assignBatch = function(mapUser, batchSize, query) {
-    	$scope.error = null;
         // set query to null string if not provided
         if (query == undefined)
           query == null;
@@ -632,8 +634,8 @@ angular
           return;
         }
 
-        if (batchSize > $scope.availableCount) {
-          $scope.error = 'Batch size is greater than available number of concepts.';
+        if (batchSize > $scope.availableCount[$scope.availableTab]) {
+          alert('Batch size is greater than available number of concepts.');
           return;
         } else {
           $scope.error = null;
@@ -725,7 +727,6 @@ angular
 
       // assign a batch of conflicts to the current user
       $scope.assignBatchConflict = function(mapUser, batchSize, query) {
-    	$scope.error = null;
         // set query to null string if not provided
         if (query == undefined)
           query == null;
@@ -736,7 +737,7 @@ angular
         }
         
         if (batchSize > $scope.availableCount) {
-            $scope.error = 'Batch size is greater than available number of concepts.';
+        	alert('Batch size is greater than available number of concepts.');
             return;
           } else {
             $scope.error = null;
@@ -828,7 +829,6 @@ angular
 
       // assign a batch of review work to the current user
       $scope.assignBatchReview = function(mapUser, batchSize, query) {
-    	$scope.error = null;
 
         // set query to null string if not provided
         if (query == undefined)
@@ -839,8 +839,8 @@ angular
           return;
         }
         
-        if (batchSize > $scope.availableCount) {
-            $scope.error = 'Batch size is greater than available number of concepts.';
+        if (batchSize > $scope.availableCount[$scope.availableTab]) {
+            alert('Batch size is greater than available number of concepts.');
             return;
           } else {
             $scope.error = null;
@@ -934,7 +934,6 @@ angular
 
       // assign a batch of qa work to the current user
       $scope.assignBatchQA = function(mapUser, batchSize, query) {
-    	$scope.error = null;
 
         // set query to null string if not provided
         if (query == undefined)
@@ -946,7 +945,7 @@ angular
         }
         
         if (batchSize > $scope.availableCount) {
-            $scope.error = 'Batch size is greater than available number of concepts.';
+            alert('Batch size is greater than available number of concepts.');
             return;
           } else {
             $scope.error = null;
