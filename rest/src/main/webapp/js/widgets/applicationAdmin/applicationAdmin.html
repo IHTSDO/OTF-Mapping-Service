@@ -1859,9 +1859,22 @@
 					ng-options="item for item in downloadedGmdnVersions">
 				</select></td>
 			</tr>
+			
+			<!-- For Loading ATC -->
+			<tr ng-show="termLoad.terminology == 'ATC'">
+				<td>ATC version to download <br>
+				<br>
+					<button class="btn btn-xs btn-primary"
+						ng-show="termLoad.terminology == 'ATC'"
+						ng-click="downloadTerminologyAtc()">Check for new ATC version</button>
+				</td>
+				<td><select ng-model="atcVersion"
+					ng-options="item for item in downloadedAtcVersions">
+				</select></td>
+			</tr>
 
 			<!-- Define Versions (For all other terminologies) -->
-			<tr ng-show="termLoad.terminology != 'GMDN' && (termLoad.terminology)">
+			<tr ng-show="termLoad.terminology != 'GMDN' && termLoad.terminology != 'ATC' && (termLoad.terminology)">
 				<td>Select version of {{termLoad.terminology}} to load </td>
 				<td><select
 					ng-model="termLoad.version"
@@ -1885,13 +1898,19 @@
 	</table>
 	<!--  Load GMDN (Special Script to do so) -->
 	<button class="btn btn-xs btn-primary"
-		ng-show="termLoad.terminology == 'GMDN' && gmdnVersion != null"
+		ng-show="(termLoad.terminology == 'GMDN' && gmdnVersion != null)"
 		ng-click="loadTerminologyGmdn(gmdnVersion)">Load
+		{{termLoad.terminology}}</button>
+		
+	<!-- Load ATC (Special Script to do so) -->
+	<button class="btn btn-xs btn-primary"
+		ng-show="(termLoad.terminology == 'ATC' && atcVersion != null)"
+		ng-click="loadTerminologyAtc(atcVersion)">Load
 		{{termLoad.terminology}}</button>
 
 	<!--  Load Other Terminologies (Only display if have Version defined and (!SNOMED || (SNOMED & Scope defined)) -->
 	<button class="btn btn-xs btn-primary"
-		ng-show="termLoad.terminology != 'GMDN' && 
+		ng-show="(termLoad.terminology != 'GMDN' && termLoad.terminology != 'ATC') && 
 	(termLoad.terminology != 'SNOMED CT' || (termLoad.terminology == 'SNOMED CT' && (termLoad.scope))) && 
 	(termLoad.version)"
 		ng-click="loadTerminologyAws(termLoad.terminology, termLoad.version, termLoad.scope)">Load
