@@ -120,7 +120,7 @@ public class AtcDownloadAlgorithm extends RootServiceJpa implements Algorithm {
 	   }
 	    
 	   skip+=1000;
-	   if(doc.size() < 1000) // <1000 => last one, partial return
+	   if(doc.size() < 1000) // partial return (<1000) = last batch in API
 		   break;
 	 }
 	 BufferedWriter writer = new BufferedWriter(new FileWriter(folder + "/parent_child.txt"));
