@@ -52,4 +52,13 @@ public interface MetadataServiceRest {
 	 * @throws Exception the exception
 	 */
 	String getAllGmdnVersions(String authToken) throws Exception;
+
+	/**
+	 * Returns the latest atc version from the api.
+	 *
+	 * @param authToken the auth token
+	 * @return the atc version
+	 * @throws Exception the exception
+	 */
+	String getAllAtcVersions(String authToken) throws Exception;
 }

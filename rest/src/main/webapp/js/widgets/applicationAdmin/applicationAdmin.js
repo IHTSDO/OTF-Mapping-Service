@@ -65,6 +65,7 @@ angular
         $scope.termLoadVersionFileNameMap = new Map();
         
         $scope.downloadedGmdnVersions = new Array();
+        $scope.downloadedAtcVersions = new Array();
         
         var editingPerformed = new Array();
         var previousUserPage = 1;
@@ -114,7 +115,7 @@ angular
         $scope.userApplicationRoles = [ 'VIEWER', 'ADMINISTRATOR' ];
 
         //get list of type in $scope.terminologyFiles?
-        $scope.terminologyInputTypes = [ 'GMDN', 'SNOMED CT' ];
+        $scope.terminologyInputTypes = [ 'GMDN', 'SNOMED CT', 'ATC' ];
         
         // Event for focus project change
         $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
@@ -641,7 +642,32 @@ angular
           });
 
           return deferred.promise;          
-        }        
+        }
+        
+        function getDownloadedAtcVersions() {
+            
+          var deferred = $q.defer();
+
+          $http({
+            url : root_metadata + 'terminology/atc',
+            dataType : 'text/plain',
+            method : 'GET'
+          }).success(
+            function(data) {
+              $scope.downloadedAtcVersions = new Array();
+              var downloadedVersionArray = data.split(';');
+              for (var i = 0; i < downloadedVersionArray.length; i++) {
+                $scope.downloadedAtcVersions.push(downloadedVersionArray[i]);
+              }            
+              deferred.resolve();
+                
+            }).error(function(data, status, headers, config) {
+            $rootScope.handleHttpError(data, status, headers, config);
+            deferred.reject();            
+          });
+
+          return deferred.promise;          
+        }
         
         function initializeMapProjectMetadata() {
           if ($scope.mapProjectMetadata != null) {
@@ -2806,6 +2832,24 @@ angular
             $rootScope.handleHttpError(data, status, headers, config);
           });
         };
+        
+        $scope.downloadTerminologyAtc = function() {
+        	// download the latest version of atc from API   
+            $http({
+              url : root_content + 'terminology/download/atc',
+              method : 'POST',
+              }).success(function(data) {
+                //Reload downloaded atc version metadata
+                var promise = getDownloadedAtcVersions();
+                promise.then(function(data){
+                  gpService.decrement();
+                });
+              }).error(function(data, status, headers, config) {
+              gpService.decrement();          
+              $rootScope.handleHttpError(data, status, headers, config);
+            });
+            
+        };
 
         //hold select list for terminologies and versions.
         $scope.termLoad = {};
@@ -2817,6 +2861,11 @@ angular
           if (terminology == 'GMDN'){
             getDownloadedGmdnVersions();
             return;
+          }
+          
+          if (terminology == 'ATC'){
+        	getDownloadedAtcVersions();
+        	return;
           }
 
           gpService.increment();
@@ -2952,6 +3001,45 @@ angular
           // load the version of gmdn into the application   
           $http({
             url : root_content + 'terminology/load/gmdn/' + gmdnVersion,
+            data : 'GENERATE',
+            method : 'PUT',
+            headers : {
+              'Content-Type' : 'text/plain'
+            }
+            }).success(function(data) {
+              //Reload terminology metadata
+              var promise = reloadTerminologies();
+              promise.then(function(data){
+                gpService.decrement();
+              });
+            }).error(function(data, status, headers, config) {
+            gpService.decrement();          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        };
+        
+     // terminology/load/atc
+        $scope.loadTerminologyAtc = function(atcVersion) {
+          gpService.increment();
+
+          var errors = '';
+          for (var i = 0; i < $scope.terminologyVersionPairs.length; i++) {
+            var terminologyVersionPair = $scope.terminologyVersionPairs[i];
+            if(terminologyVersionPair == 'ATC ' + atcVersion){
+              errors += 'ATC ' + atcVersion + ' is already loaded in the application.\n';
+              break;
+            }
+          }
+
+          if (errors.length > 0) {
+            alert(errors);
+            gpService.decrement();
+            return;
+          }
+          
+          // load the version of atc into the application   
+          $http({
+            url : root_content + 'terminology/load/atc/' + atcVersion,
             data : 'GENERATE',
             method : 'PUT',
             headers : {
