@@ -51,7 +51,7 @@ public class AtcDownloadAlgorithm extends RootServiceJpa implements Algorithm {
     Logger.getLogger(getClass()).info("Checking ATC API for recent terminologies");
     
     // Pull ATC codes from API  
-    final String url = "https://api.helsedirektoratet.no/legemidler/legemidler/atc";
+    final String url = ConfigUtility.getConfigProperties().getProperty("atcAPI.url");
     
      final Client client = ClientBuilder.newClient();
      final String accept = "*/*";
@@ -68,7 +68,7 @@ public class AtcDownloadAlgorithm extends RootServiceJpa implements Algorithm {
 	 String conceptDesc = "";
 	 Set<String> conceptsMap = new HashSet<String>();
 	 
-	 File folder = new File(ConfigUtility.getConfigProperties().getProperty("gmdnsftp.atcdir") + "/" + dateFormat);
+	 File folder = new File(ConfigUtility.getConfigProperties().getProperty("atcAPI.dir") + "/" + dateFormat);
 	  
 	 while (true) {
 	
@@ -79,7 +79,7 @@ public class AtcDownloadAlgorithm extends RootServiceJpa implements Algorithm {
 	
 	   Response response =
 	       target.request(accept)
-	       .header("Ocp-Apim-Subscription-Key","b104d51d1ee54769aa8cab321f2f9f98")
+	       .header("Ocp-Apim-Subscription-Key",ConfigUtility.getConfigProperties().getProperty("atcAPI.apiKey"))
 	       .get();
 	   String resultString = response.readEntity(String.class);
 	   if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {

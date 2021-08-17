@@ -911,7 +911,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     // If inputDir set as 'GENERATE', generate based on config.properties
     if (inputDir.equals("GENERATE")) {
       inputDir = ConfigUtility.getConfigProperties()
-          .getProperty("gmdnsftp.atcdir");
+          .getProperty("atcAPI.dir");
       // Strip off final /, if it exists
       if (inputDir.endsWith("/")) {
         inputDir = inputDir.substring(0, inputDir.length() - 1);
