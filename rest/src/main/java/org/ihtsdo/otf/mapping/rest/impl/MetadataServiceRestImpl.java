@@ -345,7 +345,7 @@ public class MetadataServiceRestImpl extends RootServiceRestImpl
       String atcVersions = "";
 
       final String atcDir =
-          ConfigUtility.getConfigProperties().getProperty("gmdnsftp.atcdir");
+          ConfigUtility.getConfigProperties().getProperty("atcAPI.dir");
 
       File folder = new File(atcDir);
       if(!folder.exists()){
