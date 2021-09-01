@@ -101,7 +101,6 @@ public class AtcDownloadAlgorithm extends RootServiceJpa implements Algorithm {
 	   for (final JsonNode conceptNode : doc) {
 	     JsonNode atcKode = conceptNode.get("atcKode");
 	     if(atcKode != null) {
-	        System.out.println("atcKode = " + atcKode.asText());
 	        conceptDesc += atcKode.asText() + "|" + conceptNode.get("nivånavn").asText() + System.lineSeparator();
 	        String parent = atcKode.asText();
 	        while(parent != "") {
@@ -123,7 +122,7 @@ public class AtcDownloadAlgorithm extends RootServiceJpa implements Algorithm {
 	   if(doc.size() < 1000) // partial return (<1000) = last batch in API
 		   break;
 	 }
-	 BufferedWriter writer = new BufferedWriter(new FileWriter(folder + "/parent_child.txt"));
+	 BufferedWriter writer = new BufferedWriter(new FileWriter(folder + "/parent-child.txt"));
 	 writer.write(parentChild);
 	 writer.close();
 	 
