@@ -1,6 +1,16 @@
+/*
+ * Copyright 2020 Wci Informatics - All Rights Reserved.
+ *
+ * NOTICE:  All information contained herein is, and remains the property of Wci Informatics
+ * The intellectual and technical concepts contained herein are proprietary to
+ * Wci Informatics and may be covered by U.S. and Foreign Patents, patents in process,
+ * and are protected by trade secret or copyright law.  Dissemination of this information
+ * or reproduction of this material is strictly forbidden.
+ */
 package org.ihtsdo.otf.mapping.rf2;
 
 import java.util.List;
+import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.TreePositionDescriptionGroup;
 
@@ -193,5 +203,19 @@ public interface TreePosition {
    * @param descGroups the new desc groups
    */
   public void setDescGroups(List<TreePositionDescriptionGroup> descGroups);
+  
+  /**
+   * Returns the index entries.
+   *
+   * @return the index entries
+   */
+  public Set<String> getIndexEntries();
+  
+  /**
+   * Sets the index entries.
+   *
+   * @param indexEntries the index entries
+   */
+  public void setIndexEntries(Set<String> indexEntries);
 
 }
