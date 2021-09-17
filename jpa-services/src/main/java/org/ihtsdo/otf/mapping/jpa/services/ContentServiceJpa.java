@@ -1416,7 +1416,15 @@ public class ContentServiceJpa extends RootServiceJpa
         tp.setTerminologyVersion(concept.getTerminologyVersion());
         tp.setTerminologyId(concept.getTerminologyId());
         tp.setDefaultPreferredName(concept.getDefaultPreferredName());
-
+        // Any all additional descriptions NOT matching the preferred name to indexEntries
+        Set<String> indexEntries = new HashSet<>();
+        for(Description description : concept.getDescriptions()) {
+          if(!description.getTerm().equals(concept.getDefaultPreferredName())) {
+            indexEntries.add(description.getTerm());
+          }
+        }
+        tp.setIndexEntries(indexEntries);
+        
         // persist the tree position
         manager.persist(tp);
       }
@@ -1811,7 +1819,8 @@ public class ContentServiceJpa extends RootServiceJpa
     // construct the query
     final StringBuilder sb = new StringBuilder();
     if (query != null && !query.isEmpty() && !query.equals("null")) {
-      sb.append(query).append(" AND ");
+      sb.append("(").append(query).append(" OR indexEntries:").append(query).append(") AND ");
+      localPfs.setQueryRestriction(null);
     }
     sb.append("terminology:" + terminology + " AND terminologyVersion:"
         + terminologyVersion);
