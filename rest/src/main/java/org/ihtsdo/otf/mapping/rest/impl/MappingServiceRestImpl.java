@@ -3695,11 +3695,6 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         }
       }
 
-      if (assoicatedMapProject == null) {
-        throw new Exception(
-            "Project " + mapProject.getName() + " does not have a reversed project.");
-      }
-
       // get the local tree positions from content service
       final TreePositionList treePositions =
           contentService.getTreePositionsWithChildren(terminologyId,
@@ -3720,13 +3715,18 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       // Calculate info for tree position information panel
       contentService.computeTreePositionInformation(treePositions, descTypes, relTypes);
 
-      // Determine whether code is valid (e.g. whether it should be a
-      // link)
-      final ProjectSpecificAlgorithmHandler handler =
-          mappingService.getProjectSpecificAlgorithmHandler(assoicatedMapProject);
-      mappingService.setTreePositionValidCodes(assoicatedMapProject, treePositions, handler);
-      // Compute any additional project specific handler info
-      mappingService.setTreePositionTerminologyNotes(assoicatedMapProject, treePositions, handler);
+      // If there is an associated reverse-project, you can use its specified
+      // handler to calculate code validity and notes.
+      if (assoicatedMapProject != null) {
+        // Determine whether code is valid (e.g. whether it should be a
+        // link)
+        final ProjectSpecificAlgorithmHandler handler =
+            mappingService.getProjectSpecificAlgorithmHandler(assoicatedMapProject);
+        mappingService.setTreePositionValidCodes(assoicatedMapProject, treePositions, handler);
+        // Compute any additional project specific handler info
+        mappingService.setTreePositionTerminologyNotes(assoicatedMapProject, treePositions,
+            handler);
+      }
 
       return treePositions;
     } catch (Exception e) {
