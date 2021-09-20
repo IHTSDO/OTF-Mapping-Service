@@ -76,21 +76,21 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
 
       MapRecord existingMapRecord = automaps.get(mapRecord.getConceptId());
 
-      // Run existing map record through standard map advice and relation
-      // calculation
-      if (existingMapRecord != null) {
-        List<MapEntry> updatedMapEntries = new ArrayList<>();
-
-        for (MapEntry mapEntry : existingMapRecord.getMapEntries()) {
-          MapRelation mapRelation = computeMapRelation(existingMapRecord, mapEntry);
-          MapAdviceList mapAdvices = computeMapAdvice(existingMapRecord, mapEntry);
-          mapEntry.setMapRelation(mapRelation);
-          mapEntry.getMapAdvices().addAll(mapAdvices.getMapAdvices());
-          updatedMapEntries.add(mapEntry);
-        }
-
-        existingMapRecord.setMapEntries(updatedMapEntries);
-      }
+//      // Run existing map record through standard map advice and relation
+//      // calculation
+//      if (existingMapRecord != null) {
+//        List<MapEntry> updatedMapEntries = new ArrayList<>();
+//
+//        for (MapEntry mapEntry : existingMapRecord.getMapEntries()) {
+//          MapRelation mapRelation = computeMapRelation(existingMapRecord, mapEntry);
+//          MapAdviceList mapAdvices = computeMapAdvice(existingMapRecord, mapEntry);
+//          mapEntry.setMapRelation(mapRelation);
+//          mapEntry.getMapAdvices().addAll(mapAdvices.getMapAdvices());
+//          updatedMapEntries.add(mapEntry);
+//        }
+//
+//        existingMapRecord.setMapEntries(updatedMapEntries);
+//      }
 
       return existingMapRecord;
     } catch (Exception e) {
@@ -103,17 +103,8 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
   /* see superclass */
   @Override
   public boolean isTargetCodeValid(String terminologyId) throws Exception {
-    
-    // All valid concepts' terminologyIds have a fixed length of 32
-    // e.g. B77ED049ACE44002BB51D3B0D9BE18DE
-    // All other terminology ids are for additional grouper-concepts
-    // e.g. ASC-A, NOASC, etc.
-    if(terminologyId.length()==32) {
-      return true;
-    }
-    else {
-      return false;
-    }
+    //All SNOMED concepts are currently considered valid
+    return true;
   }
 
   /* see superclass */
