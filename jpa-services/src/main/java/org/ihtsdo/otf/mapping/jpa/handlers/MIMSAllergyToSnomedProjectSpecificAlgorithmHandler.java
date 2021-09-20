@@ -37,7 +37,17 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
   /* see superclass */
   @Override
   public boolean isTargetCodeValid(String terminologyId) throws Exception {
-    return true;
+    
+    // All valid concepts' terminologyIds have a fixed length of 32
+    // e.g. B77ED049ACE44002BB51D3B0D9BE18DE
+    // All other terminology ids are for additional grouper-concepts
+    // e.g. ASC-A, NOASC, etc.
+    if(terminologyId.length()==32) {
+      return true;
+    }
+    else {
+      return false;
+    }
   }
 
   /* see superclass */
