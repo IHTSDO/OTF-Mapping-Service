@@ -48,11 +48,11 @@ public class MapUserJpa implements MapUser {
   private Long id;
 
   /** The user name. */
-  @Column(nullable = false, unique = true, length = 25)
+  @Column(nullable = false, unique = true)
   private String userName;
 
   /** The name. */
-  @Column(nullable = false, length = 25)
+  @Column(nullable = false)
   private String name;
 
   /** The email. */
