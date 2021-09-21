@@ -23,6 +23,7 @@
     <module>wci</module>
     <module>nlm</module>
     <module>cihi</module>
+    <module>mims</module>
   </modules>
 </project>
 
