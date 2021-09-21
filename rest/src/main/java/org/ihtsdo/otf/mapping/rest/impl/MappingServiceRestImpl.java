@@ -3684,13 +3684,13 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
 
       final MapProjectList allProjects = mappingService.getMapProjects();
-      MapProject assoicatedMapProject = null;
+      MapProject associatedMapProject = null;
       for (MapProject project : allProjects.getIterable()) {
 
         if (mapProject.getSourceTerminology().equalsIgnoreCase(project.getDestinationTerminology())
             && mapProject.getSourceTerminologyVersion()
                 .equalsIgnoreCase(project.getDestinationTerminologyVersion())) {
-          assoicatedMapProject = project;
+          associatedMapProject = project;
           break;
         }
       }
@@ -3717,14 +3717,14 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
       // If there is an associated reverse-project, you can use its specified
       // handler to calculate code validity and notes.
-      if (assoicatedMapProject != null) {
+      if (associatedMapProject != null) {
         // Determine whether code is valid (e.g. whether it should be a
         // link)
         final ProjectSpecificAlgorithmHandler handler =
-            mappingService.getProjectSpecificAlgorithmHandler(assoicatedMapProject);
-        mappingService.setTreePositionValidCodes(assoicatedMapProject, treePositions, handler);
+            mappingService.getProjectSpecificAlgorithmHandler(associatedMapProject);
+        mappingService.setTreePositionValidCodes(associatedMapProject, treePositions, handler);
         // Compute any additional project specific handler info
-        mappingService.setTreePositionTerminologyNotes(assoicatedMapProject, treePositions,
+        mappingService.setTreePositionTerminologyNotes(associatedMapProject, treePositions,
             handler);
       }
 
@@ -3852,6 +3852,18 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       // set the valid codes using mapping service
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
 
+      final MapProjectList allProjects = mappingService.getMapProjects();
+      MapProject associatedMapProject = null;
+      for (MapProject project : allProjects.getIterable()) {
+
+        if (mapProject.getSourceTerminology().equalsIgnoreCase(project.getDestinationTerminology())
+            && mapProject.getSourceTerminologyVersion()
+                .equalsIgnoreCase(project.getDestinationTerminologyVersion())) {
+          associatedMapProject = project;
+          break;
+        }
+      }
+      
       // get the root tree positions from content service
       final TreePositionList treePositions = contentService.getRootTreePositions(
           mapProject.getSourceTerminology(), mapProject.getSourceTerminologyVersion());
@@ -3868,11 +3880,19 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       final Map<String, String> relTypes =
           metadataService.getRelationshipTypes(terminology, terminologyVersion);
 
+      // If there is an associated reverse-project, you can use its specified
+      // handler to calculate code validity and notes.
+      if (associatedMapProject != null) {
+        // Determine whether code is valid (e.g. whether it should be a
+        // link)
+        final ProjectSpecificAlgorithmHandler handler =
+            mappingService.getProjectSpecificAlgorithmHandler(associatedMapProject);
+        mappingService.setTreePositionValidCodes(associatedMapProject, treePositions, handler);
+        // Compute any additional project specific handler info
+        mappingService.setTreePositionTerminologyNotes(associatedMapProject, treePositions, handler);
+      }        
+      
       contentService.computeTreePositionInformation(treePositions, descTypes, relTypes);
-
-      final ProjectSpecificAlgorithmHandler handler =
-          mappingService.getProjectSpecificAlgorithmHandler(mapProject);
-      mappingService.setTreePositionValidCodes(mapProject, treePositions, handler);
 
       return treePositions;
     } catch (Exception e) {
@@ -4051,20 +4071,15 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
 
       final MapProjectList allProjects = mappingService.getMapProjects();
-      MapProject assoicatedMapProject = null;
+      MapProject associatedMapProject = null;
       for (MapProject project : allProjects.getIterable()) {
 
         if (mapProject.getSourceTerminology().equalsIgnoreCase(project.getDestinationTerminology())
             && mapProject.getSourceTerminologyVersion()
                 .equalsIgnoreCase(project.getDestinationTerminologyVersion())) {
-          assoicatedMapProject = project;
+          associatedMapProject = project;
           break;
         }
-      }
-
-      if (assoicatedMapProject == null) {
-        throw new Exception(
-            "Project " + mapProject.getName() + " does not have a reversed project.");
       }
 
       // formulate an "and" search from the query if it doesn't use
@@ -4114,18 +4129,22 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
           metadataService.getDescriptionTypes(terminology, terminologyVersion);
       final Map<String, String> relTypes =
           metadataService.getRelationshipTypes(terminology, terminologyVersion);
-
-      // set the valid codes using mapping service
-      final ProjectSpecificAlgorithmHandler handler =
-          mappingService.getProjectSpecificAlgorithmHandler(assoicatedMapProject);
-
-      // Limit tree positions
-      treePositions.setTreePositions(handler.limitTreePositions(treePositions.getTreePositions()));
+      
+      // If there is an associated reverse-project, you can use its specified
+      // handler to calculate code validity and notes.
+      if (associatedMapProject != null) {
+        // Determine whether code is valid (e.g. whether it should be a
+        // link)
+        final ProjectSpecificAlgorithmHandler handler =
+            mappingService.getProjectSpecificAlgorithmHandler(associatedMapProject);
+        mappingService.setTreePositionValidCodes(associatedMapProject, treePositions, handler);
+        // Compute any additional project specific handler info
+        mappingService.setTreePositionTerminologyNotes(associatedMapProject, treePositions, handler);
+        // Limit tree positions
+        treePositions.setTreePositions(handler.limitTreePositions(treePositions.getTreePositions()));
+      }     
 
       contentService.computeTreePositionInformation(treePositions, descTypes, relTypes);
-
-      mappingService.setTreePositionValidCodes(assoicatedMapProject, treePositions, handler);
-      mappingService.setTreePositionTerminologyNotes(assoicatedMapProject, treePositions, handler);
 
       // TODO: if there are too many tree positions, then chop the tree
       // off (2
