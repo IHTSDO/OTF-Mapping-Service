@@ -23,6 +23,13 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
 public class ClamlMetadataServiceJpaHelper extends RootServiceJpa
     implements MetadataService {
 
+  /** The description type map. */
+  private static Map<String, Map<String, String>> descriptionTypeMap = null;
+  
+  /** The relationship type map. */
+  private static Map<String, Map<String, String>> relationshipTypeMap = null;
+ 
+  
   /**
    * Instantiates an empty {@link ClamlMetadataServiceJpaHelper}.
    * 
@@ -189,6 +196,10 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa
   public Map<String, String> getDescriptionTypes(String terminology,
     String version) throws NumberFormatException, Exception {
 
+    if(descriptionTypeMap.get(terminology + "|" + version) != null) {
+      return descriptionTypeMap.get(terminology + "|" + version);
+    }
+    
     try (ContentService contentService = new ContentServiceJpa();) {
       String rootId = null;
       SearchResultList results = contentService
@@ -206,6 +217,8 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa
       Map<String, String> result =
           getDescendantMap(contentService, rootId, terminology, version);
 
+      descriptionTypeMap.put(terminology + "|" + version, result);
+      
       return result;
     }
   }
@@ -242,6 +255,10 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa
   public Map<String, String> getRelationshipTypes(String terminology,
     String version) throws NumberFormatException, Exception {
 
+    if(relationshipTypeMap.get(terminology + "|" + version) != null) {
+      return relationshipTypeMap.get(terminology + "|" + version);
+    }
+    
     // find all active descendants of 106237007
     try (ContentService contentService = new ContentServiceJpa();) {
       String rootId = null;
@@ -260,6 +277,8 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa
 
       Map<String, String> result =
           getDescendantMap(contentService, rootId, terminology, version);
+
+      relationshipTypeMap.put(terminology + "|" + version, result);
 
       return result;
     }
