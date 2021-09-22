@@ -24,10 +24,10 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa
     implements MetadataService {
 
   /** The description type map. */
-  private static Map<String, Map<String, String>> descriptionTypeMap = null;
+  private static Map<String, Map<String, String>> descriptionTypeMap = new HashMap<>();
   
   /** The relationship type map. */
-  private static Map<String, Map<String, String>> relationshipTypeMap = null;
+  private static Map<String, Map<String, String>> relationshipTypeMap = new HashMap<>();
  
   
   /**
