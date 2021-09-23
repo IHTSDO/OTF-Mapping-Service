@@ -3863,7 +3863,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
           break;
         }
       }
-      
+
       // get the root tree positions from content service
       final TreePositionList treePositions = contentService.getRootTreePositions(
           mapProject.getSourceTerminology(), mapProject.getSourceTerminologyVersion());
@@ -3889,9 +3889,10 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
             mappingService.getProjectSpecificAlgorithmHandler(associatedMapProject);
         mappingService.setTreePositionValidCodes(associatedMapProject, treePositions, handler);
         // Compute any additional project specific handler info
-        mappingService.setTreePositionTerminologyNotes(associatedMapProject, treePositions, handler);
-      }        
-      
+        mappingService.setTreePositionTerminologyNotes(associatedMapProject, treePositions,
+            handler);
+      }
+
       contentService.computeTreePositionInformation(treePositions, descTypes, relTypes);
 
       return treePositions;
@@ -4129,7 +4130,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
           metadataService.getDescriptionTypes(terminology, terminologyVersion);
       final Map<String, String> relTypes =
           metadataService.getRelationshipTypes(terminology, terminologyVersion);
-      
+
       // If there is an associated reverse-project, you can use its specified
       // handler to calculate code validity and notes.
       if (associatedMapProject != null) {
@@ -4139,10 +4140,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
             mappingService.getProjectSpecificAlgorithmHandler(associatedMapProject);
         mappingService.setTreePositionValidCodes(associatedMapProject, treePositions, handler);
         // Compute any additional project specific handler info
-        mappingService.setTreePositionTerminologyNotes(associatedMapProject, treePositions, handler);
+        mappingService.setTreePositionTerminologyNotes(associatedMapProject, treePositions,
+            handler);
         // Limit tree positions
-        treePositions.setTreePositions(handler.limitTreePositions(treePositions.getTreePositions()));
-      }     
+        treePositions
+            .setTreePositions(handler.limitTreePositions(treePositions.getTreePositions()));
+      }
 
       contentService.computeTreePositionInformation(treePositions, descTypes, relTypes);
 
@@ -5671,7 +5674,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       List<String> userNameList = new ArrayList<>();
       for (int i = 0; i < array.length(); i++) {
         JSONObject singleContent = array.getJSONObject(i);
-        if (singleContent.getString("highestPromotedBranch") == null || !singleContent.getString("highestPromotedBranch").contains("MAIN")) {
+        if (singleContent.getString("highestPromotedBranch") == null
+            || !singleContent.getString("highestPromotedBranch").contains("MAIN")) {
           continue;
         }
         String userName = singleContent.getString("username");
@@ -5782,7 +5786,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       JSONArray array = jsonObject.getJSONArray("content");
       for (int i = 0; i < array.length(); i++) {
         JSONObject singleContent = array.getJSONObject(i);
-        if (singleContent.getString("highestPromotedBranch") == null || !singleContent.getString("highestPromotedBranch").contains("MAIN")) {
+        if (singleContent.getString("highestPromotedBranch") == null
+            || !singleContent.getString("highestPromotedBranch").contains("MAIN")) {
           continue;
         }
         String userName = singleContent.getString("username");
