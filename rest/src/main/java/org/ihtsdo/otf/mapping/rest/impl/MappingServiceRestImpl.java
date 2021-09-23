@@ -5671,11 +5671,10 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       List<String> userNameList = new ArrayList<>();
       for (int i = 0; i < array.length(); i++) {
         JSONObject singleContent = array.getJSONObject(i);
-        if (singleContent.getString("highestPromotedBranch") == null || !singleContent
-            .getJSONObject("highestPromotedBranch").getString("branchPath").contains("MAIN")) {
+        if (singleContent.getString("highestPromotedBranch") == null || !singleContent.getString("highestPromotedBranch").contains("MAIN")) {
           continue;
         }
-        String userName = singleContent.getJSONObject("user").getString("username");
+        String userName = singleContent.getString("username");
         if (!userNameList.contains(userName)) {
           userNameList.add(userName);
         }
@@ -5783,11 +5782,10 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       JSONArray array = jsonObject.getJSONArray("content");
       for (int i = 0; i < array.length(); i++) {
         JSONObject singleContent = array.getJSONObject(i);
-        if (singleContent.getString("highestPromotedBranch") == null || !singleContent
-            .getJSONObject("highestPromotedBranch").getString("branchPath").contains("MAIN")) {
+        if (singleContent.getString("highestPromotedBranch") == null || !singleContent.getString("highestPromotedBranch").contains("MAIN")) {
           continue;
         }
-        String userName = singleContent.getJSONObject("user").getString("username");
+        String userName = singleContent.getString("username");
         String commitDateString = singleContent.getString("commitDate");
         final SimpleDateFormat dt = new SimpleDateFormat("yyyy-MM-dd");
         Date commitDate = dt.parse(commitDateString);
