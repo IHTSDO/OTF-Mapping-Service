@@ -224,6 +224,25 @@ public interface ContentServiceRest {
    */
   void loadTerminologyGmdn(String version, String inputDir, String authToken)
     throws Exception;
+  
+  /**
+   * Download terminology atc.
+   *
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  void downloadTerminologyAtc(String authToken) throws Exception;
+  
+  /**
+   * Loads ATC data
+   * 
+   * @param version The terminology version.
+   * @param inputDir The directory where the input files are located.
+   * @param authToken The auth token
+   * @throws Exception The execution exception
+   */
+  void loadTerminologyAtc(String version, String inputDir, String authToken)
+    throws Exception;
 
   /**
    * Removes a terminology from a database.

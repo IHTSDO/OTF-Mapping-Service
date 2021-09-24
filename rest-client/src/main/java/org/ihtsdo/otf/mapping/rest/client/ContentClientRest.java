@@ -597,5 +597,17 @@ public class ContentClientRest extends RootClientRest
     return null;
   }
 
+  @Override
+  public void downloadTerminologyAtc(String authToken) throws Exception {
+  	// TODO Auto-generated method stub
+	return;
+  }
+	
+  @Override
+  public void loadTerminologyAtc(String version, String inputDir, String authToken) throws Exception {
+  	// TODO Auto-generated method stub
+	return;
+  }
+
 
 }

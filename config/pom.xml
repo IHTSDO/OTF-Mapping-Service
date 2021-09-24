@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.7.16-SNAPSHOT</version>
+    <version>1.7.18-SNAPSHOT</version>
     <relativePath>../parent</relativePath>
   </parent>
 
@@ -23,6 +23,7 @@
     <module>wci</module>
     <module>nlm</module>
     <module>cihi</module>
+    <module>mims</module>
   </modules>
 </project>
 

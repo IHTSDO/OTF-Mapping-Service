@@ -314,5 +314,71 @@ public class MetadataServiceRestImpl extends RootServiceRestImpl
       securityService.close();
     }
   }
+  
+  /**
+	 * Returns the latest atc version from the api.
+	 *
+	 * @param authToken the auth token
+	 * @return the atc version
+	 * @throws Exception the exception
+	 */
+  @Override
+  @GET
+  @Path("/terminology/atc")
+  @ApiOperation(value = "Get all downloaded gmdn versions", notes = "Gets the latest atc version from the api", response = KeyValuePairList.class)
+  @Produces({
+      MediaType.TEXT_PLAIN
+  })
+  public String getAllAtcVersions(
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(MetadataServiceRestImpl.class)
+        .info("RESTful call (Metadata): /terminology/atc");
+
+    String user = "";
+    try {
+      // authorize
+      user = authorizeApp(authToken, MapUserRole.VIEWER,
+          "get all downloaded atc versions", securityService);
+
+      String atcVersions = "";
+
+      final String atcDir =
+          ConfigUtility.getConfigProperties().getProperty("atcAPI.dir");
+
+      File folder = new File(atcDir);
+      if(!folder.exists()){
+        throw new FileNotFoundException(folder + " not found");
+      }
+      
+      File[] listOfFiles = folder.listFiles();
+
+      // We only care about the directories that follow a yy_MM_DD naming convention
+      for (int i = 0; i < listOfFiles.length; i++) {
+        if (listOfFiles[i].isDirectory()
+            && listOfFiles[i].getName().matches("\\d{4}_\\d{2}_\\d{2}")) {
+          atcVersions += listOfFiles[i].getName() + ";";
+        }
+      }
+
+      //get rid of final ';'
+      if(atcVersions.length() > 1){
+    	  atcVersions = atcVersions.substring(0, atcVersions.length()-1);
+      }
+      
+      return atcVersions;
+    } catch (FileNotFoundException e) {
+      handleException(e, "get downloaded versions of gmdn: " + e.getMessage(),
+          user, "", "");
+      return null;
+   } catch (Exception e) {
+      handleException(e, "get downloaded versions of gmdn",
+          user, "", "");
+      return null;
+    } finally {
+      securityService.close();
+    }
+  }
 
 }

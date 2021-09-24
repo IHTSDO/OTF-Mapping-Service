@@ -49,6 +49,7 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.TerminologyVersion;
 import org.ihtsdo.otf.mapping.helpers.TerminologyVersionList;
+import org.ihtsdo.otf.mapping.jpa.algo.AtcDownloadAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.ClamlLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.GmdnDownloadAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.GmdnLoaderAlgorithm;
@@ -888,6 +889,87 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
     } catch (Exception e) {
       handleException(e, "trying to load terminology GMDN from directory");
+    }
+  }
+  
+  /* see superclass */
+  @Override
+  @PUT
+  @Path("/terminology/load/atc/{version}")
+  @Consumes(MediaType.TEXT_PLAIN)
+  @ApiOperation(value = "Loads ATC terminology from directory", notes = "Loads ATC terminology from directory for specified terminology and version")
+  public void loadTerminologyAtc(
+    @ApiParam(value = "Version, e.g. 2014_09_01", required = true) @PathParam("version") String version,
+    @ApiParam(value = "ATC input directory", required = true) String inputDir,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("RESTful call (Content): /terminology/load/atc/" + version
+            + " from input directory " + inputDir);
+
+    // If inputDir set as 'GENERATE', generate based on config.properties
+    if (inputDir.equals("GENERATE")) {
+      inputDir = ConfigUtility.getConfigProperties()
+          .getProperty("atcAPI.dir");
+      // Strip off final /, if it exists
+      if (inputDir.endsWith("/")) {
+        inputDir = inputDir.substring(0, inputDir.length() - 1);
+      }
+      inputDir = inputDir + "/" + version;
+    }
+
+    Logger.getLogger(getClass())
+        .info("Input directory generated from config.properties, and set to "
+            + inputDir);
+
+    // Track system level information
+    long startTimeOrig = System.nanoTime();
+
+    authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "load GMDN terminology",
+        securityService);
+
+    try (final SimpleLoaderAlgorithm algo =
+            new SimpleLoaderAlgorithm("ATC", version, inputDir, "0");) {
+
+      algo.compute();
+
+      Logger.getLogger(getClass())
+          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+
+    } catch (Exception e) {
+      handleException(e, "trying to load terminology ATC from directory");
+    }
+  }
+  
+  /* see superclass */
+  @Override
+  @POST
+  @Path("/terminology/download/atc")
+  @ApiOperation(value = "Download most recent ATC terminology from API", notes = "Downloads most recent ATC terminology from API")
+  public void downloadTerminologyAtc(
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("RESTful call (Content): /terminology/download/atc/");
+
+    // Track system level information
+    long startTimeOrig = System.nanoTime();
+
+    authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+        "download ATC terminology", securityService);
+
+    try (final AtcDownloadAlgorithm algo = new AtcDownloadAlgorithm();) {
+
+      algo.compute();
+
+      Logger.getLogger(getClass())
+          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+
+    } catch (Exception e) {
+      handleException(e,
+          "trying to download most recent terminology ATC from API");
     }
   }
 
