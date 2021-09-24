@@ -375,7 +375,7 @@ public class IndexXmlToLuceneMojo extends AbstractMojo {
       }
 
       // Put character data into map if not a code
-      if (!qName.toLowerCase().equals("code")) {
+      if (!qName.toLowerCase().equals("code") && !qName.toLowerCase().contentEquals("manif")) {
         data.put(qName.toLowerCase(), chars.toString());
       }
 
