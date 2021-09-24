@@ -6,7 +6,9 @@ package org.ihtsdo.otf.mapping.rf2.jpa;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -23,11 +25,12 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
+import org.ihtsdo.otf.mapping.helpers.CollectionToCSVBridge;
 import org.ihtsdo.otf.mapping.helpers.TreePositionDescriptionGroup;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
@@ -78,6 +81,9 @@ public class TreePositionJpa implements TreePosition {
   /** The desc groups. */
   @Transient
   private List<TreePositionDescriptionGroup> descGroups = new ArrayList<>();
+
+  @Transient
+  private Set<String> indexEntries = new HashSet<>();
 
   /** The children count. */
   @Column(nullable = false)
@@ -172,7 +178,8 @@ public class TreePositionJpa implements TreePosition {
 
   @Fields({
       @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO),
-      @Field(name = "terminologyIdAnalyzed", index = Index.YES, analyze = Analyze.YES, store = Store.NO, analyzer = @Analyzer(definition = "noStopWord"))
+      @Field(name = "terminologyIdAnalyzed", index = Index.YES, analyze = Analyze.YES,
+          store = Store.NO, analyzer = @Analyzer(definition = "noStopWord"))
   })
   @Override
   public String getTerminologyId() {
@@ -321,19 +328,30 @@ public class TreePositionJpa implements TreePosition {
 
   /* see superclass */
   @Override
+  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @FieldBridge(impl = CollectionToCSVBridge.class)
+  @Analyzer(definition = "noStopWord")
+  public Set<String> getIndexEntries() {
+    return indexEntries;
+  }
+
+  /* see superclass */
+  @Override
+  public void setIndexEntries(Set<String> indexEntries) {
+    this.indexEntries = indexEntries;
+  }
+
+  /* see superclass */
+  @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
+    result = prime * result + ((ancestorPath == null) ? 0 : ancestorPath.hashCode());
     result =
-        prime * result + ((ancestorPath == null) ? 0 : ancestorPath.hashCode());
-    result = prime * result + ((defaultPreferredName == null) ? 0
-        : defaultPreferredName.hashCode());
-    result =
-        prime * result + ((terminology == null) ? 0 : terminology.hashCode());
-    result = prime * result
-        + ((terminologyId == null) ? 0 : terminologyId.hashCode());
-    result = prime * result
-        + ((terminologyVersion == null) ? 0 : terminologyVersion.hashCode());
+        prime * result + ((defaultPreferredName == null) ? 0 : defaultPreferredName.hashCode());
+    result = prime * result + ((terminology == null) ? 0 : terminology.hashCode());
+    result = prime * result + ((terminologyId == null) ? 0 : terminologyId.hashCode());
+    result = prime * result + ((terminologyVersion == null) ? 0 : terminologyVersion.hashCode());
     return result;
   }
 
@@ -382,12 +400,10 @@ public class TreePositionJpa implements TreePosition {
     for (TreePosition child : this.getChildren()) {
       childrenStr += child.getTerminologyId() + "-";
     }
-    return "TreePositionJpa [ancestorPath=" + ancestorPath + ", terminology="
-        + terminology + ", terminologyId=" + terminologyId
-        + ", terminologyVersion=" + terminologyVersion
-        + ", defaultPreferredName=" + defaultPreferredName + ", childrenCount="
-        + childrenCount + ", terminologyNote=" + terminologyNote + ", children="
-        + childrenStr + "]";
+    return "TreePositionJpa [ancestorPath=" + ancestorPath + ", terminology=" + terminology
+        + ", terminologyId=" + terminologyId + ", terminologyVersion=" + terminologyVersion
+        + ", defaultPreferredName=" + defaultPreferredName + ", childrenCount=" + childrenCount
+        + ", terminologyNote=" + terminologyNote + ", children=" + childrenStr + "]";
   }
 
 }

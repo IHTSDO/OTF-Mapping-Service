@@ -1,8 +1,9 @@
 /*
- *    Copyright 2019 West Coast Informatics, LLC
+ *    Copyright 2021 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.jpa.services;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,25 +18,20 @@ import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 
 /**
- * Implementation of {@link MetadataService} for ClaML based terminologies.
+ * Implementation of {@link MetadataService} for MIMS Allergy terminology.
  * 
  */
-public class ClamlMetadataServiceJpaHelper extends RootServiceJpa
+public class MimsAllergyMetadataServiceJpaHelper extends RootServiceJpa
     implements MetadataService {
 
-  /** The description type map. */
-  private static Map<String, Map<String, String>> descriptionTypeMap = new HashMap<>();
-  
-  /** The relationship type map. */
-  private static Map<String, Map<String, String>> relationshipTypeMap = new HashMap<>();
- 
-  
+  private Map<String, String> descriptionTypeMap = null;
+
   /**
-   * Instantiates an empty {@link ClamlMetadataServiceJpaHelper}.
+   * Instantiates an empty {@link MimsAllergyMetadataServiceJpaHelper}.
    * 
    * @throws Exception the exception
    */
-  public ClamlMetadataServiceJpaHelper() throws Exception {
+  public MimsAllergyMetadataServiceJpaHelper() throws Exception {
     super();
   }
 
@@ -95,9 +91,9 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa
 
       Map<String, String> result =
           getDescendantMap(contentService, rootId, terminology, version);
+
       return result;
     }
-
   }
 
   /* see superclass */
@@ -133,28 +129,7 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa
   @Override
   public Map<String, String> getSimpleRefSets(String terminology,
     String version) throws NumberFormatException, Exception {
-
-    try (ContentService contentService = new ContentServiceJpa();) {
-      String rootId = null;
-      SearchResultList results = contentService
-          .findConceptsForQuery("Simple refsets", new PfsParameterJpa());
-      for (SearchResult result : results.getSearchResults()) {
-        if (result.getTerminology().equals(terminology)
-            && result.getTerminologyVersion().equals(version)
-            && result.getValue().equals("Simple refsets")) {
-          rootId = result.getTerminologyId();
-          break;
-        }
-      }
-      if (rootId == null)
-        throw new Exception("Simple refsets concept cannot be found for "
-            + terminology + " " + version + ".\n" + results.getSearchResults());
-
-      Map<String, String> result =
-          getDescendantMap(contentService, rootId, terminology, version);
-
-      return result;
-    }
+    return new HashMap<>();
   }
 
   /* see superclass */
@@ -195,32 +170,27 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa
   @Override
   public Map<String, String> getDescriptionTypes(String terminology,
     String version) throws NumberFormatException, Exception {
-
-    if(descriptionTypeMap.get(terminology + "|" + version) != null) {
-      return descriptionTypeMap.get(terminology + "|" + version);
+    if (descriptionTypeMap != null) {
+      return descriptionTypeMap;
     }
-    
-    try (ContentService contentService = new ContentServiceJpa();) {
-      String rootId = null;
-      SearchResultList results = contentService
-          .findConceptsForQuery("Description type", new PfsParameterJpa());
-      for (SearchResult result : results.getSearchResults()) {
-        if (result.getTerminology().equals(terminology)
-            && result.getTerminologyVersion().equals(version)
-            && result.getValue().equals("Description type")) {
-          rootId = result.getTerminologyId();
-          break;
-        }
+
+    descriptionTypeMap = new HashMap<>();
+
+    // find all active descendants of 'Terminology metadata' concept
+    ContentService contentService = new ContentServiceJpa();
+
+    // want all descendants, do not use pfsParameter
+    List<Concept> descendants = getDescendantConcepts(contentService,
+        terminology + " metadata", terminology, version);
+
+    for (Concept descendant : descendants) {
+      if (descendant.isActive()) {
+        descriptionTypeMap.put(new String(descendant.getTerminologyId()),
+            descendant.getDefaultPreferredName());
       }
-      if (rootId == null)
-        throw new Exception("Description type concept cannot be found.");
-      Map<String, String> result =
-          getDescendantMap(contentService, rootId, terminology, version);
-
-      descriptionTypeMap.put(terminology + "|" + version, result);
-      
-      return result;
     }
+    contentService.close();
+    return descriptionTypeMap;
   }
 
   /* see superclass */
@@ -255,10 +225,6 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa
   public Map<String, String> getRelationshipTypes(String terminology,
     String version) throws NumberFormatException, Exception {
 
-    if(relationshipTypeMap.get(terminology + "|" + version) != null) {
-      return relationshipTypeMap.get(terminology + "|" + version);
-    }
-    
     // find all active descendants of 106237007
     try (ContentService contentService = new ContentServiceJpa();) {
       String rootId = null;
@@ -277,8 +243,6 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa
 
       Map<String, String> result =
           getDescendantMap(contentService, rootId, terminology, version);
-
-      relationshipTypeMap.put(terminology + "|" + version, result);
 
       return result;
     }
@@ -441,5 +405,46 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa
   @Override
   public void setProperties(Properties properties) {
     // n/a
+  }
+
+  /**
+   * Helper method for getting descendants.
+   *
+   * @param contentService the content service
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param terminologyVersion the terminology version
+   * @return the descendant concepts
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
+  private List<Concept> getDescendantConcepts(ContentService contentService,
+    String term, String terminology, String terminologyVersion)
+    throws Exception {
+    final SearchResultList list = contentService.findConceptsForQuery(
+        "defaultPreferredName:" + term + " AND terminology:" + terminology
+            + " AND terminologyVersion:" + terminologyVersion,
+        null);
+
+    if (list.getTotalCount() == 0) {
+      return new ArrayList<Concept>();
+    }
+
+    Concept concept = null;
+
+    for (SearchResult result : list.getIterable()) {
+      if (result.getValue().equals(term)) {
+        concept = contentService.getConcept(result.getTerminologyId(),
+            terminology, terminologyVersion);
+        break;
+      }
+    }
+
+    if (concept == null) {
+      throw new Exception("Cannot locate the MIMS Allergy Metadata concept");
+    }
+
+    return TerminologyUtility.getActiveDescendants(concept);
+
   }
 }
