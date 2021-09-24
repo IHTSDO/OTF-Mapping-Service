@@ -535,11 +535,11 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
         // print after title
 
       } else if (key.equals("code")) {
-        // out.println(" " + data.get(key) + "");
         out.println(" <a ng-click=\"code('" + data.get(key) + "')\""
             + ">" + data.get(key) + "</a>");
       } else if (key.equals("manif")) {
-        out.println(" [" + data.get(key) + "]");
+        out.println(" <a ng-click=\"code('" + data.get(key) + "')\""
+            + ">" + data.get(key) + "</a>");
       } else {
         out.println(" " + data.get(key) + "");
       }
@@ -610,11 +610,11 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
         // print with title
 
       } else if (key.equals("code")) {
-        // out.println(" " + data.get(key) + "");
         out.println(" <a ng-click=\"code('" + data.get(key) + "')\""
             + ">" + data.get(key) + "</a>");
       } else if (key.equals("manif")) {
-        out.println(" [" + data.get(key) + "]");
+        out.println(" <a ng-click=\"code('" + data.get(key) + "')\""
+            + ">" + data.get(key) + "</a>");
       } else {
         out.println(" " + data.get(key) + "");
       }
@@ -666,11 +666,11 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
         // print with title
         // write the data associated with this tag.
       } else if (key.equals("code")) {
-        // out.println(" " + data.get(key) + "");
         out.println(" <a ng-click=\"code('" + data.get(key) + "')\""
             + ">" + data.get(key) + "</a>");
       } else if (key.equals("manif")) {
-        out.println(" [" + data.get(key) + "]");
+        out.println(" <a ng-click=\"code('" + data.get(key) + "')\""
+            + ">" + data.get(key) + "</a>");
       } else {
         out.println(" " + data.get(key) + "");
       }
@@ -722,11 +722,11 @@ public class IndexXmlToHtmlMojo extends AbstractMojo {
       } else if (inTitle && key.equals("nemod")) {
         // print with title
       } else if (key.equals("code")) {
-        // out.println(" " + data.get(key) + "");
         out.println(" <a ng-click=\"code('" + data.get(key) + "')\""
             + ">" + data.get(key) + "</a>");
       } else if (key.equals("manif")) {
-        out.println(" [" + data.get(key) + "]");
+        out.println(" <a ng-click=\"code('" + data.get(key) + "')\""
+            + ">" + data.get(key) + "</a>");
       } else {
         out.println(" " + data.get(key) + "");
       }
