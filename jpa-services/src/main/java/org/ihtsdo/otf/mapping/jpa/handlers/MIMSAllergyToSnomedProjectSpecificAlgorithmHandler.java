@@ -243,5 +243,77 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
 
   }
 
+  
+  /**
+   * Overriding defaultChecks, because there are some MIMS-specific settings that 
+   * don't conform to the standard map requirements.
+   * 
+   * @param mapRecord the map record
+   * @return the validation result
+   */
+  @Override
+  public ValidationResult performDefaultChecks(MapRecord mapRecord) {
+    Map<Integer, List<MapEntry>> entryGroups = getEntryGroups(mapRecord);
+
+    final ValidationResult validationResult = new ValidationResultJpa();
+
+    // FATAL ERROR: map record has no entries
+    if (mapRecord.getMapEntries().size() == 0) {
+      validationResult.addError("Map record has no entries");
+      return validationResult;
+    }
+
+    // FATAL ERROR: multiple map groups present for a project without group
+    // structure
+    if (!mapProject.isGroupStructure() && entryGroups.keySet().size() > 1) {
+      validationResult
+          .addError("Project has no group structure but multiple map groups were found.");
+      return validationResult;
+    }
+
+    
+    // For the MIMS project, we are allowing multiple entries without rules.
+    // This is acceptable because their desired final release format is not
+    // intended to follow strict RF2 guidelines.
+//    // FATAL ERROR: multiple entries in groups for non-rule based
+//    if (!mapProject.isRuleBased()) {
+//      for (Integer key : entryGroups.keySet()) {
+//        if (entryGroups.get(key).size() > 1) {
+//          validationResult.addError(
+//              "Project has no rule structure but multiple map entries found in group " + key);
+//        }
+//      }
+//      if (!validationResult.isValid()) {
+//        return validationResult;
+//      }
+//    }
+    
+    // Verify that groups begin at index 1 and are sequential (i.e. no empty
+    // groups)
+    validationResult.merge(checkMapRecordGroupStructure(mapRecord, entryGroups));
+
+    // Validation Check: verify correct positioning of TRUE rules
+    validationResult.merge(checkMapRecordRules(mapRecord, entryGroups));
+
+    // Validation Check: very higher map groups do not have only NC nodes
+    validationResult.merge(checkMapRecordNcNodes(mapRecord, entryGroups));
+
+    // Validation Check: verify entries are not duplicated
+    validationResult.merge(checkMapRecordForDuplicateEntries(mapRecord));
+
+    // Validation Check: verify advice values are valid for the project (this
+    // can happen if "allowable map advice" changes without updating map
+    // entries)
+    validationResult.merge(checkMapRecordAdvices(mapRecord, entryGroups));
+
+    // Validation Check: all entries are non-null (empty entries are empty
+    // strings)
+    validationResult.merge(checkMapRecordForNullTargetIds(mapRecord));
+
+    return validationResult;
+  }
+
+  
+  
 
 }
