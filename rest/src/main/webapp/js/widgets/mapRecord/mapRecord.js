@@ -54,7 +54,11 @@ angular
         $scope.mapLeads = $scope.project.mapLead;
         organizeUsers($scope.mapLeads);
         $scope.enableAuthoringHistoryButton = (appConfig["deploy.show.authoring.history.button"] === 'true') ? true : false;
-        
+		// Override AuthoringHistoryButton value for non-SNOMED terminologies (since the functionality will never work)
+		if(!$scope.project.sourceTerminology.includes('SNOMED')){
+			$scope.enableAuthoringHistoryButton = false;
+		}
+
         $scope.returnRecipients = new Array();
         $scope.multiSelectSettings = {
           displayProp : 'name',
