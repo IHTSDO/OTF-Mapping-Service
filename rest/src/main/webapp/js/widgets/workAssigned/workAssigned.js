@@ -712,6 +712,11 @@ angular
           if (response == false)
             return;
         }
+        if (record.terminologyVersion.includes('IN_PROGRESS')) {
+          var response = confirm('Are you sure you want to return in-progress work?  You will lose any work done.');
+          if (response == false)
+            return;
+        }
 
         gpService.increment();
         $http(
