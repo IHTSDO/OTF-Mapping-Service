@@ -335,6 +335,7 @@
                   <memberFlag>${member.flag}</memberFlag>
                   <recordFlag>${record.flag}</recordFlag>
                   <refsetId>${refset.id}</refsetId>
+                  <userName>${user.name}</userName>
                 </configuration>
               </execution>
             </executions>
