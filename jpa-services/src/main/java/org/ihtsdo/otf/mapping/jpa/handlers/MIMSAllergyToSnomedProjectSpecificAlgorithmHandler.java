@@ -29,6 +29,7 @@ import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.FileSorter;
@@ -43,6 +44,8 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
 
   /** The auto-generated map suggestions for preloading. */
   private static Map<String, MapRecord> automaps = new HashMap<>();
+  
+  
   
   /* see superclass */
   @Override
@@ -103,8 +106,39 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
   /* see superclass */
   @Override
   public boolean isTargetCodeValid(String terminologyId) throws Exception {
-    //All SNOMED concepts are currently considered valid
-    return true;
+    //Only concepts from three hierarchies are valid targets:
+    // (substance)
+    // (organism)
+    // (physical object)
+    
+    final List<String> validSemanticTagsList = new ArrayList<>();
+    validSemanticTagsList.add("(substance)");
+    validSemanticTagsList.add("(organism)");
+    validSemanticTagsList.add("(physical object)");
+    
+    final ContentService contentService = new ContentServiceJpa();
+
+    try {
+      // Concept must exist
+      final Concept concept = contentService.getConcept(terminologyId,
+          mapProject.getDestinationTerminology(),
+          mapProject.getDestinationTerminologyVersion());
+
+      // Only concepts that end with one of the
+      if (concept != null) {
+        for(String validSemanticTag : validSemanticTagsList) {
+          if(concept.getDefaultPreferredName().endsWith(validSemanticTag)) {
+            return true;
+          }
+        }
+      }
+      return false;
+
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      contentService.close();
+    }
   }
 
   /* see superclass */
@@ -209,11 +243,28 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
       }
             
       for (int i = 2; i < fields.length; i += 2) {
-
+        
+        if(fields[i] == null || fields[i].isBlank()) {
+          continue;
+        }
+        
         MapRecord mimsAllergyAutomapRecord = automaps.get(conceptId);      
         final String mapTarget = fields[i];
         
-        // For each suggested map target, create a map entry, and attach it to the record
+        // For each suggested map target, check if it has already been added to map.
+        Boolean targetAlreadyAdded = false;
+        for(MapEntry existingMapEntry : mimsAllergyAutomapRecord.getMapEntries()) {
+          if(existingMapEntry.getTargetId().equals(mapTarget)) {
+            targetAlreadyAdded = true;
+          }
+        }
+        
+        // Don't add a target twice
+        if(targetAlreadyAdded) {
+          continue;
+        }
+        
+        // If this is a new suggested target, create a map entry, and attach it to the record
         MapEntry mapEntry = new MapEntryJpa();
         mapEntry.setMapGroup(1);
         mapEntry.setMapPriority(mimsAllergyAutomapRecord.getMapEntries().size() + 1);

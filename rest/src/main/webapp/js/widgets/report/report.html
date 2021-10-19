@@ -142,10 +142,10 @@
                     <tr ng-repeat="item in result.reportResultItems">
                       <td><a
                         ng-if="focusProject.workflowType != 'CONFLICT_PROJECT' && focusProject.workflowType != 'LEGACY_PATH'"
-                        ng-href="{{'index.html#/record/conceptId/' + item.itemId}}"
-                        target="_blank">{{item.itemId}}</a> <span
+                        href="{{'#/record/conceptId/' + item.itemId}}"
+                        >{{item.itemId}}</a> <span
                         ng-if="focusProject.workflowType == 'CONFLICT_PROJECT' || focusProject.workflowType == 'LEGACY_PATH'"
-                        target="_blank">{{item.itemId}}</span></td>
+                        >{{item.itemId}}</span></td>
                       <td>{{item.itemName}}</td>
                   </tbody>
                 </table>
