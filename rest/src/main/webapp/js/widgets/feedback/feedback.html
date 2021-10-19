@@ -48,11 +48,14 @@
         <th class="pointer" style="width: 14%; padding: 5px;" ng-click="setSortField('feedback','terminologyId')">
           Id<span ng-bind="getSortIndicator('feedback','terminologyId')"></th>
         
-        <th class="pointer" style="width: 35%; padding: 5px;" ng-click="setSortField('feedback','defaultPreferredName')">
+        <th class="pointer" style="width: 30%; padding: 5px;" ng-click="setSortField('feedback','defaultPreferredName')">
           Preferred Name<span ng-bind="getSortIndicator('feedback','defaultPreferredName')"></th>
         
-        <th class="pointer" style="width: 20%; padding: 5px;" ng-click="setSortField('feedback','title')">
+        <th class="pointer" style="width: 15%; padding: 5px;" ng-click="setSortField('feedback','title')">
           Type<span ng-bind="getSortIndicator('feedback','title')"></th>
+        
+        <th class="pointer" style="width: 10%; padding: 5px;">
+          Participants</th>
         
         <th class="pointer" style="width: 7%; padding: 5px;" ng-click="setSortField('feedback','userName')">
           Owner<span ng-bind="getSortIndicator('feedback','userName')"></th>
@@ -98,6 +101,7 @@
         </td>
         <td>{{feedbackConversation.defaultPreferredName}}</td>
         <td ng-bind-html="to_trusted(feedbackConversation.title)"></td>
+        <td>{{getParticipants(feedbackConversation)}}</td>
         <td>{{feedbackConversation.userName}}</td>
         <td>{{feedbackConversation.lastModified | date:'MM-dd-yyyy
           HH:mm'}}&nbsp;

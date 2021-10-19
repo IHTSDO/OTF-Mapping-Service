@@ -56,7 +56,7 @@
             <i class="glyphicon glyphicon-check"></i>
           </a> <a
             ng-show="assignedTypes.work === 'EDITING_DONE' && focusProject.workflowType === 'REVIEW_PROJECT'"
-            title='Finish Edited Concepts'
+            title='Complete Finished Concepts'
             ng-click="finishOrPublishBatch(assignedTypes.work)">
             <i class="glyphicon glyphicon-check"></i>
           </a></th>
@@ -130,7 +130,7 @@
             <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
           </a>
           <!--  NOTE: the result.termionlogyVersion is overloaded with the workflow status of the record  -->
-          <a style="display: inline" title='Finish this concept'
+          <a style="display: inline" title='Complete this concept'
             ng-show="result.terminologyVersion === 'EDITING_DONE' && focusProject.workflowType === 'REVIEW_PROJECT'">
             <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
           </a>
@@ -414,7 +414,7 @@
         <td style="width: 3%; padding: 5px;">
           <!-- Display a checkmark if this record has previously been edited -->
           <!--  NOTE: the result.termionlogyVersion is overloaded with the workflow status of the record  -->
-          <a style="display: inline" title='Finish this review work'
+          <a style="display: inline" title='Resolve this review work'
             ng-show="result.terminologyVersion === 'REVIEW_IN_PROGRESS' && (assignedTypes.review === 'REVIEW_IN_PROGRESS' || assignedTypes.review === 'ALL')">
             <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
           </a>
