@@ -100,22 +100,23 @@ public class MimsSqlReportMojo extends AbstractOtfMappingMojo {
           "MapRecordAndSpecialistInfo.targetId as 'SNOMED Concept Id', MapRecordAndSpecialistInfo.targetName as 'SNOMED Concept Name'," + 
           "MapRecordAndSpecialistInfo.SpecialistName as 'Specialist', ReviewerInfo.ReviewerName as 'Reviewer'," + 
           "if(MapRecordAndSpecialistInfo.flagForConsensusReview,'True','False') as 'Consensus Review', " + 
-          "if(MapRecordAndSpecialistInfo.flagForEditorialReview,'True','False') as 'Editorial Review'," + 
-          "if(MapRecordAndSpecialistInfo.flagForMapLeadReview,'True','False') as 'Map Lead Review'" + 
+          "if(MapRecordAndSpecialistInfo.flagForEditorialReview,'True','False') as 'Editorial Review', " + 
+          "if(MapRecordAndSpecialistInfo.flagForMapLeadReview,'True','False') as 'Map Lead Review' " + 
           "from " + 
-          "(select mr.conceptId, mr.conceptName, me.mapPriority, me.targetId, me.targetName, mu.userName as SpecialistName, mr.lastModified, mr.flagForConsensusReview, mr.flagForEditorialReview, mr.flagForMapLeadReview, rel.name as relationName" + 
+          "(select mr.conceptId, mr.conceptName, me.mapPriority, me.targetId, me.targetName, mu.userName as SpecialistName, mr.lastModified, mr.flagForConsensusReview, mr.flagForEditorialReview, mr.flagForMapLeadReview, rel.name as relationName " + 
           "from map_records mr, map_records_AUD mra, map_users mu, map_entries me, map_relations rel " + 
           "where mr.conceptId = mra.conceptId and " + 
-          "mr.workflowStatus in ('PUBLISHED','READY_FOR_PUBLICATION') and" + 
-          "mra.owner_id = mu.id and" + 
-          "me.mapRecord_id=mr.id and" + 
-          "me.mapRelation_id=rel.id and" + 
-          "mra.workflowStatus in ('REVIEW_NEEDED') group by mr.conceptId, mr.conceptName,mra.owner_id, me.targetId) as MapRecordAndSpecialistInfo" + 
-          "join" + 
+          "mr.mapProjectId = :MAP_PROJECT_ID and " + 
+          "mr.workflowStatus in ('PUBLISHED','READY_FOR_PUBLICATION') and " + 
+          "mra.owner_id = mu.id and " + 
+          "me.mapRecord_id=mr.id and " + 
+          "me.mapRelation_id=rel.id and " + 
+          "mra.workflowStatus in ('REVIEW_NEEDED') group by mr.conceptId, mr.conceptName,mra.owner_id, me.targetId) as MapRecordAndSpecialistInfo " + 
+          "join " + 
           "(select mr.conceptId, mu.userName as ReviewerName from map_records mr, map_records_AUD mra, map_users mu where mr.conceptId = mra.conceptId and " + 
-          "mr.workflowStatus in ('PUBLISHED','READY_FOR_PUBLICATION') and" + 
-          "mra.owner_id = mu.id and" + 
-          "mra.workflowStatus in ('REVIEW_RESOLVED') group by mr.conceptId,mra.owner_id) as ReviewerInfo" + 
+          "mr.workflowStatus in ('PUBLISHED','READY_FOR_PUBLICATION') and " + 
+          "mra.owner_id = mu.id and " + 
+          "mra.workflowStatus in ('REVIEW_RESOLVED') group by mr.conceptId,mra.owner_id) as ReviewerInfo " + 
           "on MapRecordAndSpecialistInfo.conceptId=ReviewerInfo.conceptId order by MapRecordAndSpecialistInfo.conceptId, MapRecordAndSpecialistInfo.mapPriority;"
           );
 
