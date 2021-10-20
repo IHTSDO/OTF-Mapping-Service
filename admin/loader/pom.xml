@@ -860,6 +860,30 @@
       </build>
     </profile>
 
+    <profile>
+      <id>MimsSqlReport</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>mims-sql-report</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>run-mims-sql-report</goal>
+                </goals>
+                <configuration>
+                  <projectIds>${report.map.project.ids}</projectIds>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
     <!-- Send an email using specified subject and body. -Drun.config=.. must also be specified. -->
     <profile>
       <id>SendEmail</id>
