@@ -94,10 +94,10 @@ public class MimsSqlReportMojo extends AbstractOtfMappingMojo {
           "select FROM_UNIXTIME(MapRecordAndSpecialistInfo.lastModified/1000, '%m/%d/%Y') as 'Date Published', " + 
           "MapRecordAndSpecialistInfo.conceptId as 'MIMS Concept ID (Molecule/ASC)'," + 
           "MapRecordAndSpecialistInfo.conceptName as 'MIMS Concept Name (Molecule/ASC)'," + 
-          "MapRecordAndSpecialistInfo.relationName as 'Map Relation'," + 
           "if(locate('Parent Molecule',MapRecordAndSpecialistInfo.conceptName)>0,'Molecule','ASC') as 'Type (Molecule/ASC)'," + 
           "MapRecordAndSpecialistInfo.mapPriority as 'Map Entry'," + 
           "MapRecordAndSpecialistInfo.targetId as 'SNOMED Concept Id', MapRecordAndSpecialistInfo.targetName as 'SNOMED Concept Name'," + 
+          "MapRecordAndSpecialistInfo.relationName as 'Map Relation'," + 
           "MapRecordAndSpecialistInfo.SpecialistName as 'Specialist', ReviewerInfo.ReviewerName as 'Reviewer'," + 
           "if(MapRecordAndSpecialistInfo.flagForConsensusReview,'True','False') as 'Consensus Review', " + 
           "if(MapRecordAndSpecialistInfo.flagForEditorialReview,'True','False') as 'Editorial Review', " + 
