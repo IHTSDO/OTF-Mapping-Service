@@ -418,4 +418,13 @@ public interface ContentServiceRest {
    */
   String getLatestCloneDate(String authToken) throws Exception;
 
+  
+  /**
+   * Loads Mims-Allergy data
+   * 
+   * @param authToken The auth token
+   * @throws Exception The execution exception
+   */
+  void loadTerminologyMimsAllergy(String authToken) throws Exception;
+
 }
