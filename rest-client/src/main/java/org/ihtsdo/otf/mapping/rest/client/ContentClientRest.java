@@ -609,5 +609,11 @@ public class ContentClientRest extends RootClientRest
 	return;
   }
 
+@Override
+public void loadTerminologyMimsAllergy(String authToken) throws Exception {
+	// TODO Auto-generated method stub
+	
+}
+
 
 }
