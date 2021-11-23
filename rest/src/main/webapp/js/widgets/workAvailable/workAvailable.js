@@ -57,6 +57,28 @@ angular
       // intiialize the user list
       $scope.mapUsers = {};
 
+      $scope.selectedTags = new Array();
+      $scope.allTags = new Array();
+
+	  $scope.allTags.push({ id: 1, tag: 'HP-Prioritert' });
+	  $scope.allTags.push({ id: 2, tag: 'Barnekardiologi' });
+	  $scope.allTags.push({ id: 3, tag: 'Cardiology' });
+	  $scope.allTags.push({ id: 4, tag: 'Child and Adolescent Psychiatry (includes trust and municipal)' });
+	  $scope.allTags.push({ id: 5, tag: 'Dermatology' });
+	  $scope.allTags.push({ id: 6, tag: 'ENT' });
+	  $scope.allTags.push({ id: 7, tag: 'Genetikk' });
+
+      $scope.multiSelectSettings = {
+        displayProp : 'tag',
+        scrollableHeight : '150px',
+        scrollable : true,
+        showCheckAll : false,
+        showUncheckAll : false
+      };
+      $scope.multiSelectCustomTexts = {
+        buttonDefaultText : 'Select Tags'
+      };
+
       // tab variables, defaults to first active tab?
       $scope.tabs = [ {
         id : 0,
