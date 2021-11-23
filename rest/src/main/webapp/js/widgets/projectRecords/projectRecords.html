@@ -22,9 +22,20 @@
 
   <button class="btn btn-xs btn-primary">Search</button>
   <span class="btn btn-xs btn-warning" ng-click="resetSearch()">Reset</span>
+  <!-- NEW BUTTON BELOW -->
+     <button type="button" class="btn btn-xs btn-primary"
+        ng-show="currentUser.name != 'Guest'"
+        ng-model="searchParameters.showNonPublished" ng-change="getRecordsForProject()" uib-btn-checkbox
+        btn-checkbox-true="true" btn-checkbox-false="false">
+        <span ng-hide="searchParameters.showNonPublished"
+          title="Showing only finished maps, click to toggle">Finished</span>
+        <span ng-show="searchParameters.showNonPublished"
+          title="Showing all maps, click to toggle">All</span>
+      </button>
+  
   <span class="btn btn-xs btn-primary"
     style="margin-left: 5px; margin-right: 5px"
-    ng-show="(currentRole == 'Specialist' || currentRole == 'Lead') && nRecords > 0 && nRecords < qaRecordLimit"
+    ng-show="(currentRole == 'Specialist' || currentRole == 'Lead') && nRecords > 0 && nRecords < qaRecordLimit && !searchParameters.showNonPublished"
     ng-click="openQaRecordsModal()">QA Records</span>
   &nbsp;&nbsp; {{nRecords}} results, page {{searchParameters.page}} of
   {{numRecordPages}}
@@ -239,6 +250,14 @@
     {{record.conceptName}},
     <a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a>
   </h4>
+  
+    <div ng-show="searchParameters.showNonPublished">
+      Owner: {{record.owner.name}}&nbsp;
+      <br>
+      Status: {{record.workflowStatus}}
+      ({{record.lastModified | date:'MM-dd-yyyy HH:mm'}})&nbsp;
+      <br><br>
+    </div>
 
   <div style="float: right; width: 3%;">
 
@@ -246,7 +265,7 @@
       ng-click="openViewerFeedbackModal(record, currentUser.userName)">
       <i class="glyphicon glyphicon glyphicon-comment"></i>
     </a>
-    <a title="Edit" ng-show="isEditable(record) && (currentRole === 'Lead' || currentRole === 'Administrator')" ng-click="editRecord(record)">
+    <a title="Send to QA" ng-show="isEditable(record) && (currentRole === 'Lead' || currentRole === 'Administrator')" ng-click="editRecord(record)">
       <i class="glyphicon glyphicon glyphicon-pencil"></i>
     </a>
   </div>

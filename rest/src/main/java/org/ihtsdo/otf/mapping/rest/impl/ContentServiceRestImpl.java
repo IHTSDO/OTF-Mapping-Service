@@ -7,16 +7,25 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -38,7 +47,14 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.log4j.Logger;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.ihtsdo.otf.mapping.helpers.ConceptList;
 import org.ihtsdo.otf.mapping.helpers.MapProjectList;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
@@ -87,6 +103,9 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.Multimap;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -927,7 +946,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     // Track system level information
     long startTimeOrig = System.nanoTime();
 
-    authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "load GMDN terminology",
+    authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "load ATC terminology",
         securityService);
 
     try (final SimpleLoaderAlgorithm algo =
@@ -941,6 +960,237 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     } catch (Exception e) {
       handleException(e, "trying to load terminology ATC from directory");
     }
+  }
+  
+  /* see superclass */
+  @Override
+  @PUT
+  @Path("/terminology/load/mims_allergy")
+  @Consumes(MediaType.TEXT_PLAIN)
+  @ApiOperation(value = "Loads MIMS-Allergy terminology from directory", notes = "Loads MIMS terminology from directory for specified version")
+  public void loadTerminologyMimsAllergy(@ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+	String inputDir = ConfigUtility.getConfigProperties()
+	          .getProperty("MIMS_Allergy.dir");
+	
+	
+	
+	String loadDir = ConfigUtility.getConfigProperties()
+	          .getProperty("MIMS_Allergy.loadDir");
+    Logger.getLogger(getClass())
+        .info("RESTful call (Content): /terminology/load/mims");
+
+    Logger.getLogger(getClass())
+        .info("Input directory pulled from config.properties, and set to "
+            + inputDir);
+    
+    Logger.getLogger(getClass())
+    .info("load directory pulled from config.properties, and set to "
+        + loadDir);
+    
+    File dir = new File(loadDir);
+    FileFilter fileFilter = new WildcardFileFilter("*.xlsx");
+    File[] files = dir.listFiles(fileFilter);
+    if(files.length < 1) {
+    	return;
+    }
+    String filename = files[0].getAbsolutePath();
+    
+    String termVersionDate = files[0].getName().split("[.-]")[1];
+    
+    SimpleDateFormat format1 = new SimpleDateFormat("ddMMMyyyy");
+    SimpleDateFormat format2 = new SimpleDateFormat("yyyy_MM_dd");
+    Date date = format1.parse(termVersionDate);
+    String version = format2.format(date);
+        
+    
+    generateMims(filename, version);
+
+    // Track system level information
+    long startTimeOrig = System.nanoTime();
+
+    authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "load MIMS terminology",
+        securityService);
+
+    try (final SimpleLoaderAlgorithm algo =
+            new SimpleLoaderAlgorithm("MIMS_Allergy", version, inputDir + "/" + version, "0");) {
+
+      algo.compute();
+
+      Logger.getLogger(getClass())
+          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+
+    } catch (Exception e) {
+      handleException(e, "trying to load terminology MIMS Allergy from directory");
+    }
+  }
+  
+  public void generateMims(String filename, String version) throws IOException, Exception {
+	FileInputStream file;
+	Workbook workbook = null;
+	try {
+		file = new FileInputStream(new File(filename));
+		workbook = new XSSFWorkbook(file);
+	} catch (Exception e) {
+		e.printStackTrace();
+	}  
+
+	Sheet sheet = workbook.getSheetAt(0);
+	LinkedListMultimap<String, String> conceptAttributes = LinkedListMultimap.create();
+	
+	LinkedHashMap<String, String> concepts = new LinkedHashMap<String, String>();
+	LinkedListMultimap<String, String> parentChild = LinkedListMultimap.create();
+	
+	LinkedListMultimap<String, String> parentChildASCStart = LinkedListMultimap.create();
+	LinkedListMultimap<String, String> parentChildNOASCStart = LinkedListMultimap.create();
+	
+	parentChildASCStart.put("root", "ASC-num");
+	parentChildNOASCStart.put("NOASC", "NOASC-num");
+	for(char alphabet = 'A'; alphabet <='Z'; alphabet++ )
+    {
+		parentChildASCStart.put("root", "ASC-" + alphabet);
+		parentChildNOASCStart.put("NOASC", "NOASC-" + alphabet);
+    }
+	parentChildASCStart.put("root", "NOASC");
+		
+	Map<String, String> conceptsASCEnd = new LinkedHashMap<String, String>();
+	Map<String, String> conceptsNOASCEnd = new LinkedHashMap<String, String>();
+	for (int i = 1; i < sheet.getPhysicalNumberOfRows(); i++) {
+		Row currentRow = sheet.getRow(i);
+		if(currentRow.getCell(2) != null && getRowType(currentRow) == "ASC") {
+			if(currentRow.getCell(1) != null) {
+				concepts.put(currentRow.getCell(0).getStringCellValue(), currentRow.getCell(1).getStringCellValue() + " (ASC)");
+				if(Character.isDigit(currentRow.getCell(1).getStringCellValue().charAt(0))) {
+					parentChild.put("ASC-num", currentRow.getCell(0).getStringCellValue());
+				}
+				else {
+					parentChild.put("ASC-" + Character.toUpperCase(currentRow.getCell(1).getStringCellValue().charAt(0)), currentRow.getCell(0).getStringCellValue());
+				}
+				if(currentRow.getCell(6) != null && currentRow.getCell(6).getStringCellValue().contains("Y"))
+					conceptAttributes.put(currentRow.getCell(0).getStringCellValue(), "ASC Pseudo|Y");
+			}
+			
+		}
+		else if(currentRow.getCell(2) != null && getRowType(currentRow) == "Parent Molecule") {
+			if(concepts.containsKey(currentRow.getCell(0).getStringCellValue())) {
+				concepts.replace(currentRow.getCell(4).getStringCellValue(), concepts.get(currentRow.getCell(0).getStringCellValue()) + "|" + getMimsData(currentRow));
+			}
+			else {
+				concepts.put(currentRow.getCell(0).getStringCellValue(), getMimsData(currentRow) + " (Parent Molecule)");
+			}
+			
+			if(currentRow.getCell(4) != null) {
+				parentChild.put(currentRow.getCell(4).getStringCellValue(), currentRow.getCell(0).getStringCellValue());
+			}
+			else {
+				if(guidIsDigit(currentRow)) {
+					parentChild.put("NOASC-num", currentRow.getCell(0).getStringCellValue());
+				}
+				else {
+					parentChild.put("NOASC-" + Character.toUpperCase(currentRow.getCell(1).getStringCellValue().charAt(0)), currentRow.getCell(0).getStringCellValue());
+				}
+			}
+			if(currentRow.getCell(7) != null) {
+				conceptAttributes.put(currentRow.getCell(0).getStringCellValue(), sheet.getRow(0).getCell(7).getStringCellValue()+"|"+String.valueOf(currentRow.getCell(7).getBooleanCellValue()).toUpperCase());
+			}
+			if(currentRow.getCell(8) != null) {
+				conceptAttributes.put(currentRow.getCell(0).getStringCellValue(), sheet.getRow(0).getCell(8).getStringCellValue()+"|"+String.valueOf(currentRow.getCell(8).getBooleanCellValue()).toUpperCase());
+			}
+			if(currentRow.getCell(9) != null) {
+				conceptAttributes.put(currentRow.getCell(0).getStringCellValue(), sheet.getRow(0).getCell(9).getStringCellValue()+"|"+String.valueOf(currentRow.getCell(9).getBooleanCellValue()).toUpperCase());
+			}
+		}
+		else if(currentRow.getCell(2) != null && getRowType(currentRow) == "Synonym") {
+			conceptAttributes.put(currentRow.getCell(3).getStringCellValue(), "Synonym|" + currentRow.getCell(1).getStringCellValue());
+			if(currentRow.getCell(3) != null) {
+				concepts.replace(currentRow.getCell(3).getStringCellValue(), concepts.get(currentRow.getCell(3).getStringCellValue()) + "|" + getMimsData(currentRow));
+			}
+		}
+		conceptsASCEnd.put("ASC-num", "#");
+		conceptsNOASCEnd.put("NOASC", "no ASC");
+		conceptsNOASCEnd.put("NOASC-num", "#");
+		for(char alphabet = 'A'; alphabet <='Z'; alphabet++ )
+	    {
+			conceptsASCEnd.put("ASC-" + alphabet, String.valueOf(alphabet));
+			conceptsNOASCEnd.put("NOASC-" + alphabet, String.valueOf(alphabet));
+	    }
+		
+	}
+	
+	File directory = new File(ConfigUtility.getConfigProperties().getProperty("MIMS.dir") + version);
+    if (!directory.exists()){
+        directory.mkdir();
+    }
+	
+    PrintWriter conceptAttributesFile = new PrintWriter(ConfigUtility.getConfigProperties()
+	          .getProperty("MIMS_Allergy.dir") + version + "/concept-attributes.txt", "UTF-8");
+    PrintWriter conceptsFile = new PrintWriter(ConfigUtility.getConfigProperties()
+	          .getProperty("MIMS_Allergy.dir") + version + "/concepts.txt", "UTF-8");
+    PrintWriter parentChildFile = new PrintWriter(ConfigUtility.getConfigProperties()
+	          .getProperty("MIMS_Allergy.dir") + version + "/parent-child.txt", "UTF-8");
+	
+	
+    conceptAttributesFile.println("ASC Pseudo");
+    conceptAttributesFile.println("Linked to Active AU/NZ Products");
+    conceptAttributesFile.println("Linked to AU/NZ Products");
+    conceptAttributesFile.println("Linked to Other Countries Products");
+    conceptAttributesFile.println("Synonym");
+	for (Map.Entry<String, String> entry : conceptAttributes.entries()) {
+		conceptAttributesFile.println(entry.getKey() + "|" + entry.getValue());
+	}
+	conceptAttributesFile.close();
+	
+	for (Map.Entry<String, String> entry : concepts.entrySet()) {
+		conceptsFile.println(entry.getKey() + "|" + entry.getValue());
+	}
+	for (Map.Entry<String, String> entry : conceptsASCEnd.entrySet()) {
+		conceptsFile.println(entry.getKey() + "|" + entry.getValue());
+	}
+	for (Map.Entry<String, String> entry : conceptsNOASCEnd.entrySet()) {
+		conceptsFile.println(entry.getKey() + "|" + entry.getValue());
+	}
+	
+	conceptsFile.close();
+	
+	for (Map.Entry<String, String> entry : parentChildASCStart.entries()) {
+		parentChildFile.println(entry.getKey() + "|" + entry.getValue());
+	}
+	for (Map.Entry<String, String> entry : parentChildNOASCStart.entries()) {
+		parentChildFile.println(entry.getKey() + "|" + entry.getValue());
+	}
+	for (Map.Entry<String, String> entry : parentChild.entries()) {
+		parentChildFile.println(entry.getKey() + "|" + entry.getValue());
+	}
+	parentChildFile.close();
+	
+	 
+  }
+  
+  //avoid another layer of ifs
+  public String getMimsData(Row row) {
+	  if(row.getCell(1) != null) {
+		  return row.getCell(1).getStringCellValue();
+	  }
+	  else
+		  return "NO NAME PROVIDED";
+  }
+  
+  //avoiding too much text
+  public Boolean guidIsDigit(Row row) {
+	  return Character.isDigit(row.getCell(1).getStringCellValue().charAt(0));
+  }
+  
+  // avoiding too much text again
+  public String getRowType(Row row) {
+	  if(row.getCell(2).getStringCellValue().contains("Parent Molecule")){
+		  return "Parent Molecule";
+	  }
+	  else if(row.getCell(2).getStringCellValue().contains("Synonym")) {
+		  return "Synonym";
+	  }
+	  else
+		  return "ASC";
   }
   
   /* see superclass */
