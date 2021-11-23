@@ -32,6 +32,7 @@ import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.IntegerBridge;
 import org.hibernate.search.bridge.builtin.LongBridge;
+import org.ihtsdo.otf.mapping.helpers.CollectionToCSVBridge;
 import org.ihtsdo.otf.mapping.helpers.WorkflowPath;
 
 /**
@@ -101,6 +102,13 @@ public class TrackingRecordJpa implements TrackingRecord {
   /** The assigned team name. */
   @Column(nullable = true)
   private String assignedTeamName;
+  
+  /** The tags for this tracking record. */
+  @ElementCollection
+  @CollectionTable(name = "tracking_records_tags", joinColumns = @JoinColumn(name = "id"))
+  @Column(nullable = true)
+  // treat tags as a single field called tags
+  private Set<String> tags = new HashSet<>();
 
   /**
    * {@inheritDoc}
@@ -466,6 +474,27 @@ public class TrackingRecordJpa implements TrackingRecord {
     return this.assignedTeamName;
   }
 
+  /**
+   * Gets the tags.
+   *
+   * @return the tags
+   */
+  @Field(bridge = @FieldBridge(impl = CollectionToCSVBridge.class))
+  @Override
+  public Set<String> getTags() {
+    return tags;
+  }
+
+  /**
+   * Sets the tags.
+   *
+   * @param tags the new tags
+   */
+  @Override
+  public void setTags(Set<String> tags) {
+    this.tags = tags;
+  }  
+  
   /**
    * To string.
    *

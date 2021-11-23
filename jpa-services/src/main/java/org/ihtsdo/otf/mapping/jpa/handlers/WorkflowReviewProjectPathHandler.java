@@ -383,10 +383,44 @@ public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandle
     availableWork.setTotalCount(totalCt[0]);
     for (TrackingRecord tr : results) {
       SearchResult result = new SearchResultJpa();
+      
+      //If tag restrictions are set, filter the results accordingly
+      final StringBuffer tagBuffer = new StringBuffer();
+      boolean keepRecord = false;
+      
+      // extract all tags for this tracking record
+      for (final String tag : tr.getTags()) {
+        if (tagBuffer.indexOf(tag) == -1) {
+          if(tagBuffer.length() == 0) {
+          tagBuffer.append(tag);
+          }
+          else {
+            tagBuffer.append(";").append(tag);
+          }
+        }
+        if (query != null && (tag.contains(query) || query.contains(tag))) {
+          keepRecord = true;
+        }
+      }
+      
+      // Keep record if query matches the concept id or name
+      if (query != null
+          && (tr.getTerminologyId().toLowerCase().startsWith(query.toLowerCase())
+              || tr.getDefaultPreferredName().toLowerCase()
+                  .contains(query.toLowerCase()))) {
+        keepRecord = true;
+      }
+      
+      // if no tag query supplied or this tracking record has the requested
+      // label
+      if (query == null || query.isEmpty() || query.equals("null")
+          || keepRecord == true) {
       result.setTerminologyId(tr.getTerminologyId());
       result.setValue(tr.getDefaultPreferredName());
+      result.setValue2(tagBuffer.toString());
       result.setId(tr.getId());
       availableWork.addSearchResult(result);
+      }
     }
     return availableWork;
   }
