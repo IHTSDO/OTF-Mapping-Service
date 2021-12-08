@@ -5,7 +5,7 @@ set -x
 echo $*
 
 #APP_NAME=[[packageName]]
-APP_NAME=mapping-service
+APP_NAME=mapping-rest
 
 if ! getent passwd $APP_NAME >/dev/null; then
   adduser --quiet --system --no-create-home --group \
