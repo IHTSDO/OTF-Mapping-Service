@@ -5,8 +5,11 @@ package org.ihtsdo.otf.mapping.mojo;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
@@ -85,7 +88,10 @@ public class MapNoteRf2LoaderMojo extends AbstractOtfMappingMojo {
       }
 
       // Iterate through the file
-      mapNoteReader = new BufferedReader(new FileReader(new File(inputFile)));
+      FileInputStream fis = new FileInputStream(new File(inputFile));
+      InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+
+      mapNoteReader = new BufferedReader(isr);
       MapUser loaderUser = mappingService.getMapUser("loader");
       String line = null;
       int ct = 0;
