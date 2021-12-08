@@ -67,6 +67,9 @@ angular
 	  $scope.allTags.push({ id: 5, tag: 'Dermatology' });
 	  $scope.allTags.push({ id: 6, tag: 'ENT' });
 	  $scope.allTags.push({ id: 7, tag: 'Genetikk' });
+	  $scope.allTags.push({ id: 8, tag: 'Internal medicine (Acute)' });
+	  $scope.allTags.push({ id: 9, tag: 'Orthopaedics' });
+
 
       $scope.multiSelectSettings = {
         displayProp : 'tag',
@@ -319,6 +322,28 @@ angular
         // if null query, reset the search field
         if (query == null)
           $scope.queryAvailable = null;
+
+		// copy tag filter and add to query
+		var pselectedTags = "";
+		  for (var i = 0; i < $scope.selectedTags.length; i++) {
+			for(var j = 0; j < $scope.allTags.length; j++) {
+				if($scope.selectedTags[i].id == $scope.allTags[j].id){
+					if(pselectedTags == ""){
+						pselectedTags = $scope.allTags[j].tag;
+					}
+					else{
+						pselectedTags = pselectedTags.concat(' AND ', $scope.allTags[j].tag);
+					}
+				}
+			}
+          }
+
+		if(query == null){
+			query = pselectedTags;
+		}
+		if(query != null && pselectedTags != ""){
+			query = query.concat(' AND ', pselectedTags);
+		}
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
