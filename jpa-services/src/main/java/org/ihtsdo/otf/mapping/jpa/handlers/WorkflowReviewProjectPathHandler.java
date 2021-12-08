@@ -395,7 +395,7 @@ public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandle
           tagBuffer.append(tag);
           }
           else {
-            tagBuffer.append(";").append(tag);
+            tagBuffer.append("; \n").append(tag);
           }
         }
         if (query != null && (tag.contains(query) || query.contains(tag))) {
