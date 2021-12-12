@@ -65,10 +65,35 @@ angular
 	  $scope.allTags.push({ id: 3, tag: 'Cardiology' });
 	  $scope.allTags.push({ id: 4, tag: 'Child and Adolescent Psychiatry (includes trust and municipal)' });
 	  $scope.allTags.push({ id: 5, tag: 'Dermatology' });
-	  $scope.allTags.push({ id: 6, tag: 'ENT' });
-	  $scope.allTags.push({ id: 7, tag: 'Genetikk' });
-	  $scope.allTags.push({ id: 8, tag: 'Internal medicine (Acute)' });
-	  $scope.allTags.push({ id: 9, tag: 'Orthopaedics' });
+	  $scope.allTags.push({ id: 6, tag: 'Endocrine & Breast Surgery' });
+	  $scope.allTags.push({ id: 7, tag: 'Endocrinology' });
+	  $scope.allTags.push({ id: 8, tag: 'ENT' });
+	  $scope.allTags.push({ id: 9, tag: 'Eye (Opthamology)' });
+	  $scope.allTags.push({ id: 10, tag: 'Family Medicine (General Practitioners)' });
+	  $scope.allTags.push({ id: 11, tag: 'Gastro Surgery' });
+	  $scope.allTags.push({ id: 12, tag: 'Gastroenterology' });
+	  $scope.allTags.push({ id: 13, tag: 'Genetikk' });
+	  $scope.allTags.push({ id: 14, tag: 'Gyneaecology' });
+	  $scope.allTags.push({ id: 15, tag: 'Hematology' });
+	  $scope.allTags.push({ id: 16, tag: 'Ikke Tildelt' });
+	  $scope.allTags.push({ id: 17, tag: 'Infeksjonsmedisin' });
+	  $scope.allTags.push({ id: 18, tag: 'Intensive Care' });
+	  $scope.allTags.push({ id: 19, tag: 'Internal medicine (Acute)' });
+	  $scope.allTags.push({ id: 20, tag: 'Maxillofacial surgery' });
+	  $scope.allTags.push({ id: 21, tag: 'Nephrology' });
+	  $scope.allTags.push({ id: 22, tag: 'Nevrokirurgi' });
+	  $scope.allTags.push({ id: 23, tag: 'Oncology' });
+	  $scope.allTags.push({ id: 24, tag: 'Orthopaedics' });
+	  $scope.allTags.push({ id: 25, tag: 'Pediatric Surgery' });
+	  $scope.allTags.push({ id: 26, tag: 'Pediatrics' });
+	  $scope.allTags.push({ id: 27, tag: 'Psychiatry (includes municipal)' });
+	  $scope.allTags.push({ id: 28, tag: 'Pulmonary medicine' });
+	  $scope.allTags.push({ id: 29, tag: 'Rheumatology' });
+	  $scope.allTags.push({ id: 30, tag: 'Stroke' });
+	  $scope.allTags.push({ id: 31, tag: 'Thoracic Surgery' });
+	  $scope.allTags.push({ id: 32, tag: 'Urology' });
+	  $scope.allTags.push({ id: 33, tag: 'Vascular surgery' });
+
 
 
       $scope.multiSelectSettings = {
