@@ -766,7 +766,18 @@ angular
 
           if (confirmRemove) {
             entry.mapAdvice = removeJsonElement(entry.mapAdvice, advice);
-            updateEntry($scope.entry);
+
+		  // add the advice to the list of options, if not already present
+          var advicePresent = false;
+          for (var j = 0; j < $scope.allowableAdvices.length; j++) {
+	            if ($scope.allowableAdvices[j].id === advice.id)
+	              advicePresent = true;
+		  }
+          // add advice if not already present
+          if (!advicePresent)
+            $scope.allowableAdvices.push(advice);
+
+          updateEntry($scope.entry);
           }
 
         };
