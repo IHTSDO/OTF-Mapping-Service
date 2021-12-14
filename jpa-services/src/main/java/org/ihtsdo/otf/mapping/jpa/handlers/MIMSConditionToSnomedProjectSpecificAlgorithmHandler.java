@@ -65,18 +65,13 @@ public class MIMSConditionToSnomedProjectSpecificAlgorithmHandler
         cacheAutomaps();
       }
 
-      // Check if MIMS-Condition concept Id ends with an ICD10 code that has an
-      // auto-map pre-cached.
-      // If so, add the map-entries from the cached map to the map record.
-
-      for (final String icd10code : automaps.keySet()) {
-        if (mapRecord.getConceptId().endsWith(icd10code)) {
-          MapRecord cachedMapRecord = automaps.get(icd10code);
-          mapRecord.setMapEntries(cachedMapRecord.getMapEntries());
-        }
+      if (automaps.isEmpty()) {
+        cacheAutomaps();
       }
 
-      return mapRecord;
+      MapRecord existingMapRecord = automaps.get(mapRecord.getConceptId());
+
+      return existingMapRecord;
     } catch (Exception e) {
       throw e;
     } finally {
@@ -165,8 +160,8 @@ public class MIMSConditionToSnomedProjectSpecificAlgorithmHandler
   private void cacheAutomaps() throws Exception {
     // Use the reverse maps from international SNOMED to ICD10 to auto-populate
     // suggestions.
-    // Map is ICD10 code -> map containing all SNOMED concepts that map to it.
-    // {data.dir}/MIMS-Condition/automap/icd-snomed-map.txt
+    // Map is mims code -> map containing all SNOMED concepts that map to the icd10 suffix of the mims code.
+    // {data.dir}/MIMS-Condition/automap/mims-snomed-map.txt
 
     final ContentService contentService = new ContentServiceJpa();
 
@@ -179,7 +174,7 @@ public class MIMSConditionToSnomedProjectSpecificAlgorithmHandler
     }
 
     // Check preconditions
-    String inputFile = dataDir + "/MIMS-Condition/automap/icd-snomed-map.txt";
+    String inputFile = dataDir + "/MIMS-Condition/automap/mims-snomed-map.txt";
 
     if (!new File(inputFile).exists()) {
       throw new Exception("Specified input file missing: " + inputFile);
@@ -210,15 +205,23 @@ public class MIMSConditionToSnomedProjectSpecificAlgorithmHandler
     while ((line = preloadMapReader.readLine()) != null) {
       String fields[] = line.split("\t");
 
-      final String icd10Id = fields[0];
+      final String mimsCodeId = fields[0];
 
       // The first time a conceptId is encountered, set up the map (only need
       // very limited information for the purpose of this function
-      if (automaps.get(icd10Id) == null) {
+      if (automaps.get(mimsCodeId) == null) {
         MapRecord mimsConditionAutomapRecord = new MapRecordJpa();
-        mimsConditionAutomapRecord.setConceptId(icd10Id);
-
-        automaps.put(icd10Id, mimsConditionAutomapRecord);
+        mimsConditionAutomapRecord.setConceptId(mimsCodeId);
+        String sourceConceptName = sourceIdToName.get(mimsCodeId);
+        if (sourceConceptName != null) {
+          mimsConditionAutomapRecord.setConceptName(sourceConceptName);
+        } else {
+          mimsConditionAutomapRecord
+              .setConceptName("CONCEPT DOES NOT EXIST IN " + mapProject.getSourceTerminology());
+        }
+        
+        
+        automaps.put(mimsCodeId, mimsConditionAutomapRecord);
       }
 
       final String snomedId = fields[1];
@@ -227,13 +230,13 @@ public class MIMSConditionToSnomedProjectSpecificAlgorithmHandler
         continue;
       }
 
-      MapRecord mimsAllergyAutomapRecord = automaps.get(icd10Id);
+      MapRecord mimsConditionAutomapRecord = automaps.get(mimsCodeId);
       final String mapTarget = snomedId;
 
       // For each suggested map target, check if it has already been added to
       // map.
       Boolean targetAlreadyAdded = false;
-      for (MapEntry existingMapEntry : mimsAllergyAutomapRecord.getMapEntries()) {
+      for (MapEntry existingMapEntry : mimsConditionAutomapRecord.getMapEntries()) {
         if (existingMapEntry.getTargetId().equals(mapTarget)) {
           targetAlreadyAdded = true;
         }
@@ -248,7 +251,7 @@ public class MIMSConditionToSnomedProjectSpecificAlgorithmHandler
       // the record
       MapEntry mapEntry = new MapEntryJpa();
       mapEntry.setMapGroup(1);
-      mapEntry.setMapPriority(mimsAllergyAutomapRecord.getMapEntries().size() + 1);
+      mapEntry.setMapPriority(mimsConditionAutomapRecord.getMapEntries().size() + 1);
       mapEntry.setTargetId(mapTarget);
       String targetConceptName = destinationIdToName.get(mapTarget);
 
@@ -260,8 +263,8 @@ public class MIMSConditionToSnomedProjectSpecificAlgorithmHandler
       }
 
       // Add the entry to the record, and put the updated record in the map
-      mimsAllergyAutomapRecord.addMapEntry(mapEntry);
-      automaps.put(icd10Id, mimsAllergyAutomapRecord);
+      mimsConditionAutomapRecord.addMapEntry(mapEntry);
+      automaps.put(mimsCodeId, mimsConditionAutomapRecord);
 
     }
 
