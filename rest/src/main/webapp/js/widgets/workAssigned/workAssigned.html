@@ -13,7 +13,7 @@
       </form>
     </td>
   </tr>
-    <tr>
+    <tr ng-show="focusProject.useTags">
       <td style="padding: 5px;">Filter by tag:</td>
       <td style="padding: 5px;">
     <div ng-dropdown-multiselect="" options="allTags"
@@ -70,7 +70,7 @@
           </a></th>
         <th class="pointer" style="width: 52%; padding: 5px;" ng-click="setSortField('concepts','defaultPreferredName')">
         	Preferred Name<span ng-bind="getSortIndicator('concepts','defaultPreferredName')"></span></th>
-        <th class="pointer" style="width: 20%; padding: 5px;">
+        <th ng-show="focusProject.useTags" class="pointer" style="width: 20%; padding: 5px;">
         	Tags
         </th>
         <th style="width: 3%; padding: 5px;"></th>
@@ -147,7 +147,7 @@
           </a>
         </td>
         <td style="width: 52%; padding: 5px;">{{result.value}}</td>
-        <td style="width: 20%; padding: 5px;">{{result.value2}}</td>  
+        <td ng-show="focusProject.useTags" style="width: 20%; padding: 5px;">{{result.value2}}</td>  
         <td style="width: 3%; padding: 5px;">
           <span><a title="Send feedback to author"
             ng-show="sendFeedbackToAuthorEnabled === true"
@@ -237,7 +237,7 @@
           </a></th>
         <th class="pointer" style="width: 52%; padding: 5px;" ng-click="setSortField('conflicts','defaultPreferredName')">
     		Preferred Name<span ng-bind="getSortIndicator('conflicts','defaultPreferredName')"></span></th> 	
-        <th class="pointer" style="width: 20%; padding: 5px;">
+        <th ng-show="focusProject.useTags" class="pointer" style="width: 20%; padding: 5px;">
         	Tags
         </th>       			
         <th style="width: 3%; padding: 5px;"></th>
@@ -299,7 +299,7 @@
         </td>
 
         <td style="width: 57%; padding: 5px;">{{result.value}}</td>
-        <td style="width: 20%; padding: 5px;">{{result.value2}}</td>        
+        <td ng-show="focusProject.useTags" style="width: 20%; padding: 5px;">{{result.value2}}</td>        
         <td style="width: 3%; padding: 5px;">
           <a title="Send feedback to author"
             ng-show="sendFeedbackToAuthorEnabled === true"
@@ -337,7 +337,7 @@
       </form>
     </td>
   </tr>
-   <tr>
+   <tr ng-show="focusProject.useTags">
       <td style="padding: 5px;">Filter by tag:</td>
       <td style="padding: 5px;">
     <div ng-dropdown-multiselect="" options="allTags"
@@ -397,7 +397,7 @@
           </a></th>
         <th class="pointer" style="width: 57%; padding: 5px;" ng-click="setSortField('review','defaultPreferredName')">
     		Preferred Name<span ng-bind="getSortIndicator('review','defaultPreferredName')"></span></th>
-        <th class="pointer" style="width: 20%; padding: 5px;">
+        <th ng-show="focusProject.useTags" class="pointer" style="width: 20%; padding: 5px;">
         	Tags
         </th>       		
         <th style="width: 3%; padding: 5px;"></th>
@@ -453,7 +453,7 @@
         </td>
 
         <td style="width: 57%; padding: 5px;">{{result.value}}</td>
-        <td style="width: 20%; padding: 5px;">{{result.value2}}</td>  
+        <td ng-show="focusProject.useTags" style="width: 20%; padding: 5px;">{{result.value2}}</td>  
         <td style="width: 3%; padding: 5px;">
           <a title="Send feedback to author"
             ng-show="sendFeedbackToAuthorEnabled === true"

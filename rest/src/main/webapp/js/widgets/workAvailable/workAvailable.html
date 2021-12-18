@@ -43,7 +43,7 @@
         </form>
       </td>
     </tr>
-    <tr>
+    <tr ng-show="focusProject.useTags">
       <td style="padding: 5px;">Filter by tag:</td>
       <td style="padding: 5px;">
     <div ng-dropdown-multiselect="" options="allTags"
@@ -79,7 +79,7 @@
         <th class="pointer" style="width: 60%; padding: 5px;" ng-click="setSortField('concepts','defaultPreferredName')">
         	Preferred Name<span ng-bind="getSortIndicator('concepts','defaultPreferredName')"></span>
         </th>
-        <th class="pointer" style="width: 20%; padding: 5px;">
+        <th ng-show="focusProject.useTags" class="pointer" style="width: 20%; padding: 5px;">
         	Tags
         </th>
       </tr>
@@ -99,7 +99,7 @@
         </td>
         <td style="width: 17%; padding: 5px;">{{concept.terminologyId}}</td>
         <td style="width: 60%; padding: 5px;">{{concept.value}}</td>
-        <td style="width: 20%; padding: 5px;">{{concept.value2}}</td>
+        <td ng-show="focusProject.useTags" style="width: 20%; padding: 5px;">{{concept.value2}}</td>
     </tbody>
   </table>
 

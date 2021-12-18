@@ -78,7 +78,7 @@ public class MapProjectJpa implements MapProject {
   /** Whether this project is viewable by public roles. */
   @Column(unique = false, nullable = false)
   private boolean isPublic = false;
-  
+
   /** Whether this project's map notes are viewable by public roles. */
   @Column(unique = false, nullable = false)
   private boolean mapNotesPublic = false;
@@ -92,6 +92,11 @@ public class MapProjectJpa implements MapProject {
   /** Indicates if the map project has been published. */
   @Column(unique = false, nullable = false)
   private boolean published = false;
+
+  // The below @Column settings set the value to "false" when run through
+  // Updatedb for pre-existing projects
+  @Column(unique = false, nullable = false)
+  private boolean useTags = false;
 
   /**
    * Indicates what type of workflow to use for this project, defaults to
@@ -166,42 +171,50 @@ public class MapProjectJpa implements MapProject {
 
   /** The preset age ranges. */
   @ManyToMany(targetEntity = MapAgeRangeJpa.class, fetch = FetchType.LAZY)
-  @CollectionTable(name = "map_projects_map_age_ranges", joinColumns = @JoinColumn(name = "map_projects_id"))
+  @CollectionTable(name = "map_projects_map_age_ranges",
+      joinColumns = @JoinColumn(name = "map_projects_id"))
   private Set<MapAgeRange> presetAgeRanges = new HashSet<>();
 
   /** The map leads. */
   @ManyToMany(targetEntity = MapUserJpa.class, fetch = FetchType.LAZY)
-  @JoinTable(name = "map_projects_map_leads", joinColumns = @JoinColumn(name = "map_projects_id"), inverseJoinColumns = @JoinColumn(name = "map_users_id"))
+  @JoinTable(name = "map_projects_map_leads", joinColumns = @JoinColumn(name = "map_projects_id"),
+      inverseJoinColumns = @JoinColumn(name = "map_users_id"))
   @IndexedEmbedded(targetElement = MapUserJpa.class)
   private Set<MapUser> mapLeads = new HashSet<>();
 
   /** The map specialists. */
   @ManyToMany(targetEntity = MapUserJpa.class, fetch = FetchType.LAZY)
-  @JoinTable(name = "map_projects_map_specialists", joinColumns = @JoinColumn(name = "map_projects_id"), inverseJoinColumns = @JoinColumn(name = "map_users_id"))
+  @JoinTable(name = "map_projects_map_specialists",
+      joinColumns = @JoinColumn(name = "map_projects_id"),
+      inverseJoinColumns = @JoinColumn(name = "map_users_id"))
   @IndexedEmbedded(targetElement = MapUserJpa.class)
   private Set<MapUser> mapSpecialists = new HashSet<>();
 
   /** The allowable map principles for this MapProject. */
   @ManyToMany(targetEntity = MapPrincipleJpa.class, fetch = FetchType.LAZY)
-  @CollectionTable(name = "map_projects_map_principles", joinColumns = @JoinColumn(name = "map_projects_id"))
+  @CollectionTable(name = "map_projects_map_principles",
+      joinColumns = @JoinColumn(name = "map_projects_id"))
   @IndexedEmbedded(targetElement = MapPrincipleJpa.class)
   private Set<MapPrinciple> mapPrinciples = new HashSet<>();
 
   /** The allowable map advices for this MapProject. */
   @ManyToMany(targetEntity = MapAdviceJpa.class, fetch = FetchType.LAZY)
-  @CollectionTable(name = "map_projects_map_advices", joinColumns = @JoinColumn(name = "map_projects_id"))
+  @CollectionTable(name = "map_projects_map_advices",
+      joinColumns = @JoinColumn(name = "map_projects_id"))
   @IndexedEmbedded(targetElement = MapAdviceJpa.class)
   private Set<MapAdvice> mapAdvices = new HashSet<>();
 
   /** The allowable map relations for this MapProject. */
   @ManyToMany(targetEntity = MapRelationJpa.class, fetch = FetchType.LAZY)
-  @CollectionTable(name = "map_projects_map_relations", joinColumns = @JoinColumn(name = "map_projects_id"))
+  @CollectionTable(name = "map_projects_map_relations",
+      joinColumns = @JoinColumn(name = "map_projects_id"))
   @IndexedEmbedded(targetElement = MapRelationJpa.class)
   private Set<MapRelation> mapRelations = new HashSet<>();
 
   /** The allowable report definitions for this MapProject. */
   @ManyToMany(targetEntity = ReportDefinitionJpa.class, fetch = FetchType.LAZY)
-  @CollectionTable(name = "map_projects_report_definitions", joinColumns = @JoinColumn(name = "map_projects_id"))
+  @CollectionTable(name = "map_projects_report_definitions",
+      joinColumns = @JoinColumn(name = "map_projects_id"))
   @IndexedEmbedded(targetElement = ReportDefinitionJpa.class)
   private Set<ReportDefinition> reportDefinitions = new HashSet<>();
 
@@ -213,7 +226,8 @@ public class MapProjectJpa implements MapProject {
 
   /** The concepts excluded from scope of this project. */
   @ElementCollection
-  @CollectionTable(name = "map_projects_scope_excluded_concepts", joinColumns = @JoinColumn(name = "id"))
+  @CollectionTable(name = "map_projects_scope_excluded_concepts",
+      joinColumns = @JoinColumn(name = "id"))
   @Column(nullable = true)
   private Set<String> scopeExcludedConcepts = new HashSet<>();
 
@@ -265,22 +279,20 @@ public class MapProjectJpa implements MapProject {
     this.mapNotesPublic = isMapNotesPublic();
     this.groupStructure = project.isGroupStructure();
     this.published = project.isPublished();
+    this.useTags = project.isUseTags();
     this.refSetId = project.getRefSetId();
     this.moduleId = project.getModuleId();
     this.refSetName = project.getRefSetName();
     this.sourceTerminology = project.getSourceTerminology();
     this.sourceTerminologyVersion = project.getSourceTerminologyVersion();
     this.destinationTerminology = project.getDestinationTerminology();
-    this.destinationTerminologyVersion =
-        project.getDestinationTerminologyVersion();
+    this.destinationTerminologyVersion = project.getDestinationTerminologyVersion();
     this.mapRefsetPattern = project.getMapRefsetPattern();
     this.mapRelationStyle = project.getMapRelationStyle();
     this.mapPrincipleSourceDocument = project.getMapPrincipleSourceDocument();
-    this.mapPrincipleSourceDocumentName =
-        project.getMapPrincipleSourceDocumentName();
+    this.mapPrincipleSourceDocumentName = project.getMapPrincipleSourceDocumentName();
     this.ruleBased = project.isRuleBased();
-    this.projectSpecificAlgorithmHandlerClass =
-        project.getProjectSpecificAlgorithmHandlerClass();
+    this.projectSpecificAlgorithmHandlerClass = project.getProjectSpecificAlgorithmHandlerClass();
     // this.algorithmHandler = project.algorithmHandler;
     this.presetAgeRanges = project.getPresetAgeRanges();
     this.mapLeads = project.getMapLeads();
@@ -291,12 +303,10 @@ public class MapProjectJpa implements MapProject {
     this.scopeConcepts = project.getScopeConcepts();
     this.scopeExcludedConcepts = project.getScopeExcludedConcepts();
     this.scopeDescendantsFlag = project.isScopeDescendantsFlag();
-    this.scopeExcludedDescendantsFlag =
-        project.isScopeExcludedDescendantsFlag();
+    this.scopeExcludedDescendantsFlag = project.isScopeExcludedDescendantsFlag();
     this.errorMessages = project.getErrorMessages();
     this.propagatedFlag = project.isPropagatedFlag();
-    this.propagationDescendantThreshold =
-        project.getPropagationDescendantThreshold();
+    this.propagationDescendantThreshold = project.getPropagationDescendantThreshold();
     this.workflowType = project.getWorkflowType();
     this.latestPublicationDate = project.getLatestPublicationDate();
     this.editingCycleBeginDate = project.getEditingCycleBeginDate();
@@ -441,8 +451,7 @@ public class MapProjectJpa implements MapProject {
 
   /* see superclass */
   @Override
-  public void setDestinationTerminologyVersion(
-    String destinationTerminologyVersion) {
+  public void setDestinationTerminologyVersion(String destinationTerminologyVersion) {
     this.destinationTerminologyVersion = destinationTerminologyVersion;
   }
 
@@ -470,7 +479,7 @@ public class MapProjectJpa implements MapProject {
   public void setPublic(boolean isPublic) {
     this.isPublic = isPublic;
   }
-  
+
   /* see superclass */
   @Override
   public boolean isMapNotesPublic() {
@@ -506,6 +515,20 @@ public class MapProjectJpa implements MapProject {
   public void setPublished(boolean published) {
     this.published = published;
   }
+  
+
+  /* see superclass */
+  @Override
+  public boolean isUseTags() {
+    return useTags;
+  }
+
+  /* see superclass */
+  @Override
+  public void setUseTags(boolean useTags) {
+    this.useTags = useTags;
+  }
+  
 
   /* see superclass */
   @Override
@@ -600,8 +623,7 @@ public class MapProjectJpa implements MapProject {
 
   /* see superclass */
   @Override
-  public void setMapPrincipleSourceDocumentName(
-    String mapPrincipleSourceDocumentName) {
+  public void setMapPrincipleSourceDocumentName(String mapPrincipleSourceDocumentName) {
     this.mapPrincipleSourceDocumentName = mapPrincipleSourceDocumentName;
   }
 
@@ -829,40 +851,31 @@ public class MapProjectJpa implements MapProject {
 
   /* see superclass */
   @Override
-  public void setProjectSpecificAlgorithmHandlerClass(
-    String projectSpecificAlgorithmHandlerClass) {
-    this.projectSpecificAlgorithmHandlerClass =
-        projectSpecificAlgorithmHandlerClass;
+  public void setProjectSpecificAlgorithmHandlerClass(String projectSpecificAlgorithmHandlerClass) {
+    this.projectSpecificAlgorithmHandlerClass = projectSpecificAlgorithmHandlerClass;
   }
 
   /* see superclass */
   @Override
   public String toString() {
-    return "MapProjectJpa [id=" + id + ", name=" + name + ", isPublic="
-        + isPublic + ", groupStructure=" + groupStructure + ", published="
-        + published + ", workflowType=" + workflowType + ", refSetId="
-        + refSetId + ",moduleId=" + moduleId + ", refSetName=" + refSetName
-        + ", sourceTerminology=" + sourceTerminology
-        + ", sourceTerminologyVersion=" + sourceTerminologyVersion
-        + ", destinationTerminology=" + destinationTerminology
-        + ", destinationTerminologyVersion=" + destinationTerminologyVersion
-        + ", mapRefsetPattern=" + mapRefsetPattern + ", mapRelationStyle="
-        + mapRelationStyle + ", mapPrincipleSourceDocumentName="
-        + mapPrincipleSourceDocumentName + ", mapPrincipleSourceDocument="
-        + mapPrincipleSourceDocument + ", ruleBased=" + ruleBased
-        + ", projectSpecificAlgorithmHandlerClass="
-        + projectSpecificAlgorithmHandlerClass + ", algorithmHandler="
-        + algorithmHandler + ", presetAgeRanges=" + presetAgeRanges
-        + ", mapLeads=" + mapLeads + ", mapSpecialists=" + mapSpecialists
-        + ", mapPrinciples=" + mapPrinciples + ", mapAdvices=" + mapAdvices
-        + ", mapRelations=" + mapRelations + ", reportDefinitions="
-        + reportDefinitions + ", scopeConcepts=" + scopeConcepts
-        + ", scopeExcludedConcepts=" + scopeExcludedConcepts
-        + ", scopeDescendantsFlag=" + scopeDescendantsFlag
-        + ", scopeExcludedDescendantsFlag=" + scopeExcludedDescendantsFlag
-        + ", errorMessages=" + errorMessages + ", propagatedFlag="
-        + propagatedFlag + ", propagationDescendantThreshold="
-        + propagationDescendantThreshold + "]";
+    return "MapProjectJpa [id=" + id + ", name=" + name + ", isPublic=" + isPublic
+        + ", groupStructure=" + groupStructure + ", published=" + published+ ", useTags=" + useTags + ", workflowType="
+        + workflowType + ", refSetId=" + refSetId + ",moduleId=" + moduleId + ", refSetName="
+        + refSetName + ", sourceTerminology=" + sourceTerminology + ", sourceTerminologyVersion="
+        + sourceTerminologyVersion + ", destinationTerminology=" + destinationTerminology
+        + ", destinationTerminologyVersion=" + destinationTerminologyVersion + ", mapRefsetPattern="
+        + mapRefsetPattern + ", mapRelationStyle=" + mapRelationStyle
+        + ", mapPrincipleSourceDocumentName=" + mapPrincipleSourceDocumentName
+        + ", mapPrincipleSourceDocument=" + mapPrincipleSourceDocument + ", ruleBased=" + ruleBased
+        + ", projectSpecificAlgorithmHandlerClass=" + projectSpecificAlgorithmHandlerClass
+        + ", algorithmHandler=" + algorithmHandler + ", presetAgeRanges=" + presetAgeRanges
+        + ", mapLeads=" + mapLeads + ", mapSpecialists=" + mapSpecialists + ", mapPrinciples="
+        + mapPrinciples + ", mapAdvices=" + mapAdvices + ", mapRelations=" + mapRelations
+        + ", reportDefinitions=" + reportDefinitions + ", scopeConcepts=" + scopeConcepts
+        + ", scopeExcludedConcepts=" + scopeExcludedConcepts + ", scopeDescendantsFlag="
+        + scopeDescendantsFlag + ", scopeExcludedDescendantsFlag=" + scopeExcludedDescendantsFlag
+        + ", errorMessages=" + errorMessages + ", propagatedFlag=" + propagatedFlag
+        + ", propagationDescendantThreshold=" + propagationDescendantThreshold + "]";
   }
 
   /* see superclass */
@@ -870,23 +883,21 @@ public class MapProjectJpa implements MapProject {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((destinationTerminology == null) ? 0
-        : destinationTerminology.hashCode());
-    result = prime * result + ((destinationTerminologyVersion == null) ? 0
-        : destinationTerminologyVersion.hashCode());
+    result =
+        prime * result + ((destinationTerminology == null) ? 0 : destinationTerminology.hashCode());
+    result = prime * result
+        + ((destinationTerminologyVersion == null) ? 0 : destinationTerminologyVersion.hashCode());
     result = prime * result + (isPublic ? 1231 : 1237);
     result = prime * result + ((refSetId == null) ? 0 : refSetId.hashCode());
     result = prime * result + ((moduleId == null) ? 0 : moduleId.hashCode());
-    result = prime * result
-        + ((scopeConcepts == null) ? 0 : scopeConcepts.hashCode());
+    result = prime * result + ((scopeConcepts == null) ? 0 : scopeConcepts.hashCode());
     result = prime * result + (scopeDescendantsFlag ? 1231 : 1237);
-    result = prime * result + ((scopeExcludedConcepts == null) ? 0
-        : scopeExcludedConcepts.hashCode());
+    result =
+        prime * result + ((scopeExcludedConcepts == null) ? 0 : scopeExcludedConcepts.hashCode());
     result = prime * result + (scopeExcludedDescendantsFlag ? 1231 : 1237);
+    result = prime * result + ((sourceTerminology == null) ? 0 : sourceTerminology.hashCode());
     result = prime * result
-        + ((sourceTerminology == null) ? 0 : sourceTerminology.hashCode());
-    result = prime * result + ((sourceTerminologyVersion == null) ? 0
-        : sourceTerminologyVersion.hashCode());
+        + ((sourceTerminologyVersion == null) ? 0 : sourceTerminologyVersion.hashCode());
     return result;
   }
 
@@ -908,8 +919,7 @@ public class MapProjectJpa implements MapProject {
     if (destinationTerminologyVersion == null) {
       if (other.destinationTerminologyVersion != null)
         return false;
-    } else if (!destinationTerminologyVersion
-        .equals(other.destinationTerminologyVersion))
+    } else if (!destinationTerminologyVersion.equals(other.destinationTerminologyVersion))
       return false;
     if (isPublic != other.isPublic)
       return false;
@@ -978,8 +988,7 @@ public class MapProjectJpa implements MapProject {
    * @param propagationDescendantThreshold the propagation descendant threshold
    */
   @Override
-  public void setPropagationDescendantThreshold(
-    Integer propagationDescendantThreshold) {
+  public void setPropagationDescendantThreshold(Integer propagationDescendantThreshold) {
     this.propagationDescendantThreshold = propagationDescendantThreshold;
   }
 
