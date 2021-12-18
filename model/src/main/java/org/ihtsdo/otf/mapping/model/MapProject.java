@@ -65,6 +65,13 @@ public interface MapProject {
   public boolean isPublic();
 
   /**
+   * Checks if the project uses tags on source concepts.
+   *
+   * @return true, if uses tags
+   */
+  public boolean isUseTags();  
+  
+  /**
    * Sets whether the project's map notes are viewable by public roles.
    *
    * @param mapNotesPublic the map notes public
@@ -85,6 +92,14 @@ public interface MapProject {
    */
   public void setPublic(boolean isPublic);
 
+  /**
+   * Sets whether the project uses tags on the source concepts.
+   *
+   * @param useTags the new use tags
+   */
+  public void setUseTags(boolean useTags);
+  
+  
   /**
    * Indicates whether there is group structure for map records of this project.
    * 
