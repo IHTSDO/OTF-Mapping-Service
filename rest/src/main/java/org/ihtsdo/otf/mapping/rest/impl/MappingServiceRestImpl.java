@@ -109,6 +109,7 @@ import org.ihtsdo.otf.mapping.jpa.services.AmazonS3ServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
@@ -122,6 +123,7 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.model.MapUserPreferences;
+import org.ihtsdo.otf.mapping.reports.ReportDefinitionJpa;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
@@ -131,6 +133,7 @@ import org.ihtsdo.otf.mapping.services.AmazonS3Service;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
+import org.ihtsdo.otf.mapping.services.ReportService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.services.helpers.BeginEditingCycleHandler;
@@ -2908,6 +2911,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         required = false) @QueryParam("relationshipValue") String relationshipValue,
     @ApiParam(value = "Excludes descendants of ancestor id ",
         required = false) @QueryParam("excludeDescendants") boolean excludeDescendants,
+    @ApiParam(value = "Include non-published maps ",
+    required = false) @QueryParam("includeNonPublished") boolean includeNonPublished,
     @ApiParam(value = "Search query string", required = false) @QueryParam("query") String query,
     @ApiParam(value = "Authorization token",
         required = true) @HeaderParam("Authorization") String authToken)
@@ -2963,8 +2968,13 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       // add the role-specific workflow restrictions
       final MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
       if (role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
-        queryRestriction +=
-            " AND (workflowStatus:PUBLISHED OR workflowStatus:READY_FOR_PUBLICATION)";
+        if(!includeNonPublished) {
+          queryRestriction +=
+              " AND (workflowStatus:PUBLISHED OR workflowStatus:READY_FOR_PUBLICATION)";
+          }
+        else {
+          //Do nothing - return all map records, regardless of workflow status.
+        }
       } else {
         queryRestriction += " AND workflowStatus:PUBLISHED";
       }
@@ -3418,6 +3428,46 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#getQALabels(java.lang.Long, java.lang.String)
+   */
+  @Override
+  @GET
+  @Path("/tags/{mapProjectId}")
+  @ApiOperation(value = "Gets all  tags", notes = "Gets all unique tags for map project", response = SearchResultList.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public SearchResultList getTagsForMapProject(
+    @ApiParam(value = "Map Project id", required = true) @PathParam("mapProjectId") Long mapProjectId,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(MappingServiceRestImpl.class)
+        .info("RESTful call:  /tags/" + mapProjectId);
+
+    String user = null;
+    final MappingService mappingService = new MappingServiceJpa();
+    try {
+      // authorize call
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "get tags",
+          securityService);
+
+      final SearchResultList results =
+          mappingService.getTagsForMapProject(mapProjectId);
+
+      return results;
+
+    } catch (Exception e) {
+      handleException(e, "trying to get tags", user, "", "");
+      return null;
+    } finally {
+      mappingService.close();
+      securityService.close();
+    }
+  }  
+  
+  
   // ///////////////////////////////////////////////
   // Role Management Services
   // ///////////////////////////////////////////////

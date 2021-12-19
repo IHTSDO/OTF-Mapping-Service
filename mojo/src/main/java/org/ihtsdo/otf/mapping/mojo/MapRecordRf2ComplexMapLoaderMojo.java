@@ -112,7 +112,7 @@ public class MapRecordRf2ComplexMapLoaderMojo
 
         ContentServiceRestImpl service = new ContentServiceRestImpl();
         service.loadMapRecordRf2ComplexMap(inputFile, memberFlag, recordFlag,
-            refsetId, workflowStatus, getAuthToken());
+            refsetId, workflowStatus, userName, getAuthToken());
 
       } else {
         getLog().info("Running against server");
@@ -120,7 +120,7 @@ public class MapRecordRf2ComplexMapLoaderMojo
         // invoke the client
         ContentClientRest client = new ContentClientRest(properties);
         client.loadMapRecordRf2ComplexMap(inputFile, memberFlag, recordFlag,
-            refsetId, workflowStatus, getAuthToken());
+            refsetId, workflowStatus, userName, getAuthToken());
       }
 
     } catch (Exception e) {

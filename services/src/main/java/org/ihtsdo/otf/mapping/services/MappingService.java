@@ -1,5 +1,11 @@
 /*
- *    Copyright 2019 West Coast Informatics, LLC
+ * Copyright 2020 Wci Informatics - All Rights Reserved.
+ *
+ * NOTICE:  All information contained herein is, and remains the property of Wci Informatics
+ * The intellectual and technical concepts contained herein are proprietary to
+ * Wci Informatics and may be covered by U.S. and Foreign Patents, patents in process,
+ * and are protected by trade secret or copyright law.  Dissemination of this information
+ * or reproduction of this material is strictly forbidden.
  */
 package org.ihtsdo.otf.mapping.services;
 
@@ -142,8 +148,7 @@ public interface MappingService extends RootService {
    * @return a List of MapProjects
    * @throws Exception the exception
    */
-  public MapProjectList getMapProjectsForMapUser(MapUser mapUser)
-    throws Exception;
+  public MapProjectList getMapProjectsForMapUser(MapUser mapUser) throws Exception;
 
   /**
    * Retrieve all map records.
@@ -174,8 +179,8 @@ public interface MappingService extends RootService {
    * @return the list of MapProjects
    * @throws Exception
    */
-  public SearchResultList findMapProjectsForQuery(String query,
-    PfsParameter pfsParameter) throws Exception;
+  public SearchResultList findMapProjectsForQuery(String query, PfsParameter pfsParameter)
+    throws Exception;
 
   /**
    * Query for MapRecords.
@@ -185,8 +190,8 @@ public interface MappingService extends RootService {
    * @return the List of MapRecords
    * @throws Exception the exception
    */
-  public SearchResultList findMapRecordsForQuery(String query,
-    PfsParameter pfsParameter) throws Exception;
+  public SearchResultList findMapRecordsForQuery(String query, PfsParameter pfsParameter)
+    throws Exception;
 
   // //////////////////////////
   // Addition services ///
@@ -226,8 +231,7 @@ public interface MappingService extends RootService {
    * @return the map principle
    * @throws Exception the exception
    */
-  public MapPrinciple addMapPrinciple(MapPrinciple mapPrinciple)
-    throws Exception;
+  public MapPrinciple addMapPrinciple(MapPrinciple mapPrinciple) throws Exception;
 
   /**
    * Adds the map advice.
@@ -337,8 +341,7 @@ public interface MappingService extends RootService {
    * @return the map records for concept id
    * @throws Exception the exception
    */
-  public MapRecordList getMapRecordsForConcept(String terminologyId)
-    throws Exception;
+  public MapRecordList getMapRecordsForConcept(String terminologyId) throws Exception;
 
   /**
    * Returns the unmapped descendants for concept.
@@ -349,9 +352,8 @@ public interface MappingService extends RootService {
    * @return the search result list
    * @throws Exception the exception
    */
-  public SearchResultList findUnmappedDescendantsForConcept(
-    String terminologyId, Long mapProjectId, PfsParameter pfsParameter)
-    throws Exception;
+  public SearchResultList findUnmappedDescendantsForConcept(String terminologyId, Long mapProjectId,
+    PfsParameter pfsParameter) throws Exception;
 
   /**
    * Creates the map records for map project.
@@ -360,8 +362,8 @@ public interface MappingService extends RootService {
    * @param workflowStatus the workflow status
    * @throws Exception the exception
    */
-  public void createMapRecordsForMapProject(Long mapProjectId,
-    WorkflowStatus workflowStatus) throws Exception;
+  public void createMapRecordsForMapProject(Long mapProjectId, WorkflowStatus workflowStatus)
+    throws Exception;
 
   /**
    * Creates the map records for map project.
@@ -373,8 +375,8 @@ public interface MappingService extends RootService {
    * @throws Exception the exception
    */
   public void createMapRecordsForMapProject(Long mapProjectId, MapUser mapUser,
-    List<ComplexMapRefSetMember> complexMapRefSetMembers,
-    WorkflowStatus workflowStatus) throws Exception;
+    List<ComplexMapRefSetMember> complexMapRefSetMembers, WorkflowStatus workflowStatus)
+    throws Exception;
 
   /**
    * Append entries to map records for project.
@@ -385,9 +387,9 @@ public interface MappingService extends RootService {
    * @param workflowStatus the workflow status
    * @throws Exception the exception
    */
-  public void appendEntriesToMapRecordsForProject(Long mapProjectId,
-    MapUser mapUser, List<ComplexMapRefSetMember> complexMapRefSetMembers,
-    WorkflowStatus workflowStatus) throws Exception;
+  public void appendEntriesToMapRecordsForProject(Long mapProjectId, MapUser mapUser,
+    List<ComplexMapRefSetMember> complexMapRefSetMembers, WorkflowStatus workflowStatus)
+    throws Exception;
 
   /**
    * Removes the map records for project id.
@@ -405,8 +407,7 @@ public interface MappingService extends RootService {
    * @return the map records for a project id
    * @throws Exception the exception
    */
-  public MapRecordList getMapRecordsForMapProject(Long mapProjectId)
-    throws Exception;
+  public MapRecordList getMapRecordsForMapProject(Long mapProjectId) throws Exception;
 
   /**
    * Find concepts in scope.
@@ -416,8 +417,8 @@ public interface MappingService extends RootService {
    * @return the search result list
    * @throws Exception the exception
    */
-  public SearchResultList findConceptsInScope(Long mapProjectId,
-    PfsParameter pfsParameter) throws Exception;
+  public SearchResultList findConceptsInScope(Long mapProjectId, PfsParameter pfsParameter)
+    throws Exception;
 
   /**
    * Find unmapped concepts in scope.
@@ -427,8 +428,8 @@ public interface MappingService extends RootService {
    * @return the search result list
    * @throws Exception the exception
    */
-  public SearchResultList findUnmappedConceptsInScope(Long mapProjectId,
-    PfsParameter pfsParameter) throws Exception;
+  public SearchResultList findUnmappedConceptsInScope(Long mapProjectId, PfsParameter pfsParameter)
+    throws Exception;
 
   /**
    * Find mapped concepts out of scope bounds.
@@ -460,8 +461,7 @@ public interface MappingService extends RootService {
    * @return <code>true</code> if so, <code>false</code> otherwise
    * @throws Exception the exception
    */
-  public boolean isConceptInScope(String terminologyId, Long mapProjectId)
-    throws Exception;
+  public boolean isConceptInScope(String terminologyId, Long mapProjectId) throws Exception;
 
   /**
    * Indicates whether or not concept excluded from scope is the case.
@@ -471,8 +471,8 @@ public interface MappingService extends RootService {
    * @return <code>true</code> if so, <code>false</code> otherwise
    * @throws Exception the exception
    */
-  public boolean isConceptExcludedFromScope(String terminologyId,
-    Long mapProjectId) throws Exception;
+  public boolean isConceptExcludedFromScope(String terminologyId, Long mapProjectId)
+    throws Exception;
 
   /**
    * Indicates whether or not concept out of scope bounds is the case.
@@ -482,8 +482,8 @@ public interface MappingService extends RootService {
    * @return <code>true</code> if so, <code>false</code> otherwise
    * @throws Exception the exception
    */
-  public boolean isConceptOutOfScopeBounds(String terminologyId,
-    Long mapProjectId) throws Exception;
+  public boolean isConceptOutOfScopeBounds(String terminologyId, Long mapProjectId)
+    throws Exception;
 
   /**
    * Gets the map user.
@@ -585,8 +585,7 @@ public interface MappingService extends RootService {
    * @throws Exception the exception
    */
   @Override
-  public void setTransactionPerOperation(boolean transactionPerOperation)
-    throws Exception;
+  public void setTransactionPerOperation(boolean transactionPerOperation) throws Exception;
 
   /**
    * Begin transaction.
@@ -613,8 +612,8 @@ public interface MappingService extends RootService {
    * @return the most recent map record revision
    * @throws Exception the exception
    */
-  public MapRecordList getRecentlyEditedMapRecords(Long projectId,
-    String userName, PfsParameter pfsParameter) throws Exception;
+  public MapRecordList getRecentlyEditedMapRecords(Long projectId, String userName,
+    PfsParameter pfsParameter) throws Exception;
 
   /**
    * Gets the project specific algorithm handler.
@@ -627,9 +626,9 @@ public interface MappingService extends RootService {
    * @throws NoSuchMethodException the no such method exception
    * @throws InvocationTargetException the invocation target exception
    */
-  public ProjectSpecificAlgorithmHandler getProjectSpecificAlgorithmHandler(
-    MapProject mapProject) throws InstantiationException,
-    IllegalAccessException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException;
+  public ProjectSpecificAlgorithmHandler getProjectSpecificAlgorithmHandler(MapProject mapProject)
+    throws InstantiationException, IllegalAccessException, ClassNotFoundException,
+    NoSuchMethodException, InvocationTargetException;
 
   /**
    * Gets the map user preferences.
@@ -646,8 +645,8 @@ public interface MappingService extends RootService {
    * @return the map user preferences
    * @throws Exception the exception
    */
-  public MapUserPreferences addMapUserPreferences(
-    MapUserPreferences mapUserPreferences) throws Exception;
+  public MapUserPreferences addMapUserPreferences(MapUserPreferences mapUserPreferences)
+    throws Exception;
 
   /**
    * Update map user preferences.
@@ -655,8 +654,7 @@ public interface MappingService extends RootService {
    * @param mapUserPreferences the map user preferences
    * @throws Exception the exception
    */
-  public void updateMapUserPreferences(MapUserPreferences mapUserPreferences)
-    throws Exception;
+  public void updateMapUserPreferences(MapUserPreferences mapUserPreferences) throws Exception;
 
   /**
    * Removes the map user preferences.
@@ -664,8 +662,7 @@ public interface MappingService extends RootService {
    * @param mapUserPreferencesId the map user preferences id
    * @throws Exception the exception
    */
-  public void removeMapUserPreferences(Long mapUserPreferencesId)
-    throws Exception;
+  public void removeMapUserPreferences(Long mapUserPreferencesId) throws Exception;
 
   /**
    * Given a list of tree positions and a map project id, sets the valid codes
@@ -678,8 +675,7 @@ public interface MappingService extends RootService {
    * @throws Exception the exception
    */
   public TreePositionList setTreePositionValidCodes(MapProject mapProject,
-    TreePositionList treePositions, ProjectSpecificAlgorithmHandler handler)
-    throws Exception;
+    TreePositionList treePositions, ProjectSpecificAlgorithmHandler handler) throws Exception;
 
   /**
    * Computes any display notes for tree position, depending on project
@@ -692,8 +688,7 @@ public interface MappingService extends RootService {
    * @throws Exception the exception
    */
   public TreePositionList setTreePositionTerminologyNotes(MapProject mapProject,
-    TreePositionList treePositions, ProjectSpecificAlgorithmHandler handler)
-    throws Exception;
+    TreePositionList treePositions, ProjectSpecificAlgorithmHandler handler) throws Exception;
 
   /**
    * Gets the map user preferences.
@@ -702,8 +697,7 @@ public interface MappingService extends RootService {
    * @return the map user preferences
    * @throws Exception the exception
    */
-  public MapUserPreferences getMapUserPreferences(String userName)
-    throws Exception;
+  public MapUserPreferences getMapUserPreferences(String userName) throws Exception;
 
   /**
    * Gets the published and ready for publication map records for map project.
@@ -713,8 +707,8 @@ public interface MappingService extends RootService {
    * @return the published and ready for publication map records for map project
    * @throws Exception the exception
    */
-  public MapRecordList getPublishedAndReadyForPublicationMapRecordsForMapProject(
-    Long mapProjectId, PfsParameter pfsParameter) throws Exception;
+  public MapRecordList getPublishedAndReadyForPublicationMapRecordsForMapProject(Long mapProjectId,
+    PfsParameter pfsParameter) throws Exception;
 
   /**
    * Gets the published map records for map project.
@@ -728,6 +722,15 @@ public interface MappingService extends RootService {
     PfsParameter pfsParameter) throws Exception;
 
   /**
+   * Returns the tags for map project.
+   *
+   * @param mapProjectId the map project id
+   * @return the tags for map project
+   * @throws Exception the exception
+   */
+  public SearchResultList getTagsForMapProject(Long mapProjectId) throws Exception;
+
+  /**
    * Returns the map user role.
    * 
    * @param userName the user name
@@ -735,8 +738,8 @@ public interface MappingService extends RootService {
    * @return the map user role
    * @throws Exception the exception
    */
-  public MapUserRole getMapUserRoleForMapProject(String userName,
-    Long mapProjectId) throws Exception;
+  public MapUserRole getMapUserRoleForMapProject(String userName, Long mapProjectId)
+    throws Exception;
 
   /**
    * Check map groups for map project.
@@ -746,8 +749,8 @@ public interface MappingService extends RootService {
    *          group errors
    * @throws Exception the exception
    */
-  public void checkMapGroupsForMapProject(MapProject mapProject,
-    boolean updateRecords) throws Exception;
+  public void checkMapGroupsForMapProject(MapProject mapProject, boolean updateRecords)
+    throws Exception;
 
   /**
    * Creates the map records for map project.
@@ -760,8 +763,8 @@ public interface MappingService extends RootService {
    * @throws Exception the exception
    */
   void createMapRecordsForMapProject(Long mapProjectId, MapUser mapUser,
-    List<ComplexMapRefSetMember> complexMapRefSetMembers,
-    WorkflowStatus workflowStatus, float samplingRate) throws Exception;
+    List<ComplexMapRefSetMember> complexMapRefSetMembers, WorkflowStatus workflowStatus,
+    float samplingRate) throws Exception;
 
   /**
    * Simple routine to removes a map advice from the environment.
@@ -769,8 +772,7 @@ public interface MappingService extends RootService {
    * @param mapAdvice the map advice name
    * @throws Exception the exception
    */
-  public void removeMapAdviceFromEnvironment(MapAdvice mapAdvice)
-    throws Exception;
+  public void removeMapAdviceFromEnvironment(MapAdvice mapAdvice) throws Exception;
 
   /**
    * Recalculate map advice for project.
@@ -786,8 +788,7 @@ public interface MappingService extends RootService {
    * @return the map project metadata
    * @throws Exception the exception
    */
-  public Map<String, Map<String, String>> getMapProjectMetadata()
-    throws Exception;
+  public Map<String, Map<String, String>> getMapProjectMetadata() throws Exception;
 
   /**
    * Gets the map records for a given project and concept.
@@ -797,8 +798,8 @@ public interface MappingService extends RootService {
    * @return the map records for project and concept
    * @throws Exception the exception
    */
-  public MapRecordList getMapRecordsForProjectAndConcept(Long mapProjectId,
-    String terminologyId) throws Exception;
+  public MapRecordList getMapRecordsForProjectAndConcept(Long mapProjectId, String terminologyId)
+    throws Exception;
 
   /**
    * Gets the latest map record revision for each map record for a given
@@ -809,8 +810,8 @@ public interface MappingService extends RootService {
    * @return the latest map record revisions for concept
    * @throws Exception the exception
    */
-  public MapRecordList getMapRecordRevisionsForConcept(String conceptId,
-    Long mapProjectId) throws Exception;
+  public MapRecordList getMapRecordRevisionsForConcept(String conceptId, Long mapProjectId)
+    throws Exception;
 
   /**
    * Gets the scope excluded concepts for map project.
@@ -820,8 +821,8 @@ public interface MappingService extends RootService {
    * @return the scope excluded concepts for map project
    * @throws Exception the exception
    */
-  public SearchResultList getScopeExcludedConceptsForMapProject(
-    MapProject mapProject, PfsParameter pfsParameter) throws Exception;
+  public SearchResultList getScopeExcludedConceptsForMapProject(MapProject mapProject,
+    PfsParameter pfsParameter) throws Exception;
 
   /**
    * Gets the scope concepts for map project.
@@ -850,9 +851,9 @@ public interface MappingService extends RootService {
    * @throws Exception the exception
    */
   public SearchResultList findMapRecords(Long mapProjectd, String ancestorId,
-    boolean excludeDescendants, String relationshipName,
-    String relationshipValue, String terminology, String terminologyVersion,
-    PfsParameter pfsParameter, Collection<String> mapConcepts) throws Exception;
+    boolean excludeDescendants, String relationshipName, String relationshipValue,
+    String terminology, String terminologyVersion, PfsParameter pfsParameter,
+    Collection<String> mapConcepts) throws Exception;
 
   /**
    * Retrieve latest map record for a given terminology id.
@@ -862,8 +863,8 @@ public interface MappingService extends RootService {
    * @return the list of map records
    * @throws Exception the exception
    */
-  public MapRecord getLatestMapRecordForConcept(Long mapProjectId,
-    String terminologyId) throws Exception;
+  public MapRecord getLatestMapRecordForConcept(Long mapProjectId, String terminologyId)
+    throws Exception;
 
   /**
    * Returns the release file names.
@@ -881,8 +882,7 @@ public interface MappingService extends RootService {
    * @return the map user role for application
    * @throws Exception the exception
    */
-  public MapUserRole getMapUserRoleForApplication(String userName)
-    throws Exception;
+  public MapUserRole getMapUserRoleForApplication(String userName) throws Exception;
 
   /**
    * Return a list of map record ids and team names which are Ready for
@@ -892,6 +892,6 @@ public interface MappingService extends RootService {
    * @return list of map record ids for the given map project
    * @throws Exception the exception
    */
-  public Map<String, String> getTargetCodeForReadyForPublication(
-    Long mapProjectId) throws Exception;
+  public Map<String, String> getTargetCodeForReadyForPublication(Long mapProjectId)
+    throws Exception;
 }

@@ -63,13 +63,21 @@
   <thead>
     <tr>
       <th ng-click="setSortField('lastModified')">Date Edited<span ng-bind="getSortIndicator('lastModified')"></span></th>
+      <th>User Name</th>
+      <th>Workflow Status</th>
       <th ng-click="setSortField('conceptId')">Concept Id<span ng-bind="getSortIndicator('conceptId')"></span></th>
       <th ng-click="setSortField('conceptName')">Concept Name<span ng-bind="getSortIndicator('conceptName')"></span></th>
     </tr>
   </thead>
   <tbody>
     <tr ng-repeat="record in editedRecords">
-      <td style="width: 10%">{{record.lastModified | date: 'MM/dd/yyyy'}}</td>
+      <td style="width: 10%">{{record.lastModified | date: 'MM/dd/yyyy hh:mm:ss'}}</td>
+      <td style="width: 10%">
+      {{record.owner.userName}}
+      </td>
+      <td style="width: 10%">
+      {{record.workflowStatus}}
+      </td>
       <td style="width: 10%">
         <a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a>
       </td>

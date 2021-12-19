@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Wci Informatics - All Rights Reserved.
+ * Copyright 2022 Wci Informatics - All Rights Reserved.
  *
  * NOTICE:  All information contained herein is, and remains the property of Wci Informatics
  * The intellectual and technical concepts contained herein are proprietary to
@@ -83,6 +83,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
   /* see superclass */
   @Override
   public MapRecord computeInitialMapRecord(MapRecord mapRecord) throws Exception {
+    // Only specific projects require this - by default, do nothing
+    return null;
+  }
+  
+  /* see superclass */
+  @Override
+  public Set<String> loadTags(String conceptId) throws Exception {
     // Only specific projects require this - by default, do nothing
     return null;
   }
