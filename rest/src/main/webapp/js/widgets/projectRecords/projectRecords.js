@@ -134,7 +134,9 @@ angular
           + encodeURIComponent($scope.searchParameters.query)
         + '&excludeDescendants='
         + ($scope.searchParameters.advancedMode && $scope.searchParameters.descendants == 'excludes' ? 'true'
-                : 'false') ;
+                : 'false')
+        + '&includeNonPublished='
+        + ($scope.searchParameters.showNonPublished ? 'true' : 'false') ;
 
         gpService.increment();
 
@@ -355,9 +357,9 @@ angular
           && (record.workflowStatus === 'PUBLISHED' || record.workflowStatus === 'READY_FOR_PUBLICATION')) {
 
           return true;
-
-        } else if ($scope.currentUser.userName === record.owner.userName) {
-          return true;
+		  // No longer allow modification of non-finished records directly from Project Records page.
+//        } else if ($scope.currentUser.userName === record.owner.userName) {
+//          return true;
         } else
           return false;
       };
@@ -371,9 +373,9 @@ angular
           && record.workflowStatus != 'READY_FOR_PUBLICATION') {
 
           // go to the edit page
-          $location.path('/record/recordId/' + id);
+          $location.path('/record/recordId/' + record.id);
 
-          // otherwise, assign this record along the FIX_ERROR_PATH
+          // otherwise, assign this record along the QA_PATH
         } else {
 
           gpService.increment();
@@ -575,6 +577,7 @@ angular
         page : 1,
         recordsPerPage : 10,
         advancedMode : false,
+		showNonPublished : false,
 
         // advanced options
         ancestorId : null,

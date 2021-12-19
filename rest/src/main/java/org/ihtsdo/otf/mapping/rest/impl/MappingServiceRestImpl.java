@@ -2911,6 +2911,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         required = false) @QueryParam("relationshipValue") String relationshipValue,
     @ApiParam(value = "Excludes descendants of ancestor id ",
         required = false) @QueryParam("excludeDescendants") boolean excludeDescendants,
+    @ApiParam(value = "Include non-published maps ",
+    required = false) @QueryParam("includeNonPublished") boolean includeNonPublished,
     @ApiParam(value = "Search query string", required = false) @QueryParam("query") String query,
     @ApiParam(value = "Authorization token",
         required = true) @HeaderParam("Authorization") String authToken)
@@ -2966,8 +2968,13 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       // add the role-specific workflow restrictions
       final MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
       if (role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
-        queryRestriction +=
-            " AND (workflowStatus:PUBLISHED OR workflowStatus:READY_FOR_PUBLICATION)";
+        if(!includeNonPublished) {
+          queryRestriction +=
+              " AND (workflowStatus:PUBLISHED OR workflowStatus:READY_FOR_PUBLICATION)";
+          }
+        else {
+          //Do nothing - return all map records, regardless of workflow status.
+        }
       } else {
         queryRestriction += " AND workflowStatus:PUBLISHED";
       }

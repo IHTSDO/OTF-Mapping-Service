@@ -94,7 +94,7 @@
       </td>
     </tr>
 
-    <tr ng-show="allowableAdvices.length > 0">
+    <tr ng-show="allowableAdvices.length > 0 || entry.mapAdvice.length > 0">
       <td ng-show="entry.targetId != null && entry.targetId != ''"
         style="vertical-align: top; padding: 5px;">
         <strong>Advice</strong>

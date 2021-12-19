@@ -143,6 +143,11 @@
 
 <div class="col-md-12 col-xs-12">
 
+  <div ng-show="record1 && !record2">
+    <strong>Original Mapper: </strong>
+    {{record1.owner.name}}
+  </div>
+
   <div style="width: 100%" id="report">
 
     <uib-accordion close-others="false"> <!-- If there is no "record2", just put feedback for record1 inline -->
