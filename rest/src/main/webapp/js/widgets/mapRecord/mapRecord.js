@@ -54,7 +54,11 @@ angular
         $scope.mapLeads = $scope.project.mapLead;
         organizeUsers($scope.mapLeads);
         $scope.enableAuthoringHistoryButton = (appConfig["deploy.show.authoring.history.button"] === 'true') ? true : false;
-        
+		// Override AuthoringHistoryButton value for non-SNOMED terminologies (since the functionality will never work)
+		if(!$scope.project.sourceTerminology.includes('SNOMED')){
+			$scope.enableAuthoringHistoryButton = false;
+		}
+
         $scope.returnRecipients = new Array();
         $scope.multiSelectSettings = {
           displayProp : 'name',
@@ -1519,9 +1523,18 @@ angular
         $scope.deleteMapEntry = function(entry) {
           var entries = [];
           for (var i = 0; i < $scope.groupsTree[entry.mapGroup - 1].entry.length; i++) {
-            if ($scope.groupsTree[entry.mapGroup - 1].entry[i].localId != entry.localId) {
-              entries.push($scope.groupsTree[entry.mapGroup - 1].entry[i]);
-            }
+			// localId can be null if the map record was prepopulated from file
+			if (entry.localId == null){
+			  if ($scope.groupsTree[entry.mapGroup - 1].entry[i].id != entry.id) {
+                entries.push($scope.groupsTree[entry.mapGroup - 1].entry[i]);
+              }	
+			}
+			else{
+			  if ($scope.groupsTree[entry.mapGroup - 1].entry[i].localId != entry.localId) {
+                entries.push($scope.groupsTree[entry.mapGroup - 1].entry[i]);
+              }	
+			}            
+
           }
 
           $scope.groupsTree[entry.mapGroup - 1].entry = entries;
@@ -2102,7 +2115,7 @@ angular
         // feedback groups functionality
         var feedbackGroupConfig = appConfig["deploy.feedback.group.names"]; 
         
-        $scope.feedbackGroups = (feedbackGroupConfig = null || typeof feedbackGroupConfig == 'undefined' || feedbackGroupConfig === '')
+        $scope.feedbackGroups = (feedbackGroupConfig == null || typeof feedbackGroupConfig == 'undefined' || feedbackGroupConfig === '')
         ? null : JSON.parse(feedbackGroupConfig);
 
         

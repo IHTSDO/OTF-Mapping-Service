@@ -45,14 +45,17 @@
         <br/>
         <span>Public Notes: <input type="checkbox" ng-model="project.mapNotesPublic"
           ng-change="setEditingPerformed(project)"> </span> 
+        <br/>
+        <span>Uses Tags: <input type="checkbox" ng-model="project.useTags"
+          ng-change="setEditingPerformed(project)"> </span>           
       </td>
       <td>
-        Refset Id: <input tooltip-placement="top" uib-tooltip="Team Based"
+        Refset Id: <input tooltip-placement="top" uib-tooltip="Refset Id"
           ng-model="project.refSetId" ng-change="setEditingPerformed(project)"
           style="width: 100%;"></input>
         <div tooltip-placement="top" uib-tooltip="Ref Set Name">{{project.refSetName}}</div>
         
-        <div>Module Id: <input tooltip-placement="top" uib-tooltip="Team Based"
+        <div>Module Id: <input tooltip-placement="top" uib-tooltip="Module Id"
           ng-model="project.moduleId" ng-change="setEditingPerformed(project)"
           style="width: 100%;"></input></div>
       </td>
@@ -1872,9 +1875,12 @@
 					ng-options="item for item in downloadedAtcVersions">
 				</select></td>
 			</tr>
+			
+			<!-- Define Versions (For all other terminologies) -->
+			<tr ng-show="termLoad.terminology == 'MIMS-Allergy'"></tr>
 
 			<!-- Define Versions (For all other terminologies) -->
-			<tr ng-show="termLoad.terminology != 'GMDN' && termLoad.terminology != 'ATC' && (termLoad.terminology)">
+			<tr ng-show="termLoad.terminology != 'GMDN' && termLoad.terminology != 'ATC' && termLoad.terminology != 'MIMS_ALLERGY' && (termLoad.terminology)">
 				<td>Select version of {{termLoad.terminology}} to load </td>
 				<td><select
 					ng-model="termLoad.version"
@@ -1883,6 +1889,7 @@
 				</select>
 				</td>
 			</tr>
+			
 
 			<!-- Define Scope (For SNOMED CT Only) -->
 			<tr	ng-show="termLoad.terminology == 'SNOMED CT' && (termLoad.version)">
@@ -1907,10 +1914,16 @@
 		ng-show="(termLoad.terminology == 'ATC' && atcVersion != null)"
 		ng-click="loadTerminologyAtc(atcVersion)">Load
 		{{termLoad.terminology}}</button>
+		
+	<!-- Load MIMS-Allergy (Special Script to do so) -->
+	<button class="btn btn-xs btn-primary"
+		ng-show="(termLoad.terminology == 'MIMS_ALLERGY')"
+		ng-click="loadTerminologyMimsAllergy()">Load
+		{{termLoad.terminology}}</button>
 
 	<!--  Load Other Terminologies (Only display if have Version defined and (!SNOMED || (SNOMED & Scope defined)) -->
 	<button class="btn btn-xs btn-primary"
-		ng-show="(termLoad.terminology != 'GMDN' && termLoad.terminology != 'ATC') && 
+		ng-show="(termLoad.terminology != 'GMDN' && termLoad.terminology != 'ATC' && termLoad.terminology != 'MIMS_ALLERGY') && 
 	(termLoad.terminology != 'SNOMED CT' || (termLoad.terminology == 'SNOMED CT' && (termLoad.scope))) && 
 	(termLoad.version)"
 		ng-click="loadTerminologyAws(termLoad.terminology, termLoad.version, termLoad.scope)">Load

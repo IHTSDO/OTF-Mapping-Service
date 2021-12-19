@@ -108,6 +108,9 @@ public class MapProjectJpaTest {
 
   /** The test published. */
   private static boolean testPublished = false;
+ 
+  /** The test useTags. */
+  private static boolean testUseTags = false;
 
   /**
    * Creates db tables, load test objects and create indexes to prepare for test
@@ -182,6 +185,7 @@ public class MapProjectJpaTest {
         .setDestinationTerminologyVersion(testDestinationTerminologyVersion);
     mapProject1.setGroupStructure(testGroupStructure);
     mapProject1.setPublished(testPublished);
+    mapProject1.setUseTags(testUseTags);
     mapProject1.setMapRelationStyle(RelationStyle.MAP_CATEGORY_STYLE);
     mapProject1.setMapPrincipleSourceDocument("mapPrincipleSourceDocument1");
     mapProject1
@@ -207,6 +211,7 @@ public class MapProjectJpaTest {
         .setDestinationTerminologyVersion(testDestinationTerminologyVersion3);
     mapProject3.setGroupStructure(testGroupStructure);
     mapProject3.setPublished(testPublished);
+    mapProject3.setUseTags(testUseTags);
     mapProject3.setMapRelationStyle(RelationStyle.MAP_CATEGORY_STYLE);
     mapProject3.setMapPrincipleSourceDocument("mapPrincipleSourceDocument3");
     mapProject3

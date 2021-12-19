@@ -9,9 +9,17 @@
         <button class="btn btn-xs btn-primary"
           ng-click="retrieveAssignedWork(1, queryAssigned)">Search</button>
         <button class="btn btn-xs btn-primary"
-          ng-click="retrieveAssignedWork(1, 'null'); queryAssigned = null">Reset</button>
+          ng-click="clearSelectedTags(); retrieveAssignedWork(1, 'null'); queryAssigned = null">Reset</button>
       </form>
     </td>
+  </tr>
+    <tr ng-show="focusProject.useTags">
+      <td style="padding: 5px;">Filter by tag:</td>
+      <td style="padding: 5px;">
+    <div ng-dropdown-multiselect="" options="allTags"
+      selected-model="selectedTags" extra-settings="multiSelectSettings"
+      translation-texts="multiSelectCustomTexts"></div>
+       </td>
   </tr>
   <tr>
     <td></td>
@@ -55,13 +63,16 @@
             ng-click="finishOrPublishBatch(assignedTypes.work)">
             <i class="glyphicon glyphicon-check"></i>
           </a> <a
-            ng-show="assignedTypes.work === 'EDITING_DONE' && focusProject.workflowType === 'REVIEW_PROJECT'"
-            title='Finish Edited Concepts'
+            ng-show="assignedTypes.work === 'EDITING_DONE' && (focusProject.workflowType === 'REVIEW_PROJECT' || focusProject.workflowType === 'CONDITIONAL_REVIEW_PATH')"
+            title='Complete Finished Concepts'
             ng-click="finishOrPublishBatch(assignedTypes.work)">
             <i class="glyphicon glyphicon-check"></i>
           </a></th>
-        <th class="pointer" style="width: 72%; padding: 5px;" ng-click="setSortField('concepts','defaultPreferredName')">
+        <th class="pointer" style="width: 52%; padding: 5px;" ng-click="setSortField('concepts','defaultPreferredName')">
         	Preferred Name<span ng-bind="getSortIndicator('concepts','defaultPreferredName')"></span></th>
+        <th ng-show="focusProject.useTags" class="pointer" style="width: 20%; padding: 5px;">
+        	Tags
+        </th>
         <th style="width: 3%; padding: 5px;"></th>
         <th style="width: 3%; padding: 5px;">
         <a title="Return All Work"
@@ -130,12 +141,13 @@
             <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
           </a>
           <!--  NOTE: the result.termionlogyVersion is overloaded with the workflow status of the record  -->
-          <a style="display: inline" title='Finish this concept'
-            ng-show="result.terminologyVersion === 'EDITING_DONE' && focusProject.workflowType === 'REVIEW_PROJECT'">
+          <a style="display: inline" title='Complete this concept'
+            ng-show="result.terminologyVersion === 'EDITING_DONE' && (focusProject.workflowType === 'REVIEW_PROJECT' || focusProject.workflowType === 'CONDITIONAL_REVIEW_PATH')">
             <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
           </a>
         </td>
-        <td style="width: 72%; padding: 5px;">{{result.value}}</td>
+        <td style="width: 52%; padding: 5px;">{{result.value}}</td>
+        <td ng-show="focusProject.useTags" style="width: 20%; padding: 5px;">{{result.value2}}</td>  
         <td style="width: 3%; padding: 5px;">
           <span><a title="Send feedback to author"
             ng-show="sendFeedbackToAuthorEnabled === true"
@@ -170,7 +182,7 @@
         <button class="btn btn-xs btn-primary"
           ng-click="retrieveAssignedConflicts(1, queryConflict, assignedTypes.conflict)">Search</button>
         <button class="btn btn-xs btn-primary"
-          ng-click="retrieveAssignedConflicts(1, 'null', assignedTypes.conflict); queryConflict = null">Reset</button>
+          ng-click="clearSelectedTags(); retrieveAssignedConflicts(1, 'null', assignedTypes.conflict); queryConflict = null">Reset</button>
       </form>
     </td>
   </tr>
@@ -223,8 +235,11 @@
             ng-click="finishOrPublishBatch(assignedTypes.conflict)">
             <i class="glyphicon glyphicon-check"></i>
           </a></th>
-        <th class="pointer" style="width: 72%; padding: 5px;" ng-click="setSortField('conflicts','defaultPreferredName')">
-    		Preferred Name<span ng-bind="getSortIndicator('conflicts','defaultPreferredName')"></span></th>
+        <th class="pointer" style="width: 52%; padding: 5px;" ng-click="setSortField('conflicts','defaultPreferredName')">
+    		Preferred Name<span ng-bind="getSortIndicator('conflicts','defaultPreferredName')"></span></th> 	
+        <th ng-show="focusProject.useTags" class="pointer" style="width: 20%; padding: 5px;">
+        	Tags
+        </th>       			
         <th style="width: 3%; padding: 5px;"></th>
         <th style="width: 3%; padding: 5px;"><a
             title="Return All Conflicts"
@@ -283,7 +298,8 @@
           </a>          
         </td>
 
-        <td style="width: 77%; padding: 5px;">{{result.value}}</td>
+        <td style="width: 57%; padding: 5px;">{{result.value}}</td>
+        <td ng-show="focusProject.useTags" style="width: 20%; padding: 5px;">{{result.value2}}</td>        
         <td style="width: 3%; padding: 5px;">
           <a title="Send feedback to author"
             ng-show="sendFeedbackToAuthorEnabled === true"
@@ -317,9 +333,17 @@
         <button class="btn btn-xs btn-primary"
           ng-click="retrieveAssignedReviewWork(1, queryReviewWork)">Search</button>
         <button class="btn btn-xs btn-primary"
-          ng-click="retrieveAssignedReviewWork(1, 'null'); queryReviewWork = null">Reset</button>
+          ng-click="clearSelectedTags(); retrieveAssignedReviewWork(1, 'null'); queryReviewWork = null">Reset</button>
       </form>
     </td>
+  </tr>
+   <tr ng-show="focusProject.useTags">
+      <td style="padding: 5px;">Filter by tag:</td>
+      <td style="padding: 5px;">
+    <div ng-dropdown-multiselect="" options="allTags"
+      selected-model="selectedTags" extra-settings="multiSelectSettings"
+      translation-texts="multiSelectCustomTexts"></div>
+       </td>
   </tr>
   <tr>
     <td></td>
@@ -371,8 +395,11 @@
             ng-click="finishOrPublishBatch(assignedTypes.review)">
             <i class="glyphicon glyphicon-check"></i>
           </a></th>
-        <th class="pointer" style="width: 77%; padding: 5px;" ng-click="setSortField('review','defaultPreferredName')">
+        <th class="pointer" style="width: 57%; padding: 5px;" ng-click="setSortField('review','defaultPreferredName')">
     		Preferred Name<span ng-bind="getSortIndicator('review','defaultPreferredName')"></span></th>
+        <th ng-show="focusProject.useTags" class="pointer" style="width: 20%; padding: 5px;">
+        	Tags
+        </th>       		
         <th style="width: 3%; padding: 5px;"></th>
         <th style="width: 3%; padding: 5px;"><a title="Return All Work"
             ng-click="unassignAllWork(currentUser, 'review', assignedTypes.review, queryReviewWork)">
@@ -414,7 +441,7 @@
         <td style="width: 3%; padding: 5px;">
           <!-- Display a checkmark if this record has previously been edited -->
           <!--  NOTE: the result.termionlogyVersion is overloaded with the workflow status of the record  -->
-          <a style="display: inline" title='Finish this review work'
+          <a style="display: inline" title='Resolve this review work'
             ng-show="result.terminologyVersion === 'REVIEW_IN_PROGRESS' && (assignedTypes.review === 'REVIEW_IN_PROGRESS' || assignedTypes.review === 'ALL')">
             <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
           </a>
@@ -425,7 +452,8 @@
           </a>
         </td>
 
-        <td style="width: 77%; padding: 5px;">{{result.value}}</td>
+        <td style="width: 57%; padding: 5px;">{{result.value}}</td>
+        <td ng-show="focusProject.useTags" style="width: 20%; padding: 5px;">{{result.value2}}</td>  
         <td style="width: 3%; padding: 5px;">
           <a title="Send feedback to author"
             ng-show="sendFeedbackToAuthorEnabled === true"
@@ -467,7 +495,7 @@
         <button class="btn btn-xs btn-primary"
           ng-click="retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, queryAssignedForUser)">Search</button>
         <button class="btn btn-xs btn-primary"
-          ng-click="retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, 'null' ); queryAssignedForUser = null">Reset</button>
+          ng-click="clearSelectedTags(); retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, 'null' ); queryAssignedForUser = null">Reset</button>
       </form>
     </td>
   </tr>
@@ -549,7 +577,7 @@
         <button class="btn btn-xs btn-primary"
           ng-click="retrieveAssignedQAWork(1, queryQAWork);">Search</button>
         <button class="btn btn-xs btn-primary"
-          ng-click="queryQAWork = null; retrieveAssignedQAWork(1, ''); queryQAWork = '';">Reset</button>
+          ng-click="clearSelectedTags(); queryQAWork = null; retrieveAssignedQAWork(1, ''); queryQAWork = '';">Reset</button>
       </form>
     </td>
   </tr>

@@ -251,6 +251,25 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
         return $sce.trustAsHtml(html_code);
       };
 
+	  // return a list of everyone included in the conversation
+	  $scope.getParticipants = function(conversation){
+		var participantsList = [];
+		for (var i = 0; i < conversation.feedback.length; i++) {
+          var partipicants = conversation.feedback[i].recipients;
+			for(var j = 0; j < partipicants.length; j++){
+				var participantUserName = partipicants[j].userName;
+				if(!participantsList.includes(participantUserName)){
+					participantsList.push(participantUserName);
+				}
+			}
+		}
+		
+		var participantListString = '';
+		participantsList.forEach(participantName => participantListString += participantName + '\n');
+		
+		return participantListString;
+	  };
+
       // function to clear input box and return to initial view
       $scope.resetSearch = function() {
         $scope.query = null;

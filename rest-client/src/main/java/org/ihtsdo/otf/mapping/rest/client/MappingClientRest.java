@@ -411,7 +411,7 @@ public class MappingClientRest extends RootClientRest
   @Override
   public MapRecordListJpa getMapRecordsForMapProjectAndQuery(Long mapProjectId,
     PfsParameterJpa pfsParameter, String ancestorId, String relationshipName, String relationshipValue, 
-    boolean excludeDescendants, String query, String authToken)
+    boolean excludeDescendants, boolean includeNonPublished, String query, String authToken)
     throws Exception {
     // N/A
     return null;
@@ -682,6 +682,13 @@ public class MappingClientRest extends RootClientRest
   @Override
   public MapUserRole getMapUserRoleForApplication(String username,
     String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public SearchResultList getTagsForMapProject(Long mapProjectId, String authToken)
+    throws Exception {
     // TODO Auto-generated method stub
     return null;
   }

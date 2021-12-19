@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.persistence.NoResultException;
+
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.algo.Algorithm;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
@@ -70,14 +72,15 @@ public class MapRecordRf2ComplexMapLoaderAlgorithm extends RootServiceJpa
   private File logFile;
 
   public MapRecordRf2ComplexMapLoaderAlgorithm(String inputFile,
-      Boolean memberFlag, Boolean recordFlag, String refsetId,
-      String workflowStatus) throws Exception {
+    Boolean memberFlag, Boolean recordFlag, String refsetId,
+    String workflowStatus, String userName) throws Exception {
     super();
     this.inputFile = inputFile;
     this.memberFlag = memberFlag;
     this.recordFlag = recordFlag;
     this.refsetId = refsetId;
     this.workflowStatus = workflowStatus;
+    this.userName = userName;
 
     // initialize logger
     String rootPath = ConfigUtility.getConfigProperties()
@@ -94,6 +97,13 @@ public class MapRecordRf2ComplexMapLoaderAlgorithm extends RootServiceJpa
     logFile = new File(logDirectory, "load_maps_" + refsetId + ".log");
     LoggerUtility.setConfiguration("load_maps", logFile.getAbsolutePath());
     this.log = LoggerUtility.getLogger("load_maps");
+  }
+  
+  public MapRecordRf2ComplexMapLoaderAlgorithm(String inputFile,
+      Boolean memberFlag, Boolean recordFlag, String refsetId,
+      String workflowStatus) throws Exception {
+    
+    this(inputFile, memberFlag, recordFlag, refsetId, workflowStatus, null);
   }
 
   @Override
@@ -132,6 +142,7 @@ public class MapRecordRf2ComplexMapLoaderAlgorithm extends RootServiceJpa
 
       if (userName == null) {
         log.info("No user specified, defaulting to user 'loader'");
+        userName = "loader";
       }
 
       // Instantiate services
@@ -139,16 +150,25 @@ public class MapRecordRf2ComplexMapLoaderAlgorithm extends RootServiceJpa
       contentService = new ContentServiceJpa();
 
       // get the loader user
-      MapUser loaderUser = mappingService.getMapUser("loader");
+      MapUser user = null;
+      try {
+        user = mappingService.getMapUser(userName);
+      }
+      catch (NoResultException e) {
+        // if using loader user and it does not exist, add it
+        if(userName.equals("loader")) {
+        user = new MapUserJpa();
+        user.setApplicationRole(MapUserRole.VIEWER);
+        user.setUserName("loader");
+        user.setName("Loader Record");
+        user.setEmail("none");
+        user = mappingService.addMapUser(user);
+        }
+      }
 
-      // if loader user does not exist, add it
-      if (loaderUser == null) {
-        loaderUser = new MapUserJpa();
-        loaderUser.setApplicationRole(MapUserRole.VIEWER);
-        loaderUser.setUserName("loader");
-        loaderUser.setName("Loader Record");
-        loaderUser.setEmail("none");
-        loaderUser = mappingService.addMapUser(loaderUser);
+      // if using other specified userName and does not exist, error
+      if(user == null) {
+        throw new Exception("Cannot find user: " + userName);
       }
 
       final Map<String, MapProject> mapProjectMap = new HashMap<>();
@@ -342,7 +362,7 @@ public class MapRecordRf2ComplexMapLoaderAlgorithm extends RootServiceJpa
 
           // IF loading refSet members too, these are published already
           mappingService.createMapRecordsForMapProject(
-              mapProjectMap.get(refSetId).getId(), loaderUser, complexMembers,
+              mapProjectMap.get(refSetId).getId(), user, complexMembers,
               status);
         }
       }

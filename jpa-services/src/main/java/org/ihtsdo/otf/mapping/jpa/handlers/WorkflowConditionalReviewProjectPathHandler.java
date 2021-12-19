@@ -25,6 +25,7 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatusCombination;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapEntry;
+import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -34,9 +35,14 @@ import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
 
 /**
- * Workflow path handler for "review project path".
+ * Conditional review workflow path handler.
+ * 
+ * Map are pre-populated. Specialists review.
+ * If they disagree, they add a note with their suggestions and the
+ * map goes to a Reviewer. If they agree, they Finish the map record without
+ * adding a note and the map goes straight to READY_FOR_PUBLICATION
  */
-public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandler {
+public class WorkflowConditionalReviewProjectPathHandler extends AbstractWorkflowPathHandler {
 
   // The workflow states defining the Review Project Path
   /** The initial state. */
@@ -55,9 +61,10 @@ public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandle
   private static WorkflowPathState leadFinishedState;
 
   /**
-   * Instantiates an empty {@link WorkflowReviewProjectPathHandler}.
+   * Instantiates an empty
+   * {@link WorkflowConditionalReviewProjectPathHandler}.
    */
-  public WorkflowReviewProjectPathHandler() {
+  public WorkflowConditionalReviewProjectPathHandler() {
 
     // set the workflow path
     setWorkflowPath(WorkflowPath.REVIEW_PROJECT_PATH);
@@ -331,7 +338,7 @@ public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandle
 
   @Override
   public String getName() {
-    return "REVIEW_PROJECT_PATH";
+    return "CONDITIONAL_REVIEW_PATH";
   }
 
   @SuppressWarnings("unchecked")
@@ -684,8 +691,22 @@ public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandle
                   "FINISH called at initial editing level on REVIEW_PROJECT_PATH where more than one record exists");
             }
 
-            // mark as REVIEW_NEEDED
-            mapRecord.setWorkflowStatus(WorkflowStatus.REVIEW_NEEDED);
+            // Check if specialist added a note with map suggestions.
+            // If so, record goes to REVIEW_NEEDED
+            // If not, record goes straight to READY_FOR_PUBLICATION
+            boolean userAddedNote = false;
+            for (MapNote mapNote : mapRecord.getMapNotes()) {
+              if (mapNote.getUser().toString().equals(mapUser.toString())) {
+                userAddedNote = true;
+                break;
+              }
+            }
+
+            if (userAddedNote) {
+              mapRecord.setWorkflowStatus(WorkflowStatus.REVIEW_NEEDED);
+            } else {
+              mapRecord.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+            }
 
             break;
 
