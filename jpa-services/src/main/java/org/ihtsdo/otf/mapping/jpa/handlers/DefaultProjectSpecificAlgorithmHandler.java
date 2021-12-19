@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Wci Informatics - All Rights Reserved.
+ * Copyright 2022 Wci Informatics - All Rights Reserved.
  *
  * NOTICE:  All information contained herein is, and remains the property of Wci Informatics
  * The intellectual and technical concepts contained herein are proprietary to
@@ -488,7 +488,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
                 && !entries.get(i).getMapRelation().getName()
                     .equals("MAP SOURCE CONCEPT CANNOT BE CLASSIFIED WITH AVAILABLE DATA")) {
               validationResult
-                  .addError("Duplicate entries (null target code, same map relation) found: "
+                  .addWarning("Duplicate entries (null target code, same map relation) found: "
                       + "Group " + Integer.toString(entries.get(i).getMapGroup()) + ", priority "
                       + Integer.toString(entries.get(i).getMapPriority()) + " and " + "Group "
                       + Integer.toString(entries.get(j).getMapGroup()) + ", priority "
@@ -501,7 +501,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
           // check if second entry's target identical to this one
           if (entries.get(i).getTargetId().equals(entries.get(j).getTargetId())
               && entries.get(i).getRule().equals(entries.get(j).getRule())) {
-            validationResult.addError("Duplicate entries (same target code and rule) found: "
+            validationResult.addWarning("Duplicate entries (same target code and rule) found: "
                 + "Group " + Integer.toString(entries.get(i).getMapGroup()) + ", priority "
                 + Integer.toString(entries.get(i).getMapPriority()) + " and " + "Group "
                 + Integer.toString(entries.get(j).getMapGroup()) + ", priority "
@@ -512,7 +512,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
           // check if second entry's target identical to this one
           if (entries.get(i).getTargetId().equals(entries.get(j).getTargetId())) {
-            validationResult.addError("Duplicate entries (same target code) found: " + "Group "
+            validationResult.addWarning("Duplicate entries (same target code) found: " + "Group "
                 + Integer.toString(entries.get(i).getMapGroup()) + ", priority "
                 + Integer.toString(entries.get(i).getMapPriority()) + " and " + "Group "
                 + Integer.toString(entries.get(j).getMapGroup()) + ", priority "

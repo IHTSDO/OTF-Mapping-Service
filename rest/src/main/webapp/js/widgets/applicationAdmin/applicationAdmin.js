@@ -115,7 +115,7 @@ angular
         $scope.userApplicationRoles = [ 'VIEWER', 'ADMINISTRATOR' ];
 
         //get list of type in $scope.terminologyFiles?
-        $scope.terminologyInputTypes = [ 'GMDN', 'SNOMED CT', 'ATC' ];
+        $scope.terminologyInputTypes = [ 'GMDN', 'SNOMED CT', 'ATC', 'MIMS_ALLERGY' ];
         
         // Event for focus project change
         $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
@@ -2867,6 +2867,10 @@ angular
         	getDownloadedAtcVersions();
         	return;
           }
+          
+          if (terminology == 'MIMS_ALLERGY'){
+          	return;
+          }
 
           gpService.increment();
 
@@ -3040,6 +3044,38 @@ angular
           // load the version of atc into the application   
           $http({
             url : root_content + 'terminology/load/atc/' + atcVersion,
+            data : 'GENERATE',
+            method : 'PUT',
+            headers : {
+              'Content-Type' : 'text/plain'
+            }
+            }).success(function(data) {
+              //Reload terminology metadata
+              var promise = reloadTerminologies();
+              promise.then(function(data){
+                gpService.decrement();
+              });
+            }).error(function(data, status, headers, config) {
+            gpService.decrement();          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        };
+        
+     // terminology/load/mims_allergy
+        $scope.loadTerminologyMimsAllergy = function() {
+          gpService.increment();
+
+          var errors = '';
+
+          if (errors.length > 0) {
+            alert(errors);
+            gpService.decrement();
+            return;
+          }
+          
+          // load the version of mims allergy into the application   
+          $http({
+            url : root_content + 'terminology/load/mims_allergy',
             data : 'GENERATE',
             method : 'PUT',
             headers : {

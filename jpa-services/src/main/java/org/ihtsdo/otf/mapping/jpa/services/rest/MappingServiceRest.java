@@ -579,6 +579,7 @@ public interface MappingServiceRest {
 	 * @param ancestorId the ancestor id
 	 * @param relationshipName the relationship name
 	 * @param relationshipValue the relationship value
+     * @param includeNonPublished the exclude non published
 	 * @param excludeDescendants the exclude descendants
 	 * @param query the query
 	 * @param authToken the auth token
@@ -586,7 +587,7 @@ public interface MappingServiceRest {
 	 * @throws Exception the exception
 	 */
 	MapRecordListJpa getMapRecordsForMapProjectAndQuery(Long mapProjectId, PfsParameterJpa pfsParameter,
-			String ancestorId, String relationshipName, String relationshipValue, boolean excludeDescendants, String query, String authToken)
+			String ancestorId, String relationshipName, String relationshipValue, boolean includeNonPublished, boolean excludeDescendants, String query, String authToken)
 			throws Exception;
 
 	/**

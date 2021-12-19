@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.7.18-SNAPSHOT</version>
+    <version>1.7.19-SNAPSHOT</version>
     <relativePath>../../parent</relativePath>
   </parent>
 
@@ -850,6 +850,30 @@
                 <phase>package</phase>
                 <goals>
                   <goal>run-meddra2-sql-report</goal>
+                </goals>
+                <configuration>
+                  <projectIds>${report.map.project.ids}</projectIds>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>MimsSqlReport</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>mims-sql-report</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>run-mims-sql-report</goal>
                 </goals>
                 <configuration>
                   <projectIds>${report.map.project.ids}</projectIds>

@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -17,48 +16,37 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.ConceptList;
-import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
-import org.ihtsdo.otf.mapping.jpa.helpers.TerminologyUtility;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
-import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapRecord;
-import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.rf2.Concept;
-import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
-import org.ihtsdo.otf.mapping.services.helpers.FileSorter;
 
 /**
- * Implementation for sample allergy mapping project. Require valid codes to be
- * allergies.
+ * Implementation for MIMS condition mapping project.
  */
-public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
+public class MIMSConditionToSnomedProjectSpecificAlgorithmHandler
     extends DefaultProjectSpecificAlgorithmHandler {
-
 
   /** The auto-generated map suggestions for preloading. */
   private static Map<String, MapRecord> automaps = new HashMap<>();
-  
-  
-  
+
   /* see superclass */
   @Override
   public void initialize() throws Exception {
     Logger.getLogger(getClass()).info("Running initialize for " + getClass().getSimpleName());
     // Populate any project-specific caches.
     cacheAutomaps();
-  }  
-  
+  }
+
   /* see superclass */
   @Override
-  public ValidationResult validateTargetCodes(MapRecord mapRecord)
-    throws Exception {
+  public ValidationResult validateTargetCodes(MapRecord mapRecord) throws Exception {
 
     // No current validation restrictions
 
@@ -77,57 +65,50 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
         cacheAutomaps();
       }
 
-      MapRecord existingMapRecord = automaps.get(mapRecord.getConceptId());
+      // Check if MIMS-Condition concept Id ends with an ICD10 code that has an
+      // auto-map pre-cached.
+      // If so, add the map-entries from the cached map to the map record.
 
-//      // Run existing map record through standard map advice and relation
-//      // calculation
-//      if (existingMapRecord != null) {
-//        List<MapEntry> updatedMapEntries = new ArrayList<>();
-//
-//        for (MapEntry mapEntry : existingMapRecord.getMapEntries()) {
-//          MapRelation mapRelation = computeMapRelation(existingMapRecord, mapEntry);
-//          MapAdviceList mapAdvices = computeMapAdvice(existingMapRecord, mapEntry);
-//          mapEntry.setMapRelation(mapRelation);
-//          mapEntry.getMapAdvices().addAll(mapAdvices.getMapAdvices());
-//          updatedMapEntries.add(mapEntry);
-//        }
-//
-//        existingMapRecord.setMapEntries(updatedMapEntries);
-//      }
+      for (final String icd10code : automaps.keySet()) {
+        if (mapRecord.getConceptId().endsWith(icd10code)) {
+          MapRecord cachedMapRecord = automaps.get(icd10code);
+          mapRecord.setMapEntries(cachedMapRecord.getMapEntries());
+        }
+      }
 
-      return existingMapRecord;
+      return mapRecord;
     } catch (Exception e) {
       throw e;
     } finally {
       // n/a
     }
-  }  
-  
+  }
+
   /* see superclass */
   @Override
   public boolean isTargetCodeValid(String terminologyId) throws Exception {
-    //Only concepts from three hierarchies are valid targets:
+    // Only concepts from three hierarchies are valid targets:
     // (substance)
     // (organism)
     // (physical object)
-    
+
     final List<String> validSemanticTagsList = new ArrayList<>();
-    validSemanticTagsList.add("(substance)");
-    validSemanticTagsList.add("(organism)");
-    validSemanticTagsList.add("(physical object)");
-    
+    validSemanticTagsList.add("(finding)");
+    validSemanticTagsList.add("(disorder)");
+    validSemanticTagsList.add("(event)");
+    validSemanticTagsList.add("(situation)");
+
     final ContentService contentService = new ContentServiceJpa();
 
     try {
       // Concept must exist
       final Concept concept = contentService.getConcept(terminologyId,
-          mapProject.getDestinationTerminology(),
-          mapProject.getDestinationTerminologyVersion());
+          mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
 
       // Only concepts that end with one of the
       if (concept != null) {
-        for(String validSemanticTag : validSemanticTagsList) {
-          if(concept.getDefaultPreferredName().endsWith(validSemanticTag)) {
+        for (String validSemanticTag : validSemanticTagsList) {
+          if (concept.getDefaultPreferredName().endsWith(validSemanticTag)) {
             return true;
           }
         }
@@ -143,18 +124,16 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
 
   /* see superclass */
   @Override
-  public ValidationResult validateSemanticChecks(MapRecord mapRecord)
-    throws Exception {
+  public ValidationResult validateSemanticChecks(MapRecord mapRecord) throws Exception {
     final ValidationResult result = new ValidationResultJpa();
-    
+
     // Map record name must share at least one word with target name
-    final Set<String> recordWords = new HashSet<>(
-        Arrays.asList(mapRecord.getConceptName().toLowerCase().split(" ")));
+    final Set<String> recordWords =
+        new HashSet<>(Arrays.asList(mapRecord.getConceptName().toLowerCase().split(" ")));
     final Set<String> entryWords = new HashSet<>();
     for (final MapEntry entry : mapRecord.getMapEntries()) {
       if (entry.getTargetName() != null) {
-        entryWords.addAll(
-            Arrays.asList(entry.getTargetName().toLowerCase().split(" ")));
+        entryWords.addAll(Arrays.asList(entry.getTargetName().toLowerCase().split(" ")));
       }
     }
     final Set<String> recordMinusEntry = new HashSet<>(recordWords);
@@ -162,11 +141,11 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
 
     // All entries must have a map relation
     for (final MapEntry entry : mapRecord.getMapEntries()) {
-      if(entry.getMapRelation() == null) {
+      if (entry.getMapRelation() == null) {
         result.addError("Required map relation missing for target=" + entry.getTargetId());
       }
-    }   
-    
+    }
+
     // If there are entry words and none match, warning
     // if (entryWords.size() > 0 && recordWords.size() ==
     // recordMinusEntry.size()) {
@@ -177,20 +156,21 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
 
     return result;
   }
-  
+
   /**
    * Cache existing maps.
    *
    * @throws Exception the exception
    */
   private void cacheAutomaps() throws Exception {
-    // Lookup if this concept has an existing, auto-generated map record to pre-load
-    // Generated automap file must be saved here:
-    // {data.dir}/MIMS-Allergy/automap/results.txt
+    // Use the reverse maps from international SNOMED to ICD10 to auto-populate
+    // suggestions.
+    // Map is ICD10 code -> map containing all SNOMED concepts that map to it.
+    // {data.dir}/MIMS-Condition/automap/icd-snomed-map.txt
 
     final ContentService contentService = new ContentServiceJpa();
 
-    Logger.getLogger(MIMSAllergyToSnomedProjectSpecificAlgorithmHandler.class)
+    Logger.getLogger(MIMSConditionToSnomedProjectSpecificAlgorithmHandler.class)
         .info("Caching the existing automaps");
 
     final String dataDir = ConfigUtility.getConfigProperties().getProperty("data.dir");
@@ -199,8 +179,7 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
     }
 
     // Check preconditions
-    String inputFile =
-        dataDir + "/MIMS-Allergy/automap/results.txt";
+    String inputFile = dataDir + "/MIMS-Condition/automap/icd-snomed-map.txt";
 
     if (!new File(inputFile).exists()) {
       throw new Exception("Specified input file missing: " + inputFile);
@@ -231,68 +210,60 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
     while ((line = preloadMapReader.readLine()) != null) {
       String fields[] = line.split("\t");
 
-      final String conceptId = fields[0];
+      final String icd10Id = fields[0];
 
       // The first time a conceptId is encountered, set up the map (only need
       // very limited information for the purpose of this function
-      if (automaps.get(conceptId) == null) {
-        MapRecord mimsAllergyAutomapRecord = new MapRecordJpa();
-        mimsAllergyAutomapRecord.setConceptId(conceptId);
-        String sourceConceptName = sourceIdToName.get(conceptId);
-        if (sourceConceptName != null) {
-          mimsAllergyAutomapRecord.setConceptName(sourceConceptName);
-        } else {
-          mimsAllergyAutomapRecord
-              .setConceptName("CONCEPT DOES NOT EXIST IN " + mapProject.getSourceTerminology());
-        }
+      if (automaps.get(icd10Id) == null) {
+        MapRecord mimsConditionAutomapRecord = new MapRecordJpa();
+        mimsConditionAutomapRecord.setConceptId(icd10Id);
 
-        automaps.put(conceptId, mimsAllergyAutomapRecord);
+        automaps.put(icd10Id, mimsConditionAutomapRecord);
       }
-            
-      for (int i = 2; i < fields.length; i += 2) {
-        
-        if(fields[i] == null || fields[i].isBlank()) {
-          continue;
-        }
-        
-        MapRecord mimsAllergyAutomapRecord = automaps.get(conceptId);      
-        final String mapTarget = fields[i];
-        
-        // For each suggested map target, check if it has already been added to map.
-        Boolean targetAlreadyAdded = false;
-        for(MapEntry existingMapEntry : mimsAllergyAutomapRecord.getMapEntries()) {
-          if(existingMapEntry.getTargetId().equals(mapTarget)) {
-            targetAlreadyAdded = true;
-          }
-        }
-        
-        // Don't add a target twice
-        if(targetAlreadyAdded) {
-          continue;
-        }
-        
-        // If this is a new suggested target, create a map entry, and attach it to the record
-        MapEntry mapEntry = new MapEntryJpa();
-        mapEntry.setMapGroup(1);
-        mapEntry.setMapPriority(mimsAllergyAutomapRecord.getMapEntries().size() + 1);
-        mapEntry.setTargetId(mapTarget);
-        String targetConceptName = destinationIdToName.get(mapTarget);
 
-        if (targetConceptName != null) {
-          mapEntry.setTargetName(targetConceptName);
-        } else {
-          mapEntry
-              .setTargetName("CONCEPT DOES NOT EXIST IN " + mapProject.getDestinationTerminology());
-        }
+      final String snomedId = fields[1];
 
-
-        // Add the entry to the record, and put the updated record in the map
-        mimsAllergyAutomapRecord.addMapEntry(mapEntry);
-        automaps.put(conceptId, mimsAllergyAutomapRecord);
-        
+      if (snomedId == null || snomedId.isBlank()) {
+        continue;
       }
+
+      MapRecord mimsAllergyAutomapRecord = automaps.get(icd10Id);
+      final String mapTarget = snomedId;
+
+      // For each suggested map target, check if it has already been added to
+      // map.
+      Boolean targetAlreadyAdded = false;
+      for (MapEntry existingMapEntry : mimsAllergyAutomapRecord.getMapEntries()) {
+        if (existingMapEntry.getTargetId().equals(mapTarget)) {
+          targetAlreadyAdded = true;
+        }
+      }
+
+      // Don't add a target twice
+      if (targetAlreadyAdded) {
+        continue;
+      }
+
+      // If this is a new suggested target, create a map entry, and attach it to
+      // the record
+      MapEntry mapEntry = new MapEntryJpa();
+      mapEntry.setMapGroup(1);
+      mapEntry.setMapPriority(mimsAllergyAutomapRecord.getMapEntries().size() + 1);
+      mapEntry.setTargetId(mapTarget);
+      String targetConceptName = destinationIdToName.get(mapTarget);
+
+      if (targetConceptName != null) {
+        mapEntry.setTargetName(targetConceptName);
+      } else {
+        mapEntry
+            .setTargetName("CONCEPT DOES NOT EXIST IN " + mapProject.getDestinationTerminology());
+      }
+
+      // Add the entry to the record, and put the updated record in the map
+      mimsAllergyAutomapRecord.addMapEntry(mapEntry);
+      automaps.put(icd10Id, mimsAllergyAutomapRecord);
+
     }
-
 
     Logger.getLogger(getClass()).info("Done caching maps");
 
@@ -301,10 +272,9 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
 
   }
 
-  
   /**
-   * Overriding defaultChecks, because there are some MIMS-specific settings that 
-   * don't conform to the standard map requirements.
+   * Overriding defaultChecks, because there are some MIMS-specific settings
+   * that don't conform to the standard map requirements.
    * 
    * @param mapRecord the map record
    * @return the validation result
@@ -329,23 +299,23 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
       return validationResult;
     }
 
-    
     // For the MIMS project, we are allowing multiple entries without rules.
     // This is acceptable because their desired final release format is not
     // intended to follow strict RF2 guidelines.
-//    // FATAL ERROR: multiple entries in groups for non-rule based
-//    if (!mapProject.isRuleBased()) {
-//      for (Integer key : entryGroups.keySet()) {
-//        if (entryGroups.get(key).size() > 1) {
-//          validationResult.addError(
-//              "Project has no rule structure but multiple map entries found in group " + key);
-//        }
-//      }
-//      if (!validationResult.isValid()) {
-//        return validationResult;
-//      }
-//    }
-    
+    // // FATAL ERROR: multiple entries in groups for non-rule based
+    // if (!mapProject.isRuleBased()) {
+    // for (Integer key : entryGroups.keySet()) {
+    // if (entryGroups.get(key).size() > 1) {
+    // validationResult.addError(
+    // "Project has no rule structure but multiple map entries found in group "
+    // + key);
+    // }
+    // }
+    // if (!validationResult.isValid()) {
+    // return validationResult;
+    // }
+    // }
+
     // Verify that groups begin at index 1 and are sequential (i.e. no empty
     // groups)
     validationResult.merge(checkMapRecordGroupStructure(mapRecord, entryGroups));
@@ -370,8 +340,5 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
 
     return validationResult;
   }
-
-  
-  
 
 }
