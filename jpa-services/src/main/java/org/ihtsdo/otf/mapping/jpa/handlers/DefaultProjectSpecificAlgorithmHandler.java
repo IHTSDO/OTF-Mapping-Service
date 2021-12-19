@@ -86,6 +86,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
     // Only specific projects require this - by default, do nothing
     return null;
   }
+  
+  /* see superclass */
+  @Override
+  public Set<String> loadTags(String conceptId) throws Exception {
+    // Only specific projects require this - by default, do nothing
+    return null;
+  }
 
   /* see superclass */
   @Override

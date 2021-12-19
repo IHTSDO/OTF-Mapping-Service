@@ -9,7 +9,7 @@
         <button class="btn btn-xs btn-primary"
           ng-click="retrieveAssignedWork(1, queryAssigned)">Search</button>
         <button class="btn btn-xs btn-primary"
-          ng-click="retrieveAssignedWork(1, 'null'); queryAssigned = null">Reset</button>
+          ng-click="clearSelectedTags(); retrieveAssignedWork(1, 'null'); queryAssigned = null">Reset</button>
       </form>
     </td>
   </tr>
@@ -63,7 +63,7 @@
             ng-click="finishOrPublishBatch(assignedTypes.work)">
             <i class="glyphicon glyphicon-check"></i>
           </a> <a
-            ng-show="assignedTypes.work === 'EDITING_DONE' && focusProject.workflowType === 'REVIEW_PROJECT'"
+            ng-show="assignedTypes.work === 'EDITING_DONE' && (focusProject.workflowType === 'REVIEW_PROJECT' || focusProject.workflowType === 'CONDITIONAL_REVIEW_PATH')"
             title='Finish Edited Concepts'
             ng-click="finishOrPublishBatch(assignedTypes.work)">
             <i class="glyphicon glyphicon-check"></i>
@@ -142,7 +142,7 @@
           </a>
           <!--  NOTE: the result.termionlogyVersion is overloaded with the workflow status of the record  -->
           <a style="display: inline" title='Finish this concept'
-            ng-show="result.terminologyVersion === 'EDITING_DONE' && focusProject.workflowType === 'REVIEW_PROJECT'">
+            ng-show="result.terminologyVersion === 'EDITING_DONE' && (focusProject.workflowType === 'REVIEW_PROJECT' || focusProject.workflowType === 'CONDITIONAL_REVIEW_PATH')">
             <i ng-click="finishOrPublish(result)" class="glyphicon glyphicon-ok"></i>
           </a>
         </td>
@@ -182,7 +182,7 @@
         <button class="btn btn-xs btn-primary"
           ng-click="retrieveAssignedConflicts(1, queryConflict, assignedTypes.conflict)">Search</button>
         <button class="btn btn-xs btn-primary"
-          ng-click="retrieveAssignedConflicts(1, 'null', assignedTypes.conflict); queryConflict = null">Reset</button>
+          ng-click="clearSelectedTags(); retrieveAssignedConflicts(1, 'null', assignedTypes.conflict); queryConflict = null">Reset</button>
       </form>
     </td>
   </tr>
@@ -333,7 +333,7 @@
         <button class="btn btn-xs btn-primary"
           ng-click="retrieveAssignedReviewWork(1, queryReviewWork)">Search</button>
         <button class="btn btn-xs btn-primary"
-          ng-click="retrieveAssignedReviewWork(1, 'null'); queryReviewWork = null">Reset</button>
+          ng-click="clearSelectedTags(); retrieveAssignedReviewWork(1, 'null'); queryReviewWork = null">Reset</button>
       </form>
     </td>
   </tr>
@@ -495,7 +495,7 @@
         <button class="btn btn-xs btn-primary"
           ng-click="retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, queryAssignedForUser)">Search</button>
         <button class="btn btn-xs btn-primary"
-          ng-click="retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, 'null' ); queryAssignedForUser = null">Reset</button>
+          ng-click="clearSelectedTags(); retrieveAssignedWorkForUser(1, selected.mapUserViewed.userName, 'null' ); queryAssignedForUser = null">Reset</button>
       </form>
     </td>
   </tr>
@@ -577,7 +577,7 @@
         <button class="btn btn-xs btn-primary"
           ng-click="retrieveAssignedQAWork(1, queryQAWork);">Search</button>
         <button class="btn btn-xs btn-primary"
-          ng-click="queryQAWork = null; retrieveAssignedQAWork(1, ''); queryQAWork = '';">Reset</button>
+          ng-click="clearSelectedTags(); queryQAWork = null; retrieveAssignedQAWork(1, ''); queryQAWork = '';">Reset</button>
       </form>
     </td>
   </tr>
