@@ -369,12 +369,11 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
         // get ALL normal workflow work at lead level
         return workflowService.findAvailableWork(mapProject, mapUser, MapUserRole.LEAD,
             sb.toString(), pfsParameter);
-      }
-      else {
-      
-      // get the workflow tracking records
-      return workflowService.findAvailableWork(mapProject, mapUser, MapUserRole.LEAD, query,
-          pfsParameter);
+      } else {
+
+        // get the workflow tracking records
+        return workflowService.findAvailableWork(mapProject, mapUser, MapUserRole.LEAD, query,
+            pfsParameter);
       }
     } catch (Exception e) {
       handleException(e, "trying to find available conflicts", user, project, "");
@@ -594,7 +593,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
         // get ALL normal workflow work at lead level
         return workflowService.findAssignedWork(mapProject, mapUser, MapUserRole.LEAD,
             sb.toString(), pfsParameter);
-      } 
+      }
       // Otherwise get all assigned work for the workflow type
       else {
 
@@ -671,7 +670,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
           MapUserRole.LEAD, query, localPfs, workflowService);
 
       // if review project path, get normal work
-      if (mapProject.getWorkflowType().equals(WorkflowType.REVIEW_PROJECT)) {
+      if (mapProject.getWorkflowType().equals(WorkflowType.REVIEW_PROJECT)
+          || mapProject.getWorkflowType().equals(WorkflowType.CONDITIONAL_REVIEW_PATH)) {
 
         // get ALL normal workflow work at lead level
         availableWork = workflowService.findAvailableWork(mapProject, mapUser, MapUserRole.LEAD,
@@ -853,7 +853,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
           MapUserRole.LEAD, query, localPfs, workflowService);
 
       // if a review project, get all normal workflow work and combine
-      if (mapProject.getWorkflowType().equals(WorkflowType.REVIEW_PROJECT)) {
+      if (mapProject.getWorkflowType().equals(WorkflowType.REVIEW_PROJECT)
+          || mapProject.getWorkflowType().equals(WorkflowType.CONDITIONAL_REVIEW_PATH)) {
         SearchResultList reviewProjectWork = workflowService.findAssignedWork(mapProject, mapUser,
             MapUserRole.LEAD, query, localPfs);
         assignedWork.addSearchResults(reviewProjectWork);

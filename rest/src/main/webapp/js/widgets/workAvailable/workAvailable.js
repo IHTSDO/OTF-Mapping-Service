@@ -57,6 +57,21 @@ angular
       // intiialize the user list
       $scope.mapUsers = {};
 
+	  // tags for tag filtering (if applicable for the project)
+      $scope.selectedTags = new Array();
+      $scope.allTags = new Array();
+
+      $scope.multiSelectSettings = {
+        displayProp : 'tag',
+        scrollableHeight : '150px',
+        scrollable : true,
+        showCheckAll : false,
+        showUncheckAll : false
+      };
+      $scope.multiSelectCustomTexts = {
+        buttonDefaultText : 'Select Tags'
+      };
+
       // tab variables, defaults to first active tab?
       $scope.tabs = [ {
         id : 0,
@@ -155,6 +170,7 @@ angular
           // construct the list of users
           $scope.mapUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
           $scope.retrieveLabels();
+		  $scope.retrieveTags();
           $scope.retrieveAvailableWork($scope.availableWorkPage);
           $scope.retrieveAvailableQAWork($scope.availableQAWorkPage);
           if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') {
@@ -183,6 +199,30 @@ angular
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
+
+      $scope.retrieveTags = function() {
+        gpService.increment();
+        $http({
+          url : root_mapping + 'tags/' + $scope.focusProject.id,
+          dataType : 'json',
+          method : 'GET',
+          headers : {
+            'Content-Type' : 'application/json'
+          }
+        }).success(function(data) {
+          gpService.decrement();
+          for (var i = 0; i < data.searchResult.length; i++) {
+			$scope.allTags.push({ id: i+1, tag: data.searchResult[i].value });
+          }
+        }).error(function(data, status, headers, config) {
+          gpService.decrement();
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
+      };
+
+      $scope.clearSelectedTags = function() {
+		$scope.selectedTags = new Array();
+	  };
 
       //sort direction
       var sortAscending = [];
@@ -297,6 +337,28 @@ angular
         // if null query, reset the search field
         if (query == null)
           $scope.queryAvailable = null;
+
+		// copy tag filter and add to query
+		var pselectedTags = "";
+		  for (var i = 0; i < $scope.selectedTags.length; i++) {
+			for(var j = 0; j < $scope.allTags.length; j++) {
+				if($scope.selectedTags[i].id == $scope.allTags[j].id){
+					if(pselectedTags == ""){
+						pselectedTags = $scope.allTags[j].tag;
+					}
+					else{
+						pselectedTags = pselectedTags.concat(' AND ', $scope.allTags[j].tag);
+					}
+				}
+			}
+          }
+
+		if(query == null){
+			query = pselectedTags;
+		}
+		if(query != null && pselectedTags != ""){
+			query = query.concat(' AND ', pselectedTags);
+		}
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
@@ -530,6 +592,28 @@ angular
         if (query == null)
           $scope.queryAvailable = null;
 
+		// copy tag filter and add to query
+		var pselectedTags = "";
+		  for (var i = 0; i < $scope.selectedTags.length; i++) {
+			for(var j = 0; j < $scope.allTags.length; j++) {
+				if($scope.selectedTags[i].id == $scope.allTags[j].id){
+					if(pselectedTags == ""){
+						pselectedTags = $scope.allTags[j].tag;
+					}
+					else{
+						pselectedTags = pselectedTags.concat(' AND ', $scope.allTags[j].tag);
+					}
+				}
+			}
+          }
+
+		if(query == null){
+			query = pselectedTags;
+		}
+		if(query != null && pselectedTags != ""){
+			query = query.concat(' AND ', pselectedTags);
+		}
+
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
           'startIndex' : (page - 1) * $scope.itemsPerPage,
@@ -640,6 +724,28 @@ angular
         } else {
           $scope.error = null;
         }
+
+		// copy tag filter and add to query
+		var pselectedTags = "";
+		  for (var i = 0; i < $scope.selectedTags.length; i++) {
+			for(var j = 0; j < $scope.allTags.length; j++) {
+				if($scope.selectedTags[i].id == $scope.allTags[j].id){
+					if(pselectedTags == ""){
+						pselectedTags = $scope.allTags[j].tag;
+					}
+					else{
+						pselectedTags = pselectedTags.concat(' AND ', $scope.allTags[j].tag);
+					}
+				}
+			}
+          }
+
+		if(query == null){
+			query = pselectedTags;
+		}
+		if(query != null && pselectedTags != ""){
+			query = query.concat(' AND ', pselectedTags);
+		}
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {

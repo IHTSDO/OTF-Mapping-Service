@@ -496,6 +496,10 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       trackingRecord.setTerminologyId(concept.getTerminologyId());
       trackingRecord.setDefaultPreferredName(concept.getDefaultPreferredName());
 
+      if(mapProject.isUseTags()) {
+        trackingRecord.setTags(algorithmHandler.loadTags(concept.getTerminologyId()));
+      }
+      
       // This block of code is way too slow for any batch mode.
       trackingRecord.setSortKey(concept.getTerminologyId());
       // // get the tree positions for this concept and set the sort key //
@@ -942,6 +946,9 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     // get the workflow handler for this project
     WorkflowPathHandler workflowHandler =
         this.getWorkflowPathHandler(workflowPath);
+    
+    // get the project algorithm handler
+    ProjectSpecificAlgorithmHandler algorithmHandler = this.getProjectSpecificAlgorithmHandler(mapProject);
 
     // get the concepts in scope
     SearchResultList conceptsInScope =
@@ -1070,6 +1077,10 @@ public class WorkflowServiceJpa extends MappingServiceJpa
 
           trackingRecord.setAssignedTeamName(team);
         }
+      }
+      
+      if(mapProject.isUseTags()) {
+        trackingRecord.setTags(algorithmHandler.loadTags(concept.getTerminologyId()));
       }
 
       // add any existing map records to this tracking record

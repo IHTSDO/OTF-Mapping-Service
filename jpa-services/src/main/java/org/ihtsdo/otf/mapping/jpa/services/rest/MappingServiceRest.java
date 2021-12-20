@@ -1,3 +1,12 @@
+/*
+ * Copyright 2020 Wci Informatics - All Rights Reserved.
+ *
+ * NOTICE:  All information contained herein is, and remains the property of Wci Informatics
+ * The intellectual and technical concepts contained herein are proprietary to
+ * Wci Informatics and may be covered by U.S. and Foreign Patents, patents in process,
+ * and are protected by trade secret or copyright law.  Dissemination of this information
+ * or reproduction of this material is strictly forbidden.
+ */
 package org.ihtsdo.otf.mapping.jpa.services.rest;
 
 import java.io.InputStream;
@@ -40,6 +49,9 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.model.MapUserPreferences;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 
+/**
+ * The Interface MappingServiceRest.
+ */
 public interface MappingServiceRest {
 
 	/**
@@ -89,6 +101,14 @@ public interface MappingServiceRest {
 	   */
 	void removeMapProject(MapProjectJpa mapProject, String authToken) throws Exception;
 
+	/**
+	 * Clone map project.
+	 *
+	 * @param mapProject the map project
+	 * @param authToken the auth token
+	 * @return the map project
+	 * @throws Exception the exception
+	 */
 	MapProject cloneMapProject(MapProjectJpa mapProject, String authToken) throws Exception;
 
 	/**
@@ -145,24 +165,26 @@ public interface MappingServiceRest {
 			throws Exception;
 
 	/**
-	   * Removes a single scope concept from map project.
-	   *
-	   * @param terminologyId the terminology id
-	   * @param projectId the project id
-	   * @param authToken the auth token
-	   * @throws Exception the exception
-	   */
+	 * Removes a single scope concept from map project.
+	 *
+	 * @param terminologyId the terminology id
+	 * @param projectId the project id
+	 * @param authToken the auth token
+	 * @return the validation result
+	 * @throws Exception the exception
+	 */
 	ValidationResult removeScopeConceptFromMapProject(String terminologyId, Long projectId, String authToken)
 			throws Exception;
 
 	/**
-	   * Removes the scope concept from map project.
-	   *
-	   * @param terminologyIds the terminology ids
-	   * @param projectId the project id
-	   * @param authToken the auth token
-	   * @throws Exception the exception
-	   */
+	 * Removes the scope concept from map project.
+	 *
+	 * @param terminologyIds the terminology ids
+	 * @param projectId the project id
+	 * @param authToken the auth token
+	 * @return the validation result
+	 * @throws Exception the exception
+	 */
 	ValidationResult removeScopeConceptsFromMapProject(List<String> terminologyIds, Long projectId, String authToken)
 			throws Exception;
 
@@ -179,35 +201,38 @@ public interface MappingServiceRest {
 			String authToken) throws Exception;
 
 	/**
-	   * Adds a list of scope excluded concepts to map project.
-	   *
-	   * @param terminologyIds the terminology ids
-	   * @param projectId the project id
-	   * @param authToken the auth token
-	   * @throws Exception the exception
-	   */
+	 * Adds a list of scope excluded concepts to map project.
+	 *
+	 * @param terminologyIds the terminology ids
+	 * @param projectId the project id
+	 * @param authToken the auth token
+	 * @return the validation result
+	 * @throws Exception the exception
+	 */
 	ValidationResult addScopeExcludedConceptsToMapProject(List<String> terminologyIds, Long projectId, String authToken)
 			throws Exception;
 
 	/**
-	   * Removes a single scope excluded concept from map project.
-	   *
-	   * @param terminologyId the terminology id
-	   * @param projectId the project id
-	   * @param authToken the auth token
-	   * @throws Exception the exception
-	   */
+	 * Removes a single scope excluded concept from map project.
+	 *
+	 * @param terminologyId the terminology id
+	 * @param projectId the project id
+	 * @param authToken the auth token
+	 * @return the validation result
+	 * @throws Exception the exception
+	 */
 	ValidationResult removeScopeExcludedConceptFromMapProject(String terminologyId, Long projectId, String authToken)
 			throws Exception;
 
 	/**
-	   * Removes a list of scope excluded concepts from map project.
-	   *
-	   * @param terminologyIds the terminology ids
-	   * @param projectId the project id
-	   * @param authToken the auth token
-	   * @throws Exception the exception
-	   */
+	 * Removes a list of scope excluded concepts from map project.
+	 *
+	 * @param terminologyIds the terminology ids
+	 * @param projectId the project id
+	 * @param authToken the auth token
+	 * @return the validation result
+	 * @throws Exception the exception
+	 */
 	ValidationResult removeScopeExcludedConceptsFromMapProject(List<String> terminologyIds, Long projectId,
 			String authToken) throws Exception;
 
@@ -615,16 +640,28 @@ public interface MappingServiceRest {
 	MapRelation computeMapRelation(MapRecordJpa mapRecord, String authToken) throws Exception;
 
 	/**
-	   * Computes a map advice (if any) for a map entry's current state.
-	   *
-	   * @param mapRecord the map record
-	   * @param entryIndex the entry index
-	   * @param authToken the auth token
-	   * @return Response the response
-	   * @throws Exception the exception
-	   */
+	 * Computes a map advice (if any) for a map entry's current state.
+	 *
+	 * @param entryIndex the entry index
+	 * @param mapRecord the map record
+	 * @param authToken the auth token
+	 * @return Response the response
+	 * @throws Exception the exception
+	 */
 	MapAdviceList computeMapAdvice(Integer entryIndex, MapRecordJpa mapRecord, String authToken) throws Exception;
 
+
+    /**
+     * Returns all unique tags for map project.
+     *
+     * @param mapProjectId the map project id
+     * @param authToken the auth token
+     * @return the tags for map project
+     * @throws Exception the exception
+     */
+    SearchResultList getTagsForMapProject(Long mapProjectId, String authToken)
+          throws Exception;	
+	
 	// ///////////////////////////////////////////////
 	// Role Management Services
 	// ///////////////////////////////////////////////
@@ -837,38 +874,41 @@ public interface MappingServiceRest {
 	void computeDefaultPreferredNames(Long mapProjectId, String authToken) throws Exception;
 
 	/**
-	   * Begin release for map project.
-	   *
-	   * @param effectiveTime the effective time
-	   * @param mapProjectId the map project id
-	   * @param authToken the auth token
-	   * @throws Exception the exception
-	   */
+	 * Begin release for map project.
+	 *
+	 * @param effectiveTime the effective time
+	 * @param mapProjectId the map project id
+	 * @param authToken the auth token
+	 * @return the string
+	 * @throws Exception the exception
+	 */
 	String beginReleaseForMapProject(String effectiveTime, Long mapProjectId, String authToken) throws Exception;
 
 	/**
-	   * Process release for map project.
-	   *
-	   * @param moduleId the module id
-	   * @param effectiveTime the effective time
-	   * @param mapProjectId the map project id
-	   * @param writeDelta the write delta
-	   * @param authToken the auth token
-	   * @throws Exception the exception
-	   */
+	 * Process release for map project.
+	 *
+	 * @param moduleId the module id
+	 * @param effectiveTime the effective time
+	 * @param mapProjectId the map project id
+	 * @param writeDelta the write delta
+	 * @param authToken the auth token
+	 * @return the string
+	 * @throws Exception the exception
+	 */
 	String processReleaseForMapProject(String moduleId, String effectiveTime, Long mapProjectId, 
 	  boolean writeDelta, String authToken)
 			throws Exception;
 
 	/**
-	   * Finish release for map project.
-	   *
-	   * @param testModeFlag the test mode flag
-	   * @param mapProjectId the map project id
-	   * @param effectiveTime the effective time
-	   * @param authToken the auth token
-	   * @throws Exception the exception
-	   */
+	 * Finish release for map project.
+	 *
+	 * @param testModeFlag the test mode flag
+	 * @param mapProjectId the map project id
+	 * @param effectiveTime the effective time
+	 * @param authToken the auth token
+	 * @return the string
+	 * @throws Exception the exception
+	 */
 	String finishReleaseForMapProject(boolean testModeFlag, Long mapProjectId, String effectiveTime, String authToken)
 			throws Exception;
 
@@ -906,12 +946,15 @@ public interface MappingServiceRest {
       throws Exception; 	
 	
 	/**
-	   * Creates the jira issue.
-	   *
-	   * @param conceptId the concept id
-	   * @param authToken the auth token
-	   * @throws Exception the exception
-	   */
+	 * Creates the jira issue.
+	 *
+	 * @param conceptId the concept id
+	 * @param conceptAuthor the concept author
+	 * @param messageText the message text
+	 * @param mapRecord the map record
+	 * @param authToken the auth token
+	 * @throws Exception the exception
+	 */
 	void createJiraIssue(String conceptId, String conceptAuthor, String messageText, MapRecordJpa mapRecord,
 			String authToken) throws Exception;
 

@@ -13,14 +13,23 @@ public enum WorkflowType {
 
   /** Two specialists map, lead reviews conflicts. */
   CONFLICT_PROJECT("Conflict Project"),
-  
+
   /** One specialist maps, lead reviews result. */
   REVIEW_PROJECT("Review Project"),
 
-  /** Two specialists map, two leads review (with first being conflict review if applicable) */
-  CONFLICT_AND_REVIEW_PATH("Conflict and Review Path");
- 
-  
+  /**
+   * Two specialists map, two leads review (with first being conflict review if
+   * applicable)
+   */
+  CONFLICT_AND_REVIEW_PATH("Conflict and Review Path"),
+
+  /**
+   * Specialist checks pre-populated map. If they agree, FINISH map as-is
+   * and it goes straight to READY_FOR_PUBLICATION. If disagree, add a MapNote
+   * before FINISHing, and it will go to REVIEW
+   */
+  CONDITIONAL_REVIEW_PATH("Conditional Review Path");
+
   /** The display name. */
   private String displayName = null;
 

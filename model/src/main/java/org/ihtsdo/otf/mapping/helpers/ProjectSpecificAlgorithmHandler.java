@@ -142,6 +142,16 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
   public MapRecord computeInitialMapRecord(MapRecord mapRecord) throws Exception;
 
   /**
+   * Load tags associated with the concept. Read in tags from a pipe-delimited file,
+   * and if the concept id is associated with tags, return them so they can be
+   * assigned to the tracking record for this concept.
+   *
+   * @param conceptId the concept id
+   * @throws Exception the exception
+   */ 
+  public Set<String> loadTags(String conceptId) throws Exception;
+  
+  /**
    * Called after "assign from scratch" to give handlers the opportunity to
    * attach notes or map principles to the.
    *

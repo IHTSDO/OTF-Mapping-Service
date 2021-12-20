@@ -39,11 +39,18 @@
           <button class="btn btn-xs btn-primary"
             ng-click="retrieveAvailableWork(1, queryAvailable, assignedMapUser); isConceptListOpen = true">Search</button>
           <button class="btn btn-xs btn-primary"
-            ng-click="retrieveAvailableWork(1, 'null', assignedMapUser); queryAvailable = null; isConceptListOpen = false">Reset</button>
+            ng-click="clearSelectedTags(); retrieveAvailableWork(1, 'null', assignedMapUser); queryAvailable = null; isConceptListOpen = false">Reset</button>
         </form>
       </td>
     </tr>
-
+    <tr ng-show="focusProject.useTags">
+      <td style="padding: 5px;">Filter by tag:</td>
+      <td style="padding: 5px;">
+    <div ng-dropdown-multiselect="" options="allTags"
+      selected-model="selectedTags" extra-settings="multiSelectSettings"
+      translation-texts="multiSelectCustomTexts"></div>
+            </td>
+    </tr>
   </tbody>
 </table>
 <div style="color: red;" ng-show="error != null">{{error}}</div>
@@ -69,8 +76,11 @@
         <th class="pointer" style="width: 17%; padding: 5px;" ng-click="setSortField('concepts','terminologyId')">
         	Id<span ng-bind="getSortIndicator('concepts','terminologyId')"></span>
         </th>
-        <th class="pointer" style="width: 80%; padding: 5px;" ng-click="setSortField('concepts','defaultPreferredName')">
+        <th class="pointer" style="width: 60%; padding: 5px;" ng-click="setSortField('concepts','defaultPreferredName')">
         	Preferred Name<span ng-bind="getSortIndicator('concepts','defaultPreferredName')"></span>
+        </th>
+        <th ng-show="focusProject.useTags" class="pointer" style="width: 20%; padding: 5px;">
+        	Tags
         </th>
       </tr>
     </thead>
@@ -88,7 +98,8 @@
           </a>
         </td>
         <td style="width: 17%; padding: 5px;">{{concept.terminologyId}}</td>
-        <td style="width: 80%; padding: 5px;">{{concept.value}}</td>
+        <td style="width: 60%; padding: 5px;">{{concept.value}}</td>
+        <td ng-show="focusProject.useTags" style="width: 20%; padding: 5px;">{{concept.value2}}</td>
     </tbody>
   </table>
 
@@ -128,7 +139,7 @@
           <button class="btn btn-xs btn-primary"
             ng-click="retrieveAvailableConflicts(1, queryAvailableConflict, assignedMapLead)">Search</button>
           <button class="btn btn-xs btn-primary"
-            ng-click="retrieveAvailableConflicts(1, 'null', assignedMapLead); queryAvailableConflicts = null">Reset</button>
+            ng-click="clearSelectedTags(); retrieveAvailableConflicts(1, 'null', assignedMapLead); queryAvailableConflicts = null">Reset</button>
         </form>
       </td>
     </tr>
@@ -182,7 +193,7 @@
 <table style="margin-top: 10px; margin-bottom: 10px;">
   <tbody>
     <tr ng-show="currentRole === 'Lead' || currentRole === 'Administrator'">
-      <td style="padding: 5px;">Assign conflicts to:</td>
+      <td style="padding: 5px;">Assign reviews to:</td>
       <td style="padding: 5px;">
         <select ng-model="assignedMapLead"
           ng-options="mapUser as mapUser.name for mapUser in focusProject.mapLead | orderBy:'name'"
@@ -208,9 +219,17 @@
           <button class="btn btn-xs btn-primary"
             ng-click="retrieveAvailableReviewWork(1, queryAvailableReview, assignedMapLead)">Search</button>
           <button class="btn btn-xs btn-primary"
-            ng-click="retrieveAvailableReviewWork(1, 'null', assignedMapLead); queryAvailableReview = null">Reset</button>
+            ng-click="clearSelectedTags(); retrieveAvailableReviewWork(1, 'null', assignedMapLead); queryAvailableReview = null">Reset</button>
         </form>
       </td>
+    </tr>
+        <tr ng-show="focusProject.useTags">
+      <td style="padding: 5px;">Filter by tag:</td>
+      <td style="padding: 5px;">
+    <div ng-dropdown-multiselect="" options="allTags"
+      selected-model="selectedTags" extra-settings="multiSelectSettings"
+      translation-texts="multiSelectCustomTexts"></div>
+            </td>
     </tr>
   </tbody>
 </table>
@@ -236,8 +255,11 @@
         <th style="width: 3%; padding: 5px;"></th>
         <th class="pointer" style="width: 17%; padding: 5px;" ng-click="setSortField('review','terminologyId')">
 			Id<span ng-bind="getSortIndicator('review','terminologyId')"></span></th>
-        <th class="pointer" style="width: 80%; padding: 5px;" ng-click="setSortField('review','defaultPreferredName')">
+        <th class="pointer" style="width: 60%; padding: 5px;" ng-click="setSortField('review','defaultPreferredName')">
     		Preferred Name<span ng-bind="getSortIndicator('review','defaultPreferredName')"></span></th>
+        <th ng-show="focusProject.useTags" class="pointer" style="width: 20%; padding: 5px;">
+        	Tags
+        </th>
       </tr>
     </thead>
     <tbody>
@@ -249,7 +271,8 @@
           </a>
         </td>
         <td style="width: 17%; padding: 5px;">{{concept.terminologyId}}</td>
-        <td style="width: 80%; padding: 5px;">{{concept.value}}</td>
+        <td style="width: 60%; padding: 5px;">{{concept.value}}</td>
+        <td ng-show="focusProject.useTags" style="width: 20%; padding: 5px;">{{concept.value2}}</td>        
     </tbody>
   </table>
 
@@ -296,7 +319,7 @@
           <button class="btn btn-xs btn-primary"
             ng-click="retrieveAvailableQAWork(1, selectedQaLabel, null);">Search</button>
           <button ng-show="selectedQaLabel" class="btn btn-xs btn-primary"
-            ng-click="retrieveAvailableQAWork(1, '', null); selectedQaLabel = '';">Reset</button>
+            ng-click="clearSelectedTags(); retrieveAvailableQAWork(1, '', null); selectedQaLabel = '';">Reset</button>
         </form>
       </td>
     </tr>
