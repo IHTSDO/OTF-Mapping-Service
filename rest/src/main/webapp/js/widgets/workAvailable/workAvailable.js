@@ -260,6 +260,8 @@ angular
         // clear local conflict error message
         $scope.errorConflict = null;
 
+		$scope.availableConflictsPage = page;
+
         // if user not supplied, assume current user
         if (user == null || user == undefined)
           user = $scope.currentUser;
@@ -322,6 +324,8 @@ angular
 
         // clear local error
         $scope.error = null;
+
+		$scope.availableWorkPage = page;
 
         // if user not supplied, assume current user
         if (user == null || user == undefined)
@@ -404,6 +408,8 @@ angular
         // clear local error
         $scope.error = null;
 
+		$scope.availableQAPage = page;
+		
         // clear the existing work
         $scope.availableQAWork = null;
 
@@ -577,6 +583,8 @@ angular
         // clear local review error message
         $scope.errorReview = null;
 
+		$scope.availableReviewPage = page;
+		
         // if user not supplied, assume current user
         if (user == null || user == undefined)
           user = $scope.currentUser;
@@ -851,7 +859,7 @@ angular
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
-          'startIndex' : ($scope.availableWorkPage - 1) * $scope.itemsPerPage,
+          'startIndex' : ($scope.availableConflictsPage - 1) * $scope.itemsPerPage,
           'maxResults' : batchSize,
           'sortField' : (sortField['conflicts']) ? sortField['conflicts'] : 'sortKey',
           'ascending' : sortAscending['conflicts'],
@@ -882,7 +890,7 @@ angular
                 for (var i = 0; i < $scope.itemsPerPage && i < batchSize
                   && i < $scope.availableConflicts; i++) {
                   if (trackingRecords[i].id != $scope.availableWork[i].id) {
-                    $scope.retrieveAvailableWork($scope.availableWorkPage, query);
+                    $scope.retrieveAvailableConflicts($scope.availableConflictsPage, query);
                     alert('The available conflicts list has changed since loading.  Please review the new available conflicts and try again.');
                     $scope.isConceptListOpen = false;
                     conceptListValid = false;
@@ -954,7 +962,7 @@ angular
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
-          'startIndex' : ($scope.availableWorkPage - 1) * $scope.itemsPerPage,
+          'startIndex' : ($scope.availableReviewPage - 1) * $scope.itemsPerPage,
           'maxResults' : batchSize,
           'sortField' : (sortField['review']) ? sortField['review'] : 'sortKey',
           'ascending' : sortAscending['review'],
@@ -986,7 +994,7 @@ angular
                   && i < $scope.availableReviewWork; i++) {
 
                   if (trackingRecords[i].id != $scope.availableReviewWork[i].id) {
-                    $scope.retrieveAvailableWork($scope.availableWorkPage, query);
+                    $scope.retrieveAvailableReviewWork($scope.availableReviewPage, query);
                     alert('The list of available review work has changed.  Please check the refreshed list and try again.');
                     $scope.isConceptListOpen = false;
                     conceptListValid = false;
