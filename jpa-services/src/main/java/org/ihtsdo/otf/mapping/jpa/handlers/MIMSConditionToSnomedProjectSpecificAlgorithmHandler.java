@@ -65,11 +65,15 @@ public class MIMSConditionToSnomedProjectSpecificAlgorithmHandler
         cacheAutomaps();
       }
 
-      if (automaps.isEmpty()) {
-        cacheAutomaps();
-      }
-
       MapRecord existingMapRecord = automaps.get(mapRecord.getConceptId());
+
+      // Maps with too many suggestions are unuseful.
+      // Per MIMS' request, if >10 suggestions, don't return anything.
+
+      if (existingMapRecord != null && existingMapRecord.getMapEntries() != null
+          && existingMapRecord.getMapEntries().size() > 10) {
+        existingMapRecord = null;
+      }
 
       return existingMapRecord;
     } catch (Exception e) {
@@ -134,9 +138,10 @@ public class MIMSConditionToSnomedProjectSpecificAlgorithmHandler
     final Set<String> recordMinusEntry = new HashSet<>(recordWords);
     recordMinusEntry.removeAll(entryWords);
 
-    // All entries must have a map relation
+    // All populated entries must have a map relation
     for (final MapEntry entry : mapRecord.getMapEntries()) {
-      if (entry.getMapRelation() == null) {
+      if (entry.getTargetName() != null && !entry.getTargetName().isEmpty()
+          && entry.getMapRelation() == null) {
         result.addError("Required map relation missing for target=" + entry.getTargetId());
       }
     }
@@ -160,7 +165,8 @@ public class MIMSConditionToSnomedProjectSpecificAlgorithmHandler
   private void cacheAutomaps() throws Exception {
     // Use the reverse maps from international SNOMED to ICD10 to auto-populate
     // suggestions.
-    // Map is mims code -> map containing all SNOMED concepts that map to the icd10 suffix of the mims code.
+    // Map is mims code -> map containing all SNOMED concepts that map to the
+    // icd10 suffix of the mims code.
     // {data.dir}/MIMS-Condition/automap/mims-snomed-map.txt
 
     final ContentService contentService = new ContentServiceJpa();
@@ -219,8 +225,7 @@ public class MIMSConditionToSnomedProjectSpecificAlgorithmHandler
           mimsConditionAutomapRecord
               .setConceptName("CONCEPT DOES NOT EXIST IN " + mapProject.getSourceTerminology());
         }
-        
-        
+
         automaps.put(mimsCodeId, mimsConditionAutomapRecord);
       }
 
