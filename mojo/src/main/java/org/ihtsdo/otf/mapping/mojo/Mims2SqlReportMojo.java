@@ -108,20 +108,20 @@ public class Mims2SqlReportMojo extends AbstractOtfMappingMojo {
           "mr.mapProjectId = :MAP_PROJECT_ID and " +
           "mr.workflowStatus in ('PUBLISHED','READY_FOR_PUBLICATION') and " +
           "mra.owner_id = mu.id and " +
-          "me.mapRecord_id=mr.id and  " +
-          "mra.workflowStatus in ('REVIEW_NEEDED') group by mr.conceptId, mr.conceptName,mra.owner_id, me.targetId" +
+          "me.mapRecord_id=mr.id and " +
+          "mra.workflowStatus in ('REVIEW_NEEDED') group by mr.conceptId, mr.conceptName,mra.owner_id, me.targetId " +
           // Special case for maps that were loaded in directly as READY_FOR_PUBLICATION, which have no REVIEW_NEEDED audit entry.
           "UNION " + 
-          "select mr.conceptId, mr.conceptName, me.mapPriority, me.targetId, me.targetName, me.mapRelation_id, mu.userName as SpecialistName, mr.lastModified, mr.flagForConsensusReview, mr.flagForEditorialReview, mr.flagForMapLeadReview  " + 
-          "from map_records mr, map_users mu, map_entries me  " + 
-          "where mr.mapProjectId = :MAP_PROJECT_ID and  " + 
-          "mr.workflowStatus in ('READY_FOR_PUBLICATION') and  " + 
+          "select mr.conceptId, mr.conceptName, me.mapPriority, me.targetId, me.targetName, me.mapRelation_id, mu.userName as SpecialistName, mr.lastModified, mr.flagForConsensusReview, mr.flagForEditorialReview, mr.flagForMapLeadReview " + 
+          "from map_records mr, map_users mu, map_entries me " + 
+          "where mr.mapProjectId = :MAP_PROJECT_ID and " + 
+          "mr.workflowStatus in ('READY_FOR_PUBLICATION') and " + 
           // The loader user is id=1
-          "mr.owner_id =1 and  " + 
-          "mr.owner_id = mu.id and  " + 
-          "me.mapRecord_id=mr.id  " + 
-          "group by mr.conceptId, mr.conceptName,mr.owner_id, me.targetId"
-          + ") as MapRecordAndSpecialistInfo " +
+          "mr.owner_id =1 and " + 
+          "mr.owner_id = mu.id and " + 
+          "me.mapRecord_id=mr.id " + 
+          "group by mr.conceptId, mr.conceptName,mr.owner_id, me.targetId " +
+          ") as MapRecordAndSpecialistInfo " +
           "left join " +
           "(select name as relationName, id from map_relations rel) as Relation " +
           "on MapRecordAndSpecialistInfo.mapRelation_id=Relation.id " +
