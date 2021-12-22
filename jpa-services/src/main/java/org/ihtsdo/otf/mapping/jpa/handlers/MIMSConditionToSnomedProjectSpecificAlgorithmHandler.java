@@ -140,7 +140,7 @@ public class MIMSConditionToSnomedProjectSpecificAlgorithmHandler
 
     // All populated entries must have a map relation
     for (final MapEntry entry : mapRecord.getMapEntries()) {
-      if (entry.getTargetName() != null && !entry.getTargetName().isEmpty()
+      if (entry.getTargetName() != null && !entry.getTargetName().equals("No target")
           && entry.getMapRelation() == null) {
         result.addError("Required map relation missing for target=" + entry.getTargetId());
       }
