@@ -100,9 +100,10 @@ public class Mims2SqlReportMojo extends AbstractOtfMappingMojo {
           "MapRecordAndSpecialistInfo.SpecialistName as 'Specialist', ReviewerInfo.ReviewerName as 'Reviewer', " +
           "if(MapRecordAndSpecialistInfo.flagForConsensusReview,'True','False') as 'Consensus Review', " +
           "if(MapRecordAndSpecialistInfo.flagForEditorialReview,'True','False') as 'Editorial Review', " +
-          "if(MapRecordAndSpecialistInfo.flagForMapLeadReview,'True','False') as 'Map Lead Review' " +
+          "if(MapRecordAndSpecialistInfo.flagForMapLeadReview,'True','False') as 'Map Lead Review', " +
+          "if(AdviceInfo.adviceName='INCLUDE CHILDREN','True','False') as 'Include Children' " +
           "from " +
-          "(select mr.conceptId, mr.conceptName, me.mapPriority, me.targetId, me.targetName, me.mapRelation_id, mu.userName as SpecialistName, mr.lastModified, mr.flagForConsensusReview, mr.flagForEditorialReview, mr.flagForMapLeadReview " +
+          "(select mr.conceptId, mr.conceptName, me.mapPriority, me.targetId, me.targetName, me.mapRelation_id, mu.userName as SpecialistName, mr.lastModified, mr.flagForConsensusReview, mr.flagForEditorialReview, mr.flagForMapLeadReview, me.id as map_entries_id " +
           "from map_records mr, map_records_AUD mra, map_users mu, map_entries me " +
           "where mr.conceptId = mra.conceptId and " +
           "mr.mapProjectId = :MAP_PROJECT_ID and " +
@@ -112,7 +113,7 @@ public class Mims2SqlReportMojo extends AbstractOtfMappingMojo {
           "mra.workflowStatus in ('REVIEW_NEEDED') group by mr.conceptId, mr.conceptName,mra.owner_id, me.targetId " +
           // Special case for maps that were loaded in directly as READY_FOR_PUBLICATION, which have no REVIEW_NEEDED audit entry.
           "UNION " + 
-          "select mr.conceptId, mr.conceptName, me.mapPriority, me.targetId, me.targetName, me.mapRelation_id, mu.userName as SpecialistName, mr.lastModified, mr.flagForConsensusReview, mr.flagForEditorialReview, mr.flagForMapLeadReview " + 
+          "select mr.conceptId, mr.conceptName, me.mapPriority, me.targetId, me.targetName, me.mapRelation_id, mu.userName as SpecialistName, mr.lastModified, mr.flagForConsensusReview, mr.flagForEditorialReview, mr.flagForMapLeadReview, me.id as map_entries_id " + 
           "from map_records mr, map_users mu, map_entries me " + 
           "where mr.mapProjectId = :MAP_PROJECT_ID and " + 
           "mr.workflowStatus in ('READY_FOR_PUBLICATION') and " + 
@@ -122,6 +123,11 @@ public class Mims2SqlReportMojo extends AbstractOtfMappingMojo {
           "me.mapRecord_id=mr.id " + 
           "group by mr.conceptId, mr.conceptName,mr.owner_id, me.targetId " +
           ") as MapRecordAndSpecialistInfo " +
+          "left join " + 
+          "(select mema.map_entries_id, ma.name as adviceName " + 
+          "from map_entries_map_advices mema, map_advices ma where " + 
+          "mema.mapAdvices_id=ma.id) as AdviceInfo " + 
+          "on AdviceInfo.map_entries_id=MapRecordAndSpecialistInfo.map_entries_id " +
           "left join " +
           "(select name as relationName, id from map_relations rel) as Relation " +
           "on MapRecordAndSpecialistInfo.mapRelation_id=Relation.id " +
@@ -141,7 +147,7 @@ public class Mims2SqlReportMojo extends AbstractOtfMappingMojo {
       List<String> results = new ArrayList<>();
       // Add header row
       results.add(
-          "Date Published\tMIMS Concept ID\tMIMS Concept Name\tMap Entry\tSNOMED Concept Id\tSNOMED Concept Name\tMap Relation\tSpecialist\tReviewer\tConsensus Review\tEditorial Review\tMap Lead Review");
+          "Date Published\tMIMS Concept ID\tMIMS Concept Name\tMap Entry\tSNOMED Concept Id\tSNOMED Concept Name\tMap Relation\tSpecialist\tReviewer\tConsensus Review\tEditorial Review\tMap Lead Review\tInclude Children");
 
       // Add result rows
       for (Object[] array : objects) {
