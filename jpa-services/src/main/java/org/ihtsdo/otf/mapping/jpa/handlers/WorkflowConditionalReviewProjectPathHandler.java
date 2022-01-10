@@ -411,7 +411,8 @@ public class WorkflowConditionalReviewProjectPathHandler extends AbstractWorkflo
 
       // Keep record if query matches the concept id or name
       if (query != null && (tr.getTerminologyId().toLowerCase().startsWith(query.toLowerCase())
-          || tr.getDefaultPreferredName().toLowerCase().contains(query.toLowerCase()))) {
+          || tr.getDefaultPreferredName().toLowerCase().contains(query.toLowerCase())
+          || tr.getDefaultPreferredName().toLowerCase().contains(query.replaceAll("[^a-zA-Z0-9]", "").toLowerCase()))) {
         keepRecord = true;
       }
 
@@ -546,7 +547,8 @@ public class WorkflowConditionalReviewProjectPathHandler extends AbstractWorkflo
 
       // Keep record if query matches the concept id or name
       if (query != null && (tr.getTerminologyId().toLowerCase().startsWith(query.toLowerCase())
-          || tr.getDefaultPreferredName().toLowerCase().contains(query.toLowerCase()))) {
+          || tr.getDefaultPreferredName().toLowerCase().contains(query.toLowerCase())
+          || tr.getDefaultPreferredName().toLowerCase().contains(query.replaceAll("[^a-zA-Z0-9]", "").toLowerCase()))) {
         keepRecord = true;
       }
 
