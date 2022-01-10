@@ -254,6 +254,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     try {
       // set the logger
       logger = processLog;
+      clearLog(logger);
 
       logger.info("  Starting processing the release");
 
