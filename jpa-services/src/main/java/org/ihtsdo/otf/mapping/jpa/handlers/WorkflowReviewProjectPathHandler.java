@@ -401,23 +401,23 @@ public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandle
           keepRecord = true;
         }
       }
-
-      // Keep record if query matches the concept id or name
-      if (query != null && (tr.getTerminologyId().toLowerCase().startsWith(query.toLowerCase())
-          || tr.getDefaultPreferredName().toLowerCase().contains(query.toLowerCase())
-          || tr.getDefaultPreferredName().toLowerCase().contains(query.replaceAll("[^a-zA-Z0-9]", "").toLowerCase()))) {
-        keepRecord = true;
-      }
-
-      // if no tag query supplied or this tracking record has the requested
-      // label
-      if (query == null || query.isEmpty() || query.equals("null") || keepRecord == true) {
+//
+//      // Keep record if query matches the concept id or name
+//      if (query != null && (tr.getTerminologyId().toLowerCase().startsWith(query.toLowerCase())
+//          || tr.getDefaultPreferredName().toLowerCase().contains(query.toLowerCase())
+//          || tr.getDefaultPreferredName().toLowerCase().contains(query.replaceAll("[^a-zA-Z0-9 ]", "").toLowerCase()))) {
+//        keepRecord = true;
+//      }
+//
+//      // if no tag query supplied or this tracking record has the requested
+//      // label
+//      if (query == null || query.isEmpty() || query.equals("null") || keepRecord == true) {
         result.setTerminologyId(tr.getTerminologyId());
         result.setValue(tr.getDefaultPreferredName());
         result.setValue2(tagBuffer.toString());
         result.setId(tr.getId());
         availableWork.addSearchResult(result);
-      }
+//      }
     }
     return availableWork;
   }
@@ -541,13 +541,13 @@ public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandle
       // Keep record if query matches the concept id or name
       if (query != null && (tr.getTerminologyId().toLowerCase().startsWith(query.toLowerCase())
           || tr.getDefaultPreferredName().toLowerCase().contains(query.toLowerCase())
-          || tr.getDefaultPreferredName().toLowerCase().contains(query.replaceAll("[^a-zA-Z0-9]", "").toLowerCase()))) {
+          || tr.getDefaultPreferredName().toLowerCase().contains(query.replaceAll("[^a-zA-Z0-9 ]", "").toLowerCase()))) {
         keepRecord = true;
       }
 
       // if no tag query supplied or this tracking record has the requested
       // label, continue
-      if (query == null || query.isEmpty() || query.equals("null") || keepRecord == true) {
+//      if (query == null || query.isEmpty() || query.equals("null") || keepRecord == true) {
 
         final Set<MapRecord> mapRecords = workflowService.getMapRecordsForTrackingRecord(tr);
 
@@ -574,7 +574,7 @@ public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandle
         result.setTerminologyVersion(mapRecord.getWorkflowStatus().toString());
         result.setId(mapRecord.getId());
         assignedWork.addSearchResult(result);
-      }
+//      }
     }
     return assignedWork;
 
