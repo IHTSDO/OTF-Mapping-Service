@@ -606,6 +606,11 @@ public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandle
 
           // set workflow status to review needed
           newRecord.setWorkflowStatus(WorkflowStatus.REVIEW_NEW);
+          
+          // copy flags over to newRecord so reviewer can see them
+          newRecord.setFlagForConsensusReview(mapRecords.iterator().next().isFlagForConsensusReview());
+          newRecord.setFlagForEditorialReview(mapRecords.iterator().next().isFlagForEditorialReview());
+          newRecord.setFlagForMapLeadReview(mapRecords.iterator().next().isFlagForMapLeadReview());
         }
 
         // check for SPECIALIST assignment
