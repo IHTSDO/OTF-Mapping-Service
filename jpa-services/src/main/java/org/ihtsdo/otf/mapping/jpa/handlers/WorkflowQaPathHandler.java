@@ -584,6 +584,11 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
           if (record.getWorkflowStatus().equals(WorkflowStatus.QA_NEEDED)) {
             qaRecord.setLabels(record.getLabels());
             qaRecord.addOrigin(record.getId());
+            
+            // copy flags over to newRecord so reviewer can see them
+            qaRecord.setFlagForConsensusReview(record.isFlagForConsensusReview());
+            qaRecord.setFlagForEditorialReview(record.isFlagForEditorialReview());
+            qaRecord.setFlagForMapLeadReview(record.isFlagForMapLeadReview());
           }
         }
 
