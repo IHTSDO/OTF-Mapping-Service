@@ -57,6 +57,21 @@ angular
       // intiialize the user list
       $scope.mapUsers = {};
 
+	  // tags for tag filtering (if applicable for the project)
+      $scope.selectedTags = new Array();
+      $scope.allTags = new Array();
+
+      $scope.multiSelectSettings = {
+        displayProp : 'tag',
+        scrollableHeight : '150px',
+        scrollable : true,
+        showCheckAll : false,
+        showUncheckAll : false
+      };
+      $scope.multiSelectCustomTexts = {
+        buttonDefaultText : 'Select Tags'
+      };
+
       // tab variables, defaults to first active tab?
       $scope.tabs = [ {
         id : 0,
@@ -155,6 +170,7 @@ angular
           // construct the list of users
           $scope.mapUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
           $scope.retrieveLabels();
+		  $scope.retrieveTags();
           $scope.retrieveAvailableWork($scope.availableWorkPage);
           $scope.retrieveAvailableQAWork($scope.availableQAWorkPage);
           if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Admin') {
@@ -183,6 +199,30 @@ angular
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
+
+      $scope.retrieveTags = function() {
+        gpService.increment();
+        $http({
+          url : root_mapping + 'tags/' + $scope.focusProject.id,
+          dataType : 'json',
+          method : 'GET',
+          headers : {
+            'Content-Type' : 'application/json'
+          }
+        }).success(function(data) {
+          gpService.decrement();
+          for (var i = 0; i < data.searchResult.length; i++) {
+			$scope.allTags.push({ id: i+1, tag: data.searchResult[i].value });
+          }
+        }).error(function(data, status, headers, config) {
+          gpService.decrement();
+          $rootScope.handleHttpError(data, status, headers, config);
+        });
+      };
+
+      $scope.clearSelectedTags = function() {
+		$scope.selectedTags = new Array();
+	  };
 
       //sort direction
       var sortAscending = [];
@@ -219,6 +259,8 @@ angular
 
         // clear local conflict error message
         $scope.errorConflict = null;
+
+		$scope.availableConflictsPage = page;
 
         // if user not supplied, assume current user
         if (user == null || user == undefined)
@@ -283,6 +325,8 @@ angular
         // clear local error
         $scope.error = null;
 
+		$scope.availableWorkPage = page;
+
         // if user not supplied, assume current user
         if (user == null || user == undefined)
           user = $scope.currentUser;
@@ -297,6 +341,28 @@ angular
         // if null query, reset the search field
         if (query == null)
           $scope.queryAvailable = null;
+
+		// copy tag filter and add to query
+		var pselectedTags = "";
+		  for (var i = 0; i < $scope.selectedTags.length; i++) {
+			for(var j = 0; j < $scope.allTags.length; j++) {
+				if($scope.selectedTags[i].id == $scope.allTags[j].id){
+					if(pselectedTags == ""){
+						pselectedTags = $scope.allTags[j].tag;
+					}
+					else{
+						pselectedTags = pselectedTags.concat(' AND ', $scope.allTags[j].tag);
+					}
+				}
+			}
+          }
+
+		if(query == null){
+			query = pselectedTags;
+		}
+		if(query != null && pselectedTags != ""){
+			query = query.concat(' AND ', pselectedTags);
+		}
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
@@ -342,6 +408,8 @@ angular
         // clear local error
         $scope.error = null;
 
+		$scope.availableQAPage = page;
+		
         // clear the existing work
         $scope.availableQAWork = null;
 
@@ -515,6 +583,8 @@ angular
         // clear local review error message
         $scope.errorReview = null;
 
+		$scope.availableReviewPage = page;
+		
         // if user not supplied, assume current user
         if (user == null || user == undefined)
           user = $scope.currentUser;
@@ -529,6 +599,28 @@ angular
         // if null query, reset the search field
         if (query == null)
           $scope.queryAvailable = null;
+
+		// copy tag filter and add to query
+		var pselectedTags = "";
+		  for (var i = 0; i < $scope.selectedTags.length; i++) {
+			for(var j = 0; j < $scope.allTags.length; j++) {
+				if($scope.selectedTags[i].id == $scope.allTags[j].id){
+					if(pselectedTags == ""){
+						pselectedTags = $scope.allTags[j].tag;
+					}
+					else{
+						pselectedTags = pselectedTags.concat(' AND ', $scope.allTags[j].tag);
+					}
+				}
+			}
+          }
+
+		if(query == null){
+			query = pselectedTags;
+		}
+		if(query != null && pselectedTags != ""){
+			query = query.concat(' AND ', pselectedTags);
+		}
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
@@ -641,6 +733,28 @@ angular
           $scope.error = null;
         }
 
+		// copy tag filter and add to query
+		var pselectedTags = "";
+		  for (var i = 0; i < $scope.selectedTags.length; i++) {
+			for(var j = 0; j < $scope.allTags.length; j++) {
+				if($scope.selectedTags[i].id == $scope.allTags[j].id){
+					if(pselectedTags == ""){
+						pselectedTags = $scope.allTags[j].tag;
+					}
+					else{
+						pselectedTags = pselectedTags.concat(' AND ', $scope.allTags[j].tag);
+					}
+				}
+			}
+          }
+
+		if(query == null){
+			query = pselectedTags;
+		}
+		if(query != null && pselectedTags != ""){
+			query = query.concat(' AND ', pselectedTags);
+		}
+
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
           'startIndex' : ($scope.availableWorkPage - 1) * $scope.itemsPerPage,
@@ -745,7 +859,7 @@ angular
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
-          'startIndex' : ($scope.availableWorkPage - 1) * $scope.itemsPerPage,
+          'startIndex' : ($scope.availableConflictsPage - 1) * $scope.itemsPerPage,
           'maxResults' : batchSize,
           'sortField' : (sortField['conflicts']) ? sortField['conflicts'] : 'sortKey',
           'ascending' : sortAscending['conflicts'],
@@ -776,7 +890,7 @@ angular
                 for (var i = 0; i < $scope.itemsPerPage && i < batchSize
                   && i < $scope.availableConflicts; i++) {
                   if (trackingRecords[i].id != $scope.availableWork[i].id) {
-                    $scope.retrieveAvailableWork($scope.availableWorkPage, query);
+                    $scope.retrieveAvailableConflicts($scope.availableConflictsPage, query);
                     alert('The available conflicts list has changed since loading.  Please review the new available conflicts and try again.');
                     $scope.isConceptListOpen = false;
                     conceptListValid = false;
@@ -848,7 +962,7 @@ angular
 
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
-          'startIndex' : ($scope.availableWorkPage - 1) * $scope.itemsPerPage,
+          'startIndex' : ($scope.availableReviewPage - 1) * $scope.itemsPerPage,
           'maxResults' : batchSize,
           'sortField' : (sortField['review']) ? sortField['review'] : 'sortKey',
           'ascending' : sortAscending['review'],
@@ -880,7 +994,7 @@ angular
                   && i < $scope.availableReviewWork; i++) {
 
                   if (trackingRecords[i].id != $scope.availableReviewWork[i].id) {
-                    $scope.retrieveAvailableWork($scope.availableWorkPage, query);
+                    $scope.retrieveAvailableReviewWork($scope.availableReviewPage, query);
                     alert('The list of available review work has changed.  Please check the refreshed list and try again.');
                     $scope.isConceptListOpen = false;
                     conceptListValid = false;

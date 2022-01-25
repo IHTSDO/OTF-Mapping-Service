@@ -677,6 +677,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Record flag", required = true) @QueryParam("recordFlag") Boolean recordFlag,
     @ApiParam(value = "Refset id", required = false) @QueryParam("refsetId") String refsetId,
     @ApiParam(value = "Workflow status", required = true) @QueryParam("workflowStatus") String workflowStatus,
+    @ApiParam(value = "User name", required = false) @QueryParam("userName") String userName,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
@@ -691,7 +692,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
     try (final MapRecordRf2ComplexMapLoaderAlgorithm algo =
         new MapRecordRf2ComplexMapLoaderAlgorithm(inputFile, memeberFlag,
-            recordFlag, refsetId, workflowStatus);) {
+            recordFlag, refsetId, workflowStatus, userName);) {
 
       algo.compute();
 

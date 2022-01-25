@@ -45,14 +45,17 @@
         <br/>
         <span>Public Notes: <input type="checkbox" ng-model="project.mapNotesPublic"
           ng-change="setEditingPerformed(project)"> </span> 
+        <br/>
+        <span>Uses Tags: <input type="checkbox" ng-model="project.useTags"
+          ng-change="setEditingPerformed(project)"> </span>           
       </td>
       <td>
-        Refset Id: <input tooltip-placement="top" uib-tooltip="Team Based"
+        Refset Id: <input tooltip-placement="top" uib-tooltip="Refset Id"
           ng-model="project.refSetId" ng-change="setEditingPerformed(project)"
           style="width: 100%;"></input>
         <div tooltip-placement="top" uib-tooltip="Ref Set Name">{{project.refSetName}}</div>
         
-        <div>Module Id: <input tooltip-placement="top" uib-tooltip="Team Based"
+        <div>Module Id: <input tooltip-placement="top" uib-tooltip="Module Id"
           ng-model="project.moduleId" ng-change="setEditingPerformed(project)"
           style="width: 100%;"></input></div>
       </td>

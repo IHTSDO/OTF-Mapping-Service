@@ -159,11 +159,12 @@ public interface ContentServiceRest {
    * @param recordFlag The records flag.
    * @param refsetId the refset id
    * @param workflowStatus The workflow status to assign to created map records.
+   * @param userName the user name
    * @param authToken The auth token
    * @throws Exception The execution exception
    */
   void loadMapRecordRf2ComplexMap(String inputFile, Boolean memberFlag,
-    Boolean recordFlag, String refsetId, String workflowStatus,
+    Boolean recordFlag, String refsetId, String workflowStatus, String userName, 
     String authToken) throws Exception;
 
   /**

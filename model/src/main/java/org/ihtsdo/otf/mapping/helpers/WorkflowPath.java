@@ -16,6 +16,9 @@ public enum WorkflowPath {
 
   /** The conflict and review path. */
   CONFLICT_AND_REVIEW_PATH,
+  
+  /** The conditional review path. */
+  CONDITIONAL_REVIEW_PATH,
     
   /** The Project Review path */
   REVIEW_PROJECT_PATH,

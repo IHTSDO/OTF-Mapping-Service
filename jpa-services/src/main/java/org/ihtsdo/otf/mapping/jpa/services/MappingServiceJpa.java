@@ -1640,7 +1640,7 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     mapAdviceList.setTotalCount(mapAdvices.size());
     return mapAdviceList;
   }
-
+  
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
@@ -2509,6 +2509,35 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
     }
   }
 
+  /* see superclass */
+  @Override
+  public SearchResultList getTagsForMapProject(Long mapProjectId) throws Exception{
+    Logger.getLogger(MappingServiceJpa.class)
+    .info("Getting tags for project - " + mapProjectId);
+    
+    // Look up distinct tags used by tracking records.
+    final javax.persistence.Query query = manager
+        .createQuery("select distinct t from TrackingRecordJpa tr JOIN tr.tags t "
+            + "WHERE tr.mapProjectId = :mapProjectId");
+    try {
+      query.setParameter("mapProjectId", mapProjectId);
+      @SuppressWarnings("unchecked")
+      final List<String> tags = query.getResultList();
+      // Sort the labels
+      Collections.sort(tags);
+      final SearchResultList results = new SearchResultListJpa();
+      for (final String tag : tags) {
+        final SearchResult result = new SearchResultJpa();
+        result.setValue(tag);
+        results.addSearchResult(result);
+      }
+
+      return results;
+    } catch (NoResultException e) {
+      return new SearchResultListJpa();
+    }     
+  }  
+  
   /* see superclass */
   @Override
   public MapUserRole getMapUserRoleForMapProject(String userName, Long mapProjectId)
