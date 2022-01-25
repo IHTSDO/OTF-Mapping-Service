@@ -1928,7 +1928,7 @@
 	<!-- Load MIMS-Allergy (Special Script to do so) -->
 	<button class="btn btn-xs btn-primary"
 		ng-show="(termLoad.terminology == 'MIMS_ALLERGY' && mimsAllergyVersion != null)"
-		ng-click="loadTerminologyMimsAllergy()">Load
+		ng-click="loadTerminologyMimsAllergy(mimsAllergyVersion)">Load
 		{{termLoad.terminology}}</button>
 
 	<!--  Load Other Terminologies (Only display if have Version defined and (!SNOMED || (SNOMED & Scope defined)) -->
