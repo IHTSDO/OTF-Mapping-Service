@@ -485,6 +485,7 @@ public class WorkflowNonLegacyPathHandler extends AbstractWorkflowPathHandler {
             for(MapEntry mapEntry : newRecord.getMapEntries()) {
               mapEntry.setMapRecord(newRecord);
             }
+            newRecord.setMapNotes(existingMapRecord.getMapNotes());
           }
 
         }

@@ -122,7 +122,7 @@ public class ContentClientRest extends RootClientRest
 	/* see superclass */
 	@Override
 	public void loadMapRecordRf2ComplexMap(String inputFile, Boolean memberFlag,
-			Boolean recordFlag, String refsetId, String workflowStatus, String authToken)
+			Boolean recordFlag, String refsetId, String workflowStatus, String userName, String authToken)
 			throws Exception {
 
 		Logger.getLogger(getClass())
@@ -130,7 +130,8 @@ public class ContentClientRest extends RootClientRest
 						+ " input file:" + inputFile + " member flag:"
 						+ memberFlag + " record flag:" + recordFlag
 						+ " refset Id:" + refsetId
-						+ " workflow status: " + workflowStatus);
+						+ " workflow status: " + workflowStatus
+                        + " user name:" + userName);
 
 		validateNotEmpty(inputFile, "inputFile");
 
@@ -148,6 +149,9 @@ public class ContentClientRest extends RootClientRest
 		if (workflowStatus != null) {
 			qs.append("workflowStatus=").append(workflowStatus);
 		}
+        if (userName != null) {
+          qs.append("userName=").append(userName);
+      }
 
 		final Client client = ClientBuilder.newClient();
 		final WebTarget target = client.target(config.getProperty("base.url")

@@ -254,6 +254,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     try {
       // set the logger
       logger = processLog;
+      clearLog(logger);
 
       logger.info("  Starting processing the release");
 
@@ -502,6 +503,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           continue;
         }
 
+        // if concept has been added and removed in this editing cycle, skip
+        if (contentService.getConcept(mapRecord.getConceptId(),
+            mapProject.getSourceTerminology(),
+            mapProject.getSourceTerminologyVersion()) == null) {
+          continue;
+        }
+        
         logger.info("    Processing record for " + mapRecord.getConceptId());
 
         ct++;
@@ -639,8 +647,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         // get the concept
         Concept concept = conceptCache.get(mapRecord.getConceptId());
         if (concept == null) {
-          throw new Exception("Map record exists for nonexistent concept: "
-              + mapRecord.getConceptId());
+          logger.info("Map record exists for nonexistent concept: "
+              + mapRecord.getConceptId() + " record will not be released.");
+          continue;
         }
         if (!concept.isActive()) {
           throw new Exception("Map record exists for inactive concept: "
@@ -2145,11 +2154,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       // Concept is referenced that is not in th erelease
       if (concept == null) {
-        throw new Exception(
+        logger.info(
             "Unexpected concept id reference that does not exist - "
                 + mapRecord.getConceptId() + ", "
                 + mapProject.getSourceTerminology() + ", "
                 + mapProject.getSourceTerminologyVersion());
+        continue;
       }
       conceptCache.put(concept.getTerminologyId(), concept);
       if (testModeFlag) {

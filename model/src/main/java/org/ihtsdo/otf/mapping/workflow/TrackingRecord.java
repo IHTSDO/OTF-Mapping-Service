@@ -230,4 +230,18 @@ public interface TrackingRecord {
    */
   public void setAssignedTeamName(String assignedTeamName);
 
+  /**
+   * Gets the tags.
+   *
+   * @return the tags
+   */
+  public Set<String> getTags();
+
+  /**
+   * Sets the tags.
+   *
+   * @param tags the new tags
+   */
+  public void setTags(Set<String> tags);  
+  
 }

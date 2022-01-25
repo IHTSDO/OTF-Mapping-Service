@@ -34,9 +34,9 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
  * 
  * See admin/loader/pom.xml for a sample execution.
  * 
- * @goal run-mims-sql-report
+ * @goal run-mims2-sql-report
  */
-public class MimsSqlReportMojo extends AbstractOtfMappingMojo {
+public class Mims2SqlReportMojo extends AbstractOtfMappingMojo {
 
   /**
    * Comma delimited list of project ids.
@@ -53,7 +53,7 @@ public class MimsSqlReportMojo extends AbstractOtfMappingMojo {
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
 
-    getLog().info("Start MIMS Allergy to SNOMED SQLReport Mojo");
+    getLog().info("Start MIMS Condition to SNOMED SQLReport Mojo");
 
     setupBindInfoPackage();
 
@@ -72,7 +72,7 @@ public class MimsSqlReportMojo extends AbstractOtfMappingMojo {
       }
 
     } catch (Exception e) {
-      getLog().error("Error running MIMS Allergy to SNOMED SQLReport Mojo.", e);
+      getLog().error("Error running MIMS Condition to SNOMED SQLReport Mojo.", e);
     }
   }
 
@@ -85,36 +85,53 @@ public class MimsSqlReportMojo extends AbstractOtfMappingMojo {
   private void runReport(long mapProjectId) throws Exception {
     try (ContentService service = new ContentServiceJpa() {
       {
-        MimsSqlReportMojo.this.manager = manager;
+        Mims2SqlReportMojo.this.manager = manager;
       }
     }; MappingService mappingService = new MappingServiceJpa();) {
 
       // Run the SQL report
       final javax.persistence.Query query = manager.createNativeQuery(
           "select FROM_UNIXTIME(MapRecordAndSpecialistInfo.lastModified/1000, '%m/%d/%Y') as 'Date Published', " +
-          "MapRecordAndSpecialistInfo.conceptId as 'MIMS Concept ID (Molecule/ASC)', " +
-          "MapRecordAndSpecialistInfo.conceptName as 'MIMS Concept Name (Molecule/ASC)', " +
-          "if(locate('Parent Molecule',MapRecordAndSpecialistInfo.conceptName)>0,'Molecule','ASC') as 'Type (Molecule/ASC)', " +
+          "MapRecordAndSpecialistInfo.conceptId as 'MIMS Concept ID', " +
+          "MapRecordAndSpecialistInfo.conceptName as 'MIMS Concept Name', " +
           "MapRecordAndSpecialistInfo.mapPriority as 'Map Entry', " +
           "MapRecordAndSpecialistInfo.targetId as 'SNOMED Concept Id', MapRecordAndSpecialistInfo.targetName as 'SNOMED Concept Name', " +
           "Relation.relationName as 'Map Relation', " +
           "MapRecordAndSpecialistInfo.SpecialistName as 'Specialist', ReviewerInfo.ReviewerName as 'Reviewer', " +
           "if(MapRecordAndSpecialistInfo.flagForConsensusReview,'True','False') as 'Consensus Review', " +
           "if(MapRecordAndSpecialistInfo.flagForEditorialReview,'True','False') as 'Editorial Review', " +
-          "if(MapRecordAndSpecialistInfo.flagForMapLeadReview,'True','False') as 'Map Lead Review' " +
+          "if(MapRecordAndSpecialistInfo.flagForMapLeadReview,'True','False') as 'Map Lead Review', " +
+          "if(AdviceInfo.adviceName='INCLUDE CHILDREN','True','False') as 'Include Children' " +
           "from " +
-          "(select mr.conceptId, mr.conceptName, me.mapPriority, me.targetId, me.targetName, me.mapRelation_id, mu.userName as SpecialistName, mr.lastModified, mr.flagForConsensusReview, mr.flagForEditorialReview, mr.flagForMapLeadReview " +
+          "(select mr.conceptId, mr.conceptName, me.mapPriority, me.targetId, me.targetName, me.mapRelation_id, mu.userName as SpecialistName, mr.lastModified, mr.flagForConsensusReview, mr.flagForEditorialReview, mr.flagForMapLeadReview, me.id as map_entries_id " +
           "from map_records mr, map_records_AUD mra, map_users mu, map_entries me " +
           "where mr.conceptId = mra.conceptId and " +
           "mr.mapProjectId = :MAP_PROJECT_ID and " +
           "mr.workflowStatus in ('PUBLISHED','READY_FOR_PUBLICATION') and " +
           "mra.owner_id = mu.id and " +
-          "me.mapRecord_id=mr.id and  " +
-          "mra.workflowStatus in ('REVIEW_NEEDED') group by mr.conceptId, mr.conceptName,mra.owner_id, me.targetId) as MapRecordAndSpecialistInfo " +
+          "me.mapRecord_id=mr.id and " +
+          "mra.workflowStatus in ('REVIEW_NEEDED') group by mr.conceptId, mr.conceptName,mra.owner_id, me.targetId " +
+          // Special case for maps that were loaded in directly as READY_FOR_PUBLICATION, which have no REVIEW_NEEDED audit entry.
+          "UNION " + 
+          "select mr.conceptId, mr.conceptName, me.mapPriority, me.targetId, me.targetName, me.mapRelation_id, mu.userName as SpecialistName, mr.lastModified, mr.flagForConsensusReview, mr.flagForEditorialReview, mr.flagForMapLeadReview, me.id as map_entries_id " + 
+          "from map_records mr, map_users mu, map_entries me " + 
+          "where mr.mapProjectId = :MAP_PROJECT_ID and " + 
+          "mr.workflowStatus in ('READY_FOR_PUBLICATION') and " + 
+          // The loader user is id=1
+          "mr.owner_id =1 and " + 
+          "mr.owner_id = mu.id and " + 
+          "me.mapRecord_id=mr.id " + 
+          "group by mr.conceptId, mr.conceptName,mr.owner_id, me.targetId " +
+          ") as MapRecordAndSpecialistInfo " +
+          "left join " + 
+          "(select mema.map_entries_id, ma.name as adviceName " + 
+          "from map_entries_map_advices mema, map_advices ma where " + 
+          "mema.mapAdvices_id=ma.id) as AdviceInfo " + 
+          "on AdviceInfo.map_entries_id=MapRecordAndSpecialistInfo.map_entries_id " +
           "left join " +
           "(select name as relationName, id from map_relations rel) as Relation " +
           "on MapRecordAndSpecialistInfo.mapRelation_id=Relation.id " +
-          "join " +
+          "left join " +
           "(select mr.conceptId, mu.userName as ReviewerName from map_records mr, map_records_AUD mra, map_users mu where mr.conceptId = mra.conceptId and " +
           "mr.workflowStatus in ('PUBLISHED','READY_FOR_PUBLICATION') and " +
           "mra.owner_id = mu.id and " +
@@ -130,7 +147,7 @@ public class MimsSqlReportMojo extends AbstractOtfMappingMojo {
       List<String> results = new ArrayList<>();
       // Add header row
       results.add(
-          "Date Published\tMIMS Concept ID (Molecule/ASC)\tMIMS Concept Name (Molecule/ASC)\tType (Molecule/ASC)\tMap Entry\tSNOMED Concept Id\tSNOMED Concept Name\tMap Relation\tSpecialist\tReviewer\tConsensus Review\tEditorial Review\tMap Lead Review");
+          "Date Published\tMIMS Concept ID\tMIMS Concept Name\tMap Entry\tSNOMED Concept Id\tSNOMED Concept Name\tMap Relation\tSpecialist\tReviewer\tConsensus Review\tEditorial Review\tMap Lead Review\tInclude Children");
 
       // Add result rows
       for (Object[] array : objects) {
@@ -188,7 +205,7 @@ public class MimsSqlReportMojo extends AbstractOtfMappingMojo {
     } catch (Exception e) {
       getLog().error(e);
       throw new MojoExecutionException(
-          "MIMS Allergy to SNOMED SQLReport mojo failed to complete", e);
+          "MIMS Condition to SNOMED SQLReport mojo failed to complete", e);
     }
   }
 
@@ -232,7 +249,7 @@ public class MimsSqlReportMojo extends AbstractOtfMappingMojo {
     props.put("mail.smtp.auth", config.getProperty("mail.smtp.auth"));
 
     ConfigUtility.sendEmailWithAttachment(
-        "[OTF-Mapping-Tool] Nightly MIMS Allergy to SNOMED SQL report", from, notificationRecipients,
+        "[OTF-Mapping-Tool] Nightly MIMS Condition to SNOMED SQL report", from, notificationRecipients,
         notificationMessage, props, fileName,
         "true".equals(config.getProperty("mail.smtp.auth")));
   }
