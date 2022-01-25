@@ -423,8 +423,9 @@ public interface ContentServiceRest {
    * Loads Mims-Allergy data
    * 
    * @param authToken The auth token
+   * @param mimsAllergyVersion The mims allergy version
    * @throws Exception The execution exception
    */
-  void loadTerminologyMimsAllergy(String authToken) throws Exception;
+  void loadTerminologyMimsAllergy(String authToken, String mimsAllergyVersion) throws Exception;
 
 }

@@ -964,45 +964,31 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   /* see superclass */
   @Override
   @PUT
-  @Path("/terminology/load/mims_allergy")
+  @Path("/terminology/load/mims_allergy/{version}")
   @Consumes(MediaType.TEXT_PLAIN)
   @ApiOperation(value = "Loads MIMS-Allergy terminology from directory", notes = "Loads MIMS terminology from directory for specified version")
-  public void loadTerminologyMimsAllergy(@ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+  public void loadTerminologyMimsAllergy(@ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken,
+		  @ApiParam(value = "mims allergy version", required = true) String version)
     throws Exception {
 
 	String inputDir = ConfigUtility.getConfigProperties()
 	          .getProperty("MIMS_Allergy.dir");
 	
-	
-	
-	String loadDir = ConfigUtility.getConfigProperties()
-	          .getProperty("MIMS_Allergy.loadDir");
     Logger.getLogger(getClass())
-        .info("RESTful call (Content): /terminology/load/mims");
+        .info("RESTful call (Content): /terminology/load/mims/" + version);
 
     Logger.getLogger(getClass())
         .info("Input directory pulled from config.properties, and set to "
             + inputDir);
     
-    Logger.getLogger(getClass())
-    .info("load directory pulled from config.properties, and set to "
-        + loadDir);
     
-    File dir = new File(loadDir);
+    File dir = new File(inputDir + version);
     FileFilter fileFilter = new WildcardFileFilter("*.xlsx");
     File[] files = dir.listFiles(fileFilter);
     if(files.length < 1) {
     	return;
     }
-    String filename = files[0].getAbsolutePath();
-    
-    String termVersionDate = files[0].getName().split("[.-]")[1];
-    
-    SimpleDateFormat format1 = new SimpleDateFormat("ddMMMyyyy");
-    SimpleDateFormat format2 = new SimpleDateFormat("yyyy_MM_dd");
-    Date date = format1.parse(termVersionDate);
-    String version = format2.format(date);
-        
+    String filename = files[0].getAbsolutePath();   
     
     generateMims(filename, version);
 
