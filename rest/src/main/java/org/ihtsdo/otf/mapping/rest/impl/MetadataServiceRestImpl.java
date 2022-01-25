@@ -425,31 +425,36 @@ public class MetadataServiceRestImpl extends RootServiceRestImpl
       File[] loadingFiles = excelDir.listFiles(onlyExcel);
       String version = null;
       String filename = null;
-      if(loadingFiles.length > 1) {
-
-  	    filename = loadingFiles[0].getAbsolutePath();
+      
+      File folder = new File(mimsAllergyDir);
+      if(!folder.exists()){
+        throw new FileNotFoundException(folder + " not found");
+      }
+      
+      for(File file : loadingFiles) {
+		filename = file.getAbsolutePath();
   	    
-  	    String termVersionDate = loadingFiles[0].getName().split("[.-]")[1];
+  	    String termVersionDate = file.getName().split("[.-]")[1];
   	    
   	    SimpleDateFormat format1 = new SimpleDateFormat("ddMMMyyyy");
   	    SimpleDateFormat format2 = new SimpleDateFormat("yyyy_MM_dd");
   	    Date date = format1.parse(termVersionDate);
   	    version = format2.format(date);
+  	    
+  	    File versionFolder = new File(mimsAllergyDir + "/" + version);
+  	    if(!versionFolder.exists())
+  	    	versionFolder.mkdirs();
       }
-
-      File folder = new File(mimsAllergyDir);
-      if(!folder.exists()){
-        throw new FileNotFoundException(folder + " not found");
-      } 
-      File[] listOfFiles = folder.listFiles();
       
+      File[] listOfFiles = folder.listFiles();
       // We only care about the directories that follow a yyyy_MMM_dd naming convention
       for (int i = 0; i < listOfFiles.length; i++) {
         if (listOfFiles[i].isDirectory()
             && listOfFiles[i].getName().matches("\\d{4}_\\d{2}_\\d{2}")) {
-        	mimsAllergyVersions += listOfFiles[i].getName() + ";";
+      	    mimsAllergyVersions += listOfFiles[i].getName() + ";";
         }
       }
+
       if(version != null && !mimsAllergyVersions.contains(version)) {
     	  mimsAllergyVersions += version + ";";
     	  File newTerminologyFile = new File(filename);

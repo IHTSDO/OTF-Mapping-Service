@@ -681,10 +681,13 @@ angular
             }).success(
               function(data) {
                 $scope.downloadedMimsAllergyVersions = new Array();
-                var downloadedVersionArray = data.split(';');
-                for (var i = 0; i < downloadedVersionArray.length; i++) {
-                  $scope.downloadedMimsAllergyVersions.push(downloadedVersionArray[i]);
-                  }            
+                if(data != ""){
+                	var downloadedVersionArray = data.split(';');
+                	for (var i = 0; i < downloadedVersionArray.length; i++) {
+                        $scope.downloadedMimsAllergyVersions.push(downloadedVersionArray[i]);
+                    }  
+                }
+                          
                 deferred.resolve();
                 
               }).error(function(data, status, headers, config) {
@@ -2879,20 +2882,8 @@ angular
         
         $scope.downloadTerminologyMimsAllergy = function() {
         	// load the latest version of MIMS Allergy   
-            $http({
-              url : root_content + 'terminology/load/mims_allergy',
-              method : 'POST',
-              }).success(function(data) {
-                //Reload downloaded Mims-Allergy version metadata
-                var promise = getDownloadedAtcVersions();
-                promise.then(function(data){
-                  gpService.decrement();
-                });
-              }).error(function(data, status, headers, config) {
-              gpService.decrement();          
-              $rootScope.handleHttpError(data, status, headers, config);
-            });
-            
+            getDownloadedMimsAllergyVersions();
+  
         };
 
         //hold select list for terminologies and versions.
@@ -3110,6 +3101,10 @@ angular
           gpService.increment();
 
           var errors = '';
+          
+          if(mimsAllergyVersion == ""){
+        	  errors += "Select a valid version of Mims-Allergy";
+          }
 
           if (errors.length > 0) {
             alert(errors);
