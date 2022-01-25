@@ -610,7 +610,7 @@ public class ContentClientRest extends RootClientRest
   }
 
 @Override
-public void loadTerminologyMimsAllergy(String authToken) throws Exception {
+public void loadTerminologyMimsAllergy(String authToken, String mimsAllergyVersion) throws Exception {
 	// TODO Auto-generated method stub
 	
 }
