@@ -998,7 +998,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     	String termVersionDate = file.getName().split("[.-]")[1];
 	    
         SimpleDateFormat format1 = new SimpleDateFormat("ddMMMyyyy");
-        SimpleDateFormat format2 = new SimpleDateFormat("yyyy_MM_dd");
+        SimpleDateFormat format2 = new SimpleDateFormat("yyyyMMdd");
         Date date = format1.parse(termVersionDate);
         String fileVersion = format2.format(date);
         
@@ -1008,7 +1008,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         }
     }
     if(filename == "") {
-    	throw new FileNotFoundException("data for version" + version + " not found");
+    	throw new FileNotFoundException("data for version " + version + " not found");
     }
     
     
