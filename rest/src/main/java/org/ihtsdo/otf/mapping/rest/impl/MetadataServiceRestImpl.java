@@ -437,7 +437,7 @@ public class MetadataServiceRestImpl extends RootServiceRestImpl
   	    String termVersionDate = file.getName().split("[.-]")[1];
   	    
   	    SimpleDateFormat format1 = new SimpleDateFormat("ddMMMyyyy");
-  	    SimpleDateFormat format2 = new SimpleDateFormat("yyyy_MM_dd");
+  	    SimpleDateFormat format2 = new SimpleDateFormat("yyyyMMdd");
   	    Date date = format1.parse(termVersionDate);
   	    version = format2.format(date);
   	    
@@ -447,10 +447,10 @@ public class MetadataServiceRestImpl extends RootServiceRestImpl
       }
       
       File[] listOfFiles = folder.listFiles();
-      // We only care about the directories that follow a yyyy_MMM_dd naming convention
+      // We only care about the directories that follow a yyyyMMdd naming convention
       for (int i = 0; i < listOfFiles.length; i++) {
         if (listOfFiles[i].isDirectory()
-            && listOfFiles[i].getName().matches("\\d{4}_\\d{2}_\\d{2}")) {
+            && listOfFiles[i].getName().matches("\\d{4}\\d{2}\\d{2}")) {
       	    mimsAllergyVersions += listOfFiles[i].getName() + ";";
         }
       }
