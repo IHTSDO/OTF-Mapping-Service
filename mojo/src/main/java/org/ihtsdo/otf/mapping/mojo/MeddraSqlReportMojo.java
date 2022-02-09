@@ -97,8 +97,13 @@ public class MeddraSqlReportMojo extends AbstractOtfMappingMojo {
               + " , me.targetName AS mapTargetName "
               + " , if(me.targetName = 'No target','UNMAPPABLE','EXACT MATCH') as mapRelation "
               + " FROM map_records mr "
+              + "   JOIN map_projects_scope_concepts mpsc ON mr.mapProjectId = mpsc.id "
+              + "   AND mr.conceptId=mpsc.scopeConcepts " 
+              + "   LEFT JOIN map_projects_scope_excluded_concepts mpsec "
+              + "   ON mr.mapProjectId = mpsec.id AND mr.conceptId=mpsec.scopeExcludedConcepts " 
               + " LEFT OUTER JOIN map_entries me ON mr.id = me.mapRecord_id "
               + " WHERE mr.mapProjectId = :MAP_PROJECT_ID "
+              + " AND mpsec.scopeExcludedConcepts IS NULL"
               + " AND mr.workflowStatus = 'READY_FOR_PUBLICATION' "
               + " ORDER BY 2; ");
 
