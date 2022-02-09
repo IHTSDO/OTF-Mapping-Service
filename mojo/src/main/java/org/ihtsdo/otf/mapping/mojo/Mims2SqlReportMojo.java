@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019 West Coast Informatics, LLC
+ *    Copyright 2021 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.mojo;
 
@@ -30,13 +30,13 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
- * Run the weekly SQLdump report and email to MedDRA staff
+ * Run the nightly SQLdump report and email to MIMS staff
  * 
  * See admin/loader/pom.xml for a sample execution.
  * 
- * @goal run-meddra-sql-report
+ * @goal run-mims2-sql-report
  */
-public class MeddraSqlReportMojo extends AbstractOtfMappingMojo {
+public class Mims2SqlReportMojo extends AbstractOtfMappingMojo {
 
   /**
    * Comma delimited list of project ids.
@@ -53,7 +53,7 @@ public class MeddraSqlReportMojo extends AbstractOtfMappingMojo {
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
 
-    getLog().info("Start MedDRA SQLReport Mojo");
+    getLog().info("Start MIMS Condition to SNOMED SQLReport Mojo");
 
     setupBindInfoPackage();
 
@@ -72,7 +72,7 @@ public class MeddraSqlReportMojo extends AbstractOtfMappingMojo {
       }
 
     } catch (Exception e) {
-      getLog().error("Error running MedDRA SQLReport Mojo.", e);
+      getLog().error("Error running MIMS Condition to SNOMED SQLReport Mojo.", e);
     }
   }
 
@@ -85,27 +85,59 @@ public class MeddraSqlReportMojo extends AbstractOtfMappingMojo {
   private void runReport(long mapProjectId) throws Exception {
     try (ContentService service = new ContentServiceJpa() {
       {
-        MeddraSqlReportMojo.this.manager = manager;
+        Mims2SqlReportMojo.this.manager = manager;
       }
     }; MappingService mappingService = new MappingServiceJpa();) {
 
       // Run the SQL report
       final javax.persistence.Query query = manager.createNativeQuery(
-          " SELECT DISTINCT " + " mr.conceptId AS referencedComponentId "
-              + " , mr.conceptName AS referencedComponentName "
-              + " , me.targetId AS mapTarget "
-              + " , me.targetName AS mapTargetName "
-              + " , if(me.targetName = 'No target','UNMAPPABLE','EXACT MATCH') as mapRelation "
-              + " FROM map_records mr "
-              + "   JOIN map_projects_scope_concepts mpsc ON mr.mapProjectId = mpsc.id "
-              + "   AND mr.conceptId=mpsc.scopeConcepts " 
-              + "   LEFT JOIN map_projects_scope_excluded_concepts mpsec "
-              + "   ON mr.mapProjectId = mpsec.id AND mr.conceptId=mpsec.scopeExcludedConcepts " 
-              + " LEFT OUTER JOIN map_entries me ON mr.id = me.mapRecord_id "
-              + " WHERE mr.mapProjectId = :MAP_PROJECT_ID "
-              + " AND mpsec.scopeExcludedConcepts IS NULL"
-              + " AND mr.workflowStatus = 'READY_FOR_PUBLICATION' "
-              + " ORDER BY 2; ");
+          "select FROM_UNIXTIME(MapRecordAndSpecialistInfo.lastModified/1000, '%m/%d/%Y') as 'Date Published', " +
+          "MapRecordAndSpecialistInfo.conceptId as 'MIMS Concept ID', " +
+          "MapRecordAndSpecialistInfo.conceptName as 'MIMS Concept Name', " +
+          "MapRecordAndSpecialistInfo.mapPriority as 'Map Entry', " +
+          "MapRecordAndSpecialistInfo.targetId as 'SNOMED Concept Id', MapRecordAndSpecialistInfo.targetName as 'SNOMED Concept Name', " +
+          "Relation.relationName as 'Map Relation', " +
+          "MapRecordAndSpecialistInfo.SpecialistName as 'Specialist', ReviewerInfo.ReviewerName as 'Reviewer', " +
+          "if(MapRecordAndSpecialistInfo.flagForConsensusReview,'True','False') as 'Consensus Review', " +
+          "if(MapRecordAndSpecialistInfo.flagForEditorialReview,'True','False') as 'Editorial Review', " +
+          "if(MapRecordAndSpecialistInfo.flagForMapLeadReview,'True','False') as 'Map Lead Review', " +
+          "if(AdviceInfo.adviceName='INCLUDE CHILDREN','True','False') as 'Include Children' " +
+          "from " +
+          "(select mr.conceptId, mr.conceptName, me.mapPriority, me.targetId, me.targetName, me.mapRelation_id, mu.userName as SpecialistName, mr.lastModified, mr.flagForConsensusReview, mr.flagForEditorialReview, mr.flagForMapLeadReview, me.id as map_entries_id " +
+          "from map_records mr, map_records_AUD mra, map_users mu, map_entries me " +
+          "where mr.conceptId = mra.conceptId and " +
+          "mr.mapProjectId = :MAP_PROJECT_ID and " +
+          "mr.workflowStatus in ('PUBLISHED','READY_FOR_PUBLICATION') and " +
+          "mra.owner_id = mu.id and " +
+          "me.mapRecord_id=mr.id and " +
+          "mra.workflowStatus in ('REVIEW_NEEDED') group by mr.conceptId, mr.conceptName,mra.owner_id, me.targetId " +
+          // Special case for maps that were loaded in directly as READY_FOR_PUBLICATION, which have no REVIEW_NEEDED audit entry.
+          "UNION " + 
+          "select mr.conceptId, mr.conceptName, me.mapPriority, me.targetId, me.targetName, me.mapRelation_id, mu.userName as SpecialistName, mr.lastModified, mr.flagForConsensusReview, mr.flagForEditorialReview, mr.flagForMapLeadReview, me.id as map_entries_id " + 
+          "from map_records mr, map_users mu, map_entries me " + 
+          "where mr.mapProjectId = :MAP_PROJECT_ID and " + 
+          "mr.workflowStatus in ('READY_FOR_PUBLICATION') and " + 
+          // The loader user is id=1
+          "mr.owner_id =1 and " + 
+          "mr.owner_id = mu.id and " + 
+          "me.mapRecord_id=mr.id " + 
+          "group by mr.conceptId, mr.conceptName,mr.owner_id, me.targetId " +
+          ") as MapRecordAndSpecialistInfo " +
+          "left join " + 
+          "(select mema.map_entries_id, ma.name as adviceName " + 
+          "from map_entries_map_advices mema, map_advices ma where " + 
+          "mema.mapAdvices_id=ma.id) as AdviceInfo " + 
+          "on AdviceInfo.map_entries_id=MapRecordAndSpecialistInfo.map_entries_id " +
+          "left join " +
+          "(select name as relationName, id from map_relations rel) as Relation " +
+          "on MapRecordAndSpecialistInfo.mapRelation_id=Relation.id " +
+          "left join " +
+          "(select mr.conceptId, mu.userName as ReviewerName from map_records mr, map_records_AUD mra, map_users mu where mr.conceptId = mra.conceptId and " +
+          "mr.workflowStatus in ('PUBLISHED','READY_FOR_PUBLICATION') and " +
+          "mra.owner_id = mu.id and " +
+          "mra.workflowStatus in ('REVIEW_RESOLVED') group by mr.conceptId,mra.owner_id) as ReviewerInfo " +
+          "on MapRecordAndSpecialistInfo.conceptId=ReviewerInfo.conceptId order by MapRecordAndSpecialistInfo.conceptId, MapRecordAndSpecialistInfo.mapPriority; "
+          );
 
       query.setParameter("MAP_PROJECT_ID", mapProjectId);
 
@@ -115,7 +147,7 @@ public class MeddraSqlReportMojo extends AbstractOtfMappingMojo {
       List<String> results = new ArrayList<>();
       // Add header row
       results.add(
-          "Referenced Component Id\tReferenced Component Name\tMap Target\tMap Target Name\tMap Relation");
+          "Date Published\tMIMS Concept ID\tMIMS Concept Name\tMap Entry\tSNOMED Concept Id\tSNOMED Concept Name\tMap Relation\tSpecialist\tReviewer\tConsensus Review\tEditorial Review\tMap Lead Review\tInclude Children");
 
       // Add result rows
       for (Object[] array : objects) {
@@ -173,7 +205,7 @@ public class MeddraSqlReportMojo extends AbstractOtfMappingMojo {
     } catch (Exception e) {
       getLog().error(e);
       throw new MojoExecutionException(
-          "MedDRA SQLReport mojo failed to complete", e);
+          "MIMS Condition to SNOMED SQLReport mojo failed to complete", e);
     }
   }
 
@@ -192,13 +224,13 @@ public class MeddraSqlReportMojo extends AbstractOtfMappingMojo {
       throw new MojoExecutionException("Failed to retrieve config properties");
     }
     String notificationRecipients =
-        config.getProperty("sqlreport.send.notification.recipients.meddra."
+        config.getProperty("sqlreport.send.notification.recipients.mims."
             + getClass().getSimpleName());
     String notificationMessage = "";
     getLog().info("Request to send notification email to recipients: "
         + notificationRecipients);
     notificationMessage +=
-        "Hello,\n\nThe weekly SQL report has been generated.";
+        "Hello,\n\nThe nightly SQL report has been generated.";
 
     String from;
     if (config.containsKey("mail.smtp.from")) {
@@ -217,7 +249,7 @@ public class MeddraSqlReportMojo extends AbstractOtfMappingMojo {
     props.put("mail.smtp.auth", config.getProperty("mail.smtp.auth"));
 
     ConfigUtility.sendEmailWithAttachment(
-        "[OTF-Mapping-Tool] Weekly SQL report", from, notificationRecipients,
+        "[OTF-Mapping-Tool] Nightly MIMS Condition to SNOMED SQL report", from, notificationRecipients,
         notificationMessage, props, fileName,
         "true".equals(config.getProperty("mail.smtp.auth")));
   }

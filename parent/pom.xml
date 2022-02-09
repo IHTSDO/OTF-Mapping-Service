@@ -10,7 +10,7 @@
 
   <groupId>org.ihtsdo.otf.mapping</groupId>
   <artifactId>mapping-parent</artifactId>
-  <version>1.7.20-SNAPSHOT</version>
+  <version>1.7.21-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>IHTSDO Mapping Service Parent</name>
   <description>Parent project for mapping service</description>
@@ -28,12 +28,12 @@
     <commons-io.version>2.7</commons-io.version>
     
     <!-- Set hibernate versions -->
-    <hibernate.c3p0.version>5.4.4.Final</hibernate.c3p0.version>
-    <hibernate.core.version>5.4.4.Final</hibernate.core.version>
-    <hibernate.entitymanager.version>5.4.4.Final</hibernate.entitymanager.version>
-    <hibernate.envers.version>5.4.4.Final</hibernate.envers.version>
-    <hibernate.search.version>5.11.2.Final</hibernate.search.version>
-    <hibernate.validator.version>6.0.17.Final</hibernate.validator.version>
+    <hibernate.c3p0.version>5.4.33.Final</hibernate.c3p0.version>
+    <hibernate.core.version>5.4.33.Final</hibernate.core.version>
+    <hibernate.entitymanager.version>5.4.33.Final</hibernate.entitymanager.version>
+    <hibernate.envers.version>5.4.33.Final</hibernate.envers.version>
+    <hibernate.search.version>5.11.10.Final</hibernate.search.version>
+    <hibernate.validator.version>6.0.22.Final</hibernate.validator.version>
     
     <java.version>11</java.version>
     <javax.mail.version>1.6.2</javax.mail.version>
