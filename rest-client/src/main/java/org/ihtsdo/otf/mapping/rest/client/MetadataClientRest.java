@@ -48,5 +48,11 @@ public class MetadataClientRest extends RootClientRest implements MetadataServic
       // TODO Auto-generated method stub
       return null;  
     }
+
+	@Override
+	public String getAllMimsAllergyVersions(String authToken) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	
 }
