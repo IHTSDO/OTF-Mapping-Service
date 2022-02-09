@@ -160,9 +160,9 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
     final Set<String> recordMinusEntry = new HashSet<>(recordWords);
     recordMinusEntry.removeAll(entryWords);
 
-    // All entries must have a map relation
+    // All populated entries must have a map relation
     for (final MapEntry entry : mapRecord.getMapEntries()) {
-      if(entry.getMapRelation() == null) {
+      if(entry.getTargetName() != null && !entry.getTargetName().equals("No target") && entry.getMapRelation() == null) {
         result.addError("Required map relation missing for target=" + entry.getTargetId());
       }
     }   

@@ -965,45 +965,52 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   /* see superclass */
   @Override
   @PUT
-  @Path("/terminology/load/mims_allergy")
+  @Path("/terminology/load/mims_allergy/{version}")
   @Consumes(MediaType.TEXT_PLAIN)
   @ApiOperation(value = "Loads MIMS-Allergy terminology from directory", notes = "Loads MIMS terminology from directory for specified version")
-  public void loadTerminologyMimsAllergy(@ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+  public void loadTerminologyMimsAllergy(@ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken,
+		  @ApiParam(value = "mims allergy version", required = true) @PathParam("version") String version)
     throws Exception {
 
 	String inputDir = ConfigUtility.getConfigProperties()
 	          .getProperty("MIMS_Allergy.dir");
 	
-	
-	
 	String loadDir = ConfigUtility.getConfigProperties()
 	          .getProperty("MIMS_Allergy.loadDir");
+	
     Logger.getLogger(getClass())
-        .info("RESTful call (Content): /terminology/load/mims");
+        .info("RESTful call (Content): /terminology/load/mims/" + version);
 
     Logger.getLogger(getClass())
         .info("Input directory pulled from config.properties, and set to "
             + inputDir);
     
-    Logger.getLogger(getClass())
-    .info("load directory pulled from config.properties, and set to "
-        + loadDir);
     
-    File dir = new File(loadDir);
+    File load = new File(loadDir);
     FileFilter fileFilter = new WildcardFileFilter("*.xlsx");
-    File[] files = dir.listFiles(fileFilter);
-    if(files.length < 1) {
+    File[] files = load.listFiles(fileFilter);
+    if(files != null && files.length < 1) {
     	return;
     }
-    String filename = files[0].getAbsolutePath();
+    String filename = "";
     
-    String termVersionDate = files[0].getName().split("[.-]")[1];
-    
-    SimpleDateFormat format1 = new SimpleDateFormat("ddMMMyyyy");
-    SimpleDateFormat format2 = new SimpleDateFormat("yyyy_MM_dd");
-    Date date = format1.parse(termVersionDate);
-    String version = format2.format(date);
+    for(File file : files) {
+    	String termVersionDate = file.getName().split("[.-]")[1];
+	    
+        SimpleDateFormat format1 = new SimpleDateFormat("ddMMMyyyy");
+        SimpleDateFormat format2 = new SimpleDateFormat("yyyyMMdd");
+        Date date = format1.parse(termVersionDate);
+        String fileVersion = format2.format(date);
         
+        if(version.equals(fileVersion)) {
+        	filename = file.getAbsolutePath();
+        	break;
+        }
+    }
+    if(filename == "") {
+    	throw new FileNotFoundException("data for version " + version + " not found");
+    }
+    
     
     generateMims(filename, version);
 
@@ -1057,6 +1064,8 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 	Map<String, String> conceptsASCEnd = new LinkedHashMap<String, String>();
 	Map<String, String> conceptsNOASCEnd = new LinkedHashMap<String, String>();
 	for (int i = 1; i < sheet.getPhysicalNumberOfRows(); i++) {
+		Logger.getLogger(getClass()).info(i);
+		
 		Row currentRow = sheet.getRow(i);
 		if(currentRow.getCell(2) != null && getRowType(currentRow) == "ASC") {
 			if(currentRow.getCell(1) != null) {

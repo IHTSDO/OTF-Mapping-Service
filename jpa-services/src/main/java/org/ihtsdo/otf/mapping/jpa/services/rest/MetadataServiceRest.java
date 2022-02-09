@@ -61,4 +61,13 @@ public interface MetadataServiceRest {
 	 * @throws Exception the exception
 	 */
 	String getAllAtcVersions(String authToken) throws Exception;
+
+	/**
+	 * Returns the latest mims allergy version from the loading folder.
+	 *
+	 * @param authToken the auth token
+	 * @return the mims allergy version
+	 * @throws Exception the exception
+	 */
+	String getAllMimsAllergyVersions(String authToken) throws Exception;
 }

@@ -1876,8 +1876,18 @@
 				</select></td>
 			</tr>
 			
-			<!-- Define Versions (For all other terminologies) -->
-			<tr ng-show="termLoad.terminology == 'MIMS-Allergy'"></tr>
+			<!-- For Loading MIMS Allergy -->
+			<tr ng-show="termLoad.terminology == 'MIMS_ALLERGY'">
+			<td>MIMS Allergy version to load<br>
+				<br>
+					<button class="btn btn-xs btn-primary"
+						ng-show="termLoad.terminology == 'MIMS_ALLERGY'"
+						ng-click="downloadTerminologyMimsAllergy()">Check for new MIMS Allergy version</button>
+				</td>
+				<td><select ng-model="mimsAllergyVersion"
+					ng-options="item for item in downloadedMimsAllergyVersions">
+				</select></td>
+			</tr>
 
 			<!-- Define Versions (For all other terminologies) -->
 			<tr ng-show="termLoad.terminology != 'GMDN' && termLoad.terminology != 'ATC' && termLoad.terminology != 'MIMS_ALLERGY' && (termLoad.terminology)">
@@ -1917,8 +1927,8 @@
 		
 	<!-- Load MIMS-Allergy (Special Script to do so) -->
 	<button class="btn btn-xs btn-primary"
-		ng-show="(termLoad.terminology == 'MIMS_ALLERGY')"
-		ng-click="loadTerminologyMimsAllergy()">Load
+		ng-show="(termLoad.terminology == 'MIMS_ALLERGY' && mimsAllergyVersion != null)"
+		ng-click="loadTerminologyMimsAllergy(mimsAllergyVersion)">Load
 		{{termLoad.terminology}}</button>
 
 	<!--  Load Other Terminologies (Only display if have Version defined and (!SNOMED || (SNOMED & Scope defined)) -->

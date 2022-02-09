@@ -66,6 +66,7 @@ angular
         
         $scope.downloadedGmdnVersions = new Array();
         $scope.downloadedAtcVersions = new Array();
+        $scope.downloadedMimsAllergyVersions = new Array();
         
         var editingPerformed = new Array();
         var previousUserPage = 1;
@@ -668,6 +669,34 @@ angular
 
           return deferred.promise;          
         }
+        
+        function getDownloadedMimsAllergyVersions() {
+            
+            var deferred = $q.defer();
+
+            $http({
+              url : root_metadata + 'terminology/mimsAllergy',
+              dataType : 'text/plain',
+              method : 'GET'
+            }).success(
+              function(data) {
+                $scope.downloadedMimsAllergyVersions = new Array();
+                if(data != ""){
+                	var downloadedVersionArray = data.split(';');
+                	for (var i = 0; i < downloadedVersionArray.length; i++) {
+                        $scope.downloadedMimsAllergyVersions.push(downloadedVersionArray[i]);
+                    }  
+                }
+                          
+                deferred.resolve();
+                
+              }).error(function(data, status, headers, config) {
+              $rootScope.handleHttpError(data, status, headers, config);
+              deferred.reject();            
+            });
+
+            return deferred.promise;          
+          }
         
         function initializeMapProjectMetadata() {
           if ($scope.mapProjectMetadata != null) {
@@ -2850,6 +2879,12 @@ angular
             });
             
         };
+        
+        $scope.downloadTerminologyMimsAllergy = function() {
+        	// load the latest version of MIMS Allergy   
+            getDownloadedMimsAllergyVersions();
+  
+        };
 
         //hold select list for terminologies and versions.
         $scope.termLoad = {};
@@ -3062,10 +3097,14 @@ angular
         };
         
      // terminology/load/mims_allergy
-        $scope.loadTerminologyMimsAllergy = function() {
+        $scope.loadTerminologyMimsAllergy = function(mimsAllergyVersion) {
           gpService.increment();
 
           var errors = '';
+          
+          if(mimsAllergyVersion == ""){
+        	  errors += "Select a valid version of Mims-Allergy";
+          }
 
           if (errors.length > 0) {
             alert(errors);
@@ -3075,7 +3114,7 @@ angular
           
           // load the version of mims allergy into the application   
           $http({
-            url : root_content + 'terminology/load/mims_allergy',
+            url : root_content + 'terminology/load/mims_allergy/' + mimsAllergyVersion,
             data : 'GENERATE',
             method : 'PUT',
             headers : {
