@@ -1,7 +1,10 @@
 package org.ihtsdo.otf.mapping.rest.impl;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileNotFoundException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -12,6 +15,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.KeyValuePair;
 import org.ihtsdo.otf.mapping.helpers.KeyValuePairList;
@@ -374,6 +379,102 @@ public class MetadataServiceRestImpl extends RootServiceRestImpl
       return null;
    } catch (Exception e) {
       handleException(e, "get downloaded versions of gmdn",
+          user, "", "");
+      return null;
+    } finally {
+      securityService.close();
+    }
+  }
+  
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MetadataServiceRest#
+   * getAllTerminologiesVersions(java.lang.String)
+   */
+  @Override
+  @GET
+  @Path("/terminology/mimsAllergy")
+  @ApiOperation(value = "Get all available mims allergy versions", notes = "Gets the list of all version of mims allergy that are present", response = KeyValuePairList.class)
+  @Produces({
+      MediaType.TEXT_PLAIN
+  })
+  public String getAllMimsAllergyVersions(
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(MetadataServiceRestImpl.class)
+        .info("RESTful call (Metadata): /terminology/mimsAllergy");
+
+    String user = "";
+    try {
+      // authorize
+      user = authorizeApp(authToken, MapUserRole.VIEWER,
+          "get all downloaded mims allergy versions", securityService);
+
+      String mimsAllergyVersions = "";
+
+      final String mimsAllergyDir =
+          ConfigUtility.getConfigProperties().getProperty("MIMS_Allergy.dir");
+      
+      final String mimsAllergyLoadDir =
+              ConfigUtility.getConfigProperties().getProperty("MIMS_Allergy.loadDir");
+
+      File excelDir = new File(mimsAllergyLoadDir);
+      FileFilter onlyExcel = new WildcardFileFilter("*.xlsx");
+      File[] loadingFiles = excelDir.listFiles(onlyExcel);
+      String version = null;
+      String filename = null;
+      
+      File folder = new File(mimsAllergyDir);
+      if(!folder.exists()){
+        throw new FileNotFoundException(folder + " not found");
+      }
+      
+      for(File file : loadingFiles) {
+		filename = file.getAbsolutePath();
+  	    
+  	    String termVersionDate = file.getName().split("[.-]")[1];
+  	    
+  	    SimpleDateFormat format1 = new SimpleDateFormat("ddMMMyyyy");
+  	    SimpleDateFormat format2 = new SimpleDateFormat("yyyyMMdd");
+  	    Date date = format1.parse(termVersionDate);
+  	    version = format2.format(date);
+  	    
+  	    File versionFolder = new File(mimsAllergyDir + "/" + version);
+  	    if(!versionFolder.exists())
+  	    	versionFolder.mkdirs();
+      }
+      
+      File[] listOfFiles = folder.listFiles();
+      // We only care about the directories that follow a yyyyMMdd naming convention
+      for (int i = 0; i < listOfFiles.length; i++) {
+        if (listOfFiles[i].isDirectory()
+            && listOfFiles[i].getName().matches("\\d{4}\\d{2}\\d{2}")) {
+      	    mimsAllergyVersions += listOfFiles[i].getName() + ";";
+        }
+      }
+
+      if(version != null && !mimsAllergyVersions.contains(version)) {
+    	  mimsAllergyVersions += version + ";";
+    	  File newTerminologyFile = new File(filename);
+    	  File newTerminologyDirectory = new File(mimsAllergyDir + version);
+    	  newTerminologyDirectory.mkdir();
+    	  FileUtils.copyDirectory(newTerminologyFile, newTerminologyDirectory);
+      }
+
+      //get rid of final ';'
+      if(mimsAllergyVersions.length() > 1){
+    	  mimsAllergyVersions = mimsAllergyVersions.substring(0, mimsAllergyVersions.length()-1);
+      }
+      
+      return mimsAllergyVersions;
+    } catch (FileNotFoundException e) {
+      handleException(e, "get versions of mims allergy: " + e.getMessage(),
+          user, "", "");
+      return null;
+   } catch (Exception e) {
+      handleException(e, "get versions of mims allergy",
           user, "", "");
       return null;
     } finally {
