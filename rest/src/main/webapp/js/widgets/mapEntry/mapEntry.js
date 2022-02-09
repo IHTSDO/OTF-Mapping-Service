@@ -153,6 +153,12 @@ angular
                 // entry
                 $scope.computeParameters(false);
                 
+
+	          // get the allowable advices and relations
+	          $scope.allowableAdvices = getAllowableAdvices($scope.entry,
+	            $scope.project.mapAdvice);
+	          sortByKey($scope.allowableAdvices, 'detail');
+
                 $scope.allowableMapRelations = getAllowableRelations($scope.entry,
                     $scope.project.mapRelation);
 
@@ -196,11 +202,6 @@ angular
           // compute parameters will get called from setTarget()
           // best to call setTarget first so that advices are computed based on correct targetId
           $scope.setTarget($scope.entry.targetId);
-
-          // get the allowable advices and relations
-          $scope.allowableAdvices = getAllowableAdvices($scope.entry,
-            $scope.project.mapAdvice);
-          sortByKey($scope.allowableAdvices, 'detail');
           
         });
 
