@@ -384,9 +384,8 @@ public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandle
     for (TrackingRecord tr : results) {
       SearchResult result = new SearchResultJpa();
 
-      // If tag restrictions are set, filter the results accordingly
+      // If tag restrictions are set, create the tag buffer
       final StringBuffer tagBuffer = new StringBuffer();
-      boolean keepRecord = false;
 
       // extract all tags for this tracking record
       for (final String tag : tr.getTags()) {
@@ -397,26 +396,13 @@ public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandle
             tagBuffer.append("; \n").append(tag);
           }
         }
-        if (query != null && (tag.contains(query) || query.contains(tag))) {
-          keepRecord = true;
-        }
       }
 
-      // Keep record if query matches the concept id or name
-      if (query != null && (tr.getTerminologyId().toLowerCase().startsWith(query.toLowerCase())
-          || tr.getDefaultPreferredName().toLowerCase().contains(query.toLowerCase()))) {
-        keepRecord = true;
-      }
-
-      // if no tag query supplied or this tracking record has the requested
-      // label
-      if (query == null || query.isEmpty() || query.equals("null") || keepRecord == true) {
         result.setTerminologyId(tr.getTerminologyId());
         result.setValue(tr.getDefaultPreferredName());
         result.setValue2(tagBuffer.toString());
         result.setId(tr.getId());
         availableWork.addSearchResult(result);
-      }
     }
     return availableWork;
   }
@@ -519,9 +505,8 @@ public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandle
     for (final TrackingRecord tr : results) {
       final SearchResult result = new SearchResultJpa();
 
-      // If tag restrictions are set, filter the results accordingly
+      // If tag restrictions are set, create the tag buffer
       final StringBuffer tagBuffer = new StringBuffer();
-      boolean keepRecord = false;
 
       // extract all tags for this tracking record
       for (final String tag : tr.getTags()) {
@@ -532,20 +517,7 @@ public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandle
             tagBuffer.append("; \n").append(tag);
           }
         }
-        if (query != null && (tag.contains(query) || query.contains(tag))) {
-          keepRecord = true;
-        }
       }
-
-      // Keep record if query matches the concept id or name
-      if (query != null && (tr.getTerminologyId().toLowerCase().startsWith(query.toLowerCase())
-          || tr.getDefaultPreferredName().toLowerCase().contains(query.toLowerCase()))) {
-        keepRecord = true;
-      }
-
-      // if no tag query supplied or this tracking record has the requested
-      // label, continue
-      if (query == null || query.isEmpty() || query.equals("null") || keepRecord == true) {
 
         final Set<MapRecord> mapRecords = workflowService.getMapRecordsForTrackingRecord(tr);
 
@@ -572,7 +544,7 @@ public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandle
         result.setTerminologyVersion(mapRecord.getWorkflowStatus().toString());
         result.setId(mapRecord.getId());
         assignedWork.addSearchResult(result);
-      }
+//      }
     }
     return assignedWork;
 
@@ -606,6 +578,11 @@ public class WorkflowReviewProjectPathHandler extends AbstractWorkflowPathHandle
 
           // set workflow status to review needed
           newRecord.setWorkflowStatus(WorkflowStatus.REVIEW_NEW);
+          
+          // copy flags over to newRecord so reviewer can see them
+          newRecord.setFlagForConsensusReview(mapRecords.iterator().next().isFlagForConsensusReview());
+          newRecord.setFlagForEditorialReview(mapRecords.iterator().next().isFlagForEditorialReview());
+          newRecord.setFlagForMapLeadReview(mapRecords.iterator().next().isFlagForMapLeadReview());
         }
 
         // check for SPECIALIST assignment
