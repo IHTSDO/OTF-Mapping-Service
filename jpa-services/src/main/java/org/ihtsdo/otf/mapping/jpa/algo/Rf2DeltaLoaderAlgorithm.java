@@ -551,7 +551,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 
         // Set fields
         newConcept.setTerminologyId(fields[0]);
-        newConcept.setEffectiveTime(LocalDate.parse(fields[1]).isAfter(LocalDate.now())
+        newConcept.setEffectiveTime(dt.parse(fields[1]).after(new Date())
             ? deltaLoaderStartDate : dt.parse(fields[1]));
         newConcept.setActive(fields[2].equals("1") ? true : false);
         newConcept.setModuleId(Long.valueOf(fields[3]));
@@ -664,7 +664,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 
           // Set fields
           newDescription.setTerminologyId(fields[0]);
-          newDescription.setEffectiveTime(LocalDate.parse(fields[1]).isAfter(LocalDate.now())
+          newDescription.setEffectiveTime(dt.parse(fields[1]).after(new Date())
               ? deltaLoaderStartDate : dt.parse(fields[1]));
           newDescription.setActive(fields[2].equals("1") ? true : false);
           newDescription.setModuleId(Long.valueOf(fields[3]));
@@ -810,7 +810,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 
         // Universal RefSet attributes
         newLanguageRefSetMember.setTerminologyId(fields[0]);
-        newLanguageRefSetMember.setEffectiveTime(LocalDate.parse(fields[1]).isAfter(LocalDate.now())
+        newLanguageRefSetMember.setEffectiveTime(dt.parse(fields[1]).after(new Date())
             ? deltaLoaderStartDate : dt.parse(fields[1]));
         newLanguageRefSetMember.setActive(fields[2].equals("1") ? true : false);
         newLanguageRefSetMember.setModuleId(Long.valueOf(fields[3]));
@@ -954,7 +954,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 
         // Set fields
         newRelationship.setTerminologyId(fields[0]);
-        newRelationship.setEffectiveTime(LocalDate.parse(fields[1]).isAfter(LocalDate.now())
+        newRelationship.setEffectiveTime(dt.parse(fields[1]).after(new Date())
             ? deltaLoaderStartDate : dt.parse(fields[1]));
         newRelationship.setActive(fields[2].equals("1") ? true : false); // active
         newRelationship.setModuleId(Long.valueOf(fields[3])); // moduleId
