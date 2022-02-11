@@ -9,7 +9,6 @@ import java.io.FileReader;
 import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -401,7 +400,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
    */
   private void instantiateFileReaders() throws Exception {
 
-    log.info("  Open readers for terminology files");
+    log.info("  Open readers for terminology files:  ");
     // concepts file
     for (File f : deltaDir.listFiles()) {
       if (f.getName().contains("_Concept_Delta_")) {
