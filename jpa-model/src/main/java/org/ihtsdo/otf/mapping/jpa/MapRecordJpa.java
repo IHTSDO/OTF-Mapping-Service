@@ -342,8 +342,9 @@ public class MapRecordJpa implements MapRecord {
    */
   /* see superclass */
   @Override
-  // @DateBridge(resolution = Resolution.SECOND)
-  // @SortableField
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @FieldBridge(impl = LongBridge.class)
+  @SortableField
   public Long getLastModified() {
     return this.lastModified;
   }

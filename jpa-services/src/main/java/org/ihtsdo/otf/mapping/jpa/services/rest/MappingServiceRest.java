@@ -591,7 +591,7 @@ public interface MappingServiceRest {
 			throws Exception;
 
 	/**
-	   * Returns delimited page of Published or Ready For Publication MapRecords
+	   * Returns delimited page of Published MapRecords
 	   * given a paging/filtering/sorting parameters object.
 	   *
 	   * @param mapProjectId the map project id
@@ -604,6 +604,20 @@ public interface MappingServiceRest {
 	MapRecordListJpa getPublishedMapRecordsForMapProject(Long mapProjectId, PfsParameterJpa pfsParameter,
 			String authToken) throws Exception;
 
+    /**
+     * Returns delimited page of Published or Ready For Publication MapRecords
+     * given a paging/filtering/sorting parameters object.
+     *
+     * @param mapProjectId the map project id
+     * @param pfsParameter the JSON object containing the paging/filtering/sorting
+     *          parameters
+     * @param authToken the auth token
+     * @return the list of map records
+     * @throws Exception the exception
+     */
+  MapRecordListJpa getPublishedAndReadyForPublicationMapRecordsForMapProject(Long mapProjectId, PfsParameterJpa pfsParameter,
+          String authToken) throws Exception;	
+	
 	/**
 	   * Returns the map record revisions.
 	   * 
