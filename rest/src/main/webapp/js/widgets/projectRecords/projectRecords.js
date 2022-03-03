@@ -635,7 +635,8 @@ angular
         $scope.searchParameters.principleName = null;
         $scope.searchParameters.principleContained = true;
         $scope.searchParameters.mapGroup = null;
-        $scope.searchParameters.mapPriority = null;
+        $scope.searchParameters.dateRangeStart = null;
+        $scope.searchParameters.dateRangeEnd = null;
         $scope.retrieveRecords(1);
       };
 
@@ -791,6 +792,23 @@ angular
           if ($scope.searchParameters.flagForConsensusReview) {
             queryRestrictions.push('flagForConsensusReview:true');
           }
+
+		  // Date Ranges
+		  if($scope.searchParameters.dateRangeStart && $scope.searchParameters.dateRangeEnd){
+			queryRestrictions.push('lastModified:['
+                    + $scope.searchParameters.dateRangeStart.getTime() + ' TO '
+                    + $scope.searchParameters.dateRangeEnd.getTime() + ']')
+		  }
+		  if($scope.searchParameters.dateRangeStart && !$scope.searchParameters.dateRangeEnd){
+						queryRestrictions.push('lastModified:['
+                    + $scope.searchParameters.dateRangeStart.getTime() + ' TO '
+                    + '*]')
+		  }
+		  if(!$scope.searchParameters.dateRangeStart && $scope.searchParameters.dateRangeEnd){
+			queryRestrictions.push('lastModified:['
+                    + '* TO '
+                    + $scope.searchParameters.dateRangeEnd.getTime() + ']')			
+		  }
 
           for (var i = 0; i < queryRestrictions.length; i++) {
             pfs.queryRestriction += (pfs.queryRestriction.length > 0 ? ' AND '
@@ -987,6 +1005,25 @@ angular
         var newUrl = baseUrl + '/index/viewer';
         var myWindow = window.open(newUrl, 'indexViewerWindow');
         myWindow.focus();
+      };
+
+      //date format
+      $scope.dateFormat = 'MM/dd/yyyy';
+      
+      $scope.dateRangeStart = {
+    		  opened: false
+      };
+      
+      $scope.dateRangeEnd = {
+    		  opened: false
+      };
+      
+      $scope.openDateRangeStart = function() {
+    		  $scope.dateRangeStart.opened = true;
+      };
+      
+      $scope.openDateRangeEnd = function() {
+		  $scope.dateRangeEnd.opened = true;
       };
 
     });
