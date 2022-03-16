@@ -43,6 +43,36 @@
   <div ng-show="searchParameters.advancedMode">
     <hr>
     <div class="row" style="padding: 5px;">
+            <div class="col-md-3" style="padding-right: 0px;">
+            Last Modified Date:  
+			</div>
+			<div class="col-md-9">
+			<p class="input-group input-group-sm">
+			<input type="text" class="form-control" uib-datepicker-popup="{{dateFormat}}"
+				ng-model="searchParameters.dateRangeStart" is-open="dateRangeStart.opened" 
+				datepicker-options="dateOptions" ng-required="false" 
+				close-text="Close" alt-input-formats="altInputFormats"
+				placeholder="Start Date {{dateFormat}}">
+			<span class="input-group-btn">
+				<span class="btn btn-default" ng-click="openDateRangeStart()">
+					<i class="glyphicon glyphicon-calendar"></i>
+				</span>
+			</span>
+			<input type="text" class="form-control" uib-datepicker-popup="{{dateFormat}}"
+				ng-model="searchParameters.dateRangeEnd" is-open="dateRangeEnd.opened" 
+				datepicker-options="dateOptions" ng-required="false" 
+				close-text="Close" alt-input-formats="altInputFormats"
+				placeholder="End Date {{dateFormat}}">
+			<span class="input-group-btn">
+				<span class="btn btn-default" ng-click="openDateRangeEnd()">
+					<i class="glyphicon glyphicon-calendar"></i>
+				</span>
+			</span>
+			</div>
+			</p>
+    </div>
+    
+    <div class="row" style="padding: 5px;">
       <div class="col-md-3" style="padding-right: 0px;">
         {{focusProject.sourceTerminology}} Ancestor Id <i
           class="glyphicon glyphicon-remove pull-right"
