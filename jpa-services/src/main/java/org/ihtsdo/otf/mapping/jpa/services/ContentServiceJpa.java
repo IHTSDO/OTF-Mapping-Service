@@ -2349,7 +2349,8 @@ public class ContentServiceJpa extends RootServiceJpa
         // also see directives.js - treeSearchResult
         if (terminology.toLowerCase().startsWith("icd")
             || terminology.toLowerCase().startsWith("gmdn")
-            || terminology.toLowerCase().startsWith("atc")) {
+            || terminology.toLowerCase().startsWith("atc")
+            || terminology.toLowerCase().startsWith("bchcvs")) {
           Collections.sort(treePositions, new Comparator<TreePosition>() {
             @Override
             public int compare(TreePosition o1, TreePosition o2) {
