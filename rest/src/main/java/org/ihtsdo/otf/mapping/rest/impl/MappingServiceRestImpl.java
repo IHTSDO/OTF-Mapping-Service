@@ -3159,6 +3159,68 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
   /*
    * (non-Javadoc)
    * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * getPublishedMapRecordsForMapProject(java.lang.Long,
+   * org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
+   */
+  @Override
+  @POST
+  @Path("/record/project/id/{id:[0-9][0-9]*}/readyforpublication")
+  @ApiOperation(value = "Get published and ready for publication map records by map project id",
+      notes = "Gets a list of map records for the specified map project id that have a workflow status of PUBLISHED or READY_FOR_PUBLICATION.",
+      response = MapRecordListJpa.class)
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  // @CookieParam(value = "userInfo")
+  public MapRecordListJpa getPublishedAndReadyForPublicationMapRecordsForMapProject(
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+    @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data",
+        required = true) PfsParameterJpa pfsParameter,
+    @ApiParam(value = "Authorization token",
+        required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    // log call
+    Logger.getLogger(MappingServiceRestImpl.class)
+        .info("RESTful call (Mapping): /record/project/id/" + mapProjectId.toString());
+
+    String user = null;
+    final MappingService mappingService = new MappingServiceJpa();
+    // execute the service call
+    try {
+      // authorize call
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "get published and ready for publication records for project",
+          securityService);
+
+      final MapRecordListJpa mapRecordList = (MapRecordListJpa) mappingService
+          .getPublishedAndReadyForPublicationMapRecordsForMapProject(mapProjectId, pfsParameter);
+
+      final MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
+      for (final MapRecord mr : mapRecordList.getMapRecords()) {
+        // remove notes if this is not a specialist or above
+        if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
+          mr.setMapNotes(null);
+        }
+      }
+      return mapRecordList;
+    } catch (Exception e) {
+      handleException(e, "trying to get the map records for a map project", user,
+          mapProjectId.toString(), "");
+      return null;
+    } finally {
+      mappingService.close();
+      securityService.close();
+    }
+
+  }
+
+  
+  /*
+   * (non-Javadoc)
+   * 
    * @see
    * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getMapRecordRevisions(
    * java.lang.Long, java.lang.String)

@@ -400,7 +400,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
    */
   private void instantiateFileReaders() throws Exception {
 
-    log.info("  Open readers for terminology files");
+    log.info("  Open readers for terminology files:  ");
     // concepts file
     for (File f : deltaDir.listFiles()) {
       if (f.getName().contains("_Concept_Delta_")) {
@@ -550,7 +550,8 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 
         // Set fields
         newConcept.setTerminologyId(fields[0]);
-        newConcept.setEffectiveTime(deltaLoaderStartDate);
+        newConcept.setEffectiveTime(dt.parse(fields[1]).after(new Date())
+            ? deltaLoaderStartDate : dt.parse(fields[1]));
         newConcept.setActive(fields[2].equals("1") ? true : false);
         newConcept.setModuleId(Long.valueOf(fields[3]));
         newConcept.setDefinitionStatusId(Long.valueOf(fields[4]));
@@ -662,7 +663,8 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 
           // Set fields
           newDescription.setTerminologyId(fields[0]);
-          newDescription.setEffectiveTime(deltaLoaderStartDate);
+          newDescription.setEffectiveTime(dt.parse(fields[1]).after(new Date())
+              ? deltaLoaderStartDate : dt.parse(fields[1]));
           newDescription.setActive(fields[2].equals("1") ? true : false);
           newDescription.setModuleId(Long.valueOf(fields[3]));
 
@@ -807,7 +809,8 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 
         // Universal RefSet attributes
         newLanguageRefSetMember.setTerminologyId(fields[0]);
-        newLanguageRefSetMember.setEffectiveTime(deltaLoaderStartDate);
+        newLanguageRefSetMember.setEffectiveTime(dt.parse(fields[1]).after(new Date())
+            ? deltaLoaderStartDate : dt.parse(fields[1]));
         newLanguageRefSetMember.setActive(fields[2].equals("1") ? true : false);
         newLanguageRefSetMember.setModuleId(Long.valueOf(fields[3]));
         newLanguageRefSetMember.setRefSetId(fields[4]);
@@ -950,7 +953,8 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 
         // Set fields
         newRelationship.setTerminologyId(fields[0]);
-        newRelationship.setEffectiveTime(deltaLoaderStartDate);
+        newRelationship.setEffectiveTime(dt.parse(fields[1]).after(new Date())
+            ? deltaLoaderStartDate : dt.parse(fields[1]));
         newRelationship.setActive(fields[2].equals("1") ? true : false); // active
         newRelationship.setModuleId(Long.valueOf(fields[3])); // moduleId
         newRelationship.setRelationshipGroup(Integer.valueOf(fields[6])); // relationshipGroup
