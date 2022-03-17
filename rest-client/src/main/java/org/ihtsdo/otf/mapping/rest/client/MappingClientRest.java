@@ -423,6 +423,13 @@ public class MappingClientRest extends RootClientRest
     // N/A
     return null;
   }
+  
+  @Override
+  public MapRecordListJpa getPublishedAndReadyForPublicationMapRecordsForMapProject(Long mapProjectId,
+    PfsParameterJpa pfsParameter, String authToken) throws Exception {
+    // N/A
+    return null;
+  }
 
   @Override
   public MapRecordList getMapRecordRevisions(Long mapRecordId, String authToken)
