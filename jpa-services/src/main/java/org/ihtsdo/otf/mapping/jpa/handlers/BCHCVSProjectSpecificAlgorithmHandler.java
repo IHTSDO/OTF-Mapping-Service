@@ -39,8 +39,12 @@ import org.ihtsdo.otf.mapping.services.helpers.FileSorter;
  */
 public class BCHCVSProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAlgorithmHandler {
 
+  private static Set<String> ICD10CACodeSet = new HashSet<>();
+  
   /** The CED-DxS codes. */
-  private static Set<String> CEDDxSCodesSet = new HashSet<>();
+  private static Set<String> CEDDxSCodeSet = new HashSet<>();
+  
+  private static Set<String> ICD9CodeSet = new HashSet<>();
 
   /** The BC HCVS maps for preloading. */
   private static Map<String, MapRecord> existingBCHCVSMaps = new HashMap<>();
@@ -71,11 +75,11 @@ public class BCHCVSProjectSpecificAlgorithmHandler extends DefaultProjectSpecifi
         maxMapGroup = entry.getMapGroup();
       }
       
-      if (entry.getMapGroup() == 1 && entry.getTargetId().endsWith("-")) {
+      if (entry.getMapGroup() == 1 && !ICD10CACodeSet.contains(entry.getTargetId())) {
         validationResult.addError("1st group must be a ICD10CA code.");
-      } else if (entry.getMapGroup() == 2 && !entry.getTargetId().endsWith("-")) {
+      } else if (entry.getMapGroup() == 2 && !ICD9CodeSet.contains(entry.getTargetId())) {
         validationResult.addError("2nd group must be a ICD9 code.");
-      } else if (entry.getMapGroup() == 3 && !CEDDxSCodesSet.contains(entry.getTargetId())) {
+      } else if (entry.getMapGroup() == 3 && !CEDDxSCodeSet.contains(entry.getTargetId())) {
         validationResult.addError("3rd group must be a CedDXS code.");
       } else if (entry.getMapGroup() > 3) {
         validationResult.addError("Maps must contain only 3 group - " + entry.getMapGroup()
@@ -241,8 +245,31 @@ public class BCHCVSProjectSpecificAlgorithmHandler extends DefaultProjectSpecifi
    */
 
   private void cacheCodes() throws Exception {
-    if (CEDDxSCodesSet.isEmpty()) {
-      CEDDxSCodesSet.addAll(Arrays.asList(new String[] {
+
+
+    Logger.getLogger(ICD10CAProjectSpecificAlgorithmHandler.class)
+    .info("Caching the terminology codes");
+    
+    
+    if(ICD10CACodeSet.isEmpty() || ICD9CodeSet.isEmpty() || CEDDxSCodeSet.isEmpty()) {
+      
+      ICD10CACodeSet.clear();
+      ICD9CodeSet.clear();
+      CEDDxSCodeSet.clear();
+      
+      final ContentServiceJpa contentService = new ContentServiceJpa();
+      ConceptList destinationConcepts = contentService.getAllConcepts(mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
+
+      for (final Concept concept : destinationConcepts.getConcepts()) {
+        if(concept.getTerminologyId().endsWith("-")) {
+          ICD9CodeSet.add(concept.getTerminologyId());
+        }
+        else {
+          ICD10CACodeSet.add(concept.getTerminologyId());
+        }
+      }    
+      
+      CEDDxSCodeSet.addAll(Arrays.asList(new String[] {
           "A04.7", "A05.1", "A05.9", "A09.9", "A16.91", "A35", "A37.9", "A38", "A39.0", "A39.2",
           "A41.9", "A46", "A48.0", "A48.1", "A48.3", "A49.9", "A54.9", "A63.0", "A64", "A69.2",
           "A86", "A87.9", "B00.9", "B01.9", "B02.9", "B05.9", "B06.9", "B08.3", "B08.4", "B09",
@@ -335,6 +362,8 @@ public class BCHCVSProjectSpecificAlgorithmHandler extends DefaultProjectSpecifi
           "Z09.9", "Z20.9", "Z29.9", "Z30.9", "Z34.9", "Z37.900", "Z37.910", "Z38.200", "Z38.800",
           "Z43.9", "Z45.9", "Z48.8", "Z51.88", "Z65.9", "Z71.9", "Z76.0", "Z76.9"
       }));
+      
+      contentService.close();
     }
   }
 
