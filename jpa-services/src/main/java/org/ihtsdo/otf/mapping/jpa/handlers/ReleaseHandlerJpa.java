@@ -194,12 +194,17 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     /** The max entries. */
     MAX_ENTRIES("Max number of map entries for a concept"),
     /** The new concepts. */
-    NEW_CONCEPTS("New concepts mapped this release "),
+    NEW_CONCEPTS("Total New concepts mapped this release "),
+    /** The new entries. */
+    NEW_ENTRIES("Total New entries this release "),
     /** The retired concepts. */
-    RETIRED_CONCEPTS("Concepts mapped retired this release "),
+    RETIRED_CONCEPTS("Concepts mapped retired this release "),  
     /** The changed concepts. */
-    CHANGED_CONCEPTS("Concept mappings changed this release ");
+    CHANGED_CONCEPTS("Total Changed concepts mapped this release "),
+    /** The changed entries. */
+    CHANGED_ENTRIES("Total Changed entries this release ");   
 
+    
     /** The value. */
     private String value;
 
@@ -787,7 +792,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       // Write statistics
       createdFilenames
-          .add(writeStatsFile(activeMembersMap, prevActiveMembersMap));
+          .add(writeStatsFile(prevInactiveMembersMap, activeMembersMap, prevActiveMembersMap));
 
       // Zip up the created files, and datestamp it.
       // Only do for 'real' releases - don't do for 'current' created by delta
@@ -1202,6 +1207,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @throws Exception the exception
    */
   private String writeStatsFile(
+    Map<String, ComplexMapRefSetMember> prevInactiveMembers,    
     Map<String, ComplexMapRefSetMember> activeMembers,
     Map<String, ComplexMapRefSetMember> prevActiveMembers) throws Exception {
 
@@ -1241,10 +1247,19 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         sometimesMap.add(key);
       }
     }
+    
+    Set<String> prevInactiveConcepts = new HashSet<>();
+    for (final ComplexMapRefSetMember member : prevInactiveMembers.values()) {
+      prevInactiveConcepts.add(member.getConcept().getTerminologyId());
+    }      
+    
     Set<String> prevActiveConcepts = new HashSet<>();
     for (final ComplexMapRefSetMember member : prevActiveMembers.values()) {
       prevActiveConcepts.add(member.getConcept().getTerminologyId());
-    }
+      //Some inactive members represent inactive maps, rather than inactive concepts.
+      //If there is also an active map associated with the concept, then the concept is active
+      prevInactiveConcepts.remove(member.getConcept().getTerminologyId());
+    }  
 
     updateStatMax(Stats.ACTIVE_ENTRIES.getValue(), activeMembers.size());
     updateStatMax(Stats.CONCEPTS_MAPPED.getValue(), activeConcepts.size());
@@ -1255,34 +1270,52 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     updateStatMax(Stats.SOMETIMES_MAP.getValue(), sometimesMap.size());
     updateStatMax(Stats.NEVER_MAP.getValue(), alwaysNc.size());
 
-    // Determine count of retired concepts - inactive minus active
-    int ct = 0;
+    // Determine count of retired concepts - previously active, now inactive
+    Set<String> retiredConcepts = new HashSet<>();   
     for (final String id : prevActiveConcepts) {
       if (!activeConcepts.contains(id)) {
-        ct++;
+        retiredConcepts.add(id);
       }
     }
-    updateStatMax(Stats.RETIRED_CONCEPTS.getValue(), ct);
-
-    // Determine count of new concepts - active minus inactive
-    ct = 0;
+    updateStatMax(Stats.RETIRED_CONCEPTS.getValue(), retiredConcepts.size()); 
+    
+    // Determine count of new concepts - previously non-existent, now active
+    Set<String> newConcepts = new HashSet<>();
     for (final String id : activeConcepts) {
-      if (!prevActiveConcepts.contains(id)) {
+      if (!prevActiveConcepts.contains(id) && !prevInactiveConcepts.contains(id)) {
+        newConcepts.add(id);
+      }
+    }
+    updateStatMax(Stats.NEW_CONCEPTS.getValue(), newConcepts.size());
+
+    // Determine total new entries for the new concepts
+    int ct = 0;
+    for (final ComplexMapRefSetMember member : activeMembers.values()) {
+      String key = member.getConcept().getTerminologyId();
+      if(newConcepts.contains(key)) {
         ct++;
       }
     }
-    updateStatMax(Stats.NEW_CONCEPTS.getValue(), ct);
-
+    updateStatMax(Stats.NEW_ENTRIES.getValue(), ct);    
+    
+    
     Set<String> changedConcepts = new HashSet<>();
+    Set<String> changedEntries = new HashSet<>();    
     for (final String key : activeMembers.keySet()) {
       ComplexMapRefSetMember member = activeMembers.get(key);
       ComplexMapRefSetMember member2 = prevActiveMembers.get(key);
+      //If member not found in previously active, try previously inactive
+      if(member2 == null) {
+        member2 = prevInactiveMembers.get(key);
+      }
       if (member2 != null && !member.equals(member2)) {
         changedConcepts.add(member.getConcept().getId().toString());
+        changedEntries.add(key);
       }
     }
 
     updateStatMax(Stats.CHANGED_CONCEPTS.getValue(), changedConcepts.size());
+    updateStatMax(Stats.CHANGED_ENTRIES.getValue(), changedEntries.size());
 
     String camelCaseName =
         mapProject.getDestinationTerminology().substring(0, 1)
