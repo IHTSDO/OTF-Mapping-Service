@@ -10,6 +10,8 @@ import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
+import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.services.ContentService;
 
 /**
@@ -44,6 +46,10 @@ public class MedDRAFromSnomedProjectSpecificAlgorithmHandler
       // .addError("A relation indicating the reason must be selected.");
       // }
       // }
+      if (mapRecord.getMapEntries().size() == 1 && mapRecord.getMapEntries().get(0) != null &&
+          !isTargetCodeValid(mapRecord.getMapEntries().get(0).getTargetId())) {
+        validationResult.addError("Target code is not valid: " + mapRecord.getMapEntries().get(0).getTargetId());
+      }
     }
     return validationResult;
   }
@@ -51,7 +57,27 @@ public class MedDRAFromSnomedProjectSpecificAlgorithmHandler
   /* see superclass */
   @Override
   public boolean isTargetCodeValid(String terminologyId) throws Exception {
-    return true;
+    final ContentService contentService = new ContentServiceJpa();
+
+    final Concept concept = contentService.getConcept(terminologyId,
+        mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
+   
+    // lazy initialize
+    if (concept != null) {
+      concept.getDescriptions().size();
+    }
+    
+    contentService.close();
+    
+    if (terminologyId.contentEquals("")) {
+      return true;
+    }
+    
+    for (Description desc : concept.getDescriptions()) {
+      if (desc.getTerm().contentEquals("LLT") || desc.getTerm().contentEquals("PT"))
+        return true;
+    }
+    return false;
   }
 
   /* see superclass */
