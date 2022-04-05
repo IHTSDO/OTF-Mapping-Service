@@ -23,7 +23,7 @@ angular
       var deployBrowserLabel = appConfig['deploy.terminology.browser.label']; 
       
       $scope.project.terminologyButtonText =
-        ($scope.project.sourceTerminology !== 'SNOMEDCT' && $scope.project.sourceTerminology !== 'SNOMEDCT_US')
+        (!($scope.project.sourceTerminology == 'SNOMEDCT' || $scope.project.sourceTerminology.startswith('SNOMEDCT_US')))
             ? (deployBrowserLabel == null || typeof deployBrowserLabel == 'undefined' || deployBrowserLabel === '' )
                   ? $scope.project.sourceTerminology
                   : deployBrowserLabel
