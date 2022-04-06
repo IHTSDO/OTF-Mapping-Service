@@ -45,8 +45,18 @@
         <div style="display: inline; float: left; width: 3%;">
           <i class="glyphicon glyphicon-move"></i>
         </div>
-        Map Group {{group.mapGroup}}
-        <div ng-show="project.mapRefsetPattern != 'SimpleMap'" data-nodrag
+        <div ng-switch on="project.destinationTerminology">
+    		<div ng-switch-when="BCHCVS">
+        		<span ng-if="group.mapGroup == 1">ICD-10-CA</span>
+        		<span ng-if="group.mapGroup == 2">ICD-9</span>
+        		<span ng-if="group.mapGroup == 3">CED-DxS</span>
+        		<span ng-if="group.mapGroup > 3">INVALID GROUP</span>
+    		</div>
+    		<div ng-switch-default>
+        		Map Group {{group.mapGroup}}
+    		</div>
+		</div>
+		<div ng-show="project.mapRefsetPattern != 'SimpleMap'" data-nodrag
           style="display: inline; float: right; width: 3%;">
           <i class="glyphicon glyphicon-remove" ng-click="deleteMapGroup(group)"></i>
         </div>
