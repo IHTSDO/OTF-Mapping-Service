@@ -184,7 +184,7 @@ public class ICD10NOProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
         mapProject.getSourceTerminologyVersion());
     ConceptList destinationConcepts = contentService.getAllConcepts(
         mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
-
+    
     Map<String, String> sourceIdToName = new HashMap<>();
     Map<String, String> destinationIdToName = new HashMap<>();
 
@@ -511,16 +511,33 @@ public class ICD10NOProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
       final String correlationId2 = fields2[11];
       final String mapCategoryId2 = fields2[12];
 
+      //Map target needs transorming to match destination terminology format
+      //Add a decimal after the 3rd character
+      String targetConceptId = mapTarget2.substring(0, 3).concat(".").concat(mapTarget2.substring(3));
+      //Remove fifth character if it's a letter
+      if(targetConceptId.length() == 5 && Character.isLetter(targetConceptId.charAt(4))) {
+        targetConceptId = targetConceptId.substring(0,4);
+      }
+      
+      String targetConceptName = destinationIdToName.get(targetConceptId);
+      if(targetConceptName == null || targetConceptName == "") {
+        targetConceptName = "CODE NAME NOT FOUND";
+      }
+      if(mapTarget2.equals("#NC")) {
+        targetConceptName = "";
+      }
+      
       // The first time a conceptId is encountered, set up the map note.
       // Subsequent times, append to existing note string.
       if (UKIcd10MapsAsNotes.get(conceptId2) == null) {
         MapNote UKIcd10MapAsNote = new MapNoteJpa();
         UKIcd10MapAsNote.setUser(loaderUser);
+
         StringBuilder noteStringBuilder = new StringBuilder();
         noteStringBuilder.append("UK Map for " + conceptId2 + ":<br><br>");
         noteStringBuilder.append("Map Entries<br>");
         noteStringBuilder
-            .append(mapGroup2 + "/" + mapPriority2 + "   " + mapAdviceStr2 + "   " + mapRule2);
+            .append(mapGroup2 + "/" + mapPriority2 + "   " + mapAdviceStr2 + " - " + targetConceptName);
 
         UKIcd10MapAsNote.setNote(noteStringBuilder.toString());
 
@@ -531,7 +548,7 @@ public class ICD10NOProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
         noteStringBuilder.append(UKIcd10MapAsNote.getNote());
         noteStringBuilder.append("<br>");
         noteStringBuilder
-            .append(mapGroup2 + "/" + mapPriority2 + "   " + mapAdviceStr2 + "   " + mapRule2);
+            .append(mapGroup2 + "/" + mapPriority2 + "   " + mapAdviceStr2 + " - " + targetConceptName);
 
         UKIcd10MapAsNote.setNote(noteStringBuilder.toString());
 

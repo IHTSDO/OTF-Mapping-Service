@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.mapping.rest.impl;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -1389,11 +1390,14 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       workflowService.processWorkflowAction(mapProject, concept, mapUser, mapRecord,
           WorkflowAction.PUBLISH);
 
+      
+      
       // mark all related feedback conversations resolved
       for (FeedbackConversation conv : workflowService
           .getFeedbackConversationsForConcept(mapProject.getId(), concept.getTerminologyId())
           .getFeedbackConversations()) {
         conv.setResolved(true);
+        conv.setLastModified(new Date());
         workflowService.updateFeedbackConversation(conv);
       }
 
