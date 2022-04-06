@@ -201,6 +201,7 @@ public class ICD10ProjectSpecificAlgorithmHandler
 
       if (concepts.size() == 0 || concepts.get(1) == null) {
         result.addError("Null concept in entry");
+        return result;
       }
 
       // get the primary code (if not NC)
