@@ -927,6 +927,7 @@
                 <configuration>
                   <subject>${subject}</subject>
                   <body>${body}</body>
+                  <recipients>${recipients}</recipients>
                 </configuration>
               </execution>
             </executions>
