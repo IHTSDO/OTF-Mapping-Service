@@ -9,7 +9,7 @@
 	<button class="btn btn-xs btn-primary" ng-click="goMapRecords()">Map
 		Records</button>
 	<button
-		ng-show="project.sourceTerminology === 'SNOMEDCT' || project.sourceTerminology === 'SNOMEDCT_US' || project.destinationTerminology === 'SNOMEDCT' || project.destinationTerminology === 'SNOMEDCT_US'"
+		ng-show="project.sourceTerminology === 'SNOMEDCT' || project.sourceTerminology.startsWith('SNOMEDCT_') || project.destinationTerminology === 'SNOMEDCT' || project.destinationTerminology.startsWith('SNOMEDCT_')"
 		class="btn btn-xs btn-primary" ng-click="openConceptBrowser()">SNOMEDCT
 		Browser</button>
 	<button class="btn btn-xs btn-primary"
