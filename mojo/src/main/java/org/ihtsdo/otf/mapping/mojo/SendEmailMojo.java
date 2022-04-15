@@ -33,6 +33,13 @@ public class SendEmailMojo extends AbstractOtfMappingMojo {
 	 * @parameter body
 	 */
 	private String body = null;
+	
+	/**
+	 * If indicated, this list of recipients will override the list in config.properties
+	 * 
+	 * @parameter recipients
+	 */
+	private String recipients = null;
 
 	/**
 	 * Executes the plugin.
@@ -44,6 +51,7 @@ public class SendEmailMojo extends AbstractOtfMappingMojo {
 		getLog().info("Sending an email");
 		getLog().info("  subject = " + subject);
 		getLog().info("  body = " + body);
+		getLog().info("  recipients = " + recipients);
 
 		// The '\n' when coming in via parameter are getting double-slashed.
 		// Replace with an explicit line separator.
@@ -56,6 +64,10 @@ public class SendEmailMojo extends AbstractOtfMappingMojo {
 			throw new MojoExecutionException("Failed to retrieve config properties");
 		}
 		String notificationRecipients = config.getProperty("send.notification.recipients");
+		
+		if (recipients != null && !recipients.isEmpty()) {
+		  notificationRecipients = recipients;
+		}
 
 		if (config.getProperty("send.notification.recipients") == null) {
 			throw new MojoExecutionException("Email was requested, but no recipients specified in the config file.");
