@@ -1084,6 +1084,14 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
       } else {
         dpnFoundCt++;
       }
+      
+      // periodically comit
+      if (++objectCt % 5000 == 0) {
+        log.info("    count = " + objectCt);
+        contentService.commit();
+        contentService.clear();
+        contentService.beginTransaction();
+      }      
     }
 
     log.info("  found =  " + dpnFoundCt);
