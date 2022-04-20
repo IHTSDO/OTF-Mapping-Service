@@ -2350,7 +2350,7 @@ public class ContentServiceJpa extends RootServiceJpa
         if (terminology.toLowerCase().startsWith("icd")
             || terminology.toLowerCase().startsWith("gmdn")
             || terminology.toLowerCase().startsWith("atc")
-            || terminology.toLowerCase().startsWith("bchcvs")) {
+            || terminology.toLowerCase().startsWith("phcvs")) {
           Collections.sort(treePositions, new Comparator<TreePosition>() {
             @Override
             public int compare(TreePosition o1, TreePosition o2) {
