@@ -46,7 +46,7 @@ public class PHCVSProjectSpecificAlgorithmHandler extends DefaultProjectSpecific
   
   private static Set<String> ICD9CodeSet = new HashSet<>();
 
-  /** The BC HCVS maps for preloading. */
+  /** The PHCVS maps for preloading. */
   private static Map<String, MapRecord> existingPHCVSMaps = new HashMap<>();
   
   /* see superclass */
@@ -373,7 +373,7 @@ public class PHCVSProjectSpecificAlgorithmHandler extends DefaultProjectSpecific
    * @throws Exception the exception
    */
   private void cacheExistingMaps() throws Exception {
-    // Cache existing BC HCVS map records to pre-populate the maps
+    // Cache existing PHCVS map records to pre-populate the maps
     // Up to date file, saved as tab-delimited txt must be saved here:
     // {data.dir}/doc/{projectNumber}/preloadMaps/PHCVS_maps.txt
     //
@@ -386,7 +386,7 @@ public class PHCVSProjectSpecificAlgorithmHandler extends DefaultProjectSpecific
     final ContentService contentService = new ContentServiceJpa();
 
     Logger.getLogger(ICD10CAProjectSpecificAlgorithmHandler.class)
-        .info("Caching the existing BC HCVS maps");
+        .info("Caching the existing PHCVS maps");
 
     final String dataDir = ConfigUtility.getConfigProperties().getProperty("data.dir");
     if (dataDir == null) {
