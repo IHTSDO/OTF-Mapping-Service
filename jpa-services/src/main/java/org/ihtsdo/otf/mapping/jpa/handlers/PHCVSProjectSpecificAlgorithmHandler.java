@@ -37,7 +37,7 @@ import org.ihtsdo.otf.mapping.services.helpers.FileSorter;
  * Implementation for sample allergy mapping project. Require valid codes to be
  * allergies.
  */
-public class BCHCVSProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAlgorithmHandler {
+public class PHCVSProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAlgorithmHandler {
 
   private static Set<String> ICD10CACodeSet = new HashSet<>();
   
@@ -47,7 +47,7 @@ public class BCHCVSProjectSpecificAlgorithmHandler extends DefaultProjectSpecifi
   private static Set<String> ICD9CodeSet = new HashSet<>();
 
   /** The BC HCVS maps for preloading. */
-  private static Map<String, MapRecord> existingBCHCVSMaps = new HashMap<>();
+  private static Map<String, MapRecord> existingPHCVSMaps = new HashMap<>();
   
   /* see superclass */
   @Override
@@ -223,11 +223,11 @@ public class BCHCVSProjectSpecificAlgorithmHandler extends DefaultProjectSpecifi
 
     try {
 
-      if (existingBCHCVSMaps.isEmpty()) {
+      if (existingPHCVSMaps.isEmpty()) {
         cacheExistingMaps();
       }
 
-      MapRecord existingMapRecord = existingBCHCVSMaps.get(mapRecord.getConceptId());
+      MapRecord existingMapRecord = existingPHCVSMaps.get(mapRecord.getConceptId());
 
       return existingMapRecord;
     } catch (Exception e) {
@@ -375,7 +375,7 @@ public class BCHCVSProjectSpecificAlgorithmHandler extends DefaultProjectSpecifi
   private void cacheExistingMaps() throws Exception {
     // Cache existing BC HCVS map records to pre-populate the maps
     // Up to date file, saved as tab-delimited txt must be saved here:
-    // {data.dir}/doc/{projectNumber}/preloadMaps/BCHCVS_maps.txt
+    // {data.dir}/doc/{projectNumber}/preloadMaps/PHCVS_maps.txt
     //
     //Format is:
     // SNOMED ID    SNOMED Term ICD-10CA Code   ICD-10CA Term   ICD-9 CA    ICD-9 Term  CedDxs (ICD-10CA) Code  CedDxs (ICD-10CA) Term  CedDxs CIHI Common Term
@@ -395,7 +395,7 @@ public class BCHCVSProjectSpecificAlgorithmHandler extends DefaultProjectSpecifi
 
     // Check preconditions
     String inputFile =
-        dataDir + "/doc/" + mapProject.getId() + "/preloadMaps/BCHCVS_maps.txt";
+        dataDir + "/doc/" + mapProject.getId() + "/preloadMaps/PHCVS_maps.txt";
 
     if (!new File(inputFile).exists()) {
       throw new Exception("Specified input file missing: " + inputFile);
@@ -432,20 +432,20 @@ public class BCHCVSProjectSpecificAlgorithmHandler extends DefaultProjectSpecifi
 
       // The first time a conceptId is encountered, set up the map (only need
       // very limited information for the purpose of this function
-      if (existingBCHCVSMaps.get(conceptId) == null) {
-        MapRecord BCHCVSMapRecord = new MapRecordJpa();
-        BCHCVSMapRecord.setConceptId(conceptId);
+      if (existingPHCVSMaps.get(conceptId) == null) {
+        MapRecord PHCVSMapRecord = new MapRecordJpa();
+        PHCVSMapRecord.setConceptId(conceptId);
         String sourceConceptName = sourceIdToName.get(conceptId);
         if (sourceConceptName != null) {
-          BCHCVSMapRecord.setConceptName(sourceConceptName);
+          PHCVSMapRecord.setConceptName(sourceConceptName);
         } else {
-          BCHCVSMapRecord
+          PHCVSMapRecord
               .setConceptName("CONCEPT DOES NOT EXIST IN " + mapProject.getSourceTerminology());
         }
 
-        existingBCHCVSMaps.put(conceptId, BCHCVSMapRecord);
+        existingPHCVSMaps.put(conceptId, PHCVSMapRecord);
       }
-      MapRecord BCHCVSMapRecord = existingBCHCVSMaps.get(conceptId);
+      MapRecord PHCVSMapRecord = existingPHCVSMaps.get(conceptId);
 
       // For each line, create three map entries (one for ICD10CA, one for ICD9, one for CedDxs), 
       // and attach it to the record
@@ -476,10 +476,10 @@ public class BCHCVSProjectSpecificAlgorithmHandler extends DefaultProjectSpecifi
       MapEntry cedDxsmapEntry = createMapEntry(cedDexCode.equals("") ? null : cedDexCode, 3, 1, destinationIdToName);
 
       // Add the entries to the record, and put the updated record in the map
-      BCHCVSMapRecord.addMapEntry(icd10CAmapEntry);
-      BCHCVSMapRecord.addMapEntry(icd9mapEntry);
-      BCHCVSMapRecord.addMapEntry(cedDxsmapEntry);
-      existingBCHCVSMaps.put(conceptId, BCHCVSMapRecord);
+      PHCVSMapRecord.addMapEntry(icd10CAmapEntry);
+      PHCVSMapRecord.addMapEntry(icd9mapEntry);
+      PHCVSMapRecord.addMapEntry(cedDxsmapEntry);
+      existingPHCVSMaps.put(conceptId, PHCVSMapRecord);
 
     }
 
