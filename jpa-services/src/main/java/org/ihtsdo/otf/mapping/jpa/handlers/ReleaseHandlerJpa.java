@@ -199,8 +199,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     NEW_ENTRIES("Total New entries this release "),
     /** The retired concepts. */
     RETIRED_CONCEPTS("Total concepts mapped retired this release "),  
-    /** The retired members. */
-    RETIRED_MEMBERS("Total members mapped retired this release "),  
+    /** The retired entries. */
+    RETIRED_ENTRIES("Total entries mapped retired this release "),  
     /** The changed concepts. */
     CHANGED_CONCEPTS("Total Changed concepts mapped this release "),
     /** The changed entries. */
@@ -1284,10 +1284,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     
     for (final ComplexMapRefSetMember member : prevActiveMembers.values()) {
       if (retiredConcepts.contains(member.getConcept().getTerminologyId())) {
-        retiredMembers.add(member.getConcept().getTerminologyId());
+        retiredMembers.add(member.getTerminologyId());
       }
     }  
-    updateStatMax(Stats.RETIRED_MEMBERS.getValue(), retiredMembers.size()); 
+    updateStatMax(Stats.RETIRED_ENTRIES.getValue(), retiredMembers.size()); 
     
     // Determine count of new concepts - previously non-existent, now active
     Set<String> newConcepts = new HashSet<>();
