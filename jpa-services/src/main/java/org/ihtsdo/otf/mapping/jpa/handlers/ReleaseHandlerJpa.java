@@ -194,17 +194,17 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     /** The max entries. */
     MAX_ENTRIES("Max number of map entries for a concept"),
     /** The new concepts. */
-    NEW_CONCEPTS("Total New concepts mapped this release "),
+    NEW_CONCEPTS("Total New mapped concepts this release "),
     /** The new entries. */
-    NEW_ENTRIES("Total New entries this release "),
+    NEW_ENTRIES("Total New mapped entries this release "),
     /** The retired concepts. */
-    RETIRED_CONCEPTS("Total concepts mapped retired this release "),  
+    RETIRED_CONCEPTS("Total Retired mapped concepts this release "),  
     /** The retired entries. */
-    RETIRED_ENTRIES("Total entries mapped retired this release "),  
+    RETIRED_ENTRIES("Total Retired mapped entries this release "),  
     /** The changed concepts. */
-    CHANGED_CONCEPTS("Total Changed concepts mapped this release "),
+    CHANGED_CONCEPTS("Total Changed mapped concepts this release "),
     /** The changed entries. */
-    CHANGED_ENTRIES("Total Changed entries this release ");   
+    CHANGED_ENTRIES("Total Changed mapped entries this release ");   
 
     
     /** The value. */

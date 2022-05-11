@@ -69,8 +69,8 @@ public class SendEmailMojo extends AbstractOtfMappingMojo {
 		  notificationRecipients = recipients;
 		}
 
-		if (config.getProperty("send.notification.recipients") == null) {
-			throw new MojoExecutionException("Email was requested, but no recipients specified in the config file.");
+		else if (config.getProperty("send.notification.recipients") == null) {
+			throw new MojoExecutionException("Email was requested, but no recipients specified in the config file, or as an argument.");
 		}
 
 		try {
