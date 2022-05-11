@@ -269,7 +269,7 @@ angular
           var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
           var browserUrl = baseUrl + '/terminology/browser';
           
-          if ($scope.project.sourceTerminology === 'SNOMEDCT' || $scope.project.sourceTerminology === 'SNOMEDCT_US') {
+          if ($scope.project.sourceTerminology === 'SNOMEDCT' || $scope.project.sourceTerminology.startsWith('SNOMEDCT_')) {
             $scope.browserRequest = 'destination';
           } else {
             $scope.browserRequest = 'source';

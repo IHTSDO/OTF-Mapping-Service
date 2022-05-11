@@ -194,15 +194,17 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     /** The max entries. */
     MAX_ENTRIES("Max number of map entries for a concept"),
     /** The new concepts. */
-    NEW_CONCEPTS("Total New concepts mapped this release "),
+    NEW_CONCEPTS("Total New mapped concepts this release "),
     /** The new entries. */
-    NEW_ENTRIES("Total New entries this release "),
+    NEW_ENTRIES("Total New mapped entries this release "),
     /** The retired concepts. */
-    RETIRED_CONCEPTS("Concepts mapped retired this release "),  
+    RETIRED_CONCEPTS("Total Retired mapped concepts this release "),  
+    /** The retired entries. */
+    RETIRED_ENTRIES("Total Retired mapped entries this release "),  
     /** The changed concepts. */
-    CHANGED_CONCEPTS("Total Changed concepts mapped this release "),
+    CHANGED_CONCEPTS("Total Changed mapped concepts this release "),
     /** The changed entries. */
-    CHANGED_ENTRIES("Total Changed entries this release ");   
+    CHANGED_ENTRIES("Total Changed mapped entries this release ");   
 
     
     /** The value. */
@@ -1272,12 +1274,20 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     // Determine count of retired concepts - previously active, now inactive
     Set<String> retiredConcepts = new HashSet<>();   
+    Set<String> retiredMembers = new HashSet<>();   
     for (final String id : prevActiveConcepts) {
       if (!activeConcepts.contains(id)) {
         retiredConcepts.add(id);
       }
     }
     updateStatMax(Stats.RETIRED_CONCEPTS.getValue(), retiredConcepts.size()); 
+    
+    for (final ComplexMapRefSetMember member : prevActiveMembers.values()) {
+      if (retiredConcepts.contains(member.getConcept().getTerminologyId())) {
+        retiredMembers.add(member.getTerminologyId());
+      }
+    }  
+    updateStatMax(Stats.RETIRED_ENTRIES.getValue(), retiredMembers.size()); 
     
     // Determine count of new concepts - previously non-existent, now active
     Set<String> newConcepts = new HashSet<>();
