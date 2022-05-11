@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.7.23</version>
+    <version>1.7.24</version>
     <relativePath>../../parent</relativePath>
   </parent>
 
@@ -927,6 +927,7 @@
                 <configuration>
                   <subject>${subject}</subject>
                   <body>${body}</body>
+                  <recipients>${recipients}</recipients>
                 </configuration>
               </execution>
             </executions>
