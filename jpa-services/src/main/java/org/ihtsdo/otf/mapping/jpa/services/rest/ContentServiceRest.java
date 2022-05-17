@@ -246,6 +246,25 @@ public interface ContentServiceRest {
     throws Exception;
 
   /**
+   * Download terminology icpc-2.
+   *
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  void downloadTerminologyIcpc2NO(String authToken) throws Exception;  
+  
+  /**
+   * Loads ICPC-2 data
+   * 
+   * @param version The terminology version.
+   * @param inputDir The directory where the input files are located.
+   * @param authToken The auth token
+   * @throws Exception The execution exception
+   */
+  void loadTerminologyIcpc2NO(String version, String inputDir, String authToken)
+    throws Exception;
+  
+  /**
    * Removes a terminology from a database.
    * 
    * @param refsetId Refset Id to be deleted.

@@ -10,6 +10,7 @@ import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
+import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
@@ -21,6 +22,7 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowPathState;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatusCombination;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -338,6 +340,23 @@ public class WorkflowSimplePathHandler extends AbstractWorkflowPathHandler {
         // set workflow status to new
         newRecord.setWorkflowStatus(WorkflowStatus.NEW);
 
+        // Check if this concept has existing map record suggestions, and
+        // populate if so
+        
+        ProjectSpecificAlgorithmHandler handler = (ProjectSpecificAlgorithmHandler) Class
+            .forName(mapProject.getProjectSpecificAlgorithmHandlerClass())
+            .getDeclaredConstructor().newInstance();
+        handler.setMapProject(mapProject);
+        
+        MapRecord existingMapRecord = handler.computeInitialMapRecord(newRecord);
+        if (existingMapRecord != null) {
+          newRecord.setMapEntries(existingMapRecord.getMapEntries());
+          for (MapEntry mapEntry : newRecord.getMapEntries()) {
+            mapEntry.setMapRecord(newRecord);
+          }
+          newRecord.setMapNotes(existingMapRecord.getMapNotes());
+        }        
+        
         newRecords.add(newRecord);
         break;
       case CANCEL:
