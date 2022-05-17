@@ -386,6 +386,73 @@ public class MetadataServiceRestImpl extends RootServiceRestImpl
     }
   }
   
+  /**
+   * Returns the latest icpc2_no version from the api.
+   *
+   * @param authToken the auth token
+   * @return the icpc2 version
+   * @throws Exception the exception
+   */
+@Override
+@GET
+@Path("/terminology/icpc2no")
+@ApiOperation(value = "Get all downloaded ICPC-2 versions", notes = "Gets the latest ICPC-2 version from the api", response = KeyValuePairList.class)
+@Produces({
+    MediaType.TEXT_PLAIN
+})
+public String getAllIcpc2NOVersions(
+  @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+  throws Exception {
+
+  Logger.getLogger(MetadataServiceRestImpl.class)
+      .info("RESTful call (Metadata): /terminology/icpc2no");
+
+  String user = "";
+  try {
+    // authorize
+    user = authorizeApp(authToken, MapUserRole.VIEWER,
+        "get all downloaded atc versions", securityService);
+
+    String icpc2Versions = "";
+
+    final String icpc2Dir =
+        ConfigUtility.getConfigProperties().getProperty("icpc2noAPI.dir");
+
+    File folder = new File(icpc2Dir);
+    if(!folder.exists()){
+      throw new FileNotFoundException(folder + " not found");
+    }
+    
+    File[] listOfFiles = folder.listFiles();
+
+    // We only care about the directories that follow a yy_MM_DD naming convention
+    for (int i = 0; i < listOfFiles.length; i++) {
+      if (listOfFiles[i].isDirectory()
+          && listOfFiles[i].getName().matches("\\d{4}_\\d{2}_\\d{2}")) {
+        icpc2Versions += listOfFiles[i].getName() + ";";
+      }
+    }
+
+    //get rid of final ';'
+    if(icpc2Versions.length() > 1){
+      icpc2Versions = icpc2Versions.substring(0, icpc2Versions.length()-1);
+    }
+    
+    return icpc2Versions;
+  } catch (FileNotFoundException e) {
+    handleException(e, "get downloaded versions of ICPC-2_NO: " + e.getMessage(),
+        user, "", "");
+    return null;
+ } catch (Exception e) {
+    handleException(e, "get downloaded versions of ICPC-2_NO",
+        user, "", "");
+    return null;
+  } finally {
+    securityService.close();
+  }
+}
+  
+  
   /*
    * (non-Javadoc)
    * 
