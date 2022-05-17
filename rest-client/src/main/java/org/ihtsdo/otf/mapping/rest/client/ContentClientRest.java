@@ -613,6 +613,18 @@ public class ContentClientRest extends RootClientRest
 	return;
   }
 
+  @Override
+  public void downloadTerminologyIcpc2NO(String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return;
+  }
+    
+  @Override
+  public void loadTerminologyIcpc2NO(String version, String inputDir, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return;
+  } 
+  
 @Override
 public void loadTerminologyMimsAllergy(String authToken, String mimsAllergyVersion) throws Exception {
 	// TODO Auto-generated method stub

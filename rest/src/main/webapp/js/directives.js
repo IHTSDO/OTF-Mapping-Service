@@ -198,7 +198,7 @@ mapProjectAppDirectives.directive('treeSearchResult', [
             // NOTE: This should be abstracted somewhere else, like a project
             // setting
             var lc = scope.searchResults[0].terminology.toLowerCase();
-            var sortField = (lc.startsWith('icd') || lc.startsWith('gmdn') || lc.startsWith('atc') || lc.startsWith('phcvs')) ? 'terminologyId'
+            var sortField = (lc.startsWith('icd') || lc.startsWith('gmdn') || lc.startsWith('atc') || lc.startsWith('icpc') || lc.startsWith('phcvs')) ? 'terminologyId'
               : 'defaultPreferredName';
             sortComparator = function(a, b) {
               if (a[sortField] < b[sortField]) {

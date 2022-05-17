@@ -62,6 +62,15 @@ public interface MetadataServiceRest {
 	 */
 	String getAllAtcVersions(String authToken) throws Exception;
 
+    /**
+     * Returns the latest ICPC-2 version from the api.
+     *
+     * @param authToken the auth token
+     * @return the icpc-2 version
+     * @throws Exception the exception
+     */
+    String getAllIcpc2NOVersions(String authToken) throws Exception;
+    
 	/**
 	 * Returns the latest mims allergy version from the loading folder.
 	 *

@@ -66,6 +66,7 @@ angular
         
         $scope.downloadedGmdnVersions = new Array();
         $scope.downloadedAtcVersions = new Array();
+        $scope.downloadedIcpc2noVersions = new Array();
         $scope.downloadedMimsAllergyVersions = new Array();
         
         var editingPerformed = new Array();
@@ -116,7 +117,7 @@ angular
         $scope.userApplicationRoles = [ 'VIEWER', 'ADMINISTRATOR' ];
 
         //get list of type in $scope.terminologyFiles?
-        $scope.terminologyInputTypes = [ 'GMDN', 'SNOMED CT', 'ATC', 'MIMS_ALLERGY' ];
+        $scope.terminologyInputTypes = [ 'GMDN', 'SNOMED CT', 'ATC', 'ICPC2_NO', 'MIMS_ALLERGY' ];
         
         // Event for focus project change
         $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
@@ -659,6 +660,31 @@ angular
               var downloadedVersionArray = data.split(';');
               for (var i = 0; i < downloadedVersionArray.length; i++) {
                 $scope.downloadedAtcVersions.push(downloadedVersionArray[i]);
+              }            
+              deferred.resolve();
+                
+            }).error(function(data, status, headers, config) {
+            $rootScope.handleHttpError(data, status, headers, config);
+            deferred.reject();            
+          });
+
+          return deferred.promise;          
+        }
+
+        function getDownloadedIcpc2noVersions() {
+            
+          var deferred = $q.defer();
+
+          $http({
+            url : root_metadata + 'terminology/icpc2no',
+            dataType : 'text/plain',
+            method : 'GET'
+          }).success(
+            function(data) {
+              $scope.downloadedIcpc2noVersions = new Array();
+              var downloadedVersionArray = data.split(';');
+              for (var i = 0; i < downloadedVersionArray.length; i++) {
+                $scope.downloadedIcpc2noVersions.push(downloadedVersionArray[i]);
               }            
               deferred.resolve();
                 
@@ -2879,6 +2905,24 @@ angular
             });
             
         };
+
+        $scope.downloadTerminologyIcpc2no = function() {
+        	// download the latest version of ICPC-2 from API   
+            $http({
+              url : root_content + 'terminology/download/icpc2no',
+              method : 'POST',
+              }).success(function(data) {
+                //Reload downloaded ICPC-2 version metadata
+                var promise = getDownloadedIcpc2noVersions();
+                promise.then(function(data){
+                  gpService.decrement();
+                });
+              }).error(function(data, status, headers, config) {
+              gpService.decrement();          
+              $rootScope.handleHttpError(data, status, headers, config);
+            });
+            
+        };
         
         $scope.downloadTerminologyMimsAllergy = function() {
         	// load the latest version of MIMS Allergy   
@@ -2900,6 +2944,11 @@ angular
           
           if (terminology == 'ATC'){
         	getDownloadedAtcVersions();
+        	return;
+          }
+
+          if (terminology == 'ICPC2_NO'){
+        	getDownloadedIcpc2noVersions();
         	return;
           }
           
@@ -3079,6 +3128,45 @@ angular
           // load the version of atc into the application   
           $http({
             url : root_content + 'terminology/load/atc/' + atcVersion,
+            data : 'GENERATE',
+            method : 'PUT',
+            headers : {
+              'Content-Type' : 'text/plain'
+            }
+            }).success(function(data) {
+              //Reload terminology metadata
+              var promise = reloadTerminologies();
+              promise.then(function(data){
+                gpService.decrement();
+              });
+            }).error(function(data, status, headers, config) {
+            gpService.decrement();          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        };
+
+     // terminology/load/icpc2no
+        $scope.loadTerminologyIcpc2no = function(icpc2noVersion) {
+          gpService.increment();
+
+          var errors = '';
+          for (var i = 0; i < $scope.terminologyVersionPairs.length; i++) {
+            var terminologyVersionPair = $scope.terminologyVersionPairs[i];
+            if(terminologyVersionPair == 'ICPC2_NO ' + icpc2noVersion){
+              errors += 'ICPC2_NO ' + icpc2noVersion + ' is already loaded in the application.\n';
+              break;
+            }
+          }
+
+          if (errors.length > 0) {
+            alert(errors);
+            gpService.decrement();
+            return;
+          }
+          
+          // load the version of ICPC-2 into the application   
+          $http({
+            url : root_content + 'terminology/load/icpc2no/' + icpc2noVersion,
             data : 'GENERATE',
             method : 'PUT',
             headers : {
