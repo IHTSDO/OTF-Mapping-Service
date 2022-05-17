@@ -161,16 +161,20 @@ public class ICPC2NODownloadAlgorithm extends RootServiceJpa implements Algorith
 	            }
 	        }
 	        
-            //If the code is a letter plus a two-decimal number without decimal, it is a concept.
-            //Its parent is determined by the number:
+            //If the code is a letter plus a 2-to-3 digit number without decimal, it is a concept.
+            //Its parent is determined by the number.  For 2-digit numbers:
             //01-29 Symptoms and complaints, belongs to X.1
             //30-69 Process codes, belongs to X.3
             //70-99 Diagnosis/diseases, belongs to X.7
-            //(e.g. A09 parent is A.1, A20 parent is A.1, B99 parent is B.7, etc.)	        
-	        else if (icpc2Kode.asText().length()==3) {
+            //(e.g. A09 parent is A.1, A20 parent is A.1, B99 parent is B.7, etc.)
+	        //For 3-digit numbers, the third number is an appended suffix,
+	        //so strip the final digit and do the same sorting as above.
+	        //(e.g. R992 gets stripped to R99, and so parent is R.7).
+	        else if (!icpc2Kode.asText().contains(".") && (icpc2Kode.asText().length()==3 || icpc2Kode.asText().length()==4)) {
 	          //Separate the letter and number portion
 	          String icpc2Chapter = icpc2Kode.asText().substring(0,1);
-	          Long icpc2Number = Long.parseLong(icpc2Kode.asText().substring(1));
+	          //Only keep the first 2 digits of the number portion, for determining parent
+	          Long icpc2Number = Long.parseLong(icpc2Kode.asText().substring(1,2));
 	          String parent = null;
 	          if(icpc2Number >=1 && icpc2Number <= 29) {
 	            parent = icpc2Chapter + ".1";
