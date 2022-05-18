@@ -1,5 +1,8 @@
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
@@ -13,6 +16,7 @@ import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
+import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
@@ -214,6 +218,14 @@ public class ICPC2NOProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
         existingMapEntry.setMapPriority(additionalFields.get("mapPriority").asInt());
         existingMapEntry.setMapGroup(additionalFields.get("mapGroup").asInt());
         
+        Set<MapAdvice> mapAdvices = new HashSet<>();
+        for (MapAdvice mapAdvice : mapProject.getMapAdvices()) {
+          if (additionalFields.get("mapAdvice").asText().contains(mapAdvice.getName())) {
+            mapAdvices.add(mapAdvice);
+          }
+        }
+        existingMapEntry.setMapAdvices(mapAdvices);
+        
         MapRelation mapRelation = null;
         for (MapRelation relation : mapProject.getMapRelations()) {
           if (relation.getTerminologyId().equals(additionalFields.get("mapCategoryId").asText())){
@@ -221,6 +233,7 @@ public class ICPC2NOProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
           }
         }
         existingMapEntry.setMapRelation(mapRelation);
+        
         existingMapEntry.setTargetId(additionalFields.get("mapTarget").asText());
         Concept targetConcept = contentService.getConcept(existingMapEntry.getTargetId(), mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
         if(targetConcept != null) {
