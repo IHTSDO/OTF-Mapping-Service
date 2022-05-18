@@ -174,7 +174,7 @@ public class ICPC2NODownloadAlgorithm extends RootServiceJpa implements Algorith
 	          //Separate the letter and number portion
 	          String icpc2Chapter = icpc2Kode.asText().substring(0,1);
 	          //Only keep the first 2 digits of the number portion, for determining parent
-	          Long icpc2Number = Long.parseLong(icpc2Kode.asText().substring(1,2));
+	          Long icpc2Number = Long.parseLong(icpc2Kode.asText().substring(1,3));
 	          String parent = null;
 	          if(icpc2Number >=1 && icpc2Number <= 29) {
 	            parent = icpc2Chapter + ".1";
