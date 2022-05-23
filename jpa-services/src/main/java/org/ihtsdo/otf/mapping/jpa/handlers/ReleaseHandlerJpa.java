@@ -204,7 +204,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     /** The changed concepts. */
     CHANGED_CONCEPTS("Total Changed mapped concepts this release "),
     /** The changed entries. */
-    CHANGED_ENTRIES("Total Changed mapped entries this release ");   
+    CHANGED_ENTRIES_NEW("Total Changed (new) mapped entries this release "), 
+    /** The changed entries. */
+    CHANGED_ENTRIES_RETIRED("Total Changed (retired) mapped entries this release ");   
 
     
     /** The value. */
@@ -1312,18 +1314,26 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     
     
     Set<String> changedConcepts = new HashSet<>();
-    Set<String> changedEntries = new HashSet<>();    
-    for (final String key : activeMembers.keySet()) {
-      ComplexMapRefSetMember member = activeMembers.get(key);
-      String memberConceptId = member.getConcept().getTerminologyId();
-      
-      //If concept was in previous release, the concept is changed.
-      if (prevActiveConcepts.contains(memberConceptId) || prevInactiveConcepts.contains(memberConceptId)) {
-        changedConcepts.add(member.getConcept().getTerminologyId());
+    Set<String> changedEntriesRetired = new HashSet<>();
+    Set<String> changedEntriesNew = new HashSet<>();
+    for (final ComplexMapRefSetMember member : activeMembers.values()) {
+      String key = member.getConcept().getTerminologyId();
+      if(!newConcepts.contains(key) && !retiredConcepts.contains(key)) {
         updateStatMax("CHANGED CONCEPT: " + member.getConcept().getTerminologyId(), 1);
+        changedConcepts.add(key);
+        changedEntriesNew.add(member.getTerminologyId());
       }
-      //If the entry 
-      
+    }
+    
+    for (final ComplexMapRefSetMember member : prevActiveMembers.values()) {
+      if (changedConcepts.contains(member.getConcept().getTerminologyId())) {
+        changedEntriesRetired.add(member.getTerminologyId());
+      }
+    }  
+    
+//    for (final String key : activeMembers.keySet()) {
+//      ComplexMapRefSetMember member = activeMembers.get(key);
+//      ComplexMapRefSetMember member2 = prevActiveMembers.get(key);
 //      //If member not found in previously active, try previously inactive
 //      if(member2 == null) {
 //        member2 = prevInactiveMembers.get(key);
@@ -1333,10 +1343,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 //        updateStatMax("CHANGED CONCEPT: " + member.getConcept().getTerminologyId(), 1);
 //        changedEntries.add(key);
 //      }
-    }
+//    }
 
     updateStatMax(Stats.CHANGED_CONCEPTS.getValue(), changedConcepts.size());
-    updateStatMax(Stats.CHANGED_ENTRIES.getValue(), changedEntries.size());
+    updateStatMax(Stats.CHANGED_ENTRIES_NEW.getValue(), changedEntriesNew.size());
+    updateStatMax(Stats.CHANGED_ENTRIES_RETIRED.getValue(), changedEntriesRetired.size());
 
     String camelCaseName =
         mapProject.getDestinationTerminology().substring(0, 1)
