@@ -1315,16 +1315,24 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     Set<String> changedEntries = new HashSet<>();    
     for (final String key : activeMembers.keySet()) {
       ComplexMapRefSetMember member = activeMembers.get(key);
-      ComplexMapRefSetMember member2 = prevActiveMembers.get(key);
-      //If member not found in previously active, try previously inactive
-      if(member2 == null) {
-        member2 = prevInactiveMembers.get(key);
+      String memberConceptId = member.getConcept().getTerminologyId();
+      
+      //If concept was in previous release, the concept is changed.
+      if (prevActiveConcepts.contains(memberConceptId) || prevInactiveConcepts.contains(memberConceptId)) {
+        changedConcepts.add(member.getConcept().getTerminologyId());
+        updateStatMax("CHANGED CONCEPT: " + member.getConcept().getTerminologyId(), 1);
       }
-      if (member2 != null && !member.equals(member2)) {
-        changedConcepts.add(member.getConcept().getId().toString());
-        updateStatMax("CHANGED CONCEPT: " + member.getConcept().getId().toString(), 1);
-        changedEntries.add(key);
-      }
+      //If the entry 
+      
+//      //If member not found in previously active, try previously inactive
+//      if(member2 == null) {
+//        member2 = prevInactiveMembers.get(key);
+//      }
+//      if (member2 != null && !member.equals(member2)) {
+//        changedConcepts.add(member.getConcept().getTerminologyId());
+//        updateStatMax("CHANGED CONCEPT: " + member.getConcept().getTerminologyId(), 1);
+//        changedEntries.add(key);
+//      }
     }
 
     updateStatMax(Stats.CHANGED_CONCEPTS.getValue(), changedConcepts.size());
