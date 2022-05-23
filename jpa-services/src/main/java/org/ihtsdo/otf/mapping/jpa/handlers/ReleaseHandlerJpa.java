@@ -1278,6 +1278,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     for (final String id : prevActiveConcepts) {
       if (!activeConcepts.contains(id)) {
         retiredConcepts.add(id);
+        updateStatMax("RETIRED CONCEPT: " + id, 1);
       }
     }
     updateStatMax(Stats.RETIRED_CONCEPTS.getValue(), retiredConcepts.size()); 
@@ -1294,6 +1295,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     for (final String id : activeConcepts) {
       if (!prevActiveConcepts.contains(id) && !prevInactiveConcepts.contains(id)) {
         newConcepts.add(id);
+        updateStatMax("NEW CONCEPT: " + id, 1);
       }
     }
     updateStatMax(Stats.NEW_CONCEPTS.getValue(), newConcepts.size());
@@ -1320,6 +1322,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       }
       if (member2 != null && !member.equals(member2)) {
         changedConcepts.add(member.getConcept().getId().toString());
+        updateStatMax("CHANGED CONCEPT: " + member.getConcept().getId().toString(), 1);
         changedEntries.add(key);
       }
     }
