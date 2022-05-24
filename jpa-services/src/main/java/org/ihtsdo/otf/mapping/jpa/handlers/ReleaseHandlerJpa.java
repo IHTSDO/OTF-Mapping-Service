@@ -1266,7 +1266,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       if (previousMember != null && currentMember == null
           && !retiredConcepts.contains(previousMember.getConcept().getTerminologyId())) {
         updateStatMax("CHANGED CONCEPT: " + previousMember.getConcept().getTerminologyId(), 1);
-        changedConcepts.add(key);
+        changedConcepts.add(previousMember.getConcept().getTerminologyId());
         changedEntriesRetired.add(key);
       }
     }
