@@ -1224,7 +1224,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     for (final String id : prevActiveConcepts) {
       if (!activeConcepts.contains(id)) {
         retiredConcepts.add(id);
-        updateStatMax("RETIRED CONCEPT: " + id, 1);
       }
     }
     updateStatMax(Stats.RETIRED_CONCEPTS.getValue(), retiredConcepts.size());
@@ -1241,7 +1240,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     for (final String id : activeConcepts) {
       if (!prevActiveConcepts.contains(id) && !prevInactiveConcepts.contains(id)) {
         newConcepts.add(id);
-        updateStatMax("NEW CONCEPT: " + id, 1);
       }
     }
     updateStatMax(Stats.NEW_CONCEPTS.getValue(), newConcepts.size());
@@ -1266,7 +1264,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       ComplexMapRefSetMember currentMember = activeMembers.get(key);
       if (previousMember != null && currentMember == null
           && !retiredConcepts.contains(previousMember.getConcept().getTerminologyId())) {
-        updateStatMax("CHANGED CONCEPT: " + previousMember.getConcept().getTerminologyId(), 1);
         changedConcepts.add(previousMember.getConcept().getTerminologyId());
         changedEntriesRetired.add(key);
       }
@@ -1277,33 +1274,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       ComplexMapRefSetMember currentMember = activeMembers.get(key);
       if (previousMember == null && currentMember != null
           && !newConcepts.contains(currentMember.getConcept().getTerminologyId())) {
-        updateStatMax("CHANGED CONCEPT: " + currentMember.getConcept().getTerminologyId(), 1);
         changedConcepts.add(currentMember.getConcept().getTerminologyId());
         changedEntriesNew.add(key);
       }
     }
-
-//    for (final ComplexMapRefSetMember member : activeMembers.values()) {
-//      String key = member.getConcept().getTerminologyId();
-//      if (changedConcepts.contains(key)) {
-//        changedEntriesNew.add(member.getTerminologyId());
-//      }
-//   }
-
-    // for (final String key : activeMembers.keySet()) {
-    // ComplexMapRefSetMember member = activeMembers.get(key);
-    // ComplexMapRefSetMember member2 = prevActiveMembers.get(key);
-    // //If member not found in previously active, try previously inactive
-    // if(member2 == null) {
-    // member2 = prevInactiveMembers.get(key);
-    // }
-    // if (member2 != null && !member.equals(member2)) {
-    // changedConcepts.add(member.getConcept().getTerminologyId());
-    // updateStatMax("CHANGED CONCEPT: " +
-    // member.getConcept().getTerminologyId(), 1);
-    // changedEntries.add(key);
-    // }
-    // }
 
     updateStatMax(Stats.CHANGED_CONCEPTS.getValue(), changedConcepts.size());
     updateStatMax(Stats.CHANGED_ENTRIES_NEW.getValue(), changedEntriesNew.size());
