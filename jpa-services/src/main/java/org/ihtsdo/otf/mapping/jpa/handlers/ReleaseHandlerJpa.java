@@ -204,9 +204,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     /** The changed concepts. */
     CHANGED_CONCEPTS("Total Changed mapped concepts this release "),
     /** The changed entries. */
-    CHANGED_ENTRIES_NEW("Total Changed (new) mapped entries this release "),
+    CHANGED_ENTRIES_NEW("Total Changed mapped entries (new) this release "),
     /** The changed entries. */
-    CHANGED_ENTRIES_RETIRED("Total Changed (retired) mapped entries this release ");
+    CHANGED_ENTRIES_RETIRED("Total Changed mapped entries (retired) this release ");
 
     /** The value. */
     private String value;
@@ -1256,6 +1256,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
     updateStatMax(Stats.NEW_ENTRIES.getValue(), ct);
 
+    // Determine count of changed concepts - previously and currently active, but change in members
     Set<String> changedConcepts = new HashSet<>();
     Set<String> changedEntriesRetired = new HashSet<>();
     Set<String> changedEntriesNew = new HashSet<>();
@@ -1270,13 +1271,24 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         changedEntriesRetired.add(key);
       }
     }
-
-    for (final ComplexMapRefSetMember member : activeMembers.values()) {
-      String key = member.getConcept().getTerminologyId();
-      if (changedConcepts.contains(key)) {
-        changedEntriesNew.add(member.getTerminologyId());
+     
+    for (final String key : activeMembers.keySet()) {
+      ComplexMapRefSetMember previousMember = prevActiveMembers.get(key);
+      ComplexMapRefSetMember currentMember = activeMembers.get(key);
+      if (previousMember == null && currentMember != null
+          && !newConcepts.contains(currentMember.getConcept().getTerminologyId())) {
+        updateStatMax("CHANGED CONCEPT: " + currentMember.getConcept().getTerminologyId(), 1);
+        changedConcepts.add(currentMember.getConcept().getTerminologyId());
+        changedEntriesNew.add(key);
       }
-   }
+    }
+
+//    for (final ComplexMapRefSetMember member : activeMembers.values()) {
+//      String key = member.getConcept().getTerminologyId();
+//      if (changedConcepts.contains(key)) {
+//        changedEntriesNew.add(member.getTerminologyId());
+//      }
+//   }
 
     // for (final String key : activeMembers.keySet()) {
     // ComplexMapRefSetMember member = activeMembers.get(key);
