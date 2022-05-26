@@ -625,6 +625,18 @@ public class ContentClientRest extends RootClientRest
     return;
   } 
   
+  @Override
+  public void downloadTerminologyIcd10NO(String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return;
+  }
+    
+  @Override
+  public void loadTerminologyIcd10NO(String version, String inputDir, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return;
+  }   
+  
 @Override
 public void loadTerminologyMimsAllergy(String authToken, String mimsAllergyVersion) throws Exception {
 	// TODO Auto-generated method stub

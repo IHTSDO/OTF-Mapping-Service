@@ -67,6 +67,7 @@ angular
         $scope.downloadedGmdnVersions = new Array();
         $scope.downloadedAtcVersions = new Array();
         $scope.downloadedIcpc2noVersions = new Array();
+        $scope.downloadedIcd10noVersions = new Array();
         $scope.downloadedMimsAllergyVersions = new Array();
         
         var editingPerformed = new Array();
@@ -117,7 +118,7 @@ angular
         $scope.userApplicationRoles = [ 'VIEWER', 'ADMINISTRATOR' ];
 
         //get list of type in $scope.terminologyFiles?
-        $scope.terminologyInputTypes = [ 'GMDN', 'SNOMED CT', 'ATC', 'ICPC2_NO', 'MIMS_ALLERGY' ];
+        $scope.terminologyInputTypes = [ 'GMDN', 'SNOMED CT', 'ATC', 'ICPC2_NO', 'ICD10NO', 'MIMS_ALLERGY' ];
         
         // Event for focus project change
         $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
@@ -685,6 +686,31 @@ angular
               var downloadedVersionArray = data.split(';');
               for (var i = 0; i < downloadedVersionArray.length; i++) {
                 $scope.downloadedIcpc2noVersions.push(downloadedVersionArray[i]);
+              }            
+              deferred.resolve();
+                
+            }).error(function(data, status, headers, config) {
+            $rootScope.handleHttpError(data, status, headers, config);
+            deferred.reject();            
+          });
+
+          return deferred.promise;          
+        }
+
+        function getDownloadedIcd10noVersions() {
+            
+          var deferred = $q.defer();
+
+          $http({
+            url : root_metadata + 'terminology/icd10no',
+            dataType : 'text/plain',
+            method : 'GET'
+          }).success(
+            function(data) {
+              $scope.downloadedIcd10noVersions = new Array();
+              var downloadedVersionArray = data.split(';');
+              for (var i = 0; i < downloadedVersionArray.length; i++) {
+                $scope.downloadedIcd10noVersions.push(downloadedVersionArray[i]);
               }            
               deferred.resolve();
                 
@@ -2924,6 +2950,24 @@ angular
             
         };
         
+        $scope.downloadTerminologyIcd10no = function() {
+        	// download the latest version of ICD10NO from API   
+            $http({
+              url : root_content + 'terminology/download/icd10no',
+              method : 'POST',
+              }).success(function(data) {
+                //Reload downloaded ICD10NO version metadata
+                var promise = getDownloadedIcd10noVersions();
+                promise.then(function(data){
+                  gpService.decrement();
+                });
+              }).error(function(data, status, headers, config) {
+              gpService.decrement();          
+              $rootScope.handleHttpError(data, status, headers, config);
+            });
+            
+        };
+
         $scope.downloadTerminologyMimsAllergy = function() {
         	// load the latest version of MIMS Allergy   
             getDownloadedMimsAllergyVersions();
@@ -2949,6 +2993,11 @@ angular
 
           if (terminology == 'ICPC2_NO'){
         	getDownloadedIcpc2noVersions();
+        	return;
+          }
+
+          if (terminology == 'ICD10NO'){
+        	getDownloadedIcd10noVersions();
         	return;
           }
           
@@ -3183,7 +3232,46 @@ angular
             $rootScope.handleHttpError(data, status, headers, config);
           });
         };
-        
+     
+     // terminology/load/icd10no
+        $scope.loadTerminologyIcd10no = function(icpc2noVersion) {
+          gpService.increment();
+
+          var errors = '';
+          for (var i = 0; i < $scope.terminologyVersionPairs.length; i++) {
+            var terminologyVersionPair = $scope.terminologyVersionPairs[i];
+            if(terminologyVersionPair == 'ICD10NO ' + icd10noVersion){
+              errors += 'ICD10NO ' + icd10noVersion + ' is already loaded in the application.\n';
+              break;
+            }
+          }
+
+          if (errors.length > 0) {
+            alert(errors);
+            gpService.decrement();
+            return;
+          }
+          
+          // load the version of ICD10NO into the application   
+          $http({
+            url : root_content + 'terminology/load/icd10no/' + icd10noVersion,
+            data : 'GENERATE',
+            method : 'PUT',
+            headers : {
+              'Content-Type' : 'text/plain'
+            }
+            }).success(function(data) {
+              //Reload terminology metadata
+              var promise = reloadTerminologies();
+              promise.then(function(data){
+                gpService.decrement();
+              });
+            }).error(function(data, status, headers, config) {
+            gpService.decrement();          
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        };
+   
      // terminology/load/mims_allergy
         $scope.loadTerminologyMimsAllergy = function(mimsAllergyVersion) {
           gpService.increment();
