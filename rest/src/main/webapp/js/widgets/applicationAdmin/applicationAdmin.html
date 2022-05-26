@@ -1888,6 +1888,19 @@
 					ng-options="item for item in downloadedIcpc2noVersions">
 				</select></td>
 			</tr>
+
+			<!-- For Loading ICD10NO -->
+			<tr ng-show="termLoad.terminology == 'ICD10NO'">
+				<td>ICD10NO version to download <br>
+				<br>
+					<button class="btn btn-xs btn-primary"
+						ng-show="termLoad.terminology == 'ICD10NO'"
+						ng-click="downloadTerminologyIcd10no()">Check for new ICD10NO version</button>
+				</td>
+				<td><select ng-model="icd10noVersion"
+					ng-options="item for item in downloadedIcd10noVersions">
+				</select></td>
+			</tr>
 			
 			<!-- For Loading MIMS Allergy -->
 			<tr ng-show="termLoad.terminology == 'MIMS_ALLERGY'">
@@ -1903,7 +1916,7 @@
 			</tr>
 
 			<!-- Define Versions (For all other terminologies) -->
-			<tr ng-show="termLoad.terminology != 'GMDN' && termLoad.terminology != 'ATC' && termLoad.terminology != 'ICPC2_NO' && termLoad.terminology != 'MIMS_ALLERGY' && (termLoad.terminology)">
+			<tr ng-show="termLoad.terminology != 'GMDN' && termLoad.terminology != 'ATC' && termLoad.terminology != 'ICPC2_NO' && termLoad.terminology != 'ICD10NO' && termLoad.terminology != 'MIMS_ALLERGY' && (termLoad.terminology)">
 				<td>Select version of {{termLoad.terminology}} to load </td>
 				<td><select
 					ng-model="termLoad.version"
@@ -1943,6 +1956,12 @@
 		ng-show="(termLoad.terminology == 'ICPC2_NO' && icpc2noVersion != null)"
 		ng-click="loadTerminologyIcpc2no(icpc2noVersion)">Load
 		{{termLoad.terminology}}</button>		
+
+	<!-- Load ICD10NO (Special Script to do so) -->
+	<button class="btn btn-xs btn-primary"
+		ng-show="(termLoad.terminology == 'ICD10NO' && icd10noVersion != null)"
+		ng-click="loadTerminologyIcd10no(icd10noVersion)">Load
+		{{termLoad.terminology}}</button>		
 		
 	<!-- Load MIMS-Allergy (Special Script to do so) -->
 	<button class="btn btn-xs btn-primary"
@@ -1952,7 +1971,7 @@
 
 	<!--  Load Other Terminologies (Only display if have Version defined and (!SNOMED || (SNOMED & Scope defined)) -->
 	<button class="btn btn-xs btn-primary"
-		ng-show="(termLoad.terminology != 'GMDN' && termLoad.terminology != 'ATC' && termLoad.terminology != 'ICPC2_NO' && termLoad.terminology != 'MIMS_ALLERGY') && 
+		ng-show="(termLoad.terminology != 'GMDN' && termLoad.terminology != 'ATC' && termLoad.terminology != 'ICPC2_NO' && termLoad.terminology != 'ICD10NO' && termLoad.terminology != 'MIMS_ALLERGY') && 
 	(termLoad.terminology != 'SNOMED CT' || (termLoad.terminology == 'SNOMED CT' && (termLoad.scope))) && 
 	(termLoad.version)"
 		ng-click="loadTerminologyAws(termLoad.terminology, termLoad.version, termLoad.scope)">Load

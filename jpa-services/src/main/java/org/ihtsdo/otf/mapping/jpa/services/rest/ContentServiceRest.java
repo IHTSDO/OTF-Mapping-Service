@@ -265,6 +265,25 @@ public interface ContentServiceRest {
     throws Exception;
   
   /**
+   * Download terminology icd10no.
+   *
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  void downloadTerminologyIcd10NO(String authToken) throws Exception;  
+  
+  /**
+   * Loads icd10no data
+   * 
+   * @param version The terminology version.
+   * @param inputDir The directory where the input files are located.
+   * @param authToken The auth token
+   * @throws Exception The execution exception
+   */
+  void loadTerminologyIcd10NO(String version, String inputDir, String authToken)
+    throws Exception;  
+  
+  /**
    * Removes a terminology from a database.
    * 
    * @param refsetId Refset Id to be deleted.

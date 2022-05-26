@@ -64,6 +64,7 @@ import org.ihtsdo.otf.mapping.jpa.algo.AtcDownloadAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.ClamlLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.GmdnDownloadAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.GmdnLoaderAlgorithm;
+import org.ihtsdo.otf.mapping.jpa.algo.ICD10NODownloadAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.ICPC2NODownloadAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.MapRecordRf2ComplexMapAppenderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.MapRecordRf2ComplexMapLoaderAlgorithm;
@@ -1005,6 +1006,57 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       handleException(e, "trying to load terminology ICPC-2 from directory");
     }
   }
+
+  
+  /* see superclass */
+  @Override
+  @PUT
+  @Path("/terminology/load/icd10no/{version}")
+  @Consumes(MediaType.TEXT_PLAIN)
+  @ApiOperation(value = "Loads ICD10NO terminology from directory", notes = "Loads ICD10NO terminology from directory for specified terminology and version")
+  public void loadTerminologyIcd10NO(
+    @ApiParam(value = "Version, e.g. 2014_09_01", required = true) @PathParam("version") String version,
+    @ApiParam(value = "ICD10NO input directory", required = true) String inputDir,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("RESTful call (Content): /terminology/load/icd10no/" + version
+            + " from input directory " + inputDir);
+
+    // If inputDir set as 'GENERATE', generate based on config.properties
+    if (inputDir.equals("GENERATE")) {
+      inputDir = ConfigUtility.getConfigProperties()
+          .getProperty("icd10noAPI.dir");
+      // Strip off final /, if it exists
+      if (inputDir.endsWith("/")) {
+        inputDir = inputDir.substring(0, inputDir.length() - 1);
+      }
+      inputDir = inputDir + "/" + version;
+    }
+
+    Logger.getLogger(getClass())
+        .info("Input directory generated from config.properties, and set to "
+            + inputDir);
+
+    // Track system level information
+    long startTimeOrig = System.nanoTime();
+
+    authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "load ICD10NO terminology",
+        securityService);
+
+    try (final SimpleLoaderAlgorithm algo =
+            new SimpleLoaderAlgorithm("ICD10NO", version, inputDir, "0");) {
+
+      algo.compute();
+
+      Logger.getLogger(getClass())
+          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+
+    } catch (Exception e) {
+      handleException(e, "trying to load terminology ICD10NO from directory");
+    }
+  }
   
   
   /* see superclass */
@@ -1306,6 +1358,37 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     } catch (Exception e) {
       handleException(e,
           "trying to download most recent terminology ICPC-2 from API");
+    }
+  }
+
+  /* see superclass */
+  @Override
+  @POST
+  @Path("/terminology/download/icd10no")
+  @ApiOperation(value = "Download most recent ICD10NO terminology from API", notes = "Downloads most recent ICD10NO terminology from API")
+  public void downloadTerminologyIcd10NO(
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("RESTful call (Content): /terminology/download/icd10no/");
+
+    // Track system level information
+    long startTimeOrig = System.nanoTime();
+
+    authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+        "download ICD10NO terminology", securityService);
+
+    try (final ICD10NODownloadAlgorithm algo = new ICD10NODownloadAlgorithm();) {
+
+      algo.compute();
+
+      Logger.getLogger(getClass())
+          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+
+    } catch (Exception e) {
+      handleException(e,
+          "trying to download most recent terminology ICD10NO from API");
     }
   }
   
