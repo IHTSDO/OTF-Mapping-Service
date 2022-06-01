@@ -3234,7 +3234,7 @@ angular
         };
      
      // terminology/load/icd10no
-        $scope.loadTerminologyIcd10no = function(icpc2noVersion) {
+        $scope.loadTerminologyIcd10no = function(icd10noVersion) {
           gpService.increment();
 
           var errors = '';
