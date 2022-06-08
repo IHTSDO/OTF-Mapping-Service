@@ -1118,7 +1118,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         securityService);
 
     try (final SimpleLoaderAlgorithm algo =
-            new SimpleLoaderAlgorithm("MIMS_Allergy", version, inputDir + "/" + version, "0");) {
+            new SimpleLoaderAlgorithm("MIMSALLERGY", version, inputDir + "/" + version, "0");) {
 
       algo.compute();
 
