@@ -3584,14 +3584,17 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
         + "         mr.mapProjectId = :mapProjectId " + "         AND mr.id = me2.mapRecord_Id "
         + "             AND EXISTS "
         /* Get target Ids for all CURRENT finished map records */
-        + "             (SELECT  " + "                 me.targetId " + "             FROM "
-        + "                 map_records mr, map_entries me " + "             WHERE "
+        + "             (SELECT  " + "                 me3.targetId " + "             FROM "
+        + "                 map_records mr3, map_entries me3 " 
+        + "                JOIN map_projects_scope_concepts mpsc ON mr3.conceptId = mpsc.scopeConcepts AND mr3.mapProjectId = mpsc.id"
+        + "             WHERE "
         + "                 mr.mapProjectId = :mapProjectId "
-        + "                     AND me2.targetId = me.targetId "
-        + "                     AND me.targetID IS NOT NULL "
+        + "                     AND me2.targetId = me3.targetId "
+        + "                     AND me3.targetID IS NOT NULL "
         + "                     AND targetId != '' "
-        + "                     AND me.mapRecord_id = mr.id "
-        + "                     AND mr.workflowStatus IN ('READY_FOR_PUBLICATION' , 'REVISION') "
+        + "                     AND me3.mapRecord_id = mr.id "
+        + "                     AND NOT EXISTS (SELECT 1 FROM map_projects_scope_excluded_concepts mpse WHERE mr3.mapProjectId = mpse.id AND mr3.conceptId = mpse.scopeExcludedConcepts) "
+        + "                     AND mr3.workflowStatus IN ('READY_FOR_PUBLICATION' , 'REVISION') "
         + "              ) " + "      ) a ON a.conceptId = mra.conceptId "
         /*
          * Only look at the historical map record entries for when they were
