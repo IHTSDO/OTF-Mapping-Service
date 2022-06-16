@@ -1643,12 +1643,12 @@ angular
                 latestNoteId = 0;
               } else {
                 latestNoteId = Math.max.apply(null, array.map(function(v) {
-                  return v.id;
+                  return v.localId + 1;
                 }));
               }
             }
 
-            elem['localId'] = ++latestNoteId;
+            elem['localId'] = latestNoteId;
           }
 
           array.push(elem);
