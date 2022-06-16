@@ -62,6 +62,24 @@ public interface MetadataServiceRest {
 	 */
 	String getAllAtcVersions(String authToken) throws Exception;
 
+    /**
+     * Returns the latest ICPC2_NO version from the api.
+     *
+     * @param authToken the auth token
+     * @return the icpc2_NO version
+     * @throws Exception the exception
+     */
+    String getAllIcpc2NOVersions(String authToken) throws Exception;
+  
+    /**
+     * Returns the latest ICD10NO version from the api.
+     *
+     * @param authToken the auth token
+     * @return the ICD10NO version
+     * @throws Exception the exception
+     */
+    String getAllIcd10NOVersions(String authToken) throws Exception;
+   
 	/**
 	 * Returns the latest mims allergy version from the loading folder.
 	 *
