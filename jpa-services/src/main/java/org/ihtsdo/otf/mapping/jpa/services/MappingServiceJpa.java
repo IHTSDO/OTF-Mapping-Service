@@ -3572,29 +3572,31 @@ public class MappingServiceJpa extends RootServiceJpa implements MappingService 
      * Find all historical map records for each MedDRA sourceId that maps to a
      * current SNOMED targetId
      */
-        + "     (SELECT  " + "         a.targetId, " + "             a.conceptId, "
-        + "             mra.workflowStatus, " + "             mra.lastModifiedBy_id, "
-        + "             mra.REV " + "     FROM " + "         map_records_AUD mra " + "     JOIN  "
+        + "     (SELECT  " + "         a.targetId, "
+        + "             a.conceptId, " + "             mra.workflowStatus, "
+        + "             mra.lastModifiedBy_id, " + "             mra.REV "
+        + "     FROM " + "         map_records_AUD mra " + "     JOIN  "
         /*
          * For each SNOMEDCT target Id, identify all of the MedDRA sourceIds
          * that map to it
          */
-        + "     (SELECT DISTINCT " + "         me2.targetId, mr.conceptId " + "     FROM "
-        + "         map_records mr, map_entries me2 " + "     WHERE "
-        + "         mr.mapProjectId = :mapProjectId " + "         AND mr.id = me2.mapRecord_Id "
-        + "             AND EXISTS "
+        + "     (SELECT DISTINCT " + "         me2.targetId, mr.conceptId "
+        + "     FROM " + "         map_records mr, map_entries me2 "
+        + "     WHERE " + "         mr.mapProjectId = :mapProjectId "
+        + "         AND mr.id = me2.mapRecord_Id " + "             AND EXISTS "
         /* Get target Ids for all CURRENT finished map records */
-        + "             (SELECT  " + "                 me3.targetId " + "             FROM "
-        + "                 map_records mr3, map_entries me3 " 
-        + "                JOIN map_projects_scope_concepts mpsc ON mr3.conceptId = mpsc.scopeConcepts AND mr3.mapProjectId = mpsc.id"
+        + "             (SELECT  " + "                 me.targetId "
+        + "             FROM "
+        + "                 map_records mr, map_entries me "
         + "             WHERE "
         + "                 mr.mapProjectId = :mapProjectId "
-        + "                     AND me2.targetId = me3.targetId "
-        + "                     AND me3.targetID IS NOT NULL "
+        + "                     AND me2.targetId = me.targetId "
+        + "                     AND me.targetID IS NOT NULL "
         + "                     AND targetId != '' "
-        + "                     AND me3.mapRecord_id = mr.id "
-        + "                     AND NOT EXISTS (SELECT 1 FROM map_projects_scope_excluded_concepts mpse WHERE mr3.mapProjectId = mpse.id AND mr3.conceptId = mpse.scopeExcludedConcepts) "
-        + "                     AND mr3.workflowStatus IN ('READY_FOR_PUBLICATION' , 'REVISION') "
+        + "                     AND me.mapRecord_id = mr.id "
+        + "                     AND EXISTS (SELECT 1 FROM map_projects_scope_concepts mpsc WHERE mr.conceptId = mpsc.scopeConcepts AND mr.mapProjectId = mpsc.id) "
+        + "                     AND NOT EXISTS (SELECT 1 FROM map_projects_scope_excluded_concepts mpse WHERE mr.conceptId = mpse.scopeExcludedConcepts AND mr.mapProjectId = mpse.id) "
+        + "                     AND mr.workflowStatus IN ('READY_FOR_PUBLICATION' , 'REVISION') "
         + "              ) " + "      ) a ON a.conceptId = mra.conceptId "
         /*
          * Only look at the historical map record entries for when they were
