@@ -40,6 +40,13 @@ public class SendEmailMojo extends AbstractOtfMappingMojo {
 	 * @parameter recipients
 	 */
 	private String recipients = null;
+	
+    /**
+     * Optional fully-specified attachment filename
+     * 
+     * @parameter filename
+     */
+    private String filename = null;	
 
 	/**
 	 * Executes the plugin.
@@ -52,6 +59,7 @@ public class SendEmailMojo extends AbstractOtfMappingMojo {
 		getLog().info("  subject = " + subject);
 		getLog().info("  body = " + body);
 		getLog().info("  recipients = " + recipients);
+        getLog().info("  filename = " + filename);
 
 		// The '\n' when coming in via parameter are getting double-slashed.
 		// Replace with an explicit line separator.
@@ -69,8 +77,8 @@ public class SendEmailMojo extends AbstractOtfMappingMojo {
 		  notificationRecipients = recipients;
 		}
 
-		if (config.getProperty("send.notification.recipients") == null) {
-			throw new MojoExecutionException("Email was requested, but no recipients specified in the config file.");
+		else if (config.getProperty("send.notification.recipients") == null) {
+			throw new MojoExecutionException("Email was requested, but no recipients specified in the config file, or as an argument.");
 		}
 
 		try {
@@ -89,8 +97,14 @@ public class SendEmailMojo extends AbstractOtfMappingMojo {
 			props.put("mail.smtp.starttls.enable", config.getProperty("mail.smtp.starttls.enable"));
 			props.put("mail.smtp.auth", config.getProperty("mail.smtp.auth"));
 			try {
-				ConfigUtility.sendEmail(subject, from, notificationRecipients, body, props,
+			    if(filename != null) {
+	               ConfigUtility.sendEmailWithAttachment(subject, from, notificationRecipients, body, props, filename,
+                       "true".equals(config.getProperty("mail.smtp.auth")));
+			    }
+			    else {
+			      ConfigUtility.sendEmail(subject, from, notificationRecipients, body, props,
 						"true".equals(config.getProperty("mail.smtp.auth")));
+			    }
 			} catch (Exception e) {
 				// Don't allow an error here to stop processing
 				e.printStackTrace();

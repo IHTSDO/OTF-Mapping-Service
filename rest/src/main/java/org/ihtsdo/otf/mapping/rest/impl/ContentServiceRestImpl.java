@@ -15,17 +15,14 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -49,8 +46,6 @@ import javax.ws.rs.core.MediaType;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.log4j.Logger;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -69,6 +64,8 @@ import org.ihtsdo.otf.mapping.jpa.algo.AtcDownloadAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.ClamlLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.GmdnDownloadAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.GmdnLoaderAlgorithm;
+import org.ihtsdo.otf.mapping.jpa.algo.ICD10NODownloadAlgorithm;
+import org.ihtsdo.otf.mapping.jpa.algo.ICPC2NODownloadAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.MapRecordRf2ComplexMapAppenderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.MapRecordRf2ComplexMapLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.MapRecordRf2SimpleMapLoaderAlgorithm;
@@ -103,9 +100,7 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.LinkedListMultimap;
-import com.google.common.collect.Multimap;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -965,6 +960,108 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   /* see superclass */
   @Override
   @PUT
+  @Path("/terminology/load/icpc2no/{version}")
+  @Consumes(MediaType.TEXT_PLAIN)
+  @ApiOperation(value = "Loads ICPC-2 terminology from directory", notes = "Loads ICPC-2 terminology from directory for specified terminology and version")
+  public void loadTerminologyIcpc2NO(
+    @ApiParam(value = "Version, e.g. 2014_09_01", required = true) @PathParam("version") String version,
+    @ApiParam(value = "ICPC-2 input directory", required = true) String inputDir,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("RESTful call (Content): /terminology/load/icpc2no/" + version
+            + " from input directory " + inputDir);
+
+    // If inputDir set as 'GENERATE', generate based on config.properties
+    if (inputDir.equals("GENERATE")) {
+      inputDir = ConfigUtility.getConfigProperties()
+          .getProperty("icpc2noAPI.dir");
+      // Strip off final /, if it exists
+      if (inputDir.endsWith("/")) {
+        inputDir = inputDir.substring(0, inputDir.length() - 1);
+      }
+      inputDir = inputDir + "/" + version;
+    }
+
+    Logger.getLogger(getClass())
+        .info("Input directory generated from config.properties, and set to "
+            + inputDir);
+
+    // Track system level information
+    long startTimeOrig = System.nanoTime();
+
+    authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "load ICPC-2 terminology",
+        securityService);
+
+    try (final SimpleLoaderAlgorithm algo =
+            new SimpleLoaderAlgorithm("ICPC2_NO", version, inputDir, "0");) {
+
+      algo.compute();
+
+      Logger.getLogger(getClass())
+          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+
+    } catch (Exception e) {
+      handleException(e, "trying to load terminology ICPC-2 from directory");
+    }
+  }
+
+  
+  /* see superclass */
+  @Override
+  @PUT
+  @Path("/terminology/load/icd10no/{version}")
+  @Consumes(MediaType.TEXT_PLAIN)
+  @ApiOperation(value = "Loads ICD10NO terminology from directory", notes = "Loads ICD10NO terminology from directory for specified terminology and version")
+  public void loadTerminologyIcd10NO(
+    @ApiParam(value = "Version, e.g. 2014_09_01", required = true) @PathParam("version") String version,
+    @ApiParam(value = "ICD10NO input directory", required = true) String inputDir,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("RESTful call (Content): /terminology/load/icd10no/" + version
+            + " from input directory " + inputDir);
+
+    // If inputDir set as 'GENERATE', generate based on config.properties
+    if (inputDir.equals("GENERATE")) {
+      inputDir = ConfigUtility.getConfigProperties()
+          .getProperty("icd10noAPI.dir");
+      // Strip off final /, if it exists
+      if (inputDir.endsWith("/")) {
+        inputDir = inputDir.substring(0, inputDir.length() - 1);
+      }
+      inputDir = inputDir + "/" + version;
+    }
+
+    Logger.getLogger(getClass())
+        .info("Input directory generated from config.properties, and set to "
+            + inputDir);
+
+    // Track system level information
+    long startTimeOrig = System.nanoTime();
+
+    authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "load ICD10NO terminology",
+        securityService);
+
+    try (final SimpleLoaderAlgorithm algo =
+            new SimpleLoaderAlgorithm("ICD10NO", version, inputDir, "0");) {
+
+      algo.compute();
+
+      Logger.getLogger(getClass())
+          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+
+    } catch (Exception e) {
+      handleException(e, "trying to load terminology ICD10NO from directory");
+    }
+  }
+  
+  
+  /* see superclass */
+  @Override
+  @PUT
   @Path("/terminology/load/mims_allergy/{version}")
   @Consumes(MediaType.TEXT_PLAIN)
   @ApiOperation(value = "Loads MIMS-Allergy terminology from directory", notes = "Loads MIMS terminology from directory for specified version")
@@ -1021,7 +1118,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         securityService);
 
     try (final SimpleLoaderAlgorithm algo =
-            new SimpleLoaderAlgorithm("MIMS_Allergy", version, inputDir + "/" + version, "0");) {
+            new SimpleLoaderAlgorithm("MIMSALLERGY", version, inputDir + "/" + version, "0");) {
 
       algo.compute();
 
@@ -1233,6 +1330,69 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     }
   }
 
+  /* see superclass */
+  @Override
+  @POST
+  @Path("/terminology/download/icpc2no")
+  @ApiOperation(value = "Download most recent ICPC-2 terminology from API", notes = "Downloads most recent ICPC-2 terminology from API")
+  public void downloadTerminologyIcpc2NO(
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("RESTful call (Content): /terminology/download/icpc2no/");
+
+    // Track system level information
+    long startTimeOrig = System.nanoTime();
+
+    authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+        "download ICPC-2 terminology", securityService);
+
+    try (final ICPC2NODownloadAlgorithm algo = new ICPC2NODownloadAlgorithm();) {
+
+      algo.compute();
+
+      Logger.getLogger(getClass())
+          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+
+    } catch (Exception e) {
+      handleException(e,
+          "trying to download most recent terminology ICPC-2 from API");
+    }
+  }
+
+  /* see superclass */
+  @Override
+  @POST
+  @Path("/terminology/download/icd10no")
+  @ApiOperation(value = "Download most recent ICD10NO terminology from API", notes = "Downloads most recent ICD10NO terminology from API")
+  public void downloadTerminologyIcd10NO(
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("RESTful call (Content): /terminology/download/icd10no/");
+
+    // Track system level information
+    long startTimeOrig = System.nanoTime();
+
+    authorizeApp(authToken, MapUserRole.ADMINISTRATOR,
+        "download ICD10NO terminology", securityService);
+
+    try (final ICD10NODownloadAlgorithm algo = new ICD10NODownloadAlgorithm();) {
+
+      algo.compute();
+
+      Logger.getLogger(getClass())
+          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+
+    } catch (Exception e) {
+      handleException(e,
+          "trying to download most recent terminology ICD10NO from API");
+    }
+  }
+  
+  
   /* see superclass */
   @Override
   @DELETE

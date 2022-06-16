@@ -186,7 +186,7 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
   private void cacheAutomaps() throws Exception {
     // Lookup if this concept has an existing, auto-generated map record to pre-load
     // Generated automap file must be saved here:
-    // {data.dir}/MIMS-Allergy/automap/results.txt
+    // {data.dir}/MIMS-Allergy/automap/results.xls
 
     final ContentService contentService = new ContentServiceJpa();
 
@@ -200,7 +200,7 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
 
     // Check preconditions
     String inputFile =
-        dataDir + "/MIMS-Allergy/automap/results.txt";
+        dataDir + "/MIMS-Allergy/automap/results.xls";
 
     if (!new File(inputFile).exists()) {
       throw new Exception("Specified input file missing: " + inputFile);
