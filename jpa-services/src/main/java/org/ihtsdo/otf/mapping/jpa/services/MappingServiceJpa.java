@@ -3754,7 +3754,7 @@ public class MappingServiceJpa extends RootServiceJpa
         + "  AND NOT EXISTS (SELECT 1 FROM map_projects_scope_excluded_concepts mpse WHERE mr.mapProjectId = mpse.id AND mr.conceptId = mpse.scopeExcludedConcepts)"
         + "      AND EXISTS "
         /* Get target Ids for all CURRENT finished map records */
-        + "             (SELECT me.targetId"
+        + "             (SELECT me3.targetId"
         + "                FROM map_records mr3 "
         + "                JOIN map_entries me3 ON me3.mapRecord_id = mr3.id "
         + "                 AND me3.targetId IS NOT NULL "
