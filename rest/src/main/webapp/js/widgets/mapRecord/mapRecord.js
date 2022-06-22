@@ -1643,7 +1643,7 @@ angular
                 latestNoteId = 0;
               } else {
                 latestNoteId = Math.max.apply(null, array.map(function(v) {
-                  return v.localId;
+                  return v.id;
                 }));
               }
             }
