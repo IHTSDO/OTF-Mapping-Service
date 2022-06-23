@@ -3,38 +3,48 @@
 <div ng-include src="'./partials/header.html'"></div>
 
 <div id="wrapper">
-  <div id="content">
-    <div id="content-left">
-      <strong>Enter User and Password </strong><br>
-      <form>
-        <input style="margin-top: 5px;" id="userField" ng-model="userName"
-          type="text" placeholder="Username" /><br> <input
-          style="margin-top: 5px;" id="passwordField" type="password"
-          placeholder="Password" ng-model="password" /><br>
-        <button class="btn btn-xs btn-primary" style="margin-top: 10px;"
-          id="userLoginButton" type="submit" ng-click="go('/viewer/dash')">Login</button>
-        <p>
-          <a href="{{appConfig['deploy.reset.password.link']}}">Forgot
-            Password?</a>
-        </p>
-      </form>
-    </div>
-  </div>
+	<div id="content">
+		<div id="content-left">
+			<strong>Enter User and Password </strong><br>
+			<form>
+				<input style="margin-top: 5px;" id="userField" ng-model="userName"
+					type="text" placeholder="Username" /><br> <input
+					style="margin-top: 5px;" id="passwordField" type="password"
+					placeholder="Password" ng-model="password" /><br>
+				<button class="btn btn-xs btn-primary" style="margin-top: 10px;"
+					id="userLoginButton" type="submit" ng-click="go('/viewer/dash')">Login</button>
+				<p>
+					<a href="{{appConfig['deploy.reset.password.link']}}">Forgot
+						Password?</a>
+				</p>
+			</form>
+		</div>
+	</div>
 </div>
 <div>
-  <p style="margin-top: 25px; max-width: 500px">
-    This demonstration app is loaded with a sample simple allergy code list and
-    a mini edition of SNOMED containing about 10k concepts. <br />
-  </p>
-  <p style="display: block; max-width: 450px">For related resources, see the
-    following links:</p>
-  <ul>
-    <li><a href="https://wci.terminology.tools"> Reference Terminology
-        Server</a> (common US healthcare terminologies)</li>
-    <li><a href="https://umls.terminology.tools"> UMLS Terminology
-        Server</a> (loaded from RRF)</li>
-    <li><a href="https://snomed.terminology.tools"> SNOMED Terminology
-        Server</a> (loaded from RF2)</li>
-  </ul>
+	<br />
+	<p style="margin-top: 25px; max-width: 500px">This demonstration
+		app is loaded with sample mapping projects intended to demonstrate a
+		few common mapping use cases and various aspects of the workflow and
+		other functionality.</p>
+	<p style="margin-top: 25px; max-width: 500px">Included are a local
+		allergy code set mapped to SNOMEDCT, a local medication code set
+		mapped to RXNORM. Additionally, samples of the SNOMEDCT to ICD10
+		projects are also loaded to demonstrate more complex workflow.</p>
+	<p style="margin-top: 25px; max-width: 500px">
+		Start by <a href="https://www.youtube.com/watch?v=EbQ8UC__Jus">viewing
+			the demo video</a>. We are happy to provide a guided demo as well as
+		access to this environment so you can play around. Email us at <a
+			href="mailto:info@westcoastinformatics.com">info@westcoastinformatics.com</a>
+	</p>
+	<p style="margin-top: 25px; max-width: 500px">Related resources:</p>
+	<ul>
+		<li><a href="https://wci.terminology.tools"> WCI Reference
+				Terminology Server</a> (common US healthcare terminologies)</li>
+		<li><a href="https://umls.terminology.tools"> UMLS
+				Terminology Server</a> (loaded from RRF)</li>
+		<li><a href="https://snomed.terminology.tools"> SNOMEDCT_US
+				Terminology Server</a> (loaded from RF2)</li>
+	</ul>
 </div>
 <div ng-include src="'./partials/footer.html'"></div>
