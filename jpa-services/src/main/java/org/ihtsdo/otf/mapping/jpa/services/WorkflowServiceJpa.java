@@ -49,6 +49,7 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowType;
 import org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa;
 import org.ihtsdo.otf.mapping.jpa.FeedbackJpa;
+import org.ihtsdo.otf.mapping.jpa.MapNoteJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.algo.LuceneReindexAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.handlers.AbstractWorkflowPathHandler;
@@ -825,7 +826,13 @@ public class WorkflowServiceJpa extends MappingServiceJpa
           updateMapRecord(mr);
 
           // Persist with all notes including updated ones
-          mr.setMapNotes(notesToUpdate);
+          for (MapNote note : notesToUpdate) {
+            /**if (note.getId() != null) {
+              note.setId(null);
+            } */
+            mr.addMapNote(new MapNoteJpa(note, false));
+          }
+          //mr.setMapNotes(notesToUpdate);
           updateMapRecord(mr);
         } else {
           Logger.getLogger(WorkflowServiceJpa.class)
