@@ -22,14 +22,14 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
     <amazonaws.version>1.11.623</amazonaws.version>
-    <apache.poi>4.1.0</apache.poi>
+    <apache.poi>4.1.1</apache.poi>
     <asm.version>20041228.180559</asm.version>
     <cglib.version>3.3.0</cglib.version>
     <commons-io.version>2.7</commons-io.version>
     
     <!-- Set hibernate versions -->
     <hibernate.c3p0.version>5.4.4.Final</hibernate.c3p0.version>
-    <hibernate.core.version>5.4.4.Final</hibernate.core.version>
+    <hibernate.core.version>5.4.24.Final</hibernate.core.version>
     <hibernate.entitymanager.version>5.4.4.Final</hibernate.entitymanager.version>
     <hibernate.envers.version>5.4.4.Final</hibernate.envers.version>
     <hibernate.search.version>5.11.2.Final</hibernate.search.version>
@@ -64,7 +64,7 @@
     <maven.surefire.plugin.version>2.22.0</maven.surefire.plugin.version>
     <maven.war.plugin.version>2.6</maven.war.plugin.version>
 
-    <mysql.connector.java.version>8.0.17</mysql.connector.java.version>
+    <mysql.connector.java.version>8.0.28</mysql.connector.java.version>
     <org.apache.commons.lang3.version>3.9</org.apache.commons.lang3.version>
     <org.json.version>20190722</org.json.version>
     <org.reflections.version>0.9.10</org.reflections.version>
