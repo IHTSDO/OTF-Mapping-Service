@@ -57,7 +57,7 @@ public class FeedbackJpa implements Feedback {
   private String mapError;
 
   /** The note. */
-  @Column(nullable = false, length = 4000)
+  @Column(nullable = false, length = 100000)
   private String message;
 
   /** The timestamp. */
