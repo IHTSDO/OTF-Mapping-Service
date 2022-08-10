@@ -29,7 +29,7 @@
     
     <!-- Set hibernate versions -->
     <hibernate.c3p0.version>5.4.4.Final</hibernate.c3p0.version>
-    <hibernate.core.version>5.4.4.Final</hibernate.core.version>
+    <hibernate.core.version>5.4.24.Final</hibernate.core.version>
     <hibernate.entitymanager.version>5.4.4.Final</hibernate.entitymanager.version>
     <hibernate.envers.version>5.4.4.Final</hibernate.envers.version>
     <hibernate.search.version>5.11.2.Final</hibernate.search.version>
