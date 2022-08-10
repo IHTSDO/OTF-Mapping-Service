@@ -33,6 +33,14 @@ angular
       $scope.preferences = localStorageService.get('preferences');
       $scope.assignedTab = localStorageService.get('assignedTab');      
       $scope.tabs = localStorageService.get('assignedWorkTabs');
+
+	  // MIMS Condition project wants default sort by preferred name
+	  if ($scope.focusProject.projectSpecificAlgorithmHandlerClass == 'org.ihtsdo.otf.mapping.jpa.handlers.MIMSConditionToSnomedProjectSpecificAlgorithmHandler' ||
+		  $scope.focusProject.projectSpecificAlgorithmHandlerClass == 'org.ihtsdo.otf.mapping.jpa.handlers.MIMSAllergyToSnomedProjectSpecificAlgorithmHandler') {
+		$scope.defaultSortField = 'defaultPreferredName';
+	  } else {
+		$scope.defaultSortField = 'terminologyId';
+	  }
       
       $scope.selectedTags = new Array();
       $scope.allTags = new Array();
@@ -375,8 +383,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
           'maxResults' : page == -1 ? -1 : $scope.itemsPerPage,
-          'sortField' : (sortField['conflicts']) ? sortField['conflicts'] : 'sortKey',
-          'ascending' : sortAscending['conflicts'],
+          'sortField' : (sortField['conflicts']) ? sortField['conflicts'] : $scope.defaultSortField,
+          'ascending' : (sortAscending['conflicts']) ? sortAscending['conflicts'] : false,
           'queryRestriction' : $scope.assignedTypes.conflict
         };
 
@@ -460,8 +468,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
           'maxResults' : page == -1 ? -1 : $scope.itemsPerPage,
-          'sortField' : (sortField['concepts']) ? sortField['concepts'] : 'sortKey',
-          'ascending' : sortAscending['concepts'],
+          'sortField' : (sortField['concepts']) ? sortField['concepts'] : $scope.defaultSortField,
+          'ascending' : (sortAscending['concepts']) ? sortAscending['concepts'] : false,
           'queryRestriction' : $scope.assignedTypes.work
         };
 
@@ -569,8 +577,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
           'maxResults' : page == -1 ? -1 : $scope.itemsPerPage,
-          'sortField' : (sortField['qa']) ? sortField['qa'] : 'sortKey',
-          'ascending' : sortAscending['qa'],
+          'sortField' : (sortField['qa']) ? sortField['qa'] : $scope.defaultSortField,
+          'ascending' : (sortAscending['qa']) ? sortAscending['qa'] : false,
           'queryRestriction' : $scope.assignedTypes.qa
         };
 
@@ -660,8 +668,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
           'maxResults' : page == -1 ? -1 : $scope.itemsPerPage,
-          'sortField' : (sortField['review']) ? sortField['review'] : 'sortKey',
-          'ascending' : sortAscending['review'],
+          'sortField' : (sortField['review']) ? sortField['review'] : $scope.defaultSortField,
+          'ascending' : (sortAscending['review']) ? sortAscending['review'] : false,
           'queryRestriction' : $scope.assignedTypes.review
         };
 
@@ -736,8 +744,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : page == -1 ? -1 : (page - 1) * $scope.itemsPerPage,
           'maxResults' : page == -1 ? -1 : $scope.itemsPerPage,
-          'sortField' : (sortField['user']) ? sortField['user'] : 'sortKey',
-          'ascending' : sortAscending['user'],
+          'sortField' : (sortField['user']) ? sortField['user'] : $scope.defaultSortField,
+          'ascending' : (sortAscending['user']) ? sortAscending['user'] : false,
           'queryRestriction' : $scope.assignedTypes.forUser
         };
 
@@ -856,7 +864,7 @@ angular
         var pfsParameterObj = {
           'startIndex' : -1,
           'maxResults' : -1,
-          'sortField' : 'sortKey',
+          'sortField' : $scope.defaultSortField,
           'queryRestriction' : workStatus
         };
 
