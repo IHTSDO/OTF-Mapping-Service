@@ -57,6 +57,14 @@ angular
       // intiialize the user list
       $scope.mapUsers = {};
 
+	  // MIMS Condition project wants default sort by preferred name
+	  if ($scope.focusProject.projectSpecificAlgorithmHandlerClass == 'org.ihtsdo.otf.mapping.jpa.handlers.MIMSConditionToSnomedProjectSpecificAlgorithmHandler' ||
+		  $scope.focusProject.projectSpecificAlgorithmHandlerClass == 'org.ihtsdo.otf.mapping.jpa.handlers.MIMSAllergyToSnomedProjectSpecificAlgorithmHandler') {
+		$scope.defaultSortField = 'defaultPreferredName';
+	  } else {
+		$scope.defaultSortField = 'terminologyId';
+	  }
+
 	  // tags for tag filtering (if applicable for the project)
       $scope.selectedTags = new Array();
       $scope.allTags = new Array();
@@ -281,7 +289,7 @@ angular
         var pfsParameterObj = {
           'startIndex' : (page - 1) * $scope.itemsPerPage,
           'maxResults' : $scope.itemsPerPage,
-          'sortField' : (sortField['conflicts']) ? sortField['conflicts'] : 'sortKey',
+          'sortField' : (sortField['conflicts']) ? sortField['conflicts'] : $scope.defaultSortField,
           'ascending' : sortAscending['conflicts'],
           'queryRestriction' : null
         };
@@ -368,8 +376,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : (page - 1) * $scope.itemsPerPage,
           'maxResults' : $scope.itemsPerPage,
-          'sortField' : (sortField['concepts']) ? sortField['concepts'] : 'sortKey',
-          'ascending' : sortAscending['concepts'],
+          'sortField' : (sortField['concepts']) ? sortField['concepts'] : $scope.defaultSortField,
+          'ascending' : (sortAscending['concepts']) ? sortAscending['concepts'] : false,
           'queryRestriction' : null
         };
 
@@ -426,8 +434,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : (page - 1) * $scope.itemsPerPage,
           'maxResults' : $scope.itemsPerPage,
-          'sortField' : (sortField['qa']) ? sortField['qa'] : 'sortKey',
-          'ascending' : sortAscending['qa'],
+          'sortField' : (sortField['qa']) ? sortField['qa'] : $scope.defaultSortField,
+          'ascending' : (sortAscending['qa']) ? sortAscending['qa'] : false,
           'queryRestriction' : null
         };
 
@@ -525,7 +533,7 @@ angular
         var pfsParameterObj = {
           'startIndex' : -1,
           'maxResults' : -1,
-          'sortField' : 'sortKey',
+          'sortField' : $scope.defaultSortField,
           'queryRestriction' : null
         };
 
@@ -626,8 +634,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : (page - 1) * $scope.itemsPerPage,
           'maxResults' : $scope.itemsPerPage,
-          'sortField' : (sortField['review']) ? sortField['review'] : 'sortKey',
-          'ascending' : sortAscending['review'],
+          'sortField' : (sortField['review']) ? sortField['review'] : $scope.defaultSortField,
+          'ascending' : (sortAscending['review']) ? sortAscending['review'] : false,
           'queryRestriction' : null
         };
 
@@ -759,8 +767,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : ($scope.availableWorkPage - 1) * $scope.itemsPerPage,
           'maxResults' : batchSize,
-          'sortField' : (sortField['concepts']) ? sortField['concepts'] : 'sortKey',
-          'ascending' : sortAscending['concepts'],
+          'sortField' : (sortField['concepts']) ? sortField['concepts'] : $scope.defaultSortField,
+          'ascending' : (sortAscending['concepts']) ? sortAscending['concepts'] : false,
           'queryRestriction' : null
         };
 
@@ -861,8 +869,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : ($scope.availableConflictsPage - 1) * $scope.itemsPerPage,
           'maxResults' : batchSize,
-          'sortField' : (sortField['conflicts']) ? sortField['conflicts'] : 'sortKey',
-          'ascending' : sortAscending['conflicts'],
+          'sortField' : (sortField['conflicts']) ? sortField['conflicts'] : $scope.defaultSortField,
+          'ascending' : (sortAscending['conflicts']) ? sortAscending['conflicts'] : false,
           'queryRestriction' : null
         };
 
@@ -964,8 +972,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : ($scope.availableReviewPage - 1) * $scope.itemsPerPage,
           'maxResults' : batchSize,
-          'sortField' : (sortField['review']) ? sortField['review'] : 'sortKey',
-          'ascending' : sortAscending['review'],
+          'sortField' : (sortField['review']) ? sortField['review'] : $scope.defaultSortField,
+          'ascending' : (sortAscending['review']) ? sortAscending['review'] : false,
           'queryRestriction' : null
         };
 
@@ -1069,8 +1077,8 @@ angular
         var pfsParameterObj = {
           'startIndex' : ($scope.availableQAWorkPage - 1) * $scope.itemsPerPage,
           'maxResults' : batchSize,
-          'sortField' : (sortField['qa']) ? sortField['qa'] : 'sortKey',
-          'ascending' : sortAscending['qa'],
+          'sortField' : (sortField['qa']) ? sortField['qa'] : $scope.defaultSortField,
+          'ascending' : (sortAscending['qa']) ? sortAscending['qa'] : false,
           'queryRestriction' : null
         };
 
