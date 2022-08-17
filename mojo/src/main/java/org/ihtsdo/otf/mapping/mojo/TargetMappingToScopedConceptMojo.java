@@ -105,18 +105,18 @@ public class TargetMappingToScopedConceptMojo extends AbstractOtfMappingMojo {
           Logger.getLogger(getClass()).info("Removing scoped concept "
               + oldScopedConcept + " from target map project.");
           targetMapProject.removeScopeConcept(oldScopedConcept);
-          mappingService.updateMapProject(targetMapProject);
         }
-
+        mappingService.updateMapProject(targetMapProject);
+        
         for (Map.Entry<String, String> newScopedConcept : newScopeConceptList
             .entrySet()) {
           Logger.getLogger(getClass())
               .info("Adding scoped concept " + newScopedConcept.getKey()
                   + " to target map project id: " + targetMapProject.getId());
           targetMapProject.addScopeConcept(newScopedConcept.getKey());
-          mappingService.updateMapProject(targetMapProject);
         }
-
+        mappingService.updateMapProject(targetMapProject);
+        
         // recompute workflow
         Logger.getLogger(getClass()).info("Computing workflow for "
             + targetMapProject.getName() + ", " + targetMapProject.getId());
