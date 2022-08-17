@@ -643,7 +643,8 @@ angular
       // on load, get the root trees for the terminology
       $scope.initializeSearchParameters = function() {
 
-        console.debug('Getting root trees');
+		// removed in WMT-62 because roots are not used
+        /** console.debug('Getting root trees');
         gpService.increment();
         $http.get(
           root_mapping + 'treePosition/project/id/' + $scope.focusProject.id
@@ -660,7 +661,7 @@ angular
             $rootScope.handleHttpError(response.data, response.status,
               response.headers, response.config);
 
-          });
+          });*/
 
         $scope.searchParameters.advices = $scope.focusProject.mapAdvice;
         $scope.searchParameters.principles = $scope.focusProject.mapPrinciple;
