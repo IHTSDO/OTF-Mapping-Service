@@ -2728,9 +2728,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           if(!testModeFlag) {           
             if (++recordCt % 5000 == 0) {
               logger.info("    record count = " + recordCt);
-              contentService.commit();
-              contentService.clear();
-              contentService.beginTransaction();
+              mappingService.commit();
+              mappingService.clear();
+              mappingService.beginTransaction();
             }      
           }
         }
