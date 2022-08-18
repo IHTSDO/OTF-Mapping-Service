@@ -2648,16 +2648,19 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           .info("transactionPerOperation " + mappingService.getTransactionPerOperation());
 
       // instantiate required services
-      /*
-       * final MappingService mappingService = new MappingServiceJpa(); if
-       * (!testModeFlag) { mappingService.setTransactionPerOperation(false);
-       * mappingService.beginTransaction(); }
-       */
+      
+       final MappingService mappingService = new MappingServiceJpa(); 
+       if (!testModeFlag) { 
+         mappingService.setTransactionPerOperation(false);
+         mappingService.beginTransaction(); 
+       }
+       
 
       // compare file to current records
       Report report = compareInputFileToExistingMapRecords();
 
       int pubCt = 0;
+      int recordCt = 0;
 
       // get all scope concept terminology ids for this project
       logger.info("  Get scope concepts for map project");
@@ -2720,6 +2723,16 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             }
           }
 
+         
+          // periodically commit
+          if(!testModeFlag) {           
+            if (++recordCt % 5000 == 0) {
+              logger.info("    record count = " + recordCt);
+              contentService.commit();
+              contentService.clear();
+              contentService.beginTransaction();
+            }      
+          }
         }
 
         // Set latest publication date to now.
@@ -2728,7 +2741,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           mapProject.setLatestPublicationDate(new Date());
           // mapProject.setPublic(true);
           mappingService.updateMapProject(mapProject);
-          // mappingService.commit();
+          mappingService.commit();
         }
       }
 
