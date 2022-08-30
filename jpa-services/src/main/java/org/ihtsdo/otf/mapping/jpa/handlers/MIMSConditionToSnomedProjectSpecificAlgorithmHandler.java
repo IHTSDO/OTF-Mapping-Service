@@ -341,4 +341,70 @@ public class MIMSConditionToSnomedProjectSpecificAlgorithmHandler
     return validationResult;
   }
 
+  /**
+   * Verify no duplicate entries in the map.
+   * 
+   * @param mapRecord the map record
+   * @return a list of errors detected
+   */
+  @SuppressWarnings("static-method")
+  public ValidationResult checkMapRecordForDuplicateEntries(MapRecord mapRecord) {
+    ValidationResult validationResult = new ValidationResultJpa();
+    final List<MapEntry> entries = mapRecord.getMapEntries();
+
+    // cycle over all entries but last
+    for (int i = 0; i < entries.size() - 1; i++) {
+
+      // cycle over all entries after this one
+      // NOTE: separated boolean checks for easier handling of possible null
+      // relations
+      for (int j = i + 1; j < entries.size(); j++) {
+
+        // if first entry target null
+        if (entries.get(i).getTargetId() == null || entries.get(i).getTargetId().equals("")) {
+
+          // if both null, check relations
+          if (entries.get(j).getTargetId() == null || entries.get(j).getTargetId().equals("")) {
+
+            if (entries.get(i).getMapRelation() != null && entries.get(j).getMapRelation() != null
+                && entries.get(i).getMapRelation().equals(entries.get(j).getMapRelation())
+                && !entries.get(i).getMapRelation().getName()
+                    .equals("MAP SOURCE CONCEPT CANNOT BE CLASSIFIED WITH AVAILABLE DATA")) {
+              validationResult
+                  .addWarning("Duplicate entries (null target code, same map relation) found: "
+                      + "Group " + Integer.toString(entries.get(i).getMapGroup()) + ", priority "
+                      + Integer.toString(entries.get(i).getMapPriority()) + " and " + "Group "
+                      + Integer.toString(entries.get(j).getMapGroup()) + ", priority "
+                      + Integer.toString(entries.get(j).getMapPriority()));
+            }
+          }
+
+        } else if (entries.get(i).getRule() != null && entries.get(j).getRule() != null) {
+
+          // check if second entry's target identical to this one
+          if (entries.get(i).getTargetId().equals(entries.get(j).getTargetId())
+              && entries.get(i).getRule().equals(entries.get(j).getRule())) {
+            validationResult.addWarning("Duplicate entries (same target code and rule) found: "
+                + "Group " + Integer.toString(entries.get(i).getMapGroup()) + ", priority "
+                + Integer.toString(entries.get(i).getMapPriority()) + " and " + "Group "
+                + Integer.toString(entries.get(j).getMapGroup()) + ", priority "
+                + Integer.toString(entries.get(j).getMapPriority()));
+          }
+
+        } else {
+
+          // check if second entry's target identical to this one
+          if (entries.get(i).getTargetId().equals(entries.get(j).getTargetId())) {
+            validationResult.addError("Duplicate entries (same target code) found: " + "Group "
+                + Integer.toString(entries.get(i).getMapGroup()) + ", priority "
+                + Integer.toString(entries.get(i).getMapPriority()) + " and " + "Group "
+                + Integer.toString(entries.get(j).getMapGroup()) + ", priority "
+                + Integer.toString(entries.get(j).getMapPriority()));
+          }
+        }
+
+      }
+    }
+    return validationResult;
+  }
 }
