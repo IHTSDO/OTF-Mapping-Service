@@ -24,6 +24,7 @@
     <module>nlm</module>
     <module>cihi</module>
     <module>mims</module>
+    <module>norway</module>
   </modules>
 </project>
 
