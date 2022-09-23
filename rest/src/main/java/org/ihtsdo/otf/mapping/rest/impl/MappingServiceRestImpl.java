@@ -5065,6 +5065,50 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       securityService.close();
     }
   }
+  
+  @Override
+  @POST
+  @Path("/project/id/{id:[0-9][0-9]*}/version/{version}")
+  @ApiOperation(value = "Update map project destination version",
+      notes = "Updates only the map project destination terminology version")
+  @Produces({
+      MediaType.TEXT_PLAIN
+  })
+  public String updateMapProjectVersion(
+    @ApiParam(value = "Destination version , e.g. 22_9",
+        required = true) @PathParam("version") String version,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+    @ApiParam(value = "Authorization token",
+        required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(WorkflowServiceRestImpl.class).info("RESTful call (Mapping): /project/id/"
+        + mapProjectId.toString() + "/version/" + version );
+
+    String user = null;
+    String project = "";
+
+    final MappingService mappingService = new MappingServiceJpa();
+    try {
+      // authorize call
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.LEAD, "update project destination version",
+          securityService);
+
+      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+
+      mapProject.setDestinationTerminologyVersion(version);
+      mappingService.updateMapProject(mapProject);
+      
+      return version;
+    } catch (Exception e) {
+      RootServiceJpa.unlockProcess();
+      handleException(e, "update project destination version", user, project, "");
+      return "Failure";
+    } finally {
+
+      mappingService.close();
+      securityService.close();
+    }
+  }
 
   /**
    * Returns the release directory path.
