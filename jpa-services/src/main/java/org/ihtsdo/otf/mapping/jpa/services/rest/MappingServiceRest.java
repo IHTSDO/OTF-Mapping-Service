@@ -1061,4 +1061,17 @@ public interface MappingServiceRest {
     MapUserRole getMapUserRoleForApplication(String username, String authToken)
       throws Exception;
 
+    /**
+     * Update map project version.
+     *
+     * @param version the version
+     * @param mapProjectId the map project id
+     * @param authToken the auth token
+     * @return the string
+     * @throws Exception the exception
+     */
+    String updateMapProjectVersion(String version, Long mapProjectId, String authToken)
+      throws Exception;
+
+ 
 }
