@@ -1370,7 +1370,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     Map<String, ComplexMapRefSetMember> currentActiveMembers) throws Exception {
 
     logger.info("Writing snapshot...");
-    String pattern = getPatternForType(mapProject);
+    final String pattern = getPatternForType(mapProject);
     String filename = null;
     BufferedWriter writer = null;
     filename = outputDir + "/der2_" + pattern + mapProject.getMapRefsetPattern() + "Snapshot_"
@@ -1386,7 +1386,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     writer.write(getHeader(mapProject));
     writer.write("\r\n");
 
-    List<String> lines = new ArrayList<>();
+    final List<String> lines = new ArrayList<>();
 
     // Write previously inactive members that are not active now
     for (final String key : prevInactiveMembers.keySet()) {
@@ -1405,13 +1405,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         // active value is always changing here from 1 to 0,
         // so we should always write the previous member with an updated
         // effective time (e.g. "trueEffectiveTime" parameter is false)
-        ComplexMapRefSetMember member = prevActiveMembers.get(key);
+        final ComplexMapRefSetMember member = prevActiveMembers.get(key);
         member.setActive(false);
         lines.add(getOutputLine(member, false));
         member.setActive(true);
       } else {
-        ComplexMapRefSetMember member = currentActiveMembers.get(key);
-        ComplexMapRefSetMember member2 = prevActiveMembers.get(key);
+        final ComplexMapRefSetMember member = currentActiveMembers.get(key);
+        final ComplexMapRefSetMember member2 = prevActiveMembers.get(key);
         if (member.equals(member2)) {
           // write with older effective time
           lines.add(getOutputLine(member2, true));
@@ -2926,17 +2926,17 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     final ContentService contentService = new ContentServiceJpa();
 
     logger.info("    Open " + inputFile);
-    File f = new File(inputFile);
+    final File f = new File(inputFile);
     if (!f.exists()) {
       throw new Exception("Input file does not exist: " + f.toString());
     }
 
-    BufferedReader reader = new BufferedReader(new FileReader(f));
+    final BufferedReader reader = new BufferedReader(new FileReader(f));
 
     final String terminology = mapProject.getSourceTerminology();
     final String version = mapProject.getSourceTerminologyVersion();
 
-    Map<String, List<ComplexMapRefSetMember>> conceptRefSetMap = new HashMap<>();
+    final Map<String, List<ComplexMapRefSetMember>> conceptRefSetMap = new HashMap<>();
 
     while ((line = reader.readLine()) != null) {
 
@@ -3449,17 +3449,19 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @param mapProject the map project
    * @return the header
    */
-  @SuppressWarnings("static-method")
   private String getHeader(MapProject mapProject) {
     if (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap) {
-      return "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tmapTarget";
+      if (mapProject.getReverseMapPattern()) {
+        return "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tmapSource";
+      } else {
+        return "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tmapTarget";
+      }
     } else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap) {
       return "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\t"
           + "mapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId";
     } else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ExtendedMap) {
       return "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\t"
           + "mapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId\tmapCategoryId";
-
     }
     return null;
   }
