@@ -521,7 +521,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         if (mapProject.isPropagatedFlag()
             && contentService.getDescendantConceptsCount(mapRecord.getConceptId(),
                 mapProject.getSourceTerminology(),
-                mapProject.getSourceTerminologyVersion()) < mapProject
+                mapProject.getSourceTerminologyVersion()) <= mapProject
                     .getPropagationDescendantThreshold()) {
 
           // Handle up propagation for this record
