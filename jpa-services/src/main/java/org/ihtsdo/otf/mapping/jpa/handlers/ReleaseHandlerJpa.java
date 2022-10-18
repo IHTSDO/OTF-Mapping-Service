@@ -2068,13 +2068,28 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           || member.getConcept().getTerminology().isEmpty()) {
         return "";
       }
-      entryLine = member.getTerminologyId() // the UUID
-          + "\t"
-          + ((trueEffectiveTimeFlag
-              && !dateFormat.format(member.getEffectiveTime()).equals("100070607"))
-                  ? dateFormat.format(member.getEffectiveTime()) : effectiveTime)
-          + "\t" + (member.isActive() ? "1" : "0") + "\t" + moduleId + "\t" + member.getRefSetId()
-          + "\t" + member.getConcept().getTerminologyId() + "\t" + member.getMapTarget();
+      if (!mapProject.getReverseMapPattern()) {
+        entryLine = member.getTerminologyId() // the UUID
+            + "\t"
+            + ((trueEffectiveTimeFlag && !dateFormat
+                .format(member.getEffectiveTime()).equals("100070607"))
+                    ? dateFormat.format(member.getEffectiveTime())
+                    : effectiveTime)
+            + "\t" + (member.isActive() ? "1" : "0") + "\t" + moduleId + "\t"
+            + member.getRefSetId() + "\t"
+            + member.getConcept().getTerminologyId() + "\t"
+            + member.getMapTarget();
+      } else {
+        entryLine = member.getTerminologyId() // the UUID
+            + "\t"
+            + ((trueEffectiveTimeFlag && !dateFormat
+                .format(member.getEffectiveTime()).equals("100070607"))
+                    ? dateFormat.format(member.getEffectiveTime())
+                    : effectiveTime)
+            + "\t" + (member.isActive() ? "1" : "0") + "\t" + moduleId + "\t"
+            + member.getRefSetId() + "\t" + member.getMapTarget() + "\t"
+            + member.getConcept().getTerminologyId();
+      }
     }
 
     entryLine += "\r\n";
@@ -2846,7 +2861,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         member.setTerminologyVersion(version);
 
         // set Concept
-        final Concept concept = contentService.getConcept(fields[5], terminology, version);
+        final Concept concept = contentService.getConcept(
+            !mapProject.getReverseMapPattern() ? fields[5] : fields[6],
+            terminology, version);
+        ;
 
         if (mapProject.getMapRefsetPattern() != MapRefsetPattern.SimpleMap) {
 
@@ -2858,11 +2876,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           member.setMapTarget(fields[10]);
           if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap) {
             member.setMapRelationId(Long.valueOf(fields[11]));
-          } else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ExtendedMap) {
+          } else if (mapProject
+              .getMapRefsetPattern() == MapRefsetPattern.ExtendedMap) {
             member.setMapRelationId(Long.valueOf(fields[12]));
 
           } else {
-            throw new Exception("Unsupported map type " + mapProject.getMapRefsetPattern());
+            throw new Exception(
+                "Unsupported map type " + mapProject.getMapRefsetPattern());
           }
           // ComplexMap unique attributes NOT set by file (mapBlock
           // elements) - set defaults
@@ -2875,8 +2895,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           member.setMapPriority(1);
           member.setMapRule(null);
           member.setMapAdvice(null);
-          member.setMapTarget(fields[6]);
           member.setMapRelationId(null);
+          member.setMapTarget(
+              !mapProject.getReverseMapPattern() ? fields[6] : fields[5]);
         }
 
         // regularly log and commit at intervals
