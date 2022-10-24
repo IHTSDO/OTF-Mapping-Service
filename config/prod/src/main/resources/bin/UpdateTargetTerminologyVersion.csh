@@ -2,7 +2,7 @@
 #
 # Sample cron entry:
 # Minute     Hour     Day of Month     Month     Day of Week
-# 0      15      14       2       *       csh /opt/mapping-admin/scripts/RunReleases.csh ICDO 20220228 MAIN/RMUP/RMUP-6 > /opt/mapping-admin/scripts/RunReleases_ICDO_20220228.log
+# 0      15      14       2       *       csh /opt/mapping-admin/scripts/UpdateTargetTerminologyVersion.csh GMDN > /opt/mapping-admin/scripts/UpdateTargetTerminologyVersion.log
 #
 # Configure
 #
@@ -11,9 +11,9 @@ set MAPPING_CODE=/opt/mapping-admin
 set MAPPING_CONFIG=/opt/mapping-rest/config.properties
 set MAPPING_DATA=/opt/mapping-data
 
-set mapping_url=https://dev-mapping.ihtsdotools.org/
+set mapping_url=https://mapping.ihtsdotools.org/
 
-set ims_url=https://dev-ims.ihtsdotools.org
+set ims_url=https://ims.ihtsdotools.org
 
 set ims_username=mappingadmin
 set ims_password='XJ62B^4W19Ar'
@@ -30,14 +30,7 @@ endif
 echo "project=$project"
 
 if ("$project" == "GMDN") then
-set projectNumber=13
 set terminologyName="gmdn"
-else if("$project" == "ICPC2_NO") then
-set projectNumber=2
-set terminologyName="icpc2no"
-else if("$project" == "ICD10NO") then
-set projectNumber=3
-set terminologyName="icd10no"
 else
   echo "project $project not supported - failing."
   exit 1
