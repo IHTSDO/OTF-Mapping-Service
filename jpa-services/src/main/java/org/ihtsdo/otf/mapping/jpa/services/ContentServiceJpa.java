@@ -1356,7 +1356,7 @@ public class ContentServiceJpa extends RootServiceJpa
           .createQuery("select r from RelationshipJpa r where "
               + "terminologyVersion = :terminologyVersion and terminology = :terminology "
               + "and typeId = :typeId and active = 1 "
-              + "and sourceConcept in (select sc from ConceptJpa sc where active = 1)")
+              + "and sourceConcept.id in (select sc.id from ConceptJpa sc where active = 1)")
           .setParameter("typeId", typeId)
           .setParameter("terminology", concept.getTerminology())
           .setParameter("terminologyVersion", concept.getTerminologyVersion())
