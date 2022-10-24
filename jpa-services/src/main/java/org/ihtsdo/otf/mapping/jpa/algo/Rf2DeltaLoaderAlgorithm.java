@@ -912,7 +912,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
         }
         if (destinationConcept == null) {
           // skip
-          log.info("SKIP REL with source concept " + fields[5]);
+          log.info("SKIP REL with destination concept " + fields[5]);
           continue;
           // throw new Exception("Relationship " + fields[0]
           // + " destination concept " + fields[5] + " cannot be
