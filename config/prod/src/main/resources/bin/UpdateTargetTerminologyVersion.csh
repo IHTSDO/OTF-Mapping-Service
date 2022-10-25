@@ -108,5 +108,5 @@ rm imsRoles.txt
 
 echo "    Send email to stakeholders...`/bin/date`"
  cd $MAPPING_CODE/loader
-    mvn -U clean install -PSendEmail -Drun.config=$MAPPING_CONFIG -Drecipients="rwood@westcoastinformatics.com;dshapiro@westcoastinformatics.com" -Dsubject="${project} updated to version ${version}" -Dbody="The ${project} project was updated to version ${version}." | sed 's/^/      /'
+    mvn -U clean install -PSendEmail -Drun.config=$MAPPING_CONFIG -Drecipients="dmo@snomed.org;aat@snomed.org;mban@snomed.org;rwood@westcoastinformatics.com;dshapiro@westcoastinformatics.com" -Dsubject="${project} updated to version ${version}" -Dbody="The ${project} project was updated to version ${version}." | sed 's/^/      /'
 
