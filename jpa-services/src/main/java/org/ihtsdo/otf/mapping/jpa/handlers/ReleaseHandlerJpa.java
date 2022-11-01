@@ -909,12 +909,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           // get the map record corresponding to this specific
           // ancestor path + concept Id
           MapRecord mr = getMapRecordForTerminologyId(tp.getTerminologyId());
-
           if (mr != null) {
 
             logger.debug("     Adding entries from map record " + mr.getId() + ", "
                 + mr.getConceptId() + ", " + mr.getConceptName());
-
             // cycle over the entries
             // TODO: this should actually compare entire groups and not just
             // entries
@@ -924,23 +922,24 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             //
             // Thus if all the entries for a group match the parent, then none
             // need to be rendered, otherwise all do.
-
             // Sort entries by group/priority.
             Collections.sort(mr.getMapEntries(), new TerminologyUtility.MapEntryComparator());
-
             for (final MapEntry me : mr.getMapEntries()) {
-
               // get the current list of entries for this group
               List<MapEntry> existingEntries = entriesByGroup.get(me.getMapGroup());
-
               if (existingEntries == null) {
                 existingEntries = new ArrayList<>();
               }
-
               // flag for whether this entry is a duplicate of
               // an existing or parent entry
               boolean isDuplicateEntry = false;
-
+              /*
+               * if (mrParent != null) { boolean mapRecordMatchesParent =
+               * mrParent.isEquivalent(mr);
+               * 
+               * if(mapRecordMatchesParent) { isDuplicateEntry = true; } else {
+               * isDuplicateEntry = false; } }
+               */
               // compare to the entries on the parent record to the current
               // entry
               // If a match is found, this entry is duplicated and does not
@@ -954,13 +953,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
                 for (final MapEntry parentEntry : mrParent.getMapEntries()) {
                   if (parentEntry.getMapGroup() == me.getMapGroup()
-                      && parentEntry.isEquivalent(me)) {
-                    isDuplicateEntry = true;
+                      && parentEntry.isEquivalent(me) 
+                      && mr.getMapEntries().size() == mrParent.getMapEntries().size()) {
+                    isDuplicateEntry = true;                
                     break;
                   }
                 }
               }
-
               // if not a duplicate entry, add it to the map
               if (!isDuplicateEntry) {
 
