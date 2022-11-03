@@ -10,7 +10,10 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.activation.DataHandler;
@@ -36,7 +39,9 @@ import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.Configurable;
+import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
+import org.ihtsdo.otf.mapping.model.MapProject;
 
 /**
  * Loads and serves configuration.
@@ -48,6 +53,9 @@ public class ConfigUtility {
 
   /** The test config. */
   public static Properties testConfig = null;
+  
+  protected static Map<Long, Set<String>> projectIdToScopeConcepts = new HashMap<>();
+
 
   /**
    * The get local config file.
@@ -69,6 +77,28 @@ public class ConfigUtility {
     return System.getProperty("user.home") + "/.mapping-service/" + getConfigLabel()
         + "/";
   }
+  
+
+  /**
+   * Gets the scope concepts for map project.
+   *
+   * @param id the id
+   * @return the scope concepts for map project
+   */
+  public static Set<String> getScopeConceptsForMapProject(Long id) {
+    return projectIdToScopeConcepts.get(id);
+  }
+  
+  /**
+   * Sets the scope concepts for map project.
+   *
+   * @param id the id
+   * @param scopeConcepts the scope concepts
+   */
+  public static void setScopeConceptsForMapProject(Long id, Set<String> scopeConcepts) {
+    projectIdToScopeConcepts.put(id, scopeConcepts);
+  }
+
   
   /**
    * Get the config label.
