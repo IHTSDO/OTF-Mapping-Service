@@ -206,7 +206,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     /** The changed entries. */
     CHANGED_ENTRIES_NEW("Total Changed mapped entries (new) this release "),
     /** The changed entries. */
-    CHANGED_ENTRIES_RETIRED("Total Changed mapped entries (retired) this release ");
+    CHANGED_ENTRIES_RETIRED("Total Changed mapped entries (retired) this release "),
+    /** The changed entries. */
+    CHANGED_ENTRIES_MODIFIED("Total Changed mapped entries (modified) this release ");
 
     /** The value. */
     private String value;
@@ -933,13 +935,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               // flag for whether this entry is a duplicate of
               // an existing or parent entry
               boolean isDuplicateEntry = false;
-              /*
-               * if (mrParent != null) { boolean mapRecordMatchesParent =
-               * mrParent.isEquivalent(mr);
-               * 
-               * if(mapRecordMatchesParent) { isDuplicateEntry = true; } else {
-               * isDuplicateEntry = false; } }
-               */
+
               // compare to the entries on the parent record to the current
               // entry
               // If a match is found, this entry is duplicated and does not
@@ -1257,6 +1253,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     Set<String> changedConcepts = new HashSet<>();
     Set<String> changedEntriesRetired = new HashSet<>();
     Set<String> changedEntriesNew = new HashSet<>();
+    Set<String> changedEntriesModified = new HashSet<>();
 
     for (final String key : prevActiveMembers.keySet()) {
       ComplexMapRefSetMember previousMember = prevActiveMembers.get(key);
@@ -1277,10 +1274,22 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         changedEntriesNew.add(key);
       }
     }
+    
+    for (final String key : activeMembers.keySet()) {
+      ComplexMapRefSetMember previousMember = prevActiveMembers.get(key);
+      ComplexMapRefSetMember currentMember = activeMembers.get(key);
+      if (previousMember != null && currentMember != null
+          && !newConcepts.contains(currentMember.getConcept().getTerminologyId())
+          && !(previousMember.equals(currentMember))) {
+        changedConcepts.add(currentMember.getConcept().getTerminologyId());
+        changedEntriesModified.add(key);
+      }
+    }    
 
     updateStatMax(Stats.CHANGED_CONCEPTS.getValue(), changedConcepts.size());
     updateStatMax(Stats.CHANGED_ENTRIES_NEW.getValue(), changedEntriesNew.size());
     updateStatMax(Stats.CHANGED_ENTRIES_RETIRED.getValue(), changedEntriesRetired.size());
+    updateStatMax(Stats.CHANGED_ENTRIES_MODIFIED.getValue(), changedEntriesModified.size());
 
     String camelCaseName = mapProject.getDestinationTerminology().substring(0, 1)
         + mapProject.getDestinationTerminology().substring(1).toLowerCase();
@@ -1292,6 +1301,19 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     for (final String statistic : statistics) {
       statsWriter.write(statistic + "\t" + reportStatistics.get(statistic) + "\r\n");
     }
+    statsWriter.write("\r\nNEW CONCEPTS:\r\n");
+    for(final String id : newConcepts) {
+      statsWriter.write(id+"\r\n");
+    }
+    statsWriter.write("\r\nCHANGED CONCEPTS:\r\n");
+    for(final String id : changedConcepts) {
+      statsWriter.write(id+"\r\n");
+    }
+    statsWriter.write("\r\nRETIRED CONCEPTS:\r\n");
+    for(final String id : retiredConcepts) {
+      statsWriter.write(id+"\r\n");
+    }
+    
     statsWriter.close();
 
     return filename;
