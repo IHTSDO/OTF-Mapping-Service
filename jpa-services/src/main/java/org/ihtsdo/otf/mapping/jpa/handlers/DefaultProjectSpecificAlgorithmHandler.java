@@ -23,9 +23,11 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceListJpa;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
+import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
+import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapProject;
@@ -33,6 +35,8 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.rf2.ComplexMapRefSetMember;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
+import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
  * Reference implementation of {@link ProjectSpecificAlgorithmHandler}.
@@ -41,7 +45,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
   /** The map project. */
   protected MapProject mapProject = null;
-
+  
+  
   /* see superclass */
   @Override
   public MapProject getMapProject() {
@@ -57,7 +62,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
   /* see superclass */
   @Override
   public void initialize() throws Exception {
-    // Do nothing by default. Specific handlers may override this.
+    Runnable lookup = new CacheScopeConceptsThread(mapProject.getId());
+    Thread t = new Thread(lookup);
+    t.start();
   }
 
   /* see superclass */
@@ -943,5 +950,46 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
   public boolean isMapRecordLineValid(String line) throws Exception {
     // Default is to say line is valid
     return true;
+  }
+
+
+  
+  public class CacheScopeConceptsThread implements Runnable {
+
+    /** The translation id. */
+    private Long mapProjectId;
+
+    /**
+     * Instantiates a {@link CacheScopeConceptsThread} from the specified
+     * parameters.
+     *
+     * @param id the id
+     * @throws Exception the exception
+     */
+    public CacheScopeConceptsThread(Long id) throws Exception {
+      mapProjectId = id;
+    }
+
+    /* see superclass */
+    @Override
+    public void run() {
+      try {
+        Logger.getLogger(this.getClass())
+            .info("Starting CacheScopeConceptsThread - " + mapProjectId);
+        MappingService mappingService = new MappingServiceJpa();
+        final Set<String> scopeConceptTerminologyIds = new HashSet<>();
+        for (final SearchResult sr : mappingService.findConceptsInScope(mapProjectId, null)
+            .getSearchResults()) {
+          scopeConceptTerminologyIds.add(sr.getTerminologyId());
+        }
+        ConfigUtility.setScopeConceptsForMapProject(mapProjectId, scopeConceptTerminologyIds);
+        
+        Logger.getLogger(this.getClass())
+            .info("Finished CacheScopeConceptsThread - " + mapProjectId);
+      } catch (Exception e) {
+        
+        //lookupProgressMap.put(translationId, LOOKUP_ERROR_CODE);
+      }
+    }
   }
 }

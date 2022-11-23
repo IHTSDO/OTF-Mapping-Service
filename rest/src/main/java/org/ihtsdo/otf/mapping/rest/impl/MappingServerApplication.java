@@ -58,6 +58,7 @@ public class MappingServerApplication extends Application {
         handler.setMapProject(mapProject);
         handler.initialize();
 
+        
       }
     } catch (Exception e) {
       throw e;
@@ -134,5 +135,7 @@ public class MappingServerApplication extends Application {
     // instances.add(new LoggingFilter());
     return instances;
   }
+
+  
 
 }

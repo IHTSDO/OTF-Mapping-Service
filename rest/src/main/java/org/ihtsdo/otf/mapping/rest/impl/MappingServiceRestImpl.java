@@ -404,6 +404,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
             "Updating map project failed -- could not find project specific algorithm handler for class name: "
                 + mapProject.getProjectSpecificAlgorithmHandlerClass());
       }
+      
+      // recompute the scope concepts for this map project
+      final ProjectSpecificAlgorithmHandler handler =
+          mappingService.getProjectSpecificAlgorithmHandler(mapProject);
+      handler.initialize();
+      
 
       // scope includes and excludes are transient, and must be added to
       // project
@@ -3080,6 +3086,15 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
           mr.setMapNotes(null);
         }
       }
+      
+
+      Set<String> scopeConcepts = ConfigUtility.getScopeConceptsForMapProject(mapProject.getId());
+      for (final MapRecord mr : mapRecordList.getMapRecords()) {
+        if (scopeConcepts != null && !scopeConcepts.contains(mr.getConceptId())) {
+          mr.addLabel("Out of Scope");
+        }
+      }
+      
       return mapRecordList;
     } catch (Exception e) {
       handleException(e, "trying to get the map records for a map project and query", user,
