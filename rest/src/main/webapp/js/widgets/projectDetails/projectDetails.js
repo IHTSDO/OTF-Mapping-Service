@@ -843,7 +843,12 @@ angular
           if ($scope.editModeEnabled == true) {
             $scope.editModeEnabled = false;
             $scope.updateMapProject($scope.focusProject);
-          } else {
+			// if scope concepts will be recalculated on a descendant included project, alert the user
+			if ($scope.focusProject.scopeDescendantsFlag == true) {
+			  window
+              .alert("If scope has been modified, it may take a few minutes for all 'Out of Scope' concepts to be recalculated.");
+			}          
+		  } else {
             $scope.editModeEnabled = true;
           }
         };
