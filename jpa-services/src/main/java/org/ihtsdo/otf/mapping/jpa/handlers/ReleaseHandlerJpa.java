@@ -1301,18 +1301,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     for (final String statistic : statistics) {
       statsWriter.write(statistic + "\t" + reportStatistics.get(statistic) + "\r\n");
     }
-    statsWriter.write("\r\nNEW CONCEPTS:\r\n");
-    for(final String id : newConcepts) {
-      statsWriter.write(id+"\r\n");
-    }
-    statsWriter.write("\r\nCHANGED CONCEPTS:\r\n");
-    for(final String id : changedConcepts) {
-      statsWriter.write(id+"\r\n");
-    }
-    statsWriter.write("\r\nRETIRED CONCEPTS:\r\n");
-    for(final String id : retiredConcepts) {
-      statsWriter.write(id+"\r\n");
-    }
     
     statsWriter.close();
 
