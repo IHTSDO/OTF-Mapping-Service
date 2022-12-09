@@ -63,6 +63,9 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
   /** The concept file name. */
   final private String CONCEPT_FILE_NAME = "concepts.txt";
 
+  /** The inactive concept file name. */
+  final private String INACTIVE_CONCEPT_FILE_NAME = "concepts-inactive.txt";
+  
   /** The parent child file name. */
   final private String PARENT_CHILD_FILE_NAME = "parent-child.txt";
 
@@ -78,6 +81,7 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
   /** The obj ct. */
   private int objCt = 1001;
   
+  private boolean inactiveConceptFileExists = false;
   private boolean parChdFileExists = false;
   private boolean conAttrFileExists = false;
   private boolean conRelFileExists = false;
@@ -161,12 +165,17 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
       Map<String, Concept> conceptMap = helper.createMetadata();
 
       // load concepts from concepts.txt
-      loadConcepts(helper, conceptMap, now, conceptMap.get("root"));
+      loadConcepts(helper, conceptMap, now, conceptMap.get("root"), true);
 
+      // If there is an inactive concepts file, load inactive concepts from it
+      if(inactiveConceptFileExists) {
+        loadConcepts(helper, conceptMap, now, conceptMap.get("root"), false);
+      }
+      
       // If there is a par/chd file, need to create all those
       // relationships now
       if (parChdFileExists) {
-    	  loadParentChild(helper, conceptMap, now);
+        loadParentChild(helper, conceptMap, now);
       }
 
 
@@ -238,6 +247,9 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
     } else {
       parChdFileExists = true;
     }
+    if (new File(this.inputDir, INACTIVE_CONCEPT_FILE_NAME).exists()) {
+      inactiveConceptFileExists = true;
+    }
     if (new File(this.inputDir, CONCEPT_ATTRIBUTES_FILE_NAME).exists()) {
       conAttrFileExists = true;
     }
@@ -294,16 +306,17 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
    * @param conceptMap the concept map
    * @param now the now
    * @param rootConcept the root concept
+   * @param active the active
    * @throws Exception the exception
    */
   private void loadConcepts(SimpleMetadataHelper helper, Map<String, Concept> conceptMap, Date now,
-    Concept rootConcept) throws Exception {
+    Concept rootConcept, Boolean active) throws Exception {
     //
     // Open the concepts file and process the data
     // code\tpreferred\t[synonym\t,..]
     log.info("  Load concepts");
     String line;
-    FileInputStream fis = new FileInputStream(new File(inputDir, CONCEPT_FILE_NAME));
+    FileInputStream fis = new FileInputStream(new File(inputDir, active ? CONCEPT_FILE_NAME : INACTIVE_CONCEPT_FILE_NAME));
     InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
     BufferedReader concepts = new BufferedReader(isr);
 
@@ -323,8 +336,7 @@ public class SimpleLoaderAlgorithm extends RootServiceJpa implements Algorithm, 
       Concept concept = new ConceptJpa();
       concept.setTerminologyId(code);
       concept.setEffectiveTime(now);
-      // assume active
-      concept.setActive(true);
+      concept.setActive(active);
       concept.setModuleId(Long.parseLong(conceptMap.get("defaultModule").getTerminologyId()));
       concept.setDefinitionStatusId(
           Long.parseLong(conceptMap.get("defaultDefinitionStatus").getTerminologyId()));
