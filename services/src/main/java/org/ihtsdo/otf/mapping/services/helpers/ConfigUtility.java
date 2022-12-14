@@ -32,13 +32,17 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.Configurable;
+import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.model.MapProject;
@@ -55,6 +59,8 @@ public class ConfigUtility {
   public static Properties testConfig = null;
   
   protected static Map<Long, Set<String>> projectIdToScopeConcepts = new HashMap<>();
+  
+  protected static String genericUserCookie = null;
 
 
   /**
@@ -800,4 +806,43 @@ public class ConfigUtility {
 			return false;
 		}
 	}
+	
+	  /**
+  	 * Gets the generic user cookie.
+  	 *
+  	 * @return the generic user cookie
+  	 * @throws Exception the exception
+  	 */
+  	public static String getGenericUserCookie() throws Exception {
+
+	    if (genericUserCookie != null) {
+	      return genericUserCookie;
+	    }
+
+	    // Login the generic user, then save and return the cookie
+	    final String userName =
+	        ConfigUtility.getConfigProperties().getProperty("generic.user.userName");
+	    final String password =
+	        ConfigUtility.getConfigProperties().getProperty("generic.user.password");
+	    final String imsUrl =
+	        ConfigUtility.getConfigProperties().getProperty("generic.user.authenticationUrl");
+
+	    Client client = ClientBuilder.newClient();
+	    WebTarget target = client.target(imsUrl + "/authenticate");
+	    Builder builder = target.request(MediaType.APPLICATION_JSON);
+
+	    Response response = builder.post(
+	        Entity.json("{ \"login\": \"" + userName + "\", \"password\": \"" + password + "\" }"));
+	    if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
+	      throw new LocalException("Authentication of generic user failed. " + response.toString());
+	    }
+	    Map<String, NewCookie> genericUserCookies = response.getCookies();
+	    StringBuilder sb = new StringBuilder();
+	    for (String key : genericUserCookies.keySet()) {
+	      sb.append(genericUserCookies.get(key));
+	      sb.append(";");
+	    }
+	    genericUserCookie = sb.toString();
+	    return genericUserCookie;
+	  }
 }
