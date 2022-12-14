@@ -56,9 +56,12 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
@@ -167,6 +170,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
   /** The security service. */
   private SecurityService securityService;
+  
 
   /**
    * Instantiates an empty {@link MappingServiceRestImpl}.
@@ -5935,8 +5939,9 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
           client.target(authoringUrl + "/traceability-service/activities?conceptId=" + conceptId);
 
       final Response response = target.request(MediaType.APPLICATION_JSON_TYPE)
-          .header("Authorization", authoringAuthHeader).accept(MediaType.APPLICATION_JSON_TYPE)
-          .get();
+          .header("Cookie", ConfigUtility.getGenericUserCookie())
+          .accept(MediaType.APPLICATION_JSON_TYPE).get();
+      
       int statusCode = response.getStatus();
 
       if (statusCode == 401) {
@@ -6014,6 +6019,9 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
   }
 
+  
+
+  
   @POST
   @Path("/compare/files/{id:[0-9][0-9]*}")
   @ApiOperation(value = "Compares two map files",
