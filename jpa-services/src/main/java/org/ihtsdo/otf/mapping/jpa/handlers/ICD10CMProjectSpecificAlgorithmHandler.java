@@ -312,8 +312,6 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       final Concept sourceConcept = contentService.getConcept(
           mapRecord.getConceptId(), mapProject.getSourceTerminology(),
           mapProject.getSourceTerminologyVersion());
-      final List<Concept> descendants =
-          TerminologyUtility.getActiveDescendants(sourceConcept);
 
       // lazy initialize
       if (sourceConcept != null) {
@@ -325,6 +323,9 @@ public class ICD10CMProjectSpecificAlgorithmHandler
         return new MapAdviceListJpa();
       }
 
+      final List<Concept> descendants =
+          TerminologyUtility.getActiveDescendants(sourceConcept);
+       
       // Remove any advices that are purely computed and keep only
       // manually
       // assigned ones
