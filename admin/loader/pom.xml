@@ -908,6 +908,30 @@
         </plugins>
       </build>
     </profile>
+    
+    <profile>
+      <id>Meddra3SqlReport</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>meddra3-sql-report</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>run-meddra3-sql-report</goal>
+                </goals>
+                <configuration>
+                  <projectIds>${report.map.project.ids}</projectIds>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
     <!-- Send an email using specified subject and body. -Drun.config=.. must also be specified. -->
     <profile>
