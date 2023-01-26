@@ -2965,7 +2965,14 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     final String terminology = mapProject.getSourceTerminology();
     final String version = mapProject.getSourceTerminologyVersion();
-
+    
+    final int terminologyFieldId =
+        (mapProject.getMapRefsetPattern() != MapRefsetPattern.SimpleMap
+            && mapProject.getReverseMapPattern()) ? 5 : 6;
+    final int targetFieldId =
+        (mapProject.getMapRefsetPattern() != MapRefsetPattern.SimpleMap
+            && mapProject.getReverseMapPattern()) ? 6 : 5;
+    
     final Map<String, List<ComplexMapRefSetMember>> conceptRefSetMap = new HashMap<>();
 
     while ((line = reader.readLine()) != null) {
@@ -2988,7 +2995,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         member.setRefSetId(fields[4]);
         // conceptId
         final Concept tempConcept = new ConceptJpa();
-        tempConcept.setTerminologyId(fields[5]);
+        tempConcept.setTerminologyId(fields[terminologyFieldId]);
         member.setConcept(tempConcept);
 
         // Terminology attributes
@@ -3026,11 +3033,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           member.setMapBlockAdvice(null);
 
         } else {
+
           member.setMapGroup(1);
           member.setMapPriority(1);
           member.setMapRule(null);
           member.setMapAdvice(null);
-          member.setMapTarget(fields[6]);
+          member.setMapTarget(fields[targetFieldId]);
           member.setMapRelationId(null);
         }
 
