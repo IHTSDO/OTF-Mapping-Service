@@ -851,7 +851,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    */
   private boolean handleUpPropagation(MapRecord mapRecord,
     Map<Integer, List<MapEntry>> entriesByGroup, MapRelation ifaRuleRelation) throws Exception {
-
+    
     // /////////////////////////////////////////////////////
     // Get the tree positions for this concept
     // /////////////////////////////////////////////////////
@@ -911,53 +911,54 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           // get the map record corresponding to this specific
           // ancestor path + concept Id
           MapRecord mr = getMapRecordForTerminologyId(tp.getTerminologyId());
-          if (mr != null) {
+
+          // If the map record is the same as its parent map record (for
+          // everything except
+          // for conceptId/conceptName, etc.), do not up-propagate the record.
+          // Otherwise, up-propagate all entries, even if some entries match.
+
+          // flag for whether this record is a duplicate of its parent record
+          boolean equivalentMap = true;
+
+          if (mr != null && mrParent != null) {
 
             logger.debug("     Adding entries from map record " + mr.getId() + ", "
                 + mr.getConceptId() + ", " + mr.getConceptName());
-            // cycle over the entries
-            // TODO: this should actually compare entire groups and not just
-            // entries
-            // to account for embedded age/gender rules. Otherwise a partial
-            // group could
-            // be explicitly rendered and the logic would be wrong
-            //
-            // Thus if all the entries for a group match the parent, then none
-            // need to be rendered, otherwise all do.
+
+            // Quick check: if there are different number of entries, then maps cannot be equivalent.
+            if (mr.getMapEntries().size() != mrParent.getMapEntries().size()) {
+              equivalentMap = false;
+            }
+
             // Sort entries by group/priority.
             Collections.sort(mr.getMapEntries(), new TerminologyUtility.MapEntryComparator());
-            for (final MapEntry me : mr.getMapEntries()) {
-              // get the current list of entries for this group
-              List<MapEntry> existingEntries = entriesByGroup.get(me.getMapGroup());
-              if (existingEntries == null) {
-                existingEntries = new ArrayList<>();
-              }
-              // flag for whether this entry is a duplicate of
-              // an existing or parent entry
-              boolean isDuplicateEntry = false;
-
-              // compare to the entries on the parent record to the current
-              // entry
-              // If a match is found, this entry is duplicated and does not
-              // need an explicit entry
-              // (this produces short-form)
-              // NOTE: This uses unmodified rules
-              if (mrParent != null) {
-                // Sort entries by group/priority.
-                Collections.sort(mrParent.getMapEntries(),
-                    new TerminologyUtility.MapEntryComparator());
-
+            Collections.sort(mrParent.getMapEntries(), new TerminologyUtility.MapEntryComparator());
+            
+            // Check each map entry against its parent. If any are not
+            // equivalent, the whole map is marked non-equivalent
+            if (equivalentMap) {
+              for (final MapEntry me : mr.getMapEntries()) {
                 for (final MapEntry parentEntry : mrParent.getMapEntries()) {
                   if (parentEntry.getMapGroup() == me.getMapGroup()
-                      && parentEntry.isEquivalent(me) 
-                      && mr.getMapEntries().size() == mrParent.getMapEntries().size()) {
-                    isDuplicateEntry = true;                
+                      && parentEntry.getMapPriority() == me.getMapPriority()
+                      && !parentEntry.isEquivalent(me)) {
+                    equivalentMap = false;
                     break;
                   }
                 }
               }
-              // if not a duplicate entry, add it to the map
-              if (!isDuplicateEntry) {
+            }
+
+            // If the map is not equivalent to its parent, add all of its
+            // entries to the map.
+            if (!equivalentMap) {
+
+              for (final MapEntry me : mr.getMapEntries()) {
+                // get the current list of entries for this group
+                List<MapEntry> existingEntries = entriesByGroup.get(me.getMapGroup());
+                if (existingEntries == null) {
+                  existingEntries = new ArrayList<>();
+                }
 
                 logger.debug("  Entry is not a duplicate of parent");
                 logger.debug("    entry = " + me);
@@ -995,10 +996,6 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
                 // replace existing list with modified list - unnecessary
                 entriesByGroup.put(newEntry.getMapGroup(), existingEntries);
 
-              } else {
-
-                logger.debug("  Entry IS DUPLICATE of parent, do not write");
-                logger.debug("    entry = " + me);
               }
             }
           } else {
@@ -1249,7 +1246,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     }
     updateStatMax(Stats.NEW_ENTRIES.getValue(), ct);
 
-    // Determine count of changed concepts - previously and currently active, but change in members
+    // Determine count of changed concepts - previously and currently active,
+    // but change in members
     Set<String> changedConcepts = new HashSet<>();
     Set<String> changedEntriesRetired = new HashSet<>();
     Set<String> changedEntriesNew = new HashSet<>();
@@ -1264,7 +1262,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         changedEntriesRetired.add(key);
       }
     }
-     
+
     for (final String key : activeMembers.keySet()) {
       ComplexMapRefSetMember previousMember = prevActiveMembers.get(key);
       ComplexMapRefSetMember currentMember = activeMembers.get(key);
@@ -1274,7 +1272,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         changedEntriesNew.add(key);
       }
     }
-    
+
     for (final String key : activeMembers.keySet()) {
       ComplexMapRefSetMember previousMember = prevActiveMembers.get(key);
       ComplexMapRefSetMember currentMember = activeMembers.get(key);
@@ -1284,7 +1282,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         changedConcepts.add(currentMember.getConcept().getTerminologyId());
         changedEntriesModified.add(key);
       }
-    }    
+    }
 
     updateStatMax(Stats.CHANGED_CONCEPTS.getValue(), changedConcepts.size());
     updateStatMax(Stats.CHANGED_ENTRIES_NEW.getValue(), changedEntriesNew.size());
@@ -1301,7 +1299,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     for (final String statistic : statistics) {
       statsWriter.write(statistic + "\t" + reportStatistics.get(statistic) + "\r\n");
     }
-    
+
     statsWriter.close();
 
     return filename;
@@ -2080,24 +2078,19 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       if (!mapProject.getReverseMapPattern()) {
         entryLine = member.getTerminologyId() // the UUID
             + "\t"
-            + ((trueEffectiveTimeFlag && !dateFormat
-                .format(member.getEffectiveTime()).equals("100070607"))
-                    ? dateFormat.format(member.getEffectiveTime())
-                    : effectiveTime)
-            + "\t" + (member.isActive() ? "1" : "0") + "\t" + moduleId + "\t"
-            + member.getRefSetId() + "\t"
-            + member.getConcept().getTerminologyId() + "\t"
-            + member.getMapTarget();
+            + ((trueEffectiveTimeFlag
+                && !dateFormat.format(member.getEffectiveTime()).equals("100070607"))
+                    ? dateFormat.format(member.getEffectiveTime()) : effectiveTime)
+            + "\t" + (member.isActive() ? "1" : "0") + "\t" + moduleId + "\t" + member.getRefSetId()
+            + "\t" + member.getConcept().getTerminologyId() + "\t" + member.getMapTarget();
       } else {
         entryLine = member.getTerminologyId() // the UUID
             + "\t"
-            + ((trueEffectiveTimeFlag && !dateFormat
-                .format(member.getEffectiveTime()).equals("100070607"))
-                    ? dateFormat.format(member.getEffectiveTime())
-                    : effectiveTime)
-            + "\t" + (member.isActive() ? "1" : "0") + "\t" + moduleId + "\t"
-            + member.getRefSetId() + "\t" + member.getMapTarget() + "\t"
-            + member.getConcept().getTerminologyId();
+            + ((trueEffectiveTimeFlag
+                && !dateFormat.format(member.getEffectiveTime()).equals("100070607"))
+                    ? dateFormat.format(member.getEffectiveTime()) : effectiveTime)
+            + "\t" + (member.isActive() ? "1" : "0") + "\t" + moduleId + "\t" + member.getRefSetId()
+            + "\t" + member.getMapTarget() + "\t" + member.getConcept().getTerminologyId();
       }
     }
 
@@ -2672,13 +2665,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           .info("transactionPerOperation " + mappingService.getTransactionPerOperation());
 
       // instantiate required services
-      
-       final MappingService mappingService = new MappingServiceJpa(); 
-       if (!testModeFlag) { 
-         mappingService.setTransactionPerOperation(false);
-         mappingService.beginTransaction(); 
-       }
-       
+
+      final MappingService mappingService = new MappingServiceJpa();
+      if (!testModeFlag) {
+        mappingService.setTransactionPerOperation(false);
+        mappingService.beginTransaction();
+      }
 
       // compare file to current records
       Report report = compareInputFileToExistingMapRecords();
@@ -2747,15 +2739,14 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             }
           }
 
-         
           // periodically commit
-          if(!testModeFlag) {           
+          if (!testModeFlag) {
             if (++recordCt % 5000 == 0) {
               logger.info("    record count = " + recordCt);
               mappingService.commit();
               mappingService.clear();
               mappingService.beginTransaction();
-            }      
+            }
           }
         }
 
@@ -2871,8 +2862,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
         // set Concept
         final Concept concept = contentService.getConcept(
-            !mapProject.getReverseMapPattern() ? fields[5] : fields[6],
-            terminology, version);
+            !mapProject.getReverseMapPattern() ? fields[5] : fields[6], terminology, version);
         ;
 
         if (mapProject.getMapRefsetPattern() != MapRefsetPattern.SimpleMap) {
@@ -2885,13 +2875,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           member.setMapTarget(fields[10]);
           if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap) {
             member.setMapRelationId(Long.valueOf(fields[11]));
-          } else if (mapProject
-              .getMapRefsetPattern() == MapRefsetPattern.ExtendedMap) {
+          } else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ExtendedMap) {
             member.setMapRelationId(Long.valueOf(fields[12]));
 
           } else {
-            throw new Exception(
-                "Unsupported map type " + mapProject.getMapRefsetPattern());
+            throw new Exception("Unsupported map type " + mapProject.getMapRefsetPattern());
           }
           // ComplexMap unique attributes NOT set by file (mapBlock
           // elements) - set defaults
@@ -2905,8 +2893,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           member.setMapRule(null);
           member.setMapAdvice(null);
           member.setMapRelationId(null);
-          member.setMapTarget(
-              !mapProject.getReverseMapPattern() ? fields[6] : fields[5]);
+          member.setMapTarget(!mapProject.getReverseMapPattern() ? fields[6] : fields[5]);
         }
 
         // regularly log and commit at intervals
@@ -2965,14 +2952,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
     final String terminology = mapProject.getSourceTerminology();
     final String version = mapProject.getSourceTerminologyVersion();
-    
-    final int terminologyFieldId =
-        (mapProject.getMapRefsetPattern() != MapRefsetPattern.SimpleMap
-            && mapProject.getReverseMapPattern()) ? 5 : 6;
-    final int targetFieldId =
-        (mapProject.getMapRefsetPattern() != MapRefsetPattern.SimpleMap
-            && mapProject.getReverseMapPattern()) ? 6 : 5;
-    
+
+    final int terminologyFieldId = (mapProject.getMapRefsetPattern() != MapRefsetPattern.SimpleMap
+        && mapProject.getReverseMapPattern()) ? 5 : 6;
+    final int targetFieldId = (mapProject.getMapRefsetPattern() != MapRefsetPattern.SimpleMap
+        && mapProject.getReverseMapPattern()) ? 6 : 5;
+
     final Map<String, List<ComplexMapRefSetMember>> conceptRefSetMap = new HashMap<>();
 
     while ((line = reader.readLine()) != null) {
