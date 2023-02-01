@@ -145,6 +145,10 @@ public class MapProjectJpa implements MapProject {
   @Enumerated(EnumType.STRING)
   private MapRefsetPattern mapRefsetPattern = null;
 
+  /** The RF2 refset pattern for this map project. */
+  @Column(nullable = true)
+  private Boolean reverseMapPattern = false;
+  
   /** The relation behavior. */
   @Enumerated(EnumType.STRING)
   private RelationStyle mapRelationStyle = null;
@@ -288,6 +292,7 @@ public class MapProjectJpa implements MapProject {
     this.destinationTerminology = project.getDestinationTerminology();
     this.destinationTerminologyVersion = project.getDestinationTerminologyVersion();
     this.mapRefsetPattern = project.getMapRefsetPattern();
+    this.reverseMapPattern = project.getReverseMapPattern();
     this.mapRelationStyle = project.getMapRelationStyle();
     this.mapPrincipleSourceDocument = project.getMapPrincipleSourceDocument();
     this.mapPrincipleSourceDocumentName = project.getMapPrincipleSourceDocumentName();
@@ -656,6 +661,18 @@ public class MapProjectJpa implements MapProject {
   public void setMapRefsetPattern(MapRefsetPattern mapRefsetPattern) {
     this.mapRefsetPattern = mapRefsetPattern;
   }
+  
+  /* see superclass */
+  @Override
+  public Boolean getReverseMapPattern() {
+    return reverseMapPattern;
+  }
+
+  /* see superclass */
+  @Override
+  public void setReverseMapPattern(Boolean reverseMapPattern) {
+    this.reverseMapPattern = reverseMapPattern;
+  }
 
   /* see superclass */
   @Override
@@ -858,24 +875,31 @@ public class MapProjectJpa implements MapProject {
   /* see superclass */
   @Override
   public String toString() {
-    return "MapProjectJpa [id=" + id + ", name=" + name + ", isPublic=" + isPublic
-        + ", groupStructure=" + groupStructure + ", published=" + published+ ", useTags=" + useTags + ", workflowType="
-        + workflowType + ", refSetId=" + refSetId + ",moduleId=" + moduleId + ", refSetName="
-        + refSetName + ", sourceTerminology=" + sourceTerminology + ", sourceTerminologyVersion="
-        + sourceTerminologyVersion + ", destinationTerminology=" + destinationTerminology
-        + ", destinationTerminologyVersion=" + destinationTerminologyVersion + ", mapRefsetPattern="
+    return "MapProjectJpa [id=" + id + ", name=" + name + ", isPublic="
+        + isPublic + ", groupStructure=" + groupStructure + ", published="
+        + published + ", useTags=" + useTags + ", workflowType=" + workflowType
+        + ", refSetId=" + refSetId + ",moduleId=" + moduleId + ", refSetName="
+        + refSetName + ", sourceTerminology=" + sourceTerminology
+        + ", sourceTerminologyVersion=" + sourceTerminologyVersion
+        + ", destinationTerminology=" + destinationTerminology
+        + ", destinationTerminologyVersion=" + destinationTerminologyVersion
+        + ", mapRefsetPattern=" + ", reverseMapPattern=" + reverseMapPattern
         + mapRefsetPattern + ", mapRelationStyle=" + mapRelationStyle
         + ", mapPrincipleSourceDocumentName=" + mapPrincipleSourceDocumentName
-        + ", mapPrincipleSourceDocument=" + mapPrincipleSourceDocument + ", ruleBased=" + ruleBased
-        + ", projectSpecificAlgorithmHandlerClass=" + projectSpecificAlgorithmHandlerClass
-        + ", algorithmHandler=" + algorithmHandler + ", presetAgeRanges=" + presetAgeRanges
-        + ", mapLeads=" + mapLeads + ", mapSpecialists=" + mapSpecialists + ", mapPrinciples="
-        + mapPrinciples + ", mapAdvices=" + mapAdvices + ", mapRelations=" + mapRelations
-        + ", reportDefinitions=" + reportDefinitions + ", scopeConcepts=" + scopeConcepts
-        + ", scopeExcludedConcepts=" + scopeExcludedConcepts + ", scopeDescendantsFlag="
-        + scopeDescendantsFlag + ", scopeExcludedDescendantsFlag=" + scopeExcludedDescendantsFlag
-        + ", errorMessages=" + errorMessages + ", propagatedFlag=" + propagatedFlag
-        + ", propagationDescendantThreshold=" + propagationDescendantThreshold + "]";
+        + ", mapPrincipleSourceDocument=" + mapPrincipleSourceDocument
+        + ", ruleBased=" + ruleBased + ", projectSpecificAlgorithmHandlerClass="
+        + projectSpecificAlgorithmHandlerClass + ", algorithmHandler="
+        + algorithmHandler + ", presetAgeRanges=" + presetAgeRanges
+        + ", mapLeads=" + mapLeads + ", mapSpecialists=" + mapSpecialists
+        + ", mapPrinciples=" + mapPrinciples + ", mapAdvices=" + mapAdvices
+        + ", mapRelations=" + mapRelations + ", reportDefinitions="
+        + reportDefinitions + ", scopeConcepts=" + scopeConcepts
+        + ", scopeExcludedConcepts=" + scopeExcludedConcepts
+        + ", scopeDescendantsFlag=" + scopeDescendantsFlag
+        + ", scopeExcludedDescendantsFlag=" + scopeExcludedDescendantsFlag
+        + ", errorMessages=" + errorMessages + ", propagatedFlag="
+        + propagatedFlag + ", propagationDescendantThreshold="
+        + propagationDescendantThreshold + "]";
   }
 
   /* see superclass */
