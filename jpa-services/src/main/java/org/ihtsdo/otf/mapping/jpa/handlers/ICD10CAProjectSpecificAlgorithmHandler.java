@@ -643,30 +643,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
       //
       // Define advices and boolean flags
       //
-      final String externalCauseCodeAdvice = "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE";
-      boolean hasExternalCauseCodeAdvice =
-          TerminologyUtility.hasAdvice(mapEntry, externalCauseCodeAdvice);
 
-      //
-      // PREDICATE: asterisk code is used and it does not have
-      // THIS CODE MAY BE USED IN THE PRIMARY POSITION WHEN THE MANIFESTATION IS
-      // THE PRIMARY FOCUS OF CARE
-      // advice.
-      // ACTION: add the advice if not present, remove the advice if not
-      // asterisk code
-      // primary or secondary - any position
-      final String asteriskAdvice = "THIS CODE MAY BE USED IN THE PRIMARY POSITION "
-          + "WHEN THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE";
-      // If asterisk code
-      if (asteriskCodes.contains(concept.getTerminologyId())) {
-        if (!TerminologyUtility.hasAdvice(mapEntry, asteriskAdvice)) {
-          advices.add(TerminologyUtility.getAdvice(mapProject, asteriskAdvice));
-        }
-      }
-      // otherwise if advice present
-      else if (TerminologyUtility.hasAdvice(mapEntry, asteriskAdvice)) {
-        advices.remove(TerminologyUtility.getAdvice(mapProject, asteriskAdvice));
-      }
 
       //
       // PREDICATE: single asterisk code without dagger code
@@ -686,38 +663,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
         advices.remove(TerminologyUtility.getAdvice(mapProject, daggerAlsoAdvice));
       }
 
-      //
-      // PREDICATE: W00-Y34 except X34,X59,Y06,Y07,Y35,Y36 without
-      // "MANDATORY REQUIREMENT FOR PLACE OF OCCURRENCE" advice
-      // W26 added to this list also.
-      // ACTION: add the advice
-      //
-      final String adviceP03 = "MANDATORY REQUIREMENT FOR PLACE OF OCCURRENCE";
-      if (mapEntry.getTargetId().matches("(W..|X..|Y[0-2].|Y3[0-4]).*")
-          && !mapEntry.getTargetId().startsWith("W26") && !mapEntry.getTargetId().startsWith("Y06")
-          && !mapEntry.getTargetId().startsWith("Y07") && !mapEntry.getTargetId().startsWith("Y35")
-          && !mapEntry.getTargetId().startsWith("Y36") && !mapEntry.getTargetId().startsWith("X34")
-          && !mapEntry.getTargetId().startsWith("X59")) {
-        if (!TerminologyUtility.hasAdvice(mapEntry, adviceP03)) {
-          advices.add(TerminologyUtility.getAdvice(mapProject, adviceP03));
-        }
-      } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP03)) {
-        advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP03));
-      }
 
-      //
-      // PREDICATE: Primary map target is T31 or T32 and does not have the
-      // advice
-      // "USE AS PRIMARY CODE ONLY IF SITE OF BURN UNSPECIFIED, OTHERWISE USE AS
-      // A SUPPLEMENTARY CODE WITH CATEGORIES T20-T29 (Burns)"
-      // ACTION: add the advice
-      //
-      final String adviceP06 =
-          "USE AS PRIMARY CODE ONLY IF SITE OF BURN UNSPECIFIED, OTHERWISE USE AS A SUPPLEMENTARY CODE WITH CATEGORIES T20-T29 (Burns)";
-      if (mapEntry.getTargetId().matches("(T31|T32).*") && mapEntry.getMapGroup() == 1
-          && mapEntry.getMapPriority() == 1 && !TerminologyUtility.hasAdvice(mapEntry, adviceP06)) {
-        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP06));
-      }
 
       //
       // PREDICATE: Primary target is a poisoning code and there is a secondary
@@ -765,65 +711,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
         advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP21a));
       }
 
-      //
-      // PREDICATE: K52.1 code without advice
-      // "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE"
-      // and without secondary external cause code
-      // ACTION: add the advice
-      //
-      if (mapEntry.getTargetId().equals("K52.1")) {
-        if (mapRecord.getMapEntries().size() == 1 && !hasExternalCauseCodeAdvice) {
-          advices.add(TerminologyUtility.getAdvice(mapProject, externalCauseCodeAdvice));
-          hasExternalCauseCodeAdvice = true;
-        } else {
-          boolean found = false;
-          for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
-            // If external cause code found, set flag
-            if (mapRecord.getMapEntries().get(i).getTargetId() != null
-                && mapRecord.getMapEntries().get(i).getTargetId().matches("^[VWXY].*")) {
-              found = true;
-              break;
-            }
-          }
-          if (!found && !hasExternalCauseCodeAdvice) {
-            advices.add(TerminologyUtility.getAdvice(mapProject, externalCauseCodeAdvice));
-            hasExternalCauseCodeAdvice = true;
-          } else if (found && hasExternalCauseCodeAdvice) {
-            advices.remove(TerminologyUtility.getAdvice(mapProject, externalCauseCodeAdvice));
-            hasExternalCauseCodeAdvice = false;
-          }
-        }
-      }
 
-      //
-      // PREDICATE: Map target is between I20-I25 and I60-64 and does not have
-      // the advice
-      // "USE ADDITIONAL CODE TO IDENTIFY THE PRESENCE OF HYPERTENSION"
-      // ACTION: add the advice
-      //
-      final String hypertensionAdvice =
-          "USE ADDITIONAL CODE TO IDENTIFY THE PRESENCE OF HYPERTENSION";
-
-      if ((mapEntry.getTargetId().matches("(^I2[0-5]).*")
-          || mapEntry.getTargetId().matches("(^I6[0-4]).*"))) {
-        if (!TerminologyUtility.hasAdvice(mapEntry, hypertensionAdvice)) {
-          advices.add(TerminologyUtility.getAdvice(mapProject, hypertensionAdvice));
-        }
-      } else if (TerminologyUtility.hasAdvice(mapEntry, hypertensionAdvice)) {
-        advices.remove(TerminologyUtility.getAdvice(mapProject, hypertensionAdvice));
-      }
-
-      //
-      // PREDICATE: If a concept and/or ICD-10 code description contains the
-      // word "hereditary" then it shouldn't have advice for external cause
-      // code.
-      //
-      if (hasExternalCauseCodeAdvice
-          && (mapRecord.getConceptName().toLowerCase().contains("hereditary")
-              || mapEntry.getTargetName().toLowerCase().contains("hereditary"))) {
-        advices.remove(TerminologyUtility.getAdvice(mapProject, externalCauseCodeAdvice));
-        hasExternalCauseCodeAdvice = false;
-      }
 
       //
       // PREDICATE: Code range I20.0 through I25.9 and I60.0 through I69.8
@@ -839,72 +727,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
                 + "TO FULLY DESCRIBE THE DISEASE OR CONDITION"));
       }
 
-      //
-      // PREDICATE: Any code from category E10, Insulin-dependent diabetes
-      // mellitus, should not have advice POSSIBLE REQUIREMENT FOR EXTERNAL
-      // CAUSE CODE.
-      //
-      if (hasExternalCauseCodeAdvice && mapEntry.getTargetId().startsWith("E10")) {
-        advices.remove(TerminologyUtility.getAdvice(mapProject, externalCauseCodeAdvice));
-        hasExternalCauseCodeAdvice = false;
-      }
-
-      //
-      // PREDICATE: code in range S00-T98 with advice
-      // "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE"
-      // ACTION: remove the advice
-      //
-      if ((mapEntry.getTargetId().startsWith("S") || mapEntry.getTargetId().startsWith("T"))
-          && hasExternalCauseCodeAdvice) {
-
-        advices.remove(TerminologyUtility.getAdvice(mapProject, externalCauseCodeAdvice));
-        hasExternalCauseCodeAdvice = false;
-      }
-
-      //
-      // PREDICATE: code in range S00-T98 without a subsequent target code from
-      // V01-Y98
-      // ACTION: add "MANDATORY REQUIREMENT FOR AN EXTERNAL CAUSE CODE".
-      //
-
-      final String mandatoryExternalCauseCodeAdvice =
-          "MANDATORY REQUIREMENT FOR AN EXTERNAL CAUSE CODE";
-
-      if (mapEntry.getTargetId().startsWith("S") || mapEntry.getTargetId().startsWith("T")) {
-        boolean found = false;
-        for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
-          // If V01-Y98 code found, set flag
-          if (mapRecord.getMapEntries().get(i).getTargetId() != null
-              && mapRecord.getMapEntries().get(i).getTargetId().matches("^[VWXY].*")) {
-            found = true;
-            break;
-          }
-        }
-        if (!found && !TerminologyUtility.hasAdvice(mapEntry, mandatoryExternalCauseCodeAdvice)) {
-          advices.add(TerminologyUtility.getAdvice(mapProject, mandatoryExternalCauseCodeAdvice));
-        }
-        if (found && TerminologyUtility.hasAdvice(mapEntry, mandatoryExternalCauseCodeAdvice)) {
-          advices.remove(TerminologyUtility.getAdvice(mapProject, mandatoryExternalCauseCodeAdvice));
-        }        
-      }
-
-      //
-      // PREDICATE: primary code has advice
-      // "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE"
-      // and there is a secondary code from chapter XX
-      // ACTION: remove the advice
-      //
-      if (hasExternalCauseCodeAdvice && mapRecord.getMapEntries().size() > 1) {
-        for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
-          // If external cause code found, move on
-          if (mapRecord.getMapEntries().get(i).getTargetId() != null
-              && mapRecord.getMapEntries().get(i).getTargetId().matches("^[VWXY].*")) {
-            advices.remove(TerminologyUtility.getAdvice(mapProject, externalCauseCodeAdvice));
-            hasExternalCauseCodeAdvice = false;
-            break;
-          }
-        }
-      }
+ 
 
       //
       // PREDICATE: code is listed in CODE_TO_ADVICES.txt
@@ -1595,10 +1418,6 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
       destinationIdToName.put(concept.getTerminologyId(), concept.getDefaultPreferredName());
     }
 
-    // There is a special-case that requires checking after all loading is
-    // complete.
-    final Set<String> conceptIdsForChecking = new HashSet<>();
-
     // sort input file
     Logger.getLogger(ICD10CAProjectSpecificAlgorithmHandler.class)
         .info("  Sorting the file into " + System.getProperty("java.io.tmpdir"));
@@ -1697,6 +1516,14 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
     deletedAdvices.add("FIFTH CHARACTER REQUIRED TO FURTHER SPECIFY THE SITE");
     deletedAdvices.add("THIS CODE IS NOT TO BE USED IN THE PRIMARY POSITION");
     deletedAdvices.add("DESCENDANTS NOT EXHAUSTIVELY MAPPED");
+    deletedAdvices.add("POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE");
+    // removed WMT-66 01/31/2022
+    deletedAdvices.add("THIS CODE MAY BE USED IN THE PRIMARY POSITION WHEN THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE");
+    deletedAdvices.add("MANDATORY REQUIREMENT FOR PLACE OF OCCURRENCE");
+    deletedAdvices.add("USE AS PRIMARY CODE ONLY IF SITE OF BURN UNSPECIFIED, OTHERWISE USE AS A SUPPLEMENTARY CODE WITH CATEGORIES T20-T29 (Burns)");
+    deletedAdvices.add("USE ADDITIONAL CODE TO IDENTIFY THE PRESENCE OF HYPERTENSION");
+    deletedAdvices.add("MANDATORY REQUIREMENT FOR AN EXTERNAL CAUSE CODE");
+    deletedAdvices.add("USE ADDITIONAL CODE TO IDENTIFY PRIMARY MALIGNANT NEOPLASM OR HISTORY OF MALIGNANT NEOPLASM");
 
     // These advices have different wording in ICD10CA, and need to be
     // replaced
@@ -1704,8 +1531,8 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
     // changedAdvices.put("POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE",
     // "MANDATORY REQUIREMENT FOR AN EXTERNAL CAUSE CODE");
     changedAdvices.put("MAPPED FOLLOWING WHO GUIDANCE", "MAPPED FOLLOWING CIHI GUIDANCE");
-    changedAdvices.put("POSSIBLE REQUIREMENT FOR PLACE OF OCCURRENCE",
-        "MANDATORY REQUIREMENT FOR PLACE OF OCCURRENCE");
+    //changedAdvices.put("POSSIBLE REQUIREMENT FOR PLACE OF OCCURRENCE",
+    //    "MANDATORY REQUIREMENT FOR PLACE OF OCCURRENCE");
     changedAdvices.put("MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT",
         "MAP IS CONTEXT DEPENDENT FOR AGE");
     changedAdvices.put("POSSIBLE REQUIREMENT FOR CAUSATIVE AGENT CODE",
@@ -1822,20 +1649,8 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
           }
           advices.add(adviceToAdd);
         }
-
-        // "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE" is a special case,
-        // and needs to be revisited once all entries are added
-        if (advice.trim().equals("POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE")) {
-          conceptIdsForChecking.add(conceptId);
-        }
       }
 
-      // Add "USE ADDITIONAL CODE TO IDENTIFY THE PRESENCE OF HYPERTENSION" to
-      // any target code from I20-I25 and I60-64
-      if ((mapTarget.trim().matches("(^I2[0-5]).*") || mapTarget.trim().matches("(^I6[0-4]).*"))) {
-        advices.add(TerminologyUtility.getAdvice(mapProject,
-            "USE ADDITIONAL CODE TO IDENTIFY THE PRESENCE OF HYPERTENSION"));
-      }
 
       mapEntry.setMapAdvices(advices);
 
@@ -1845,40 +1660,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
 
     }
 
-    // Check all maps with "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE".
-    // If the target code is in range S00-T98 without a subsequent target code
-    // from V01-Y98, the advice needs to be changed to
-    // "MANDATORY REQUIREMENT FOR AN EXTERNAL CAUSE CODE"
-    //
-    // If there is a subsequent target code from V01-Y98, remove
-    // "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE" entirely and don't
-    // replace it with anything.
-    for (final String conceptId : conceptIdsForChecking) {
-      MapRecord mapRecord = existingIcd10Maps.get(conceptId);
-      for (MapEntry mapEntry : mapRecord.getMapEntries()) {
-        if (mapEntry.getTargetId().startsWith("S") || mapEntry.getTargetId().startsWith("T")) {
-          boolean found = false;
-          for (int i = 1; i < mapRecord.getMapEntries().size(); i++) {
-            // If V01-Y98 code found, set flag
-            if (mapRecord.getMapEntries().get(i).getTargetId() != null
-                && mapRecord.getMapEntries().get(i).getTargetId().matches("^[VWXY].*")) {
-              found = true;
-              break;
-            }
-          }
-          if (!found) {
-            mapEntry.getMapAdvices().remove(TerminologyUtility.getAdvice(mapProject,
-                "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE"));
-            mapEntry.getMapAdvices().add(TerminologyUtility.getAdvice(mapProject,
-                "MANDATORY REQUIREMENT FOR AN EXTERNAL CAUSE CODE"));
-          }
-          if (found) {
-            mapEntry.getMapAdvices().remove(TerminologyUtility.getAdvice(mapProject,
-                "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE"));
-          }
-        }
-      }
-    }
+
 
     Logger.getLogger(getClass()).info("Done caching maps");
 
