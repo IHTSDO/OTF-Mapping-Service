@@ -19,6 +19,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.algo.Algorithm;
+import org.ihtsdo.otf.mapping.helpers.MapRefsetPattern;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
@@ -339,18 +340,25 @@ public class MapRecordRf2SimpleMapLoaderAlgorithm extends RootServiceJpa
 
         // header
         if (!fields[0].equals("id")) {
-
+          
           final String refsetId = fields[4];
-          if (mapProjectMap.get(refsetId) == null) {
+          final MapProject mapProject = mapProjectMap.get(refsetId);
+          if (mapProject == null) {
             throw new Exception("Unexpected refset id in line - " + line);
           }
-          final String terminology =
-              mapProjectMap.get(refsetId).getSourceTerminology();
-          final String version =
-              mapProjectMap.get(refsetId).getSourceTerminologyVersion();
+          
+          final String terminology = mapProject.getSourceTerminology();
+          final String version = mapProject.getSourceTerminologyVersion();
           // Terminology attributes
           member.setTerminologyVersion(version);
           member.setTerminology(terminology);
+
+          final int terminologyFieldId =
+              (mapProject.getMapRefsetPattern() != MapRefsetPattern.SimpleMap
+                  && mapProject.getReverseMapPattern()) ? 5 : 6;
+          final int targetFieldId =
+              (mapProject.getMapRefsetPattern() != MapRefsetPattern.SimpleMap
+                  && mapProject.getReverseMapPattern()) ? 6 : 5;
 
           // SimpleMap attributes
           member.setTerminologyId(fields[0]);
@@ -359,24 +367,24 @@ public class MapRecordRf2SimpleMapLoaderAlgorithm extends RootServiceJpa
           member.setModuleId(Long.valueOf(fields[3]));
           member.setRefSetId(refsetId);
           // set referenced component
-          final Concept concept = contentService.getConcept(fields[5], // referencedComponentId
+          final Concept concept = contentService.getConcept(fields[terminologyFieldId], // referencedComponentId
               mapProjectMap.get(refsetId).getSourceTerminology(),
               mapProjectMap.get(refsetId).getSourceTerminologyVersion());
           if (concept != null) {
             member.setConcept(concept);
           } else {
             log.error("member " + member.getTerminologyId()
-                + " references non-existent concept " + fields[5]);
+                + " references non-existent concept " + fields[terminologyFieldId]);
             // TODO: this should throw an exception - commented out for testing
             // throw new IllegalStateException("member "
             // + member.getTerminologyId()
-            // + " references non-existent concept " + fields[5]);
+            // + " references non-existent concept " + fields[terminologyFieldId]);
           }
           // If blank last field
           if (fields.length == 6) {
             member.setMapTarget("");
           } else {
-            member.setMapTarget(fields[6]);
+            member.setMapTarget(fields[targetFieldId]);
           }
 
           members.add(member);
