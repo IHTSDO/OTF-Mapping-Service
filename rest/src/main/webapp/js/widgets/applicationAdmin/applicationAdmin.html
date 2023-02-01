@@ -145,13 +145,22 @@
         </table>
       </td>
       <td>
-        <span tooltip-placement="top" uib-tooltip="Map Type"> <select
-          ng-init="project.mapRefsetPattern=getMapType(project)"
-          ng-model="project.mapRefsetPattern"
-          ng-options="mapRefsetPattern as mapRefsetPattern.value for mapRefsetPattern in allowableMapTypes"
-          ng-change="setEditingPerformed(project)"
-          style="margin-bottom: 5px; width: 100%;">
-        </select> </span><span tooltip-placement="top" uib-tooltip="Workflow Type"><select
+        <span tooltip-placement="top" uib-tooltip="Map Type">
+          <select ng-init="project.mapRefsetPattern=getMapType(project)"
+            ng-model="project.mapRefsetPattern"
+            ng-options="mapRefsetPattern as mapRefsetPattern.value for mapRefsetPattern in allowableMapTypes"
+            ng-change="setEditingPerformed(project)"
+            style="margin-bottom: 5px; width: 55%;">
+          </select>
+          <span ng-if="project.mapRefsetPattern.key === 'SimpleMap'">
+            &nbsp;Reverse <select
+              ng-model="project.reverseMapPattern"
+              ng-options="item for item in [true, false]"
+              ng-change="setEditingPerformed(project)">
+            </select>
+          </span>
+        </span>
+        <span tooltip-placement="top" uib-tooltip="Workflow Type"><select
           ng-init="project.workflowType=getWorkflowType(project)"
           ng-model="project.workflowType"
           ng-options="workflowType as workflowType.value for workflowType in allowableWorkflowTypes"
@@ -308,6 +317,12 @@
           <select ng-model="newMapProjectMapType"
             ng-options="mapRefsetPattern as mapRefsetPattern.value for mapRefsetPattern in allowableMapTypes">
           </select>
+          <span ng-if="newMapProjectMapType.key === 'SimpleMap'">
+            &nbsp;Reverse <select
+              ng-model="newMapProjectMapTypeIsReverse"
+              ng-options="item for item in [true, false]">
+            </select>
+          </span>
         </td>
       </tr>
       <tr>

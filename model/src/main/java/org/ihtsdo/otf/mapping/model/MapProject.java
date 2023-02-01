@@ -1,11 +1,5 @@
 /*
- * Copyright 2020 Wci Informatics - All Rights Reserved.
- *
- * NOTICE:  All information contained herein is, and remains the property of Wci Informatics
- * The intellectual and technical concepts contained herein are proprietary to
- * Wci Informatics and may be covered by U.S. and Foreign Patents, patents in process,
- * and are protected by trade secret or copyright law.  Dissemination of this information
- * or reproduction of this material is strictly forbidden.
+ *    Copyright 2019 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.model;
 
@@ -422,7 +416,21 @@ public interface MapProject {
    * @param mapRefsetPattern the map type
    */
   public void setMapRefsetPattern(MapRefsetPattern mapRefsetPattern);
-
+  
+  /**
+   * Returns the reverse map pattern.
+   *
+   * @return the reverse map pattern
+   */
+  public Boolean getReverseMapPattern();
+  
+  /**
+   * Sets the reverse map pattern.
+   *
+   * @param reverseMapPattern the reverse map pattern
+   */
+  public void setReverseMapPattern(Boolean reverseMapPattern);
+  
   /**
    * Returns the scope concepts.
    * 

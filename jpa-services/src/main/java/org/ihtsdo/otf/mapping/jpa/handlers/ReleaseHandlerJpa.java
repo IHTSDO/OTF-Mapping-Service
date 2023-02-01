@@ -1379,7 +1379,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     Map<String, ComplexMapRefSetMember> currentActiveMembers) throws Exception {
 
     logger.info("Writing snapshot...");
-    String pattern = getPatternForType(mapProject);
+    final String pattern = getPatternForType(mapProject);
     String filename = null;
     BufferedWriter writer = null;
     filename = outputDir + "/der2_" + pattern + mapProject.getMapRefsetPattern() + "Snapshot_"
@@ -1395,7 +1395,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     writer.write(getHeader(mapProject));
     writer.write("\r\n");
 
-    List<String> lines = new ArrayList<>();
+    final List<String> lines = new ArrayList<>();
 
     // Write previously inactive members that are not active now
     for (final String key : prevInactiveMembers.keySet()) {
@@ -1414,13 +1414,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         // active value is always changing here from 1 to 0,
         // so we should always write the previous member with an updated
         // effective time (e.g. "trueEffectiveTime" parameter is false)
-        ComplexMapRefSetMember member = prevActiveMembers.get(key);
+        final ComplexMapRefSetMember member = prevActiveMembers.get(key);
         member.setActive(false);
         lines.add(getOutputLine(member, false));
         member.setActive(true);
       } else {
-        ComplexMapRefSetMember member = currentActiveMembers.get(key);
-        ComplexMapRefSetMember member2 = prevActiveMembers.get(key);
+        final ComplexMapRefSetMember member = currentActiveMembers.get(key);
+        final ComplexMapRefSetMember member2 = prevActiveMembers.get(key);
         if (member.equals(member2)) {
           // write with older effective time
           lines.add(getOutputLine(member2, true));
@@ -2077,13 +2077,28 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           || member.getConcept().getTerminology().isEmpty()) {
         return "";
       }
-      entryLine = member.getTerminologyId() // the UUID
-          + "\t"
-          + ((trueEffectiveTimeFlag
-              && !dateFormat.format(member.getEffectiveTime()).equals("100070607"))
-                  ? dateFormat.format(member.getEffectiveTime()) : effectiveTime)
-          + "\t" + (member.isActive() ? "1" : "0") + "\t" + moduleId + "\t" + member.getRefSetId()
-          + "\t" + member.getConcept().getTerminologyId() + "\t" + member.getMapTarget();
+      if (!mapProject.getReverseMapPattern()) {
+        entryLine = member.getTerminologyId() // the UUID
+            + "\t"
+            + ((trueEffectiveTimeFlag && !dateFormat
+                .format(member.getEffectiveTime()).equals("100070607"))
+                    ? dateFormat.format(member.getEffectiveTime())
+                    : effectiveTime)
+            + "\t" + (member.isActive() ? "1" : "0") + "\t" + moduleId + "\t"
+            + member.getRefSetId() + "\t"
+            + member.getConcept().getTerminologyId() + "\t"
+            + member.getMapTarget();
+      } else {
+        entryLine = member.getTerminologyId() // the UUID
+            + "\t"
+            + ((trueEffectiveTimeFlag && !dateFormat
+                .format(member.getEffectiveTime()).equals("100070607"))
+                    ? dateFormat.format(member.getEffectiveTime())
+                    : effectiveTime)
+            + "\t" + (member.isActive() ? "1" : "0") + "\t" + moduleId + "\t"
+            + member.getRefSetId() + "\t" + member.getMapTarget() + "\t"
+            + member.getConcept().getTerminologyId();
+      }
     }
 
     entryLine += "\r\n";
@@ -2855,7 +2870,10 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         member.setTerminologyVersion(version);
 
         // set Concept
-        final Concept concept = contentService.getConcept(fields[5], terminology, version);
+        final Concept concept = contentService.getConcept(
+            !mapProject.getReverseMapPattern() ? fields[5] : fields[6],
+            terminology, version);
+        ;
 
         if (mapProject.getMapRefsetPattern() != MapRefsetPattern.SimpleMap) {
 
@@ -2867,11 +2885,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           member.setMapTarget(fields[10]);
           if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap) {
             member.setMapRelationId(Long.valueOf(fields[11]));
-          } else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ExtendedMap) {
+          } else if (mapProject
+              .getMapRefsetPattern() == MapRefsetPattern.ExtendedMap) {
             member.setMapRelationId(Long.valueOf(fields[12]));
 
           } else {
-            throw new Exception("Unsupported map type " + mapProject.getMapRefsetPattern());
+            throw new Exception(
+                "Unsupported map type " + mapProject.getMapRefsetPattern());
           }
           // ComplexMap unique attributes NOT set by file (mapBlock
           // elements) - set defaults
@@ -2884,8 +2904,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           member.setMapPriority(1);
           member.setMapRule(null);
           member.setMapAdvice(null);
-          member.setMapTarget(fields[6]);
           member.setMapRelationId(null);
+          member.setMapTarget(
+              !mapProject.getReverseMapPattern() ? fields[6] : fields[5]);
         }
 
         // regularly log and commit at intervals
@@ -2935,17 +2956,24 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     final ContentService contentService = new ContentServiceJpa();
 
     logger.info("    Open " + inputFile);
-    File f = new File(inputFile);
+    final File f = new File(inputFile);
     if (!f.exists()) {
       throw new Exception("Input file does not exist: " + f.toString());
     }
 
-    BufferedReader reader = new BufferedReader(new FileReader(f));
+    final BufferedReader reader = new BufferedReader(new FileReader(f));
 
     final String terminology = mapProject.getSourceTerminology();
     final String version = mapProject.getSourceTerminologyVersion();
-
-    Map<String, List<ComplexMapRefSetMember>> conceptRefSetMap = new HashMap<>();
+    
+    final int terminologyFieldId =
+        (mapProject.getMapRefsetPattern() != MapRefsetPattern.SimpleMap
+            && mapProject.getReverseMapPattern()) ? 5 : 6;
+    final int targetFieldId =
+        (mapProject.getMapRefsetPattern() != MapRefsetPattern.SimpleMap
+            && mapProject.getReverseMapPattern()) ? 6 : 5;
+    
+    final Map<String, List<ComplexMapRefSetMember>> conceptRefSetMap = new HashMap<>();
 
     while ((line = reader.readLine()) != null) {
 
@@ -2967,7 +2995,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         member.setRefSetId(fields[4]);
         // conceptId
         final Concept tempConcept = new ConceptJpa();
-        tempConcept.setTerminologyId(fields[5]);
+        tempConcept.setTerminologyId(fields[terminologyFieldId]);
         member.setConcept(tempConcept);
 
         // Terminology attributes
@@ -3005,11 +3033,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           member.setMapBlockAdvice(null);
 
         } else {
+
           member.setMapGroup(1);
           member.setMapPriority(1);
           member.setMapRule(null);
           member.setMapAdvice(null);
-          member.setMapTarget(fields[6]);
+          member.setMapTarget(fields[targetFieldId]);
           member.setMapRelationId(null);
         }
 
@@ -3458,17 +3487,19 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @param mapProject the map project
    * @return the header
    */
-  @SuppressWarnings("static-method")
   private String getHeader(MapProject mapProject) {
     if (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap) {
-      return "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tmapTarget";
+      if (mapProject.getReverseMapPattern()) {
+        return "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tmapSource";
+      } else {
+        return "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tmapTarget";
+      }
     } else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap) {
       return "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\t"
           + "mapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId";
     } else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ExtendedMap) {
       return "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\t"
           + "mapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId\tmapCategoryId";
-
     }
     return null;
   }
