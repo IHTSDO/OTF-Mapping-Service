@@ -187,6 +187,7 @@ public class TrackingRecordJpa implements TrackingRecord {
    */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
   public String getTerminologyId() {
     return terminologyId;
   }
