@@ -668,7 +668,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   @ApiOperation(value = "Load complex RF2 map record data", notes = "Load complex map data.")
   public void loadMapRecordRf2ComplexMap(
     @ApiParam(value = "RF2 input file", required = true) String inputFile,
-    @ApiParam(value = "Member flag", required = true) @QueryParam("memberFlag") Boolean memeberFlag,
+    @ApiParam(value = "Member flag", required = true) @QueryParam("memberFlag") Boolean memberFlag,
     @ApiParam(value = "Record flag", required = true) @QueryParam("recordFlag") Boolean recordFlag,
     @ApiParam(value = "Refset id", required = false) @QueryParam("refsetId") String refsetId,
     @ApiParam(value = "Workflow status", required = true) @QueryParam("workflowStatus") String workflowStatus,
@@ -686,7 +686,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         securityService);
 
     try (final MapRecordRf2ComplexMapLoaderAlgorithm algo =
-        new MapRecordRf2ComplexMapLoaderAlgorithm(inputFile, memeberFlag,
+        new MapRecordRf2ComplexMapLoaderAlgorithm(inputFile, memberFlag,
             recordFlag, refsetId, workflowStatus, userName);) {
 
       algo.compute();
@@ -749,7 +749,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   @ApiOperation(value = "Load simple RF2 map record data", notes = "Load simple map data.")
   public void loadMapRecordRf2SimpleMap(
     @ApiParam(value = "RF2 input file", required = true) String inputFile,
-    @ApiParam(value = "Member flag", required = true) @QueryParam("memberFlag") Boolean memeberFlag,
+    @ApiParam(value = "Member flag", required = true) @QueryParam("memberFlag") Boolean memberFlag,
     @ApiParam(value = "Record flag", required = true) @QueryParam("recordFlag") Boolean recordFlag,
     @ApiParam(value = "Refset id", required = false) @QueryParam("refsetId") String refsetId,
     @ApiParam(value = "Workflow status", required = true) @QueryParam("workflowStatus") String workflowStatus,
@@ -765,7 +765,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         "load map record RF2 simple", securityService);
 
     try (final MapRecordRf2SimpleMapLoaderAlgorithm algo =
-        new MapRecordRf2SimpleMapLoaderAlgorithm(inputFile, memeberFlag,
+        new MapRecordRf2SimpleMapLoaderAlgorithm(inputFile, memberFlag,
             recordFlag, refsetId, workflowStatus);) {
 
       algo.compute();
@@ -2064,7 +2064,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   public boolean reloadMapRecord(
     @ApiParam(value = "RefSet Id, e.g. 2014_09_01", required = true) @PathParam("refsetId") String refsetId,
     @ApiParam(value = "RF2 input file", required = true) String inputFile,
-    @ApiParam(value = "Member flag", required = true) @QueryParam("memberFlag") Boolean memeberFlag,
+    @ApiParam(value = "Member flag", required = true) @QueryParam("memberFlag") Boolean memberFlag,
     @ApiParam(value = "Record flag", required = true) @QueryParam("recordFlag") Boolean recordFlag,
     @ApiParam(value = "Workflow status", required = true) @QueryParam("workflowStatus") String workflowStatus,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
@@ -2088,7 +2088,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
       // if remove was successful do add
       try (final MapRecordRf2SimpleMapLoaderAlgorithm loadAlgo =
-          new MapRecordRf2SimpleMapLoaderAlgorithm(inputFile, memeberFlag,
+          new MapRecordRf2SimpleMapLoaderAlgorithm(inputFile, memberFlag,
               recordFlag, refsetId, workflowStatus);) {
 
         loadAlgo.compute();
