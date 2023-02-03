@@ -57,13 +57,29 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
   
   /* see superclass */
   @Override
-  public ValidationResult validateTargetCodes(MapRecord mapRecord)
-    throws Exception {
-
-    // No current validation restrictions
+  public ValidationResult validateTargetCodes(MapRecord mapRecord) throws Exception {
 
     final ValidationResult validationResult = new ValidationResultJpa();
+    final ContentService contentService = new ContentServiceJpa();
 
+    for (final MapEntry mapEntry : mapRecord.getMapEntries()) {
+
+      // Target code must be an existing concept
+      final Concept concept = contentService.getConcept(mapEntry.getTargetId(),
+          mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
+
+      // Concept must exist
+      if (concept == null) {
+        validationResult.addError("Concept for target id " + mapEntry.getTargetId() + " does not exist.");
+      }
+      
+      // Concept must be active
+      if (concept != null && !concept.isActive()) {
+        validationResult.addError("Concept for target id " + mapEntry.getTargetId() + " is not active.");
+      }
+    }
+
+    contentService.close();
     return validationResult;
   }
 
