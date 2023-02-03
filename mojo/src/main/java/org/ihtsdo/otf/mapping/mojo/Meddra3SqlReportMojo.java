@@ -92,7 +92,7 @@ public class Meddra3SqlReportMojo extends AbstractOtfMappingMojo {
       // Run the SQL report
     	
     final MapProject mapProject = mappingService.getMapProject(mapProjectId);
-    final long lastModified = mapProject.getEditingCycleBeginDate().getTime() / 1000;
+    final long lastModified = mapProject.getEditingCycleBeginDate().getTime();
 	  final javax.persistence.Query query = manager.createNativeQuery(
 	      "SELECT DISTINCT " + 
 	      "		map_records.conceptId, " + 
@@ -111,8 +111,9 @@ public class Meddra3SqlReportMojo extends AbstractOtfMappingMojo {
 	      "		where conceptId = map_records.conceptId and workflowStatus in ('READY_FOR_PUBLICATION', 'PUBLISHED')" +
 	      "		and lastModified < :LAST_MODIFIED ORDER BY lastModified DESC LIMIT 1) " + 
 	      "	where workflowStatus in ('READY_FOR_PUBLICATION', 'PUBLISHED') " + 
-	      "		and (map_entries.targetId != map_entries_AUD.targetId or map_entries.targetName != map_entries_AUD.targetName) " + 
-	      "		and mapProjectId = :MAP_PROJECT_ID;");
+	      "     and lastModified > :LAST_MODIFIED " + 
+	      "		and mapProjectId = :MAP_PROJECT_ID" +
+	      "		and (map_entries.targetId != map_entries_AUD.targetId);");
 
       query.setParameter("MAP_PROJECT_ID", mapProjectId);
       query.setParameter("LAST_MODIFIED", lastModified);
@@ -199,8 +200,7 @@ public class Meddra3SqlReportMojo extends AbstractOtfMappingMojo {
       throw new MojoExecutionException("Failed to retrieve config properties");
     }
     String notificationRecipients =
-        config.getProperty("sqlreport.send.notification.recipients.meddra."
-            + getClass().getSimpleName());
+        config.getProperty("sqlreport.send.notification.recipients.meddra");
     String notificationMessage = "";
     getLog().info("Request to send notification email to recipients: "
         + notificationRecipients);
