@@ -119,19 +119,27 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
     final ContentService contentService = new ContentServiceJpa();
 
     try {
-      // Concept must exist
       final Concept concept = contentService.getConcept(terminologyId,
           mapProject.getDestinationTerminology(),
           mapProject.getDestinationTerminologyVersion());
 
-      // Only concepts that end with one of the
-      if (concept != null) {
-        for(String validSemanticTag : validSemanticTagsList) {
-          if(concept.getDefaultPreferredName().endsWith(validSemanticTag)) {
-            return true;
-          }
+      // Concept must exist
+      if (concept == null) {
+        return false;
+      }
+      
+      // Concept must be active
+      if (!concept.isActive()) {
+        return false;
+      }      
+      
+      // Only concepts that end with one of the valid semantic tags are valid
+      for (String validSemanticTag : validSemanticTagsList) {
+        if (concept.getDefaultPreferredName().endsWith(validSemanticTag)) {
+          return true;
         }
       }
+      
       return false;
 
     } catch (Exception e) {
