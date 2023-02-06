@@ -94,26 +94,70 @@ public class Meddra3SqlReportMojo extends AbstractOtfMappingMojo {
     final MapProject mapProject = mappingService.getMapProject(mapProjectId);
     final long lastModified = mapProject.getEditingCycleBeginDate().getTime();
 	  final javax.persistence.Query query = manager.createNativeQuery(
-	      "SELECT DISTINCT " + 
-	      "		map_records.conceptId, " + 
-	      "		map_notes.note, " + 
-	      "		map_records_labels_AUD.labels, " + 
-	      "		map_records.conceptName, " + 
-	      "		map_entries.targetId as newTargetId, " + 
-	      "		map_entries.targetName newTargetName, " + 
-	      "		map_entries_AUD.targetId as oldTargetId, " + 
-	      "		map_entries_AUD.targetName as oldTargetName, " + 
-	      "	FROM_UNIXTIME(map_records.lastModified / 1000, '%d/%m/%y %H:%i:%s') as lastModifiedDate	from map_records " + 
-	      "		left join map_notes on map_records.id = map_notes.note " + 
-	      "		left join map_records_labels_AUD on map_records_labels_AUD.id = map_records.id " + 
-	      "		inner join map_entries on map_entries.mapRecord_id = map_records.id " + 
-	      "		inner join map_entries_AUD on map_entries_AUD.mapRecord_id = (SELECT id FROM map_records_AUD " +
-	      "		where conceptId = map_records.conceptId and workflowStatus in ('READY_FOR_PUBLICATION', 'PUBLISHED')" +
-	      "		and lastModified < :LAST_MODIFIED ORDER BY lastModified DESC LIMIT 1) " + 
-	      "	where workflowStatus in ('READY_FOR_PUBLICATION', 'PUBLISHED') " + 
-	      "     and lastModified > :LAST_MODIFIED " + 
-	      "		and mapProjectId = :MAP_PROJECT_ID" +
-	      "		and (map_entries.targetId != map_entries_AUD.targetId);");
+			  "SELECT DISTINCT "
+					  + "map_records.conceptId, "
+					  + "map_notes.note, "
+					  + "map_records_labels_AUD.labels, "
+					  + "map_records.conceptName, "
+					  + "map_entries.targetId as newTargetId, "
+					  + "map_entries.targetName newTargetName, "
+					  + "\"\" as oldTargetId, "
+					  + "\"\" as oldTargetName, "
+					  + "FROM_UNIXTIME(map_records.lastModified / 1000, '%d/%m/%y %H:%i:%s') as lastModifiedDate from map_records "
+					  + "left join map_notes on map_records.id = map_notes.note "
+					  + "left join map_records_labels_AUD on map_records_labels_AUD.id = map_records.id "
+					  + "inner join map_entries on map_entries.mapRecord_id = map_records.id "
+					  + "inner join "
+					  + "(select * from "
+					  + "(select conceptId, currentRefsetId from (select distinct * from (select conceptId, mp.refsetId as currentRefsetId from map_records mr, map_projects mp, map_entries me, map_projects_scope_concepts mpsc, map_projects_scope_excluded_concepts mpsec where mr.workflowStatus in ('READY_FOR_PUBLICATION','PUBLISHED') and mapProjectId=mp.id and me.mapRecord_id=mr.id and mpsc.id=mp.id and mpsc.scopeConcepts=mr.conceptId and me.targetId<>'' and mapProjectId=:MAP_PROJECT_ID) as mapRecordsInScopeList left join (select scopeExcludedConcepts from map_projects_scope_excluded_concepts where id=:MAP_PROJECT_ID) as excludedConceptIds on mapRecordsInScopeList.conceptId=excludedConceptIds.scopeExcludedConcepts having scopeExcludedConcepts is null) as inScopeConcepts) as currentMapRecords left join "
+					  + "(select concepts.terminologyId, simple_map_refset_members.refsetId as previousRefsetId from simple_map_refset_members, concepts, map_projects mp where simple_map_refset_members.concept_id=concepts.id and simple_map_refset_members.active and simple_map_refset_members.refsetId = mp.refsetId and mp.id=:MAP_PROJECT_ID) as previousReleaseMapRecords "
+					  + "on terminologyId=conceptId and currentRefsetId=previousRefsetId "
+					  + "having previousRefsetId is null) as newConcepts "
+					  + "on newConcepts.conceptId=map_records.conceptId "
+					  + "UNION ALL "
+					  + "SELECT DISTINCT "
+					  + "map_records.conceptId, "
+					  + "map_notes.note, "
+					  + "map_records_labels_AUD.labels, "
+					  + "map_records.conceptName, "
+					  + "\"\" as newTargetId, "
+					  + "\"\" as newTargetName, "
+					  + "map_entries.targetId as oldTargetId, "
+					  + "map_entries.targetName as oldTargetName, "
+					  + "FROM_UNIXTIME(map_records.lastModified / 1000, '%d/%m/%y %H:%i:%s') as lastModifiedDate from map_records "
+					  + "left join map_notes on map_records.id = map_notes.note "
+					  + "left join map_records_labels_AUD on map_records_labels_AUD.id = map_records.id "
+					  + "inner join map_entries on map_entries.mapRecord_id = map_records.id "
+					  + "inner join "
+					  + "(select * from "
+					  + "(select concepts.terminologyId, simple_map_refset_members.refsetId as previousRefsetId from simple_map_refset_members, concepts, map_projects mp where simple_map_refset_members.concept_id=concepts.id and simple_map_refset_members.active and simple_map_refset_members.refsetId = mp.refsetId and mp.id=:MAP_PROJECT_ID) as previousReleaseMapRecords left join "
+					  + "(select conceptId, currentRefsetId from (select distinct * from (select conceptId, mp.refsetId as currentRefsetId from map_records mr, map_projects mp, map_entries me, map_projects_scope_concepts mpsc, map_projects_scope_excluded_concepts mpsec where mr.workflowStatus in ('READY_FOR_PUBLICATION','PUBLISHED') and mapProjectId=mp.id and me.mapRecord_id=mr.id and mpsc.id=mp.id and mpsc.scopeConcepts=mr.conceptId and me.targetId<>'' and mapProjectId=:MAP_PROJECT_ID) as mapRecordsInScopeList left join (select scopeExcludedConcepts from map_projects_scope_excluded_concepts where id=:MAP_PROJECT_ID) as excludedConceptIds on mapRecordsInScopeList.conceptId=excludedConceptIds.scopeExcludedConcepts having scopeExcludedConcepts is null) as inScopeConcepts) as currentMapRecords "
+					  + "on terminologyId=conceptId and currentRefsetId=previousRefsetId "
+					  + "having currentRefsetId is null) as removedConcepts "
+					  + "on removedConcepts.terminologyId=map_records.conceptId "
+					  + "UNION ALL "
+					  + "SELECT DISTINCT "
+					  + "map_records.conceptId, "
+					  + "map_notes.note, "
+					  + "map_records_labels_AUD.labels, "
+					  + "map_records.conceptName, "
+					  + "map_entries.targetId as newTargetId, "
+					  + "map_entries.targetName newTargetName, "
+					  + "previousReleaseMapRecords.mapTarget as oldTargetId, "
+					  + "previousReleaseMapRecords.targetName as oldTargetName, "
+					  + "FROM_UNIXTIME(map_records.lastModified / 1000, '%d/%m/%y %H:%i:%s') as lastModifiedDate from map_records "
+					  + "left join map_notes on map_records.id = map_notes.note "
+					  + "left join map_records_labels_AUD on map_records_labels_AUD.id = map_records.id "
+					  + "inner join map_entries on map_entries.mapRecord_id = map_records.id "
+					  + "inner join "
+					  + "(select ca.terminologyId as sourceConceptId, simple_map_refset_members.mapTarget, cb.defaultPreferredName as targetName from simple_map_refset_members, concepts ca, concepts cb, map_projects mp where simple_map_refset_members.concept_id=ca.id and simple_map_refset_members.active and simple_map_refset_members.mapTarget = cb.terminologyId and simple_map_refset_members.refsetId = mp.refsetId and mp.id=:MAP_PROJECT_ID) as previousReleaseMapRecords "
+					  + "on previousReleaseMapRecords.sourceConceptId=map_records.conceptId "
+					  + "inner join "
+					  + "(select conceptId, currentRefsetId from (select distinct * from (select conceptId, mp.refsetId as currentRefsetId from map_records mr, map_projects mp, map_entries me, map_projects_scope_concepts mpsc, map_projects_scope_excluded_concepts mpsec where mr.workflowStatus in ('READY_FOR_PUBLICATION','PUBLISHED') and mapProjectId=mp.id and me.mapRecord_id=mr.id and mpsc.id=mp.id and mpsc.scopeConcepts=mr.conceptId and me.targetId<>'' and mapProjectId=:MAP_PROJECT_ID) as mapRecordsInScopeList left join (select scopeExcludedConcepts from map_projects_scope_excluded_concepts where id=:MAP_PROJECT_ID) as excludedConceptIds on mapRecordsInScopeList.conceptId=excludedConceptIds.scopeExcludedConcepts having scopeExcludedConcepts is null) as inScopeConcepts) as currentMapRecords "
+					  + "on map_records.conceptId=currentMapRecords.conceptId "
+					  + "where workflowStatus in ('READY_FOR_PUBLICATION', 'PUBLISHED') and lastModified > :LAST_MODIFIED "
+					  + "and mapProjectId = :MAP_PROJECT_ID "
+					  + "and (map_entries.targetId != previousReleaseMapRecords.mapTarget);");
 
       query.setParameter("MAP_PROJECT_ID", mapProjectId);
       query.setParameter("LAST_MODIFIED", lastModified);
