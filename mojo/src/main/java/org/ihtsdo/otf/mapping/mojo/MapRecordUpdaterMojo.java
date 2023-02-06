@@ -105,6 +105,13 @@ public class MapRecordUpdaterMojo extends AbstractOtfMappingMojo {
               final Concept concept2 = contentService.getConcept(
                   entry.getTargetId(), mapProject.getDestinationTerminology(),
                   mapProject.getDestinationTerminologyVersion());
+              if (concept2 == null && !entry.getTargetName().equals("CONCEPT NOT FOUND")) {
+                getLog().info("    Update map entry " + entry.getId() + " : "
+                    + record.getConceptId() + " from *" + entry.getTargetName()
+                    + "* to *CONCEPT NOT FOUND*");
+                entry.setTargetName("CONCEPT NOT FOUND");
+                changed = true;
+              }
               if (concept2 != null && !concept2.getDefaultPreferredName()
                   .equals(entry.getTargetName())) {
                 getLog().info("    Update map entry " + entry.getId() + " : "
