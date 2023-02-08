@@ -53,6 +53,11 @@ public class MIMSConditionToSnomedProjectSpecificAlgorithmHandler
 
     for (final MapEntry mapEntry : mapRecord.getMapEntries()) {
 
+      // "No target" targets are valid
+      if( mapEntry.getTargetId().isBlank()) {
+        continue;
+      }
+      
       // Target code must be an existing concept
       final Concept concept = contentService.getConcept(mapEntry.getTargetId(),
           mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
@@ -115,6 +120,11 @@ public class MIMSConditionToSnomedProjectSpecificAlgorithmHandler
     validSemanticTagsList.add("(event)");
     validSemanticTagsList.add("(situation)");
 
+    // "No target" targets are valid
+    if(terminologyId.isBlank()) {
+      return true;
+    }
+    
     final ContentService contentService = new ContentServiceJpa();
 
     try {
