@@ -64,6 +64,12 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
 
     for (final MapEntry mapEntry : mapRecord.getMapEntries()) {
 
+      // Null targets are invalid
+      if(mapEntry.getTargetId() == null) {
+        validationResult.addError("No target for " + mapEntry.getMapGroup() + "/" + mapEntry.getMapPriority() +  ". Please set a target, or select \"Set empty target\"");
+        continue;
+      }
+
       // "No target" targets are valid
       if( mapEntry.getTargetId().isBlank()) {
         continue;
@@ -136,6 +142,11 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
     validSemanticTagsList.add("(substance)");
     validSemanticTagsList.add("(organism)");
     validSemanticTagsList.add("(physical object)");
+    
+    // Null targets are invalid
+    if(terminologyId == null) {
+      return false;
+    }
     
     // "No target" targets are valid
     if(terminologyId.isBlank()) {
