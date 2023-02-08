@@ -53,14 +53,8 @@ public class MIMSConditionToSnomedProjectSpecificAlgorithmHandler
 
     for (final MapEntry mapEntry : mapRecord.getMapEntries()) {
 
-      // Null targets are invalid
-      if(mapEntry.getTargetId() == null) {
-        validationResult.addError("No target for " + mapEntry.getMapGroup() + "/" + mapEntry.getMapPriority() +  ". Please set a target, or select \"Set empty target\"");
-        continue;
-      }
-      
       // "No target" targets are valid
-      if( mapEntry.getTargetId().isBlank()) {
+      if(mapEntry.getTargetId() != null && mapEntry.getTargetId().isBlank()) {
         continue;
       }
       
@@ -125,14 +119,9 @@ public class MIMSConditionToSnomedProjectSpecificAlgorithmHandler
     validSemanticTagsList.add("(disorder)");
     validSemanticTagsList.add("(event)");
     validSemanticTagsList.add("(situation)");
-
-    // Null targets are invalid
-    if(terminologyId == null) {
-      return false;
-    }
-    
+   
     // "No target" targets are valid
-    if(terminologyId.isBlank()) {
+    if(terminologyId != null && terminologyId.isBlank()) {
       return true;
     }
     
