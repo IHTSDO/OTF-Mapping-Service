@@ -64,6 +64,11 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
 
     for (final MapEntry mapEntry : mapRecord.getMapEntries()) {
 
+      // "No target" targets are valid
+      if(mapEntry.getTargetId() != null && mapEntry.getTargetId().isBlank()) {
+        continue;
+      }
+      
       // Target code must be an existing concept
       final Concept concept = contentService.getConcept(mapEntry.getTargetId(),
           mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
@@ -131,6 +136,11 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
     validSemanticTagsList.add("(substance)");
     validSemanticTagsList.add("(organism)");
     validSemanticTagsList.add("(physical object)");
+    
+    // "No target" targets are valid
+    if(terminologyId != null && terminologyId.isBlank()) {
+      return true;
+    }
     
     final ContentService contentService = new ContentServiceJpa();
 
