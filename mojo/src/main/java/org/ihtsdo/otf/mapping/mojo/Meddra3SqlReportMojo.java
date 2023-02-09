@@ -94,11 +94,12 @@ public class Meddra3SqlReportMojo extends AbstractOtfMappingMojo {
     final MapProject mapProject = mappingService.getMapProject(mapProjectId);
     final long lastModified = mapProject.getEditingCycleBeginDate().getTime();
 	  final javax.persistence.Query query = manager.createNativeQuery(
-			  "SELECT DISTINCT "
+	                  // New Maps
+			          "SELECT DISTINCT "
 					  + "map_records.conceptId, "
+                      + "map_records.conceptName, "
 					  + "map_notes.note, "
 					  + "map_records_labels_AUD.labels, "
-					  + "map_records.conceptName, "
 					  + "map_entries.targetId as newTargetId, "
 					  + "map_entries.targetName newTargetName, "
 					  + "\"\" as oldTargetId, "
@@ -114,12 +115,13 @@ public class Meddra3SqlReportMojo extends AbstractOtfMappingMojo {
 					  + "on terminologyId=conceptId and currentRefsetId=previousRefsetId "
 					  + "having previousRefsetId is null) as newConcepts "
 					  + "on newConcepts.conceptId=map_records.conceptId "
+                      // Removed Maps
 					  + "UNION ALL "
 					  + "SELECT DISTINCT "
 					  + "map_records.conceptId, "
+                      + "map_records.conceptName, "
 					  + "map_notes.note, "
 					  + "map_records_labels_AUD.labels, "
-					  + "map_records.conceptName, "
 					  + "\"\" as newTargetId, "
 					  + "\"\" as newTargetName, "
 					  + "map_entries.targetId as oldTargetId, "
@@ -135,12 +137,13 @@ public class Meddra3SqlReportMojo extends AbstractOtfMappingMojo {
 					  + "on terminologyId=conceptId and currentRefsetId=previousRefsetId "
 					  + "having currentRefsetId is null) as removedConcepts "
 					  + "on removedConcepts.terminologyId=map_records.conceptId "
+					  // Changed Maps
 					  + "UNION ALL "
 					  + "SELECT DISTINCT "
 					  + "map_records.conceptId, "
+                      + "map_records.conceptName, "
 					  + "map_notes.note, "
 					  + "map_records_labels_AUD.labels, "
-					  + "map_records.conceptName, "
 					  + "map_entries.targetId as newTargetId, "
 					  + "map_entries.targetName newTargetName, "
 					  + "previousReleaseMapRecords.mapTarget as oldTargetId, "
@@ -168,7 +171,7 @@ public class Meddra3SqlReportMojo extends AbstractOtfMappingMojo {
       List<String> results = new ArrayList<>();
       // Add header row
       results.add(
-          "Source Concept\tSource Id\tTarget Concept\tTarget Id\tSNOMED Hierarchy");
+          "Source Concept Id\tSource Concept Name\tNotes\tQA Check\tNew Target Id\tNew Target Name\tOld Target Id\tOld Target Name");
 
       // Add result rows
       for (Object[] array : objects) {
@@ -250,7 +253,7 @@ public class Meddra3SqlReportMojo extends AbstractOtfMappingMojo {
     getLog().info("Request to send notification email to recipients: "
         + notificationRecipients);
     notificationMessage +=
-        "Hello,\n\nThe weekly SQL report has been generated.";
+        "Hello,\n\nThe MedDRA new, removed, and changed maps report has been generated.";
 
     String from;
     if (config.containsKey("mail.smtp.from")) {
@@ -269,7 +272,7 @@ public class Meddra3SqlReportMojo extends AbstractOtfMappingMojo {
     props.put("mail.smtp.auth", config.getProperty("mail.smtp.auth"));
 
     ConfigUtility.sendEmailWithAttachment(
-        "[OTF-Mapping-Tool] Weekly SQL report", from, notificationRecipients,
+        "[OTF-Mapping-Tool] MedDRA modified maps report", from, notificationRecipients,
         notificationMessage, props, fileName,
         "true".equals(config.getProperty("mail.smtp.auth")));
   }
