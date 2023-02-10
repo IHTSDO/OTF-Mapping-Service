@@ -129,6 +129,7 @@ public class MapRecordRf2SimpleMapLoaderAlgorithm extends RootServiceJpa
     log.info("  recordFlag     = " + recordFlag);
     log.info("  refsetId       = " + refsetId);
     log.info("  workflowStatus = " + workflowStatus);
+    log.info("TESTTEST");
 
     // Set up map of refsetIds that we may encounter
     MappingService mappingService = null;
