@@ -355,10 +355,10 @@ public class MapRecordRf2SimpleMapLoaderAlgorithm extends RootServiceJpa
 
           final int terminologyFieldId =
               (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap
-                  && mapProject.getReverseMapPattern()) ? 6 : 5;
+                  && mapProject.getReverseMapPattern() != null && mapProject.getReverseMapPattern()) ? 6 : 5;
           final int targetFieldId =
               (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap
-                  && mapProject.getReverseMapPattern()) ? 5 : 6;
+                  && mapProject.getReverseMapPattern() != null && mapProject.getReverseMapPattern()) ? 5 : 6;
 
           // SimpleMap attributes
           member.setTerminologyId(fields[0]);
