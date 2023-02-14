@@ -120,7 +120,7 @@ public class Meddra3SqlReportMojo extends AbstractOtfMappingMojo {
           + "as currentMapRecords left join "
           + "(select concepts.terminologyId, simple_map_refset_members.refsetId as previousRefsetId from simple_map_refset_members, concepts, map_projects mp where simple_map_refset_members.concept_id=concepts.id and simple_map_refset_members.active and simple_map_refset_members.refsetId = mp.refsetId and mp.id=:MAP_PROJECT_ID) as previousReleaseMapRecords "
           + "on terminologyId=conceptId and currentRefsetId=previousRefsetId "
-          + "having currentRefsetId is null) as newConcepts "
+          + "having previousRefsetId is null) as newConcepts "
           + "on newConcepts.conceptId=map_records.conceptId "
           + "UNION ALL "
           // Removed Maps
