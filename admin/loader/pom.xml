@@ -933,6 +933,29 @@
       </build>
     </profile>
 
+    <profile>
+      <id>NorwayReplacementMapReport</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>norway-replacement-map-report</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>run-norway-replacement-map-report</goal>
+                </goals>
+                <configuration>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
     <!-- Send an email using specified subject and body. -Drun.config=.. must also be specified. -->
     <profile>
       <id>SendEmail</id>
