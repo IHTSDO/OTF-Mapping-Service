@@ -13,6 +13,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapAgeRangeList;
@@ -885,13 +886,13 @@ public interface MappingService extends RootService {
   public MapUserRole getMapUserRoleForApplication(String userName) throws Exception;
 
   /**
-   * Return a list of map record ids and team names which are Ready for
-   * Publication.
+   * Return a list of target ids for maps which are Ready for
+   * Publication/In revision/Published
    *
    * @param mapProjectId the map project id
    * @return list of map record ids for the given map project
    * @throws Exception the exception
    */
-  public Map<String, String> getTargetCodeForReadyForPublication(Long mapProjectId)
+  public Set<String> getTargetCodeForReadyForPublication(Long mapProjectId)
     throws Exception;
 }
