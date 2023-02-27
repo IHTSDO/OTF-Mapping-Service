@@ -93,7 +93,7 @@ public class TargetMappingToScopedConceptMojo extends AbstractOtfMappingMojo {
             "Target project name not found.  Please verify parameters.");
       }
 
-      final Map<String, String> newScopeConceptList = mappingService
+      final Set<String> newScopeConceptList = mappingService
           .getTargetCodeForReadyForPublication(sourceMapProject.getId());
 
       if (newScopeConceptList != null && !newScopeConceptList.isEmpty()) {
@@ -108,12 +108,11 @@ public class TargetMappingToScopedConceptMojo extends AbstractOtfMappingMojo {
         }
         mappingService.updateMapProject(targetMapProject);
         
-        for (Map.Entry<String, String> newScopedConcept : newScopeConceptList
-            .entrySet()) {
+        for (String newScopedConcept : newScopeConceptList) {
           Logger.getLogger(getClass())
-              .info("Adding scoped concept " + newScopedConcept.getKey()
+              .info("Adding scoped concept " + newScopedConcept
                   + " to target map project id: " + targetMapProject.getId());
-          targetMapProject.addScopeConcept(newScopedConcept.getKey());
+          targetMapProject.addScopeConcept(newScopedConcept);
         }
         mappingService.updateMapProject(targetMapProject);
         
@@ -126,23 +125,7 @@ public class TargetMappingToScopedConceptMojo extends AbstractOtfMappingMojo {
         Logger.getLogger(getClass())
             .info("Updating tracking records for mapProjectId: "
                 + targetMapProject.getId());
-        for (Map.Entry<String, String> newScopedConcept : newScopeConceptList
-            .entrySet()) {
 
-          Logger.getLogger(getClass())
-              .info("Updating tracking record - terminologyId: "
-                  + newScopedConcept.getKey() + " with team name: "
-                  + newScopedConcept.getValue() + " in target map project.");
-
-          TrackingRecord tr = workflowService
-              .getTrackingRecord(targetMapProject, newScopedConcept.getKey());
-
-          if (tr != null  && sourceMapProject.isTeamBased()) {
-            tr.setAssignedTeamName(newScopedConcept.getValue());
-            workflowService.updateTrackingRecord(tr);
-          }
-
-        }
         workflowService.commit();
       }
 

@@ -3730,68 +3730,40 @@ public class MappingServiceJpa extends RootServiceJpa
   }
 
   /* see superclass */
-  public Map<String, String> getTargetCodeForReadyForPublication(
+  public Set<String> getTargetCodeForReadyForPublication(
     Long mapProjectId) throws Exception {
 
-    final String sql = "" + " SELECT  " + "     b.targetId, mu.team " + " FROM "
-    /*
-     * Find all historical map records for each MedDRA sourceId that maps to a
-     * current SNOMED targetId
-     */
-        + "     (SELECT  " + "         a.targetId, "
-        + "             a.conceptId, " + "             mra.workflowStatus, "
-        + "             mra.lastModifiedBy_id, " + "             mra.REV "
-        + "     FROM " + "         map_records_AUD mra " + "     JOIN  "
-        /*
-         * For each SNOMEDCT target Id, identify all of the MedDRA sourceIds
-         * that map to it
-         */
-        + "(SELECT DISTINCT me2.targetId, mr.conceptId "
-        + "            FROM map_records mr "
-        + "            JOIN map_entries me2  ON  mr.id = me2.mapRecord_Id "
-        + "            JOIN map_projects_scope_concepts mpsc ON mr.conceptId = mpsc.scopeConcepts and mr.mapProjectId = mpsc.id "
-        + "           WHERE mr.mapProjectId = :mapProjectId "
-        + "  AND NOT EXISTS (SELECT 1 FROM map_projects_scope_excluded_concepts mpse WHERE mr.mapProjectId = mpse.id AND mr.conceptId = mpse.scopeExcludedConcepts)"
-        + "      AND EXISTS "
-        /* Get target Ids for all CURRENT finished map records */
-        + "             (SELECT me3.targetId"
-        + "                FROM map_records mr3 "
-        + "                JOIN map_entries me3 ON me3.mapRecord_id = mr3.id "
-        + "                 AND me3.targetId IS NOT NULL "
-        + "                 AND me3.targetId != '' "
-        + "                 AND mr3.workflowStatus IN ('READY_FOR_PUBLICATION' , 'REVISION') "
-        + "               WHERE mr3.mapProjectId = :mapProjectId "
-        + "                 AND me2.targetId = me3.targetId "
-        + "              ) " + "      ) a ON a.conceptId = mra.conceptId "
-        /*
-         * Only look at the historical map record entries for when they were
-         * finished
-         */
-        + "     WHERE " + "         mra.mapProjectId = :mapProjectId "
-        + "         AND mra.workflowStatus IN ('READY_FOR_PUBLICATION') "
-        /*
-         * Order by REV, so the earliest 'READY_FOR_PUBLICATION' historical map
-         * record is on top
-         */
-        + "     ORDER BY mra.REV) b " + "         JOIN "
-        /* Get the user that finished each map record */
-        + "     map_users mu ON b.lastModifiedBy_id = mu.id "
-        /*
-         * Group by targetId to collapse all of the historical map records,
-         * leaving only the first time it was finished
-         */
-        + " GROUP BY b.targetId; ";
+    final String sql = 
+        /* Get map target Ids*/
+        "SELECT  b.targetId "
+        + "FROM  (SELECT DISTINCT me2.targetId, mr.conceptId "
+        + "FROM map_records mr JOIN map_entries me2  ON  mr.id = me2.mapRecord_Id "
+        + "JOIN map_projects_scope_concepts mpsc ON mr.conceptId = mpsc.scopeConcepts and mr.mapProjectId = mpsc.id "
+        + "WHERE mr.mapProjectId = :mapProjectId "
+        /* Don't include maps that are in scope excluded list */
+        + "AND NOT EXISTS (SELECT 1 FROM map_projects_scope_excluded_concepts mpse "
+        + "WHERE mr.mapProjectId = mpse.id AND mr.conceptId = mpse.scopeExcludedConcepts) "
+        /* Maps must be in scope list */
+        + "AND EXISTS (SELECT 1 FROM map_projects_scope_concepts mpsc "
+        + "WHERE mr.mapProjectId = mpsc.id AND mr.conceptId = mpsc.scopeConcepts) "
+        /* Maps must have a non-null, non-blank target */
+        + "AND EXISTS (SELECT me3.targetId FROM map_records mr3 "
+        + "JOIN map_entries me3 ON me3.mapRecord_id = mr3.id "
+        + "AND me3.targetId IS NOT NULL AND me3.targetId != '' "
+        /* Maps must be finished. */
+        + "AND mr3.workflowStatus IN ('READY_FOR_PUBLICATION' , 'REVISION', 'PUBLISHED') "
+        + "WHERE mr3.mapProjectId = 2 AND me2.targetId = me3.targetId)) b GROUP BY b.targetId;";
 
-    Map<String, String> list = new HashMap<>();
+    Set<String> list = new HashSet<>();
 
     try {
       javax.persistence.Query query = manager.createNativeQuery(sql);
       query.setParameter("mapProjectId", mapProjectId);
 
-      List<Object[]> objects = query.getResultList();
-
-      for (Object[] array : objects) {
-        list.put((String) array[0], (String) array[1]);
+      List<String> targetIds = query.getResultList();
+      
+      for (String targetId : targetIds) {
+        list.add(targetId.toString());
       }
 
     } catch (Exception e) {
