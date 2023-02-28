@@ -3474,7 +3474,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    */
   private String getHeader(MapProject mapProject) {
     if (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap) {
-      if (mapProject.getReverseMapPattern()) {
+      if (mapProject.getReverseMapPattern() != null && mapProject.getReverseMapPattern() == true) {
         return "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tmapSource";
       } else {
         return "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tmapTarget";
