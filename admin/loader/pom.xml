@@ -932,6 +932,32 @@
         </plugins>
       </build>
     </profile>
+    
+    <profile>
+      <id>CihiPhcvsReleaseToExcel</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>cihi-phcvs-release-to-excel</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>run-cihi-phcvs-release-to-excel</goal>
+                </goals>
+                <configuration>
+                  <releaseFile>${releaseFile}</releaseFile>
+                  <outputFile>SNOMEDtoPHCVS_{DATE}.xlsx</outputFile>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    
 
     <!-- Send an email using specified subject and body. -Drun.config=.. must also be specified. -->
     <profile>
