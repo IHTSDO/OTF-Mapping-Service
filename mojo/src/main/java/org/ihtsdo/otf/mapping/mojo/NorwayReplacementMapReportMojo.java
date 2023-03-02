@@ -90,72 +90,72 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
       String searchAfter = null;
       final ObjectMapper mapper = new ObjectMapper();
 
-      getLog().info("Grab all inactive concepts from prod-snowstorm");
-      //Sample JSON
-      /*
-{
-  "items": [
-    {
-      "conceptId": "99999003",
-      "active": false,
-      "definitionStatus": "PRIMITIVE",
-      "moduleId": "900000000000207008",
-      "effectiveTime": "20090731",
-      "fsn": {
-        "term": "BISMUSAL SUSPENSION (product)",
-        "lang": "en"
-      },
-      "pt": {
-        "term": "BISMUSAL SUSPENSION",
-        "lang": "en"
-      },
-      "id": "99999003",
-      "idAndFsnTerm": "99999003 | BISMUSAL SUSPENSION (product) |"
-    },
-     */
-      
-      Set<String> inactiveConceptIds = new HashSet<>();
-      int limit = 10000;
-      
-      while (true) {
-        
-        int returnedConceptsCount = 0;
-        
-        String targetUri = "https://prod-snowstorm.ihtsdotools.org/snowstorm/snomed-ct/MAIN%2FSNOMEDCT-NO/concepts?activeFilter=false&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
-        WebTarget target = client.target(targetUri);
-        target = client.target(targetUri);
-        Logger.getLogger(getClass()).info(targetUri);
-     
-        Response response =
-            target.request(accept)
-            .header("Cookie", ConfigUtility.getGenericUserCookie())
-            .get();
-        String resultString = response.readEntity(String.class);
-        if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-          // n/a
-        } else {
-          throw new LocalException(
-              "Unexpected terminology server failure. Message = " + resultString);
-        }
-        
-        final JsonNode doc = mapper.readTree(resultString);
-     
-        // get total amount
-        // Get concepts returned in this call (up to 1000)
-        for (final JsonNode conceptNode : doc.get("items")) {
-          inactiveConceptIds.add(conceptNode.get("conceptId").asText());
-          returnedConceptsCount++;
-        }
-         
-        searchAfter = doc.get("searchAfter").asText();
-        // if we don't get a full page of results, we've processed the final page
-        if(returnedConceptsCount < limit) {
-            break;
-        }
-      }
+//      getLog().info("Grab all inactive concepts from prod-snowstorm");
+//      //Sample JSON
+//      /*
+//{
+//  "items": [
+//    {
+//      "conceptId": "99999003",
+//      "active": false,
+//      "definitionStatus": "PRIMITIVE",
+//      "moduleId": "900000000000207008",
+//      "effectiveTime": "20090731",
+//      "fsn": {
+//        "term": "BISMUSAL SUSPENSION (product)",
+//        "lang": "en"
+//      },
+//      "pt": {
+//        "term": "BISMUSAL SUSPENSION",
+//        "lang": "en"
+//      },
+//      "id": "99999003",
+//      "idAndFsnTerm": "99999003 | BISMUSAL SUSPENSION (product) |"
+//    },
+//     */
+//      
+//      Set<String> inactiveConceptIds = new HashSet<>();
+//      int limit = 10000;
+//      
+//      while (true) {
+//        
+//        int returnedConceptsCount = 0;
+//        
+//        String targetUri = "https://prod-snowstorm.ihtsdotools.org/snowstorm/snomed-ct/MAIN%2FSNOMEDCT-NO/concepts?activeFilter=false&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
+//        WebTarget target = client.target(targetUri);
+//        target = client.target(targetUri);
+//        Logger.getLogger(getClass()).info(targetUri);
+//     
+//        Response response =
+//            target.request(accept)
+//            .header("Cookie", ConfigUtility.getGenericUserCookie())
+//            .get();
+//        String resultString = response.readEntity(String.class);
+//        if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+//          // n/a
+//        } else {
+//          throw new LocalException(
+//              "Unexpected terminology server failure. Message = " + resultString);
+//        }
+//        
+//        final JsonNode doc = mapper.readTree(resultString);
+//     
+//        // get total amount
+//        // Get concepts returned in this call (up to 1000)
+//        for (final JsonNode conceptNode : doc.get("items")) {
+//          inactiveConceptIds.add(conceptNode.get("conceptId").asText());
+//          returnedConceptsCount++;
+//        }
+//         
+//        searchAfter = doc.get("searchAfter").asText();
+//        // if we don't get a full page of results, we've processed the final page
+//        if(returnedConceptsCount < limit) {
+//            break;
+//        }
+//      }
             
       
-      getLog().info("Grab all active ICD-10-NO Norwegian map information from dailybuild.terminologi.ehelse.no");
+      getLog().info("Grab all active ICD-10-NO Norwegian map with inactive concepts from dailybuild.terminologi.ehelse.no");
       //Sample JSON
       /*
 {
@@ -199,13 +199,13 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
       Map<String,Set<String>> mappedConceptsAndTargets = new HashMap<>();
       List<String> inactiveMappedConcepts = new ArrayList<>();
       searchAfter = null;
-      limit = 10000;
+      int limit = 10000;
       
       while (true) {
         
         int returnedMapsCount = 0;
         
-        String targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/MAIN%2FSNOMEDCT-NO%2FREFSETS-ICD10/members?referenceSet=447562003&active=true&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
+        String targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/MAIN%2FSNOMEDCT-NO%2FREFSETS-ICD10/members?referenceSet=447562003&module=51000202101&active=true&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
         WebTarget target = client.target(targetUri);
         target = client.target(targetUri);
         Logger.getLogger(getClass()).info(targetUri);
@@ -228,7 +228,9 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
         for (final JsonNode mapNode : doc.get("items")) {
           final String conceptId = mapNode.get("referencedComponentId").asText();
 
-          if(inactiveConceptIds.contains(conceptId)) {
+          final JsonNode mappedConcept = mapNode.get("referencedComponent");
+          
+          if(mappedConcept != null && mappedConcept.get("active").asBoolean() == false) {
             inactiveMappedConcepts.add(conceptId);
           }
           
@@ -302,7 +304,7 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
         
         int returnedMapsCount = 0;
         
-        String targetUri = "https://prod-snowstorm.ihtsdotools.org/snowstorm/snomed-ct/MAIN%2FSNOMEDCT-NO/members?referenceSet=447562003&active=true&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
+        String targetUri = "https://prod-snowstorm.ihtsdotools.org/snowstorm/snomed-ct/MAIN%2FSNOMEDCT-NO/members?referenceSet=447562003&module=449080006&active=true&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
         WebTarget target = client.target(targetUri);
         target = client.target(targetUri);
         Logger.getLogger(getClass()).info(targetUri);
@@ -326,9 +328,10 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
         for (final JsonNode mapNode : doc.get("items")) {
           final String conceptId = mapNode.get("referencedComponentId").asText();
 
-          if(inactiveConceptIds.contains(conceptId)) {
-            inactiveMappedConcepts.add(conceptId);
-          }
+          // Not including inactivated International maps. 
+//          if(inactiveConceptIds.contains(conceptId)) {
+//            inactiveMappedConcepts.add(conceptId);
+//          }
           
           //If this map was populated from the NO server, override it with the map from the INT server.
           //Only do this once per concept (to avoid repeatedly removing target information)
