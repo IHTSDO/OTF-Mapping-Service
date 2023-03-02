@@ -110,6 +110,7 @@ public class MIMSIndicationToSnomedProjectSpecificAlgorithmHandler
   public boolean isTargetCodeValid(String terminologyId) throws Exception {
     // Only concepts from certain hierarchies are valid targets:
     // (finding)
+    // (disorder)
     // (substance)
     // (procedure)
     // (event)
@@ -119,6 +120,7 @@ public class MIMSIndicationToSnomedProjectSpecificAlgorithmHandler
     
     final List<String> validSemanticTagsList = new ArrayList<>();
     validSemanticTagsList.add("(finding)");
+    validSemanticTagsList.add("(disorder)");
     validSemanticTagsList.add("(substance)");
     validSemanticTagsList.add("(procedure)");
     validSemanticTagsList.add("(event)");
