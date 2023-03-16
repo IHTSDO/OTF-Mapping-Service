@@ -182,6 +182,18 @@ public class MIMSIndicationToSnomedProjectSpecificAlgorithmHandler
     final Set<String> recordMinusEntry = new HashSet<>(recordWords);
     recordMinusEntry.removeAll(entryWords);
 
+    // At least one entry must have a map relation
+    Boolean relationFound = false;
+    for (final MapEntry entry : mapRecord.getMapEntries()) {
+      if(entry.getMapRelation() != null) {
+         relationFound=true;
+         break;
+      }
+    }   
+    if (!relationFound) {
+      result.addError("Map relation required for at least one target.");
+    }
+    
     // If there are entry words and none match, warning
     // if (entryWords.size() > 0 && recordWords.size() ==
     // recordMinusEntry.size()) {
