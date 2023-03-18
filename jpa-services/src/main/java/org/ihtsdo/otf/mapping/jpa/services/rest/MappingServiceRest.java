@@ -15,6 +15,7 @@ import java.util.List;
 import javax.ws.rs.core.Response;
 
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.ihtsdo.otf.mapping.helpers.AdditionalMapEntryInfoListJpa;
 import org.ihtsdo.otf.mapping.helpers.KeyValuePairList;
 import org.ihtsdo.otf.mapping.helpers.KeyValuePairLists;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
@@ -31,6 +32,7 @@ import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
+import org.ihtsdo.otf.mapping.jpa.AdditionalMapEntryInfoJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
@@ -39,6 +41,7 @@ import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRelationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa;
+import org.ihtsdo.otf.mapping.model.AdditionalMapEntryInfo;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
@@ -315,6 +318,47 @@ public interface MappingServiceRest {
 	   */
 	void removeMapAdvice(MapAdviceJpa mapAdvice, String authToken) throws Exception;
 
+    // ///////////////////////////////////////////////////
+    // SCRUD functions: Additional Map Entry Info
+    // ///////////////////////////////////////////////////
+    /**
+     * Returns all additional map entry infos in either JSON or XML format.
+     *
+     * @param authToken the auth token
+     * @return the additional map entry infos
+     * @throws Exception the exception
+     */
+
+	AdditionalMapEntryInfoListJpa getAdditionalMapEntryInfos(String authToken) throws Exception;
+
+    /**
+       * Adds an additional map entry info.
+       *
+       * @param additionalMapEntryInfo the additional map entry info
+       * @param authToken the auth token
+       * @return Response the response
+       * @throws Exception the exception
+       */
+	AdditionalMapEntryInfo addAdditionalMapEntryInfo(AdditionalMapEntryInfoJpa additionalMapEntryInfo, String authToken) throws Exception;
+
+    /**
+       * Updates an additional map entry info.
+       *
+       * @param additionalMapEntryInfo the additional map entry info to be added
+       * @param authToken the auth token
+       * @throws Exception the exception
+       */
+    void updateAdditionalMapEntryInfo(AdditionalMapEntryInfoJpa additionalMapEntryInfo, String authToken) throws Exception;
+
+    /**
+       * Removes an additional map entry info.
+       *
+       * @param additionalMapEntryInfo the additional map entry info
+       * @param authToken the auth token
+       * @throws Exception the exception
+       */
+    void removeAdditionalMapEntryInfo(AdditionalMapEntryInfoJpa additionalMapEntryInfo, String authToken) throws Exception;	
+	
 	// ///////////////////////////////////////////////////
 	// SCRUD functions: Map AgeRange
 	// ///////////////////////////////////////////////////

@@ -86,6 +86,20 @@ public interface MapEntry {
    */
   public void setMapAdvices(Set<MapAdvice> mapAdvices);
 
+  /** 
+   * Returns the additional map entry info.
+   * 
+   * @return the additional map entry info
+   */
+  public Set<AdditionalMapEntryInfo> getAdditionalMapEntryInfos();
+
+  /**
+   * Sets the additionalMapEntryInfo.
+   * 
+   * @param additionalMapEntryInfo the additional Map Entry Info
+   */
+  public void setAdditionalMapEntryInfos(Set<AdditionalMapEntryInfo> additionalMapEntryInfo);  
+  
   /**
    * Adds the advice.
    * 
@@ -191,5 +205,4 @@ public interface MapEntry {
    * @return true, if is equivalent
    */
   public boolean isEquivalent(MapEntry me);
-
 }

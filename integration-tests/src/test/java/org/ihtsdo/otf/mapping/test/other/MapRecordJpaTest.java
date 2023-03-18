@@ -125,7 +125,7 @@ public class MapRecordJpaTest {
     SearchFactory searchFactory = fullTextEntityManager.getSearchFactory();
 
     QueryParser queryParser = new QueryParser("summary",
-        searchFactory.getAnalyzer(MapProjectJpa.class));
+        searchFactory.getAnalyzer(MapRecordJpa.class));
 
     // test index on refSetId
     Query luceneQuery = queryParser.parse("conceptId:" + conceptId1);

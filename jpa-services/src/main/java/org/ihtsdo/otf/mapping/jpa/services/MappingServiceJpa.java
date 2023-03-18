@@ -32,6 +32,9 @@ import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
 import org.hibernate.envers.query.AuditQuery;
+import org.ihtsdo.otf.mapping.helpers.AdditionalMapEntryInfoList;
+import org.ihtsdo.otf.mapping.helpers.AdditionalMapEntryInfoListJpa;
+import org.ihtsdo.otf.mapping.helpers.ConceptList;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapAgeRangeList;
@@ -62,6 +65,7 @@ import org.ihtsdo.otf.mapping.helpers.SizeLimitedHashMapJpa;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.helpers.WorkflowType;
+import org.ihtsdo.otf.mapping.jpa.AdditionalMapEntryInfoJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
@@ -71,6 +75,7 @@ import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRelationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa;
+import org.ihtsdo.otf.mapping.model.AdditionalMapEntryInfo;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapEntry;
@@ -109,7 +114,7 @@ public class MappingServiceJpa extends RootServiceJpa
 
   private static final SizeLimitedHashMapJpa<String, Set<String>> ancestorDescendantConceptsCache =
       new SizeLimitedHashMapJpa<>(5);
-
+  
   /**
    * Instantiates an empty {@link MappingServiceJpa}.
    * 
@@ -162,6 +167,7 @@ public class MappingServiceJpa extends RootServiceJpa
     m.getScopeConcepts().size();
     m.getScopeExcludedConcepts().size();
     m.getMapAdvices().size();
+    m.getAdditionalMapEntryInfos().size();
     m.getMapRelations().size();
     m.getMapLeads().size();
     m.getMapSpecialists().size();
@@ -184,6 +190,7 @@ public class MappingServiceJpa extends RootServiceJpa
     m.getScopeConcepts().size();
     m.getScopeExcludedConcepts().size();
     m.getMapAdvices().size();
+    m.getAdditionalMapEntryInfos().size();
     m.getMapRelations().size();
     m.getMapLeads().size();
     m.getMapSpecialists().size();
@@ -330,6 +337,7 @@ public class MappingServiceJpa extends RootServiceJpa
       mp.setMapLeads(null);
       mp.setMapSpecialists(null);
       mp.setMapAdvices(null);
+      mp.setAdditionalMapEntryInfos(null);
       mp.setMapRelations(null);
       mp.setMapPrinciples(null);
       mp.setPresetAgeRanges(null);
@@ -1516,6 +1524,22 @@ public class MappingServiceJpa extends RootServiceJpa
 
     return mapAdvice;
   }
+  
+  /* see superclass */
+  @Override
+  public AdditionalMapEntryInfo addAdditionalMapEntryInfo(AdditionalMapEntryInfo additionalMapEntryInfo) {
+    if (getTransactionPerOperation()) {
+      tx = manager.getTransaction();
+
+      tx.begin();
+      manager.persist(additionalMapEntryInfo);
+      tx.commit();
+    } else {
+      manager.persist(additionalMapEntryInfo);
+    }
+
+    return additionalMapEntryInfo;
+  }
 
   /* see superclass */
   @Override
@@ -1564,6 +1588,22 @@ public class MappingServiceJpa extends RootServiceJpa
       // manager.close();
     } else {
       manager.merge(mapAdvice);
+    }
+  }
+  
+  /* see superclass */
+  @Override
+  public void updateAdditionalMapEntryInfo(AdditionalMapEntryInfo additionalMapEntryInfo) {
+    if (getTransactionPerOperation()) {
+
+      tx = manager.getTransaction();
+
+      tx.begin();
+      manager.merge(additionalMapEntryInfo);
+      tx.commit();
+      // manager.close();
+    } else {
+      manager.merge(additionalMapEntryInfo);
     }
   }
 
@@ -1632,6 +1672,30 @@ public class MappingServiceJpa extends RootServiceJpa
       }
     }
   }
+  
+  /* see superclass */
+  @Override
+  public void removeAdditionalMapEntryInfo(Long additionalMapEntryInfoId) {
+    if (getTransactionPerOperation()) {
+      tx = manager.getTransaction();
+      tx.begin();
+      AdditionalMapEntryInfo mi = manager.find(AdditionalMapEntryInfoJpa.class, additionalMapEntryInfoId);
+      if (manager.contains(mi)) {
+        manager.remove(mi);
+      } else {
+        manager.remove(manager.merge(mi));
+      }
+      tx.commit();
+    } else {
+      AdditionalMapEntryInfo mi = manager.find(AdditionalMapEntryInfoJpa.class, additionalMapEntryInfoId);
+      if (manager.contains(mi)) {
+        manager.remove(mi);
+      } else {
+        manager.remove(manager.merge(mi));
+      }
+    }
+  }
+
 
   /* see superclass */
   @Override
@@ -1702,6 +1766,23 @@ public class MappingServiceJpa extends RootServiceJpa
     return mapAdviceList;
   }
 
+  /* see superclass */
+  @SuppressWarnings("unchecked")
+  @Override
+  public AdditionalMapEntryInfoList getAdditionalMapEntryInfos() {
+    List<AdditionalMapEntryInfo> additionalMapEntryInfos = new ArrayList<>();
+
+    javax.persistence.Query query =
+        manager.createQuery("select m from AdditionalMapEntryInfoJpa m");
+
+    // Try query
+    additionalMapEntryInfos = query.getResultList();
+    AdditionalMapEntryInfoListJpa additionalMapEntryList = new AdditionalMapEntryInfoListJpa();
+    additionalMapEntryList.setAdditionalMapEntryInfos(additionalMapEntryInfos);
+    additionalMapEntryList.setTotalCount(additionalMapEntryInfos.size());
+    return additionalMapEntryList;
+  }  
+  
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
@@ -1852,6 +1933,9 @@ public class MappingServiceJpa extends RootServiceJpa
 
         // remove advices
         entry.setMapAdvices(null);
+
+        // remove additional map entry info
+        entry.setAdditionalMapEntryInfos(null);
 
         // merge entry to remove principle/advice associations
         manager.merge(entry);
@@ -2824,6 +2908,7 @@ public class MappingServiceJpa extends RootServiceJpa
       if (mapEntry.getMapRelation() != null)
         mapEntry.getMapRelation().getName();
       mapEntry.getMapAdvices().size();
+      mapEntry.getAdditionalMapEntryInfos().size();
     }
     // initialize map record
     // for (final MapNote note : mapRecord.getMapNotes()) {
@@ -2840,6 +2925,7 @@ public class MappingServiceJpa extends RootServiceJpa
   private void handleMapProjectLazyInitialization(MapProject mapProject) {
     // handle all lazy initializations
     mapProject.getMapAdvices().size();
+    mapProject.getAdditionalMapEntryInfos().size();
     mapProject.getMapRelations().size();
     mapProject.getMapLeads().size();
     mapProject.getMapSpecialists().size();

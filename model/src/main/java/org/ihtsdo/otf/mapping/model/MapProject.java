@@ -220,6 +220,35 @@ public interface MapProject {
    */
   public void removeMapAdvice(MapAdvice mapAdvice);
 
+
+  /**
+   * Returns the set of allowable additional map entry info.
+   * 
+   * @return the additional map entry info
+   */
+  public Set<AdditionalMapEntryInfo> getAdditionalMapEntryInfos();
+
+  /**
+   * Sets the set of allowable additional map entry infos.
+   * 
+   * @param additionalMapEntryInfos the additional map entry info
+   */
+  public void setAdditionalMapEntryInfos(Set<AdditionalMapEntryInfo> additionalMapEntryInfos);
+
+  /**
+   * Adds an allowable additional map entry info.
+   * 
+   * @param additionalMapEntryInfo the additional map entry info
+   */
+  public void addAdditionalMapEntryInfo(AdditionalMapEntryInfo additionalMapEntryInfo);
+
+  /**
+   * Removes an allowable additional map entry info.
+   * 
+   * @param additionalMapEntryInfo the additional map entry info
+   */
+  public void removeAdditionalMapEntryInfo(AdditionalMapEntryInfo additionalMapEntryInfo);  
+  
   /**
    * Returns the set of allowable map principles.
    * 

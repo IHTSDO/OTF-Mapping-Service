@@ -56,12 +56,9 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
@@ -69,6 +66,7 @@ import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.hibernate.Hibernate;
+import org.ihtsdo.otf.mapping.helpers.AdditionalMapEntryInfoListJpa;
 import org.ihtsdo.otf.mapping.helpers.ConceptList;
 import org.ihtsdo.otf.mapping.helpers.KeyValuePair;
 import org.ihtsdo.otf.mapping.helpers.KeyValuePairList;
@@ -96,6 +94,7 @@ import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionListJpa;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
+import org.ihtsdo.otf.mapping.jpa.AdditionalMapEntryInfoJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
@@ -112,11 +111,11 @@ import org.ihtsdo.otf.mapping.jpa.services.AmazonS3ServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
-import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.rest.MappingServiceRest;
+import org.ihtsdo.otf.mapping.model.AdditionalMapEntryInfo;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapEntry;
@@ -126,7 +125,6 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.model.MapUserPreferences;
-import org.ihtsdo.otf.mapping.reports.ReportDefinitionJpa;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
@@ -136,7 +134,6 @@ import org.ihtsdo.otf.mapping.services.AmazonS3Service;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
-import org.ihtsdo.otf.mapping.services.ReportService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
 import org.ihtsdo.otf.mapping.services.helpers.BeginEditingCycleHandler;
@@ -293,6 +290,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       mapProject.getScopeConcepts().size();
       mapProject.getScopeExcludedConcepts().size();
       mapProject.getMapAdvices().size();
+      mapProject.getAdditionalMapEntryInfos().size();
       mapProject.getMapRelations().size();
       mapProject.getMapLeads().size();
       mapProject.getMapSpecialists().size();
@@ -653,6 +651,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         mapProject.getScopeConcepts().size();
         mapProject.getScopeExcludedConcepts().size();
         mapProject.getMapAdvices().size();
+        mapProject.getAdditionalMapEntryInfos().size();
         mapProject.getMapRelations().size();
         mapProject.getMapLeads().size();
         mapProject.getMapSpecialists().size();
@@ -1567,6 +1566,185 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       securityService.close();
     }
   }
+  
+  // ///////////////////////////////////////////////////
+  // SCRUD functions: Additional Map Entry Info
+  // ///////////////////////////////////////////////////
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getAdditionalMapEntryInfos(java.lang
+   * .String)
+   */
+  @Override
+  @GET
+  @Path("/additionalMapEntryInfo/additionalMapEntryInfos")
+  @ApiOperation(value = "Get all additional map entry info", notes = "Gets a list of all additional map entry infos.",
+      response = AdditionalMapEntryInfoListJpa.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public AdditionalMapEntryInfoListJpa getAdditionalMapEntryInfos(@ApiParam(value = "Authorization token",
+      required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(MappingServiceRestImpl.class).info("RESTful call (Mapping): /additionalMapEntryInfo/additionalMapEntryInfos");
+
+    String user = null;
+    final MappingService mappingService = new MappingServiceJpa();
+    try {
+      // authorize call
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "get additional map entry infos", securityService);
+
+      final AdditionalMapEntryInfoListJpa additionalMapEntryInfos = (AdditionalMapEntryInfoListJpa) mappingService.getAdditionalMapEntryInfos();
+      additionalMapEntryInfos.sortBy(new Comparator<AdditionalMapEntryInfo>() {
+        @Override
+        public int compare(AdditionalMapEntryInfo o1, AdditionalMapEntryInfo o2) {
+          return o1.getValue().compareTo(o2.getValue());
+        }
+      });
+      return additionalMapEntryInfos;
+
+    } catch (Exception e) {
+      handleException(e, "trying to get additional map entry infos", user, "", "");
+      return null;
+    } finally {
+      mappingService.close();
+      securityService.close();
+    }
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#addMapAdvice(org.ihtsdo
+   * .otf.mapping.jpa.MapAdviceJpa, java.lang.String)
+   */
+  @Override
+  @PUT
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @Path("/additionalMapEntryInfo/add")
+  @ApiOperation(value = "Add an additional Map Entry Info", notes = "Adds the specified additional Map Entry Info.",
+      response = AdditionalMapEntryInfoJpa.class)
+  public AdditionalMapEntryInfo addAdditionalMapEntryInfo(
+    @ApiParam(value = "Additional Map Entry Info, in JSON or XML POST data",
+        required = true) AdditionalMapEntryInfoJpa additionalMapEntryInfo,
+    @ApiParam(value = "Authorization token",
+        required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    // log call
+    Logger.getLogger(MappingServiceRestImpl.class).info("RESTful call (Mapping): /additionalMapEntryInfo/add");
+
+    String user = null;
+    final MappingService mappingService = new MappingServiceJpa();
+    try {
+      // authorize call
+      user = authorizeApp(authToken, MapUserRole.LEAD, "add map advice", securityService);
+
+      // Check if advice already exists and send better message
+      for (final AdditionalMapEntryInfo anAdditionalMapEntryInfo : mappingService.getAdditionalMapEntryInfos().getAdditionalMapEntryInfos()) {
+        if (anAdditionalMapEntryInfo.getName().equals(additionalMapEntryInfo.getName())) {
+          throw new LocalException("This additional map entry info already exists: " + anAdditionalMapEntryInfo.getName());
+        }
+      }
+
+      mappingService.addAdditionalMapEntryInfo(additionalMapEntryInfo);
+      return additionalMapEntryInfo;
+
+    } catch (Exception e) {
+      handleException(e, "trying to add an additional map entry info", user, "", "");
+      return null;
+    } finally {
+      mappingService.close();
+      securityService.close();
+    }
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#updateMapAdvice(org.
+   * ihtsdo.otf.mapping.jpa.MapAdviceJpa, java.lang.String)
+   */
+  @Override
+  @POST
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @Path("/additionalMapEntryInfo/update")
+  @ApiOperation(value = "Update an additional map entry info", notes = "Updates the specified additional map entry info.",
+      response = AdditionalMapEntryInfoJpa.class)
+  public void updateAdditionalMapEntryInfo(
+    @ApiParam(value = "Map advice, in JSON or XML POST data",
+        required = true) AdditionalMapEntryInfoJpa additionalMapEntryInfo,
+    @ApiParam(value = "Authorization token",
+        required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    // log call
+    Logger.getLogger(MappingServiceRestImpl.class).info("RESTful call (Mapping): /additionalMapEntryInfo/update");
+
+    String user = null;
+    final MappingService mappingService = new MappingServiceJpa();
+    try {
+      // authorize call
+      user = authorizeApp(authToken, MapUserRole.LEAD, "update map advice", securityService);
+
+      mappingService.updateAdditionalMapEntryInfo(additionalMapEntryInfo);
+    } catch (Exception e) {
+      handleException(e, "trying to update an additional map entry info", user, "", "");
+    } finally {
+      mappingService.close();
+      securityService.close();
+    }
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#removeMapAdvice(org.
+   * ihtsdo.otf.mapping.jpa.MapAdviceJpa, java.lang.String)
+   */
+  @Override
+  @DELETE
+  @Path("/additionalMapEntryInfo/delete")
+  @ApiOperation(value = "Remove an advice", notes = "Removes the specified map advice.",
+      response = AdditionalMapEntryInfoJpa.class)
+  public void removeAdditionalMapEntryInfo(
+    @ApiParam(value = "Map advice, in JSON or XML POST data",
+        required = true) AdditionalMapEntryInfoJpa additionalMapEntryInfo,
+    @ApiParam(value = "Authorization token",
+        required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    // log call
+    Logger.getLogger(MappingServiceRestImpl.class)
+        .info("RESTful call (Mapping): /additionalMapEntryInfo/delete");
+
+    String user = null;
+    final MappingService mappingService = new MappingServiceJpa();
+    try {
+      // authorize call
+      user = authorizeApp(authToken, MapUserRole.LEAD, "remove additional map entry info", securityService);
+
+      mappingService.removeAdditionalMapEntryInfo(additionalMapEntryInfo.getId());
+    } catch (Exception e) {
+      LocalException le = new LocalException(
+          "Unable to delete additional map entry info. This is likely because the additional map entry info is being used by a map project or map entry");
+      handleException(le, "", user, "", "");
+    } finally {
+      mappingService.close();
+      securityService.close();
+    }
+  }  
 
   // ///////////////////////////////////////////////////
   // SCRUD functions: Map AgeRange

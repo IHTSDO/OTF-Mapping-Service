@@ -40,6 +40,7 @@ import org.ihtsdo.otf.mapping.helpers.MapRefsetPattern;
 import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.RelationStyle;
 import org.ihtsdo.otf.mapping.helpers.WorkflowType;
+import org.ihtsdo.otf.mapping.model.AdditionalMapEntryInfo;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
@@ -208,6 +209,13 @@ public class MapProjectJpa implements MapProject {
   @IndexedEmbedded(targetElement = MapAdviceJpa.class)
   private Set<MapAdvice> mapAdvices = new HashSet<>();
 
+  /** The allowable additional map entry info for this MapProject. */
+  @ManyToMany(targetEntity = AdditionalMapEntryInfoJpa.class, fetch = FetchType.LAZY)
+  @CollectionTable(name = "map_projects_additional_map_entry_infos",
+      joinColumns = @JoinColumn(name = "map_projects_id"))
+  @IndexedEmbedded(targetElement = AdditionalMapEntryInfoJpa.class)
+  private Set<AdditionalMapEntryInfo> additionalMapEntryInfos = new HashSet<>();  
+  
   /** The allowable map relations for this MapProject. */
   @ManyToMany(targetEntity = MapRelationJpa.class, fetch = FetchType.LAZY)
   @CollectionTable(name = "map_projects_map_relations",
@@ -304,6 +312,7 @@ public class MapProjectJpa implements MapProject {
     this.mapSpecialists = project.getMapSpecialists();
     this.mapPrinciples = project.getMapPrinciples();
     this.mapAdvices = project.getMapAdvices();
+    this.additionalMapEntryInfos = project.getAdditionalMapEntryInfos();
     this.mapRelations = project.getMapRelations();
     this.scopeConcepts = project.getScopeConcepts();
     this.scopeExcludedConcepts = project.getScopeExcludedConcepts();
@@ -697,8 +706,33 @@ public class MapProjectJpa implements MapProject {
   @Override
   public void removeMapAdvice(MapAdvice mapAdvice) {
     mapAdvices.remove(mapAdvice);
+  }  
+  
+  /* see superclass */
+  @Override
+  @XmlElement(type = AdditionalMapEntryInfoJpa.class, name = "additionalMapEntryInfo")
+  public Set<AdditionalMapEntryInfo> getAdditionalMapEntryInfos() {
+    return additionalMapEntryInfos;
   }
 
+  /* see superclass */
+  @Override
+  public void setAdditionalMapEntryInfos(Set<AdditionalMapEntryInfo> additionalMapEntryInfos) {
+    this.additionalMapEntryInfos = additionalMapEntryInfos;
+  }
+  
+  /* see superclass */
+  @Override
+  public void addAdditionalMapEntryInfo(AdditionalMapEntryInfo additionalMapEntryInfo) {
+    additionalMapEntryInfos.add(additionalMapEntryInfo);
+  }
+
+  /* see superclass */
+  @Override
+  public void removeAdditionalMapEntryInfo(AdditionalMapEntryInfo additionalMapEntryInfo) {
+    additionalMapEntryInfos.remove(additionalMapEntryInfo);
+  }
+  
   /* see superclass */
   @Override
   @XmlElement(type = MapPrincipleJpa.class, name = "mapPrinciple")

@@ -28,6 +28,7 @@ import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.model.AdditionalMapEntryInfo;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapProject;
@@ -369,6 +370,15 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
             validationResult.merge(checkAdviceDifferences(entries1.get(d), entries2.get(f)));
         }
       }
+      for (int d = 0; d < entries1.size(); d++) {
+        for (int f = 0; f < entries2.size(); f++) {
+          if (isRulesEqual(entries1.get(d), entries2.get(f))
+              && isTargetIdsEqual(entries1.get(d), entries2.get(f))
+              && !entries1.get(d).getAdditionalMapEntryInfos().equals(entries2.get(f).getAdditionalMapEntryInfos()))
+
+            validationResult.merge(checkAdditionalMapEntryInfoDifferences(entries1.get(d), entries2.get(f)));
+        }
+      }      
 
       // check that any rule/target pairs are not different
       // for non-rule based projects, this will compare a single entry in each
@@ -815,6 +825,54 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
   }
 
   /**
+   * Prints the additional map entry info differences.
+   *
+   * @param entry1 the entry1
+   * @param entry2 the entry2
+   * @return the additional map entry info differences
+   */
+  @SuppressWarnings("static-method")
+  private ValidationResult checkAdditionalMapEntryInfoDifferences(MapEntry entry1, MapEntry entry2) {
+
+    final ValidationResult result = new ValidationResultJpa();
+    final Comparator<Object> additionalMapEntryInfosComparator = new Comparator<Object>() {
+      @Override
+      public int compare(Object o1, Object o2) {
+        String x1 = ((AdditionalMapEntryInfo) o1).getName();
+        String x2 = ((AdditionalMapEntryInfo) o2).getName();
+        if (!x1.equals(x2)) {
+          return x1.compareTo(x2);
+        }
+        return 0;
+      }
+    };
+
+    final List<AdditionalMapEntryInfo> additionalMapEntryInfo1 = new ArrayList<>(entry1.getAdditionalMapEntryInfos());
+    Collections.sort(additionalMapEntryInfo1, additionalMapEntryInfosComparator);
+    final List<AdditionalMapEntryInfo> additionalMapEntryInfo2 = new ArrayList<>(entry2.getAdditionalMapEntryInfos());
+    Collections.sort(additionalMapEntryInfo2, additionalMapEntryInfosComparator);
+
+    for (int i = 0; i < Math.max(additionalMapEntryInfo1.size(), additionalMapEntryInfo2.size()); i++) {
+      try {
+        if (additionalMapEntryInfo1.get(i) == null && additionalMapEntryInfo2.get(i) != null)
+          continue;
+        if (additionalMapEntryInfo1.get(i) != null && additionalMapEntryInfo2.get(i) == null)
+          continue;
+        if (!additionalMapEntryInfo1.get(i).equals(additionalMapEntryInfo2.get(i))) {
+          result.addError("Additional Map Entry Info is Different: "
+              + (additionalMapEntryInfo1.get(i).getName() + " vs. " + additionalMapEntryInfo2.get(i).getName()));
+        }
+      } catch (IndexOutOfBoundsException e) {
+        result.addError("Additional Map Entry Info is Different: "
+            + (additionalMapEntryInfo1.size() > i ? additionalMapEntryInfo1.get(i).getName() : "No additional map entry info") + " vs. "
+            + (additionalMapEntryInfo2.size() > i ? additionalMapEntryInfo2.get(i).getName() : "No additional map entry info"));
+      }
+    }
+
+    return result;
+  }  
+  
+  /**
    * Convert to string.
    * 
    * @param mapEntry the map entry
@@ -839,11 +897,29 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
     final List<MapAdvice> advices = new ArrayList<>(mapEntry.getMapAdvices());
     Collections.sort(advices, advicesComparator);
 
+    final Comparator<Object> additionalMapEntryInfosComparator = new Comparator<Object>() {
+      @Override
+      public int compare(Object o1, Object o2) {
+        String x1 = ((AdditionalMapEntryInfo) o1).getName();
+        String x2 = ((AdditionalMapEntryInfo) o2).getName();
+        if (!x1.equals(x2)) {
+          return x1.compareTo(x2);
+        }
+        return 0;
+      }
+    };
+    
+    final List<AdditionalMapEntryInfo> additionalMapEntryInfos = new ArrayList<>(mapEntry.getAdditionalMapEntryInfos());
+    Collections.sort(additionalMapEntryInfos, additionalMapEntryInfosComparator);
+    
     final StringBuffer sb = new StringBuffer();
     sb.append(mapEntry.getTargetId() + " " + mapEntry.getRule() + " "
         + (mapEntry.getMapRelation() != null ? mapEntry.getMapRelation().getId() : ""));
     for (final MapAdvice mapAdvice : advices) {
       sb.append(mapAdvice.getObjectId() + " ");
+    }
+    for (final AdditionalMapEntryInfo additionalMapEntryInfo : additionalMapEntryInfos) {
+      sb.append(additionalMapEntryInfo.getName() + " ");
     }
 
     return sb.toString();

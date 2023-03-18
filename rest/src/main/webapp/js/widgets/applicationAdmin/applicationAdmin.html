@@ -1033,6 +1033,92 @@
 
 </uib-accordion-group> <uib-accordion-group> <uib-accordion-heading>
 <h5>
+  <span tooltip-placement="right" uib-tooltip="List of the additional map entry info.">
+    Additional Map Entry Info </span>
+</h5>
+</uib-accordion-heading> <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
+  first-text="&laquo;" last-text="&raquo;" direction-links="false"
+  boundary-links="true" total-items="pagedAdditionalMapEntryInfoCount" items-per-page="pageSize"
+  ng-model="pageAdditionalMapEntryInfo" ng-change="getPagedAdditionalMapEntryInfos(pageAdditionalMapEntryInfo, additionalMapEntryInfoFilter)"></uib-pagination>
+<span>
+  <input id="additionalMapEntryInfoSearch" type="text" ng-model="additionalMapEntryInfoFilter"
+    ng-change="getPagedAdditionalMapEntryInfos(1, additionalMapEntryInfoFilter)">
+  <button xs class="btn btn-xs btn-warning" ng-click="resetAdditionalMapEntryInfoFilter(1, 'null', additionalMapEntryInfoFilter); additionalMapEntryInfoFilter=null;">Reset</button>
+</span>
+
+<table class="table pure-table" style="width: 100%; margin-bottom: 5px;">
+  <thead>
+    <tr>
+      <th style="width: 40%;">Field Name</th>
+      <th style="width: 60%;">Value</th>
+      <th style="width: 3%;"></th>
+      <th style="width: 3%;"></th>
+    </tr>
+  </thead>
+  <tbody ng-repeat="additionalMapEntryInfo in pagedAdditionalMapEntryInfo | orderBy: 'name'"
+    style="border: 2px solid #ccc;">
+
+    <tr>
+      <td>
+        <input ng-model="additionalMapEntryInfo.field" ng-change="setEditingPerformed(additionalMapEntryInfo)"
+          style="width: 100%;"></input>
+      </td>
+      <td>
+        <input ng-model="additionalMapEntryInfo.value" ng-change="setEditingPerformed(additionalMapEntryInfo)"
+          style="width: 100%;"></input>
+      </td>
+
+      <td>
+        <button class="btn btn-xs btn-primary" ng-click="updateAdditionalMapEntryInfo(additionalMapEntryInfo)"
+          ng-show="isComponentChanged(additionalMapEntryInfo) == true">Save</button>
+      </td>
+      <td>
+        <div tooltip-placement="top">
+          <i class="noul glyphicon glyphicon-remove" title="Delete additionalMapEntryInfo from application" ng-click="deleteAdditionalMapEntryInfo(additionalMapEntryInfo)"></i>
+        </div>
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+<button class="btn btn-xs btn-warning" ng-click="revertUnsavedAdditionalMapEntryInfos()"
+  ng-show="additionalMapEntryInfoInEditingPerformed() == true">Cancel Unsaved Edits</button>
+
+<div>
+  <div style="margin-top: 15px;">
+    <b>Create New Additional Map Entry Info</b>
+  </div>
+
+  <table class="table pure-table">
+    <thead>
+      <tr>
+        <th style="width: 25%;"></th>
+        <th style="width: 75%;"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Additional Map Entry Info Field Name</td>
+        <td>
+          <input id="newAdditionalMapEntryInfoFieldName" type="text" ng-model="newAdditionalMapEntryInfoFieldName">
+        </td>
+      </tr>
+      <tr>
+        <td>Additional Map Entry Info Value</td>
+        <td>
+          <input id="newAdditionalMapEntryInfoValue" type="text" ng-model="newAdditionalMapEntryInfoValue">
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <button class="btn btn-xs btn-primary"
+    ng-click="submitNewAdditionalMapEntryInfo(newAdditionalMapEntryInfoFieldName, newAdditionalMapEntryInfoValue); 
+          newAdditionalMapEntryInfoFieldName = ''; newAdditionalMapEntryInfoValue = '';">Submit</button>
+</div>
+
+</uib-accordion-group> <uib-accordion-group> <uib-accordion-heading>
+<h5>
   <span tooltip-placement="right"
     uib-tooltip="List of the report definitions for the application.">
     Report Definitions</span>

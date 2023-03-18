@@ -231,6 +231,32 @@
       </build>
     </profile>
 
+    <!-- Fix CCI concept names after being loaded via ClaML3 -Drun.config=.. must also be specified. -->
+    <profile>
+      <id>CCIConceptNameFixer</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>cci-concept-name-fixer</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>cci-concept-name-fixer</goal>
+                </goals>
+                <configuration>
+                  <terminology>${terminology}</terminology>
+                  <terminologyVersion>${version}</terminologyVersion>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
     <!-- Load ClaML -Drun.config=.. must also be specified. -->
     <profile>
       <id>ClaML</id>
@@ -258,6 +284,32 @@
       </build>
     </profile>
 
+    <!-- Load ClaML 3 -Drun.config=.. must also be specified. -->
+    <profile>
+      <id>ClaML3</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>load-claml3</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>load-claml3</goal>
+                </goals>
+                <configuration>
+                  <inputFile>${input.file}</inputFile>
+                  <terminology>${terminology}</terminology>
+                  <version>${version}</version>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 
     <!-- Simple loaderL -Drun.config=.. must also be specified. -->
     <profile>

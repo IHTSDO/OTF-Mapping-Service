@@ -427,7 +427,101 @@
     ng-click="submitNewMapAdvice(newAdviceName, newAdviceDetail, newAllowableForNullTarget, newIsComputed); 
           newAdviceName = ''; newAdviceDetail = ''; newAllowableForNullTarget = false; newIsComputed = false; ">Submit</button>
 </form>
+</uib-accordion-group> <uib-accordion-group
+  ng-show="focusProject.additionalMapEntryInfo.length > 0 || editModeEnabled == true">
+<uib-accordion-heading>
+<h5>
+  <span tooltip-placement="right"
+    uib-tooltip="List of the additional map entry infos for this project."> Additional Map Entry Info </span>
 
+</h5>
+</uib-accordion-heading> <uib-pagination previous-text="&lsaquo;" next-text="&rsaquo;"
+  first-text="&laquo;" last-text="&raquo;" direction-links="false"
+  boundary-links="true" total-items="pagedAdditionalMapEntryInfoCount"
+  items-per-page="pageSize" ng-model="pageAdditionalMapEntryInfo"
+  ng-change="getPagedAdditionalMapEntryInfos(pageAdditionalMapEntryInfo, additionalMapEntryInfoFilter)"></uib-pagination>
+<form ng-submit="resetAdditionalMapEntryInfoFilter()">
+  <input type="text" ng-model="additionalMapEntryInfoFilter"
+    ng-change="getPagedAdditionalMapEntryInfos(1, additionalMapEntryInfo)">
+  <button type="submit" class="btn btn-xs btn-primary">Reset
+    Filter</button>
+</form>
+
+<table style="width: 100%" class="table pure-table">
+  <thead>
+    <tr>
+      <th style="width: 60%;">Field Name</th>
+      <th style="width: 40%;">Value</th>
+    </tr>
+  </thead>
+  <tbody ng-repeat="additionalMapEntryInfo in pagedAdditionalMapEntryInfos | orderBy: 'name'"
+    style="border: 2px solid #ccc;">
+    <tr ng-show="editModeEnabled == false">
+      <td>{{additionalMapEntryInfo.field}}</td>
+      <td>{{additionalMapEntryInfo.value}}</td>
+    </tr>
+    <tr ng-show="editModeEnabled == true">
+      <td>{{additionalMapEntryInfo.field}}</td>
+      <td>{{additionalMapEntryInfo.value}}</td>
+      <td><i class="glyphicon glyphicon-remove" title="Remove additional Map Entry Info from project"
+        title="Remove additional Map Entry Info from project"
+        ng-click="deleteAdditionalMapEntryInfo(additionalMapEntryInfo)"></i></td>
+    </tr>
+
+  </tbody>
+</table>
+
+<table
+  ng-show="editModeEnabled == true"
+  style="width: 80%" class="table pure-table">
+  <thead>
+    <tr>
+      <th style="width: 40%;">Add Additional Map Entry Info to Project</th>
+      <th style="width: 40%;"></th>
+    </tr>
+  </thead>
+  <tbody
+    ng-repeat="mapEntryInfo in allowableAdditionalMapEntryInfos | elementFilter:focusProject.additionalMapEntryInfo | orderBy:'name' ">
+    <tr>
+      <td>{{mapEntryInfo.field}}</td>
+      <td>{{mapEntryInfo.value}}</td>
+      <td><i class="glyphicon glyphicon-plus"
+        title = "Add additional Map Entry Info to project"
+        ng-click="addAdditionalMapEntryInfo(mapEntryInfo)"></i></td>
+    </tr>
+  </tbody>
+</table>
+
+<form
+  ng-show="editModeEnabled == true">
+  <div style="margin-top: 15px;">
+    <b>Add New Additional Map Entry Info to Project</b>
+  </div>
+  <table class="table pure-table">
+    <thead>
+      <tr>
+        <th style="width: 25%;"></th>
+        <th style="width: 75%;"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Additional Map Entry Info Field Name</td>
+        <td><input id="newAdditionalMapEntryInfoField" type="text"
+          ng-model="newAdditionalMapEntryInfoField"></td>
+      </tr>
+      <tr>
+        <td>Additional Map Entry Info Value</td>
+        <td><input id="newAdditionalMapEntryInfoValue" type="text"
+          ng-model="newAdditionalMapEntryInfoValue"></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <button class="btn btn-xs btn-primary"
+    ng-click="submitNewAdditionalMapEntryInfo(newAdditionalMapEntryInfoField, newAdditionalMapEntryInfoValue); 
+          newAdditionalMapEntryInfoField = ''; newAdditionalMapEntryInfoValue = '';">Submit</button>
+</form>
 </uib-accordion-group> <uib-accordion-group
   ng-show="focusProject.mapRelation.length > 0 || editModeEnabled == true">
 <uib-accordion-heading>
