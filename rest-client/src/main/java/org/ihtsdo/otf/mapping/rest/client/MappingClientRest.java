@@ -7,6 +7,7 @@ import java.util.Properties;
 import javax.ws.rs.core.Response;
 
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.ihtsdo.otf.mapping.helpers.AdditionalMapEntryInfoListJpa;
 import org.ihtsdo.otf.mapping.helpers.KeyValuePairList;
 import org.ihtsdo.otf.mapping.helpers.KeyValuePairLists;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
@@ -23,6 +24,7 @@ import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
+import org.ihtsdo.otf.mapping.jpa.AdditionalMapEntryInfoJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAdviceJpa;
 import org.ihtsdo.otf.mapping.jpa.MapAgeRangeJpa;
 import org.ihtsdo.otf.mapping.jpa.MapPrincipleJpa;
@@ -32,6 +34,7 @@ import org.ihtsdo.otf.mapping.jpa.MapRelationJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserJpa;
 import org.ihtsdo.otf.mapping.jpa.MapUserPreferencesJpa;
 import org.ihtsdo.otf.mapping.jpa.services.rest.MappingServiceRest;
+import org.ihtsdo.otf.mapping.model.AdditionalMapEntryInfo;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
@@ -228,6 +231,34 @@ public class MappingClientRest extends RootClientRest
 
   @Override
   public void removeMapAdvice(MapAdviceJpa mapAdvice, String authToken)
+    throws Exception {
+    // N/A
+
+  }
+  
+
+  @Override
+  public AdditionalMapEntryInfoListJpa getAdditionalMapEntryInfos(String authToken) throws Exception {
+    // N/A
+    return null;
+  }
+
+  @Override
+  public AdditionalMapEntryInfo addAdditionalMapEntryInfo(AdditionalMapEntryInfoJpa additionalMapEntryInfo, String authToken)
+    throws Exception {
+    // N/A
+    return null;
+  }
+
+  @Override
+  public void updateAdditionalMapEntryInfo(AdditionalMapEntryInfoJpa additionalMapEntryInfo, String authToken)
+    throws Exception {
+    // N/A
+
+  }
+
+  @Override
+  public void removeAdditionalMapEntryInfo(AdditionalMapEntryInfoJpa additionalMapEntryInfo, String authToken)
     throws Exception {
     // N/A
 

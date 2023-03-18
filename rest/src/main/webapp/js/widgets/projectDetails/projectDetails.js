@@ -195,6 +195,26 @@ angular
           });
 
           $http({
+            url : root_mapping + 'additionalMapEntryInfo/additionalMapEntryInfos',
+            dataType : 'json',
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            console.debug('  additionalMapEntryInfos = ', data);
+            $scope.additionalMapEntryInfos = data.additionalMapEntryInfo;
+            localStorageService.add('additionalMapEntryInfos', data.additionalMapEntryInfo);
+            $rootScope.$broadcast('localStorageModule.notification.setAdditionalMapEntryInfos', {
+              key : 'additionalMapEntryInfos',
+              additionalMapEntryInfos : data.additionalMapEntryInfo
+            });
+            $scope.allowableAdditionalMapEntryInfos = localStorageService.get('additionalMapEntryInfos');
+          }).error(function(data, status, headers, config) {
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+          $http({
             url : root_mapping + 'relation/relations',
             dataType : 'json',
             method : 'GET',
@@ -332,6 +352,7 @@ angular
           $scope.pageSize = 5;
           $scope.maxSize = 5;
           $scope.getPagedAdvices(1);
+          $scope.getPagedAdditionalMapEntryInfos(1);
           $scope.getPagedRelations(1);
           $scope.getPagedPrinciples(1);
           $scope.getPagedScopeConcepts(1);
@@ -380,6 +401,15 @@ angular
             containsAdviceFilter);
           $scope.pagedAdviceCount = $scope.pagedAdvice.length;
           $scope.pagedAdvice = $scope.pagedAdvice.slice((page - 1) * $scope.pageSize, page
+            * $scope.pageSize);
+        };
+
+        $scope.getPagedAdditionalMapEntryInfos = function(page, filter) {
+          $scope.additionalMapEntryInfoFilter = filter;
+          $scope.pagedAdditionalMapEntryInfos = $scope.sortByKey($scope.focusProject.additionalMapEntryInfo, 'value').filter(
+            containsAdditionalMapEntryInfoFilter);
+          $scope.pagedAdditionalMapEntryInfoCount = $scope.pagedAdditionalMapEntryInfos.length;
+          $scope.pagedAdditionalMapEntryInfos = $scope.pagedAdditionalMapEntryInfos.slice((page - 1) * $scope.pageSize, page
             * $scope.pageSize);
         };
 
@@ -548,6 +578,11 @@ angular
           $scope.getPagedAdvices(1);
         };
 
+        $scope.resetAdditionalMapEntryInfoFilter = function() {
+          $scope.additionalMapEntryInfoFilter = '';
+          $scope.getPagedAdditionalMapEntryInfos(1);
+        };
+
         $scope.resetRelationFilter = function() {
           $scope.relationFilter = '';
           $scope.getPagedRelations(1);
@@ -614,6 +649,24 @@ angular
             return true;
           if (element.name.toString().toUpperCase().indexOf(
             $scope.adviceFilter.toString().toUpperCase()) != -1)
+            return true;
+
+          // otherwise return false
+          return false;
+        }
+
+        function containsAdditionalMapEntryInfoFilter(element) {
+          // check if additionalMapEntryInfo filter is empty
+          if ($scope.additionalMapEntryInfoFilter === '' || $scope.additionalMapEntryInfoFilter == null)
+            return true;
+
+          // otherwise check if upper-case dditionalMapEntryInfo filter
+          // matches upper-case element field or value
+          if (element.value.toString().toUpperCase().indexOf(
+            $scope.additionalMapEntryInfoFilter.toString().toUpperCase()) != -1)
+            return true;
+          if (element.field.toString().toUpperCase().indexOf(
+            $scope.additionalMapEntryInfoFilter.toString().toUpperCase()) != -1)
             return true;
 
           // otherwise return false
@@ -1331,7 +1384,7 @@ angular
               localStorageService.add('mapAdvices', data.mapAdvice);
               $rootScope.$broadcast('localStorageModule.notification.setMapAdvices', {
                 key : 'mapAdvices',
-                mapAdvices : data.mapAdvices
+                mapAdvices : data.mapAdvice
               });
               $scope.allowableMapAdvices = localStorageService.get('mapAdvices');
 
@@ -1366,8 +1419,8 @@ angular
             'isAllowableForNullTarget' : allowableForNullTarget,
             'isComputed' : isComputed
           };
-          if ($scope.submitNewMapAdvice.mapAdviceDetail == null
-            || $scope.submitNewMapAdvice.mapAdviceDetail == '') {
+          if (obj.detail == null
+            || obj.detail == '') {
             window.alert("AdviceDetail cannot be empty");
             return;
           }
@@ -1402,7 +1455,148 @@ angular
           });
 
         };
+        $scope.deleteAdditionalMapEntryInfo = function(additionalMapEntryInfo) {
+          for (var j = 0; j < $scope.focusProject.additionalMapEntryInfo.length; j++) {
+            if (additionalMapEntryInfo.name === $scope.focusProject.additionalMapEntryInfo[j].name) {
+              $scope.focusProject.additionalMapEntryInfo.splice(j, 1);
+            }
+          }
+          // update and broadcast the updated focus
+          // project
+          localStorageService.set('focusProject', $scope.focusProject);
+          $rootScope.$broadcast('localStorageModule.notification.setFocusProject', {
+            key : 'focusProject',
+            focusProject : $scope.focusProject
+          });
+          $scope.pageAdditionalMapEntryInfo = 1;
+          $scope.resetAdditionalMapEntryInfoFilter();
+          $scope.updateMapProject($scope.focusProject);
+        };
 
+        $scope.addAdditionalMapEntryInfo = function(mapEntryInfo) {
+          $scope.focusProject.additionalMapEntryInfo.push(mapEntryInfo);
+          // update and broadcast the updated focus
+          // project
+          localStorageService.set('focusProject', $scope.focusProject);
+          $rootScope.$broadcast('localStorageModule.notification.setFocusProject', {
+            key : 'focusProject',
+            focusProject : $scope.focusProject
+          });
+          $scope.resetAdditionalMapEntryInfoFilter();
+          $scope.updateMapProject($scope.focusProject);
+        };
+
+        $scope.updateAdditionalMapEntryInfo = function(additionalMapEntryInfo) {
+		  var obj = {
+			'name' : additionalMapEntryInfo.field + "|" + additionalMapEntryInfo.value,
+            'field' : additionalMapEntryInfo.field,
+            'value' : additionalMapEntryInfo.value
+          };
+          console.debug('updateAdditionalMapEntryInfo');
+          $http({
+            url : root_mapping + 'additionalMapEntryInfo/update',
+            dataType : 'json',
+            data : obj,
+            method : 'POST',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            console.debug('  success', data);
+          }).error(function(data, status, headers, config) {
+            $scope.recordError = 'Error updating map advice.';
+            $rootScope.handleHttpError(data, status, headers, config);
+          }).then(function(data) {
+            $http({
+              url : root_mapping + 'additionalMapEntryInfo/additionalMapEntryInfos',
+              dataType : 'json',
+              method : 'GET',
+              headers : {
+                'Content-Type' : 'application/json'
+              }
+            }).success(function(data) {
+              $scope.additionalMapEntryInfos = data.additionalMapEntryInfo;
+              for (var j = 0; j < $scope.focusProject.additionalMapEntryInfo.length; j++) {
+                if (additionalMapEntryInfo.id === $scope.focusProject.additionalMapEntryInfo[j].id) {
+                  $scope.focusProject.additionalMapEntryInfo[j] = additionalMapEntryInfo;
+                }
+              }
+              localStorageService.add('additionalMapEntryInfos', data.additionalMapEntryInfo);
+              $rootScope.$broadcast('localStorageModule.notification.setAdditionalMapEntryInfos', {
+                key : 'additionalMapEntryInfos',
+                mapAdvices : data.additionalMapEntryInfo
+              });
+              $scope.allowableAdditionalMapEntryInfos = localStorageService.get('additionalMapEntryInfos');
+
+              // update
+              // and
+              // broadcast
+              // the
+              // updated
+              // focus
+              // project
+              localStorageService.add('focusProject', $scope.focusProject);
+              $rootScope.$broadcast('localStorageModule.notification.setFocusProject', {
+                key : 'focusProject',
+                focusProject : $scope.focusProject
+              });
+
+              $scope.updateMapProject($scope.focusProject);
+
+            }).error(function(data, status, headers, config) {
+              $rootScope.handleHttpError(data, status, headers, config);
+            });
+
+          });
+        };
+
+        $scope.submitNewAdditionalMapEntryInfo = function(additionalMapEntryInfoField, additionalMapEntryInfoValue) {
+          console.debug('submitNewAdditionalMapEntryInfo');
+          var obj = {
+			'name' : additionalMapEntryInfoField + "|" + additionalMapEntryInfoValue,
+            'field' : additionalMapEntryInfoField,
+            'value' : additionalMapEntryInfoValue
+          };
+          if (obj.field == null
+            || obj.field == '') {
+            window.alert("Field cannot be empty");
+            return;
+          }
+          if (obj.value == null
+            || obj.value == '') {
+            return;
+          }
+          gpService.increment();
+          $http({
+            url : root_mapping + 'additionalMapEntryInfo/add',
+            dataType : 'json',
+            data : obj,
+            method : 'PUT',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            gpService.decrement();
+            console.debug('  success', data);
+
+            // add the new additional map entry info to the available list
+            $scope.additionalMapEntryInfos.push(data);
+            $scope.allowableAdditionalMapEntryInfos.push(data);
+
+            // add the new additional map entry info to the current project
+            $scope.focusProject.additionalMapEntryInfo.push(data);
+
+            // update the map project
+            $scope.updateMapProject($scope.focusProject).then(function(response) {
+              $scope.resetAdditionalMapEntryInfoFilter();
+            });
+
+          }).error(function(data, status, headers, config) {
+            gpService.decrement();
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+        };
         $scope.deleteRelation = function(relation) {
           for (var j = 0; j < $scope.focusProject.mapRelation.length; j++) {
             if (relation.name === $scope.focusProject.mapRelation[j].name) {
@@ -1988,6 +2182,7 @@ angular
           angular.copy($scope.focusProjectBeforeChanges, $scope.focusProject);
 
           $scope.resetAdviceFilter();
+          $scope.resetAdditionalMapEntryInfoFilter();
           $scope.resetRelationFilter();
           $scope.resetPrincipleFilter();
           $scope.resetScopeConceptFilter();

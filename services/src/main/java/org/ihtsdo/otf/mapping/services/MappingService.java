@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.ihtsdo.otf.mapping.helpers.AdditionalMapEntryInfoList;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapAgeRangeList;
 import org.ihtsdo.otf.mapping.helpers.MapPrincipleList;
@@ -29,6 +30,7 @@ import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
+import org.ihtsdo.otf.mapping.model.AdditionalMapEntryInfo;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapAgeRange;
 import org.ihtsdo.otf.mapping.model.MapPrinciple;
@@ -143,6 +145,14 @@ public interface MappingService extends RootService {
   public MapAdviceList getMapAdvices() throws Exception;
 
   /**
+   * Retrieve all additional map entry infos.
+   * 
+   * @return a List of AdditionalMapEntryInfos
+   * @throws Exception the exception
+   */
+  public AdditionalMapEntryInfoList getAdditionalMapEntryInfos() throws Exception;  
+  
+  /**
    * Retrieve all map projects assigned to a particular map user.
    * 
    * @param mapUser the map user
@@ -243,6 +253,15 @@ public interface MappingService extends RootService {
    */
   public MapAdvice addMapAdvice(MapAdvice mapAdvice) throws Exception;
 
+  /**
+   * Adds the additional map entry info.
+   * 
+   * @param additionalMapEntryInfo the additional map entry info
+   * @return the additional map entry info
+   * @throws Exception the exception
+   */
+  public AdditionalMapEntryInfo addAdditionalMapEntryInfo(AdditionalMapEntryInfo additionalMapEntryInfo) throws Exception;  
+  
   // //////////////////////////
   // Update services ///
   // //////////////////////////
@@ -287,6 +306,14 @@ public interface MappingService extends RootService {
    */
   public void updateMapAdvice(MapAdvice mapAdvice) throws Exception;
 
+  /**
+   * Update additional map entry info.
+   * 
+   * @param additionalMapEntryInfo the additional map entry info
+   * @throws Exception the exception
+   */
+  public void updateAdditionalMapEntryInfo(AdditionalMapEntryInfo additionalMapEntryInfo) throws Exception;  
+  
   // //////////////////////////
   // Removal services ///
   // //////////////////////////
@@ -330,6 +357,14 @@ public interface MappingService extends RootService {
    * @throws Exception the exception
    */
   public void removeMapAdvice(Long mapAdviceId) throws Exception;
+  
+  /**
+   * Removes the additional map entry info.
+   * 
+   * @param additionalMapEntryInfoId the map advice id
+   * @throws Exception the exception
+   */
+  public void removeAdditionalMapEntryInfo(Long additionalMapEntryInfoId) throws Exception;
 
   // /////////////////////////
   // Other services ///

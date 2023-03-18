@@ -61,6 +61,7 @@ import org.ihtsdo.otf.mapping.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.mapping.helpers.TerminologyVersion;
 import org.ihtsdo.otf.mapping.helpers.TerminologyVersionList;
 import org.ihtsdo.otf.mapping.jpa.algo.AtcDownloadAlgorithm;
+import org.ihtsdo.otf.mapping.jpa.algo.Claml3LoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.ClamlLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.GmdnDownloadAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.GmdnLoaderAlgorithm;
@@ -825,7 +826,52 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       handleException(e, "trying to load terminology claml from directory");
     }
   }
+  
+  /* see superclass */
+  @Override
+  @PUT
+  @Path("/terminology/load/claml3/{terminology}/{version}")
+  @Consumes(MediaType.TEXT_PLAIN)
+  @ApiOperation(value = "Loads terminology Claml 3 from file", notes = "Loads terminology from ClaML 3 file for specified terminology and version")
+  public void loadTerminologyClaml3(
+    @ApiParam(value = "Terminology, e.g. SNOMEDCT_US", required = true) @PathParam("terminology") String terminology,
+    @ApiParam(value = "Version, e.g. 2014_09_01", required = true) @PathParam("version") String version,
+    @ApiParam(value = "Claml 3 input file", required = true) String inputFile,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
 
+    Logger.getLogger(getClass())
+        .info("RESTful call (Content): /terminology/load/claml3/" + terminology
+            + "/" + version + " from input file " + inputFile);
+
+    // Track system level information
+    long startTimeOrig = System.nanoTime();
+
+    authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "load CLAML 3 terminology",
+        securityService);
+
+    final String localTerminology = removeSpaces(terminology);
+    final String localVersion = removeSpaces(version);
+
+    // validate that the terminology & version to not already exist.
+    if (doesTerminologyVersionExist(localTerminology, localVersion)) {
+      handleException(new Exception("Terminology and version already exist."),
+          "Terminology and version already exist.");
+    }
+
+    try (final Claml3LoaderAlgorithm algo =
+        new Claml3LoaderAlgorithm(localTerminology, localVersion, inputFile);) {
+
+      algo.compute();
+
+      Logger.getLogger(getClass())
+          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+
+    } catch (Exception e) {
+      handleException(e, "trying to load terminology claml 3 from directory");
+    }
+  }
+  
   /* see superclass */
   @Override
   @POST

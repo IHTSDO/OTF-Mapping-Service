@@ -201,9 +201,9 @@ public class TerminologyUtility {
     }
     return results;
   }
-
+   
   /**
-   * Returns the active parent children;.
+   * Returns the active parent concepts.
    *
    * @param concept the concept
    * @return the active child concepts

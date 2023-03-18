@@ -33,6 +33,7 @@ import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.IntegerBridge;
+import org.ihtsdo.otf.mapping.model.AdditionalMapEntryInfo;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapRecord;
@@ -67,6 +68,12 @@ public class MapEntryJpa implements MapEntry {
   @IndexedEmbedded(targetElement = MapAdviceJpa.class)
   private Set<MapAdvice> mapAdvices = new HashSet<>();
 
+  /** The additional map entry info. */
+  @ManyToMany(targetEntity = AdditionalMapEntryInfoJpa.class, fetch = FetchType.LAZY)
+  @CollectionTable(name = "map_entries_additional_map_entry_info", joinColumns = @JoinColumn(name = "map_entries_id"))
+  @IndexedEmbedded(targetElement = AdditionalMapEntryInfoJpa.class)
+  private Set<AdditionalMapEntryInfo> additionalMapEntryInfos = new HashSet<>();  
+  
   /** The target. */
   @Column(nullable = true, length = 4000)
   private String targetId;
@@ -256,6 +263,21 @@ public class MapEntryJpa implements MapEntry {
   public void setMapAdvices(Set<MapAdvice> mapAdvices) {
     this.mapAdvices = mapAdvices;
   }
+  
+  /* see superclass */
+  @XmlElement(type = AdditionalMapEntryInfoJpa.class, name = "additionalMapEntryInfo")
+  @Override
+  public Set<AdditionalMapEntryInfo> getAdditionalMapEntryInfos() {
+    if (additionalMapEntryInfos == null)
+      additionalMapEntryInfos = new HashSet<>();// ensures proper serialization
+    return additionalMapEntryInfos;
+  }
+
+  /* see superclass */
+  @Override
+  public void setAdditionalMapEntryInfos(Set<AdditionalMapEntryInfo> additionalMapEntryInfos) {
+    this.additionalMapEntryInfos = additionalMapEntryInfos;
+  }
 
   /* see superclass */
   @Override
@@ -281,7 +303,7 @@ public class MapEntryJpa implements MapEntry {
   public void setRule(String rule) {
     this.rule = rule;
   }
-
+  
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
@@ -381,6 +403,7 @@ public class MapEntryJpa implements MapEntry {
     result = prime * result + ((targetId == null) ? 0 : targetId.hashCode());
     result =
         prime * result + ((targetName == null) ? 0 : targetName.hashCode());
+
     return result;
   }
 
@@ -503,6 +526,22 @@ public class MapEntryJpa implements MapEntry {
     } else if (mapAdvices != null) {
       for (MapAdvice ma : this.mapAdvices) {
         if (!me.getMapAdvices().contains(ma)) {
+          return false;
+        }
+      }
+    }
+
+    // additional map entry info must be identical
+    if (this.additionalMapEntryInfos == null && me.getAdditionalMapEntryInfos() != null) {
+      return false;
+    } else if (this.additionalMapEntryInfos != null && me.getAdditionalMapEntryInfos() == null) {
+      return false;
+    } else if (additionalMapEntryInfos != null
+        && additionalMapEntryInfos.size() != me.getAdditionalMapEntryInfos().size()) {
+      return false;
+    } else if (additionalMapEntryInfos != null) {
+      for (AdditionalMapEntryInfo mi : this.additionalMapEntryInfos) {
+        if (!me.getAdditionalMapEntryInfos().contains(mi)) {
           return false;
         }
       }

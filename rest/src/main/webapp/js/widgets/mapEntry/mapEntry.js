@@ -50,6 +50,22 @@ angular
             $scope.allowableMapRelations = getAllowableRelations(
               parameters.entry, parameters.project.mapRelation);
 
+			// identify any additional map entry information for this project
+			$scope.additionalMapEntryFields = getAdditionalMapEntryFields($scope.project.additionalMapEntryInfo);	
+
+			// initialize additional map entry info, if needed
+			if($scope.additionalMapEntryFields.length > 0 && $scope.entry['additionalMapEntryInfo'] === undefined){
+				$scope.entry['additionalMapEntryInfo'] = [];
+			}
+
+			// determine which additional map entries are available for the current entry
+			$scope.allowableMapEntryInfos = {};
+			for(var i = 0; i < $scope.additionalMapEntryFields.length; i++){
+				$scope.allowableMapEntryInfos[$scope.additionalMapEntryFields[i]] = 
+				$scope.getAllowableMapEntryInfosForField($scope.entry, $scope.additionalMapEntryFields[i]);
+			}
+
+
             // set the rule to null if a non-rule-based project
             // added to catch any badly constructed rules from other widgets
             if (!$scope.project.ruleBased) {
@@ -161,6 +177,11 @@ angular
 
                 $scope.allowableMapRelations = getAllowableRelations($scope.entry,
                     $scope.project.mapRelation);
+
+				for(var i = 0; i < $scope.additionalMapEntryFields.length; i++){
+					$scope.allowableMapEntryInfos[$scope.additionalMapEntryFields[i]] = 
+					$scope.getAllowableMapEntryInfosForField($scope.entry, $scope.additionalMapEntryFields[i]);
+				}
 
               } else {
                 $scope.getValidTargetError = targetCode
@@ -834,6 +855,98 @@ angular
           }
         };
 
+        // ///////////////////////////////////////////
+        // Functions for additional map entry infos///
+        // //////////////////////////////////////////
+
+        $scope.getAllowableMapEntryInfosForField = function(entry, specifiedField) {
+
+          var allowableMapEntryInfos = [];
+
+          if (entry!= null && specifiedField != null) {
+
+			// Identify all map entry infos for the specified field
+            for (var i = 0; i < $scope.project.additionalMapEntryInfo.length; i++) {
+			  var field = $scope.project.additionalMapEntryInfo[i].field;
+	
+			  if(field === specifiedField){
+				// check that this map entry info is not already present on the entry
+			    var mapEntryInfoPresent = false;
+				 if(entry.additionalMapEntryInfo != null){
+					for(var j = 0; j < entry.additionalMapEntryInfo.length; j++){
+					  if(entry.additionalMapEntryInfo[j].name === $scope.project.additionalMapEntryInfo[i].name){
+						mapEntryInfoPresent = true;
+					  }
+				    }
+				  }
+
+				// add map entry info if not already present
+              	if (!mapEntryInfoPresent)
+                  allowableMapEntryInfos.push($scope.project.additionalMapEntryInfo[i]);
+              	}
+			  }
+		  	}
+
+		  return allowableMapEntryInfos;
+		}
+		
+		
+		$scope.getAssignedMapEntryInfosForField = function(entry, specifiedField){
+          var mapEntryInfos = [];
+
+          if (specifiedField != null && entry != null && entry.additionalMapEntryInfo != null) {
+
+            for (var i = 0; i < entry.additionalMapEntryInfo.length; i++) {
+			  var field = entry.additionalMapEntryInfo[i].field;
+	
+			  if(field === specifiedField){
+			  	mapEntryInfos.push(entry.additionalMapEntryInfo[i]);
+			  }
+		  	}
+		  }
+
+		  return mapEntryInfos;			
+		}
+
+        // validates and adds additional Map Entry Info to a map entry
+        $scope.addEntryAdditionalMapEntryInfo = function(entry, additionalMapEntryInfo) {
+
+            // check if this additionalMapEntryInfo is already present
+            var additionalMapEntryInfoPresent = false;
+			if(entry.additionalMapEntryInfo != null){
+              for (var i = 0; i < entry.additionalMapEntryInfo.length; i++) {
+                if (additionalMapEntryInfo.id === entry.additionalMapEntryInfo[i].id)
+                  additionalMapEntryInfoPresent = true;
+              }				
+			}
+
+            if (additionalMapEntryInfoPresent) {
+              $scope.errorAddAdditionalMapEntryInfo = 'This map entry info ' + additionalMapEntryInfo.value
+                + ' is already attached to this entry';
+            } else {
+              $scope.entry['additionalMapEntryInfo'].push(additionalMapEntryInfo);
+              $scope.additionalMapEntryInfoInput = '?';
+            }
+
+			$scope.allowableMapEntryInfos[additionalMapEntryInfo.field] = 
+				$scope.getAllowableMapEntryInfosForField(entry, additionalMapEntryInfo.field);
+
+
+          updateEntry($scope.entry);
+        };
+
+        // removes additional map entry info from a map entry
+        $scope.removeAdditionalMapEntryInfo = function(entry, additionalMapEntryInfo) {
+
+            entry.additionalMapEntryInfo = removeJsonElement(entry.additionalMapEntryInfo, additionalMapEntryInfo);
+
+			$scope.allowableMapEntryInfos[additionalMapEntryInfo.field] = 
+				$scope.getAllowableMapEntryInfosForField(entry, additionalMapEntryInfo.field);
+
+          updateEntry($scope.entry);
+
+        };
+
         // Function for MapAdvice and MapRelations, returns allowable lists
         // based
         // on null target and element properties
@@ -873,6 +986,32 @@ angular
 
           return allowableAdvices;
         }
+
+        function getAdditionalMapEntryFields(additionalMapEntryInfo) {
+
+          var additionalMapEntryFields = [];
+
+          if (additionalMapEntryInfo != null) {
+
+            for (var i = 0; i < additionalMapEntryInfo.length; i++) {
+			  var field = additionalMapEntryInfo[i].field;
+	
+			  var fieldAlreadyAdded = false;
+			  for(var j = 0; j < additionalMapEntryFields.length; j++){
+				if (additionalMapEntryFields[j] === field){
+					fieldAlreadyAdded = true;
+					break;
+				}
+			  }
+	
+			  if(!fieldAlreadyAdded){
+				additionalMapEntryFields.push(field);
+			  }
+			}
+		  }
+
+		  return additionalMapEntryFields;
+		}
 
         // Allowable MapRelations
         // based on null target and element properties

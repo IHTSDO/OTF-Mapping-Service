@@ -74,6 +74,19 @@
           style="vertical-align: top; width: 85%; display: inline-block; padding: 0px">
           {{entry.mapRelation.name}}</div>
       </div>
+      <!-- Additional Map Entry info -->
+      <div ng-repeat="mapEntryInfo in entry.additionalMapEntryInfo">
+        <div
+          style="vertical-align: top; width: 7%; display: inline-block; padding: 0px">
+          <span style="color: #99CCFF">
+            <i class="glyphicon glyphicon-tags" alt="advice icon"
+              tooltip-placement="top" uib-tooltip={{mapEntryInfo.field}}></i>
+          </span>
+        </div>
+        <div class="alert alert-warning"
+          style="vertical-align: top; width: 85%; display: inline-block; padding: 0px">
+          {{mapEntryInfo.value}}</div>
+      </div>      
     </div>
   </div>
 

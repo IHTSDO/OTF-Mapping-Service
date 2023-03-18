@@ -208,6 +208,18 @@ public interface ContentServiceRest {
     String authToken) throws Exception;
 
   /**
+   * Converts claml 3 data to RF2 objects.
+   * 
+   * @param terminology The terminology.
+   * @param version The terminology version.
+   * @param inputDir The directory where the input files are located.
+   * @param authToken The auth token
+   * @throws Exception The execution exception
+   */
+  void loadTerminologyClaml3(String terminology, String version, String inputDir,
+    String authToken) throws Exception;
+  
+  /**
    * Download terminology gmdn.
    *
    * @param authToken the auth token

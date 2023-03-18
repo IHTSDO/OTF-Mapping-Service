@@ -278,6 +278,35 @@ public class ContentClientRest extends RootClientRest
 			throw new Exception("Unexpected status " + response.getStatus());
 		}
 	}
+
+    /* see superclass */
+    @Override
+    public void loadTerminologyClaml3(String terminology, String version,
+            String inputFile, String authToken) throws Exception {
+
+        Logger.getLogger(getClass())
+                .debug("Content Client - load terminology CLAML 3 " + terminology
+                        + ", " + version);
+
+        validateNotEmpty(inputFile, "inputFile");
+        validateNotEmpty(terminology, "terminology");
+        validateNotEmpty(version, "version");
+
+        final Client client = ClientBuilder.newClient();
+        final WebTarget target = client.target(config.getProperty("base.url")
+                + URL_SERVICE_ROOT + "/terminology/load/claml3/" + terminology
+                + "/" + version);
+        
+        final Response response = target.request(MediaType.APPLICATION_JSON)
+                .header("Authorization", authToken).put(Entity.text(inputFile));
+
+        if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+            // do nothing
+        } else {
+            throw new Exception("Unexpected status " + response.getStatus());
+        }
+    }
+	
 	
 	/* see superclass */
 	@Override

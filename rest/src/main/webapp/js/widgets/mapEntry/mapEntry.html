@@ -96,7 +96,7 @@
 
     <tr ng-show="allowableAdvices.length > 0 || entry.mapAdvice.length > 0">
       <td ng-show="entry.targetId != null && entry.targetId != ''"
-        style="vertical-align: top; padding: 5px;">
+        style="vertical-align: top; padding: 5px; width: 50px;">
         <strong>Advice</strong>
       </td>
       <td ng-show="entry.targetId != null && entry.targetId != ''"
@@ -122,6 +122,34 @@
         </form>
       </td>
     </tr>
+    
+    <tr ng-repeat="field in additionalMapEntryFields">
+	  <td style="vertical-align: top; padding: 5px; width: 50px;">
+        <strong>{{field}}</strong>
+      </td>
+      <td style="vertical-align: top; padding: 5px;">
+        <div ng-show="entry.additionalMapEntryInfo.length > 0">
+          <div ng-repeat="mapEntryInfo in getAssignedMapEntryInfosForField(entry, field)">
+            <div class="alert alert-warning">
+              <div style="display: inline;">{{mapEntryInfo.value}}</div>
+              <div style="display: inline; float: right; width: 3%;">
+                <i class="glyphicon glyphicon-remove"
+                  ng-click="removeAdditionalMapEntryInfo(entry, mapEntryInfo)"></i>
+              </div>
+            </div>
+          </div>
+          <hr>
+        </div>
+        <span style="color: red">{{errorAddAdditionalMapEntryInfo}}</span>
+        <form>
+          Add {{field}}: <select style="width: 60%;"
+            ng-change="addEntryAdditionalMapEntryInfo(entry, additionalMapEntryInfoInput);additionalMapEntryInfoInput=null;"
+            ng-model="additionalMapEntryInfoInput"
+            ng-options="mapEntryInfo as mapEntryInfo.value for mapEntryInfo in allowableMapEntryInfos[field]"></select>
+        </form>
+      </td>      
+	</tr>
+    
   </table>
   </uib-accordion-group> </uib-accordion>
 </div>

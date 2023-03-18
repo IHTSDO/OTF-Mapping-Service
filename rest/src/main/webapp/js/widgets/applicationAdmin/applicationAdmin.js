@@ -73,6 +73,7 @@ angular
         var editingPerformed = new Array();
         var previousUserPage = 1;
         var previousAdvicePage = 1;
+        var previousAdditionalMapEntryInfoPage = 1;
         var previousPrinciplePage = 1;
         var previousRelationPage = 1;
         var previousReportDefinitionPage = 1;
@@ -191,6 +192,26 @@ angular
             });
             $scope.allowableMapAdvices = localStorageService.get('mapAdvices');
             $scope.getPagedAdvices(1, '');
+          }).error(function(data, status, headers, config) {
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+          $http({
+            url : root_mapping + 'additionalMapEntryInfo/additionalMapEntryInfos',
+            dataType : 'json',
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            $scope.additionalMapEntryInfos = data.additionalMapEntryInfo;
+            localStorageService.add('additionalMapEntryInfos', data.additionalMapEntryInfo);
+            $rootScope.$broadcast('localStorageModule.notification.setAdditionalMapEntryInfos', {
+              key : 'additionalMapEntryInfos',
+              additionalMapEntryInfos : data.additionalMapEntryInfo
+            });
+            $scope.allowableAdditionalMapEntryInfos = localStorageService.get('additionalMapEntryInfos');
+            $scope.getPagedAdditionalMapEntryInfos(1, '');
           }).error(function(data, status, headers, config) {
             $rootScope.handleHttpError(data, status, headers, config);
           });
@@ -349,6 +370,22 @@ angular
           previousAdvicePage = page;
         };
 
+        $scope.getPagedAdditionalMapEntryInfos = function(page, filter) {
+          if ($scope.additionalMapEntryInfoInEditingPerformed() == true) {
+            if (confirm('You have unsaved changes.\n\n Are you sure that you want to switch pages?') == false) {
+              $scope.pageAdditionalMapEntryInfo = previousAdditionalMapEntryInfoPage;
+              return;
+            }
+          }
+          $scope.additionalMapEntryInfoFilter = filter;
+          $scope.pagedAdditionalMapEntryInfo = $scope.sortByKey($scope.additionalMapEntryInfos, 'id').filter(
+            containsAdditionalMapEntryInfoFilter);
+          $scope.pagedAdditionalMapEntryInfoCount = $scope.pagedAdditionalMapEntryInfo.length;
+          $scope.pagedAdditionalMapEntryInfo = $scope.pagedAdditionalMapEntryInfo.slice((page - 1) * $scope.pageSize, page
+            * $scope.pageSize);
+          previousAdditionalMapEntryInfo = page;
+        };
+
         $scope.getPagedRelations = function(page, filter) {
           if ($scope.relationInEditingPerformed() == true) {
             if (confirm('You have unsaved changes.\n\n Are you sure that you want to switch pages?') == false) {
@@ -434,6 +471,11 @@ angular
           $scope.getPagedAdvices(1);
         };
 
+        $scope.resetAdditionalMapEntryInfoFilter = function() {
+          $scope.additionalMapEntryInfoFilter = '';
+          $scope.getPagedAdditionalMapEntryInfos(1);
+        };
+
         $scope.resetRelationFilter = function() {
           $scope.relationFilter = '';
           $scope.getPagedRelations(1);
@@ -495,6 +537,25 @@ angular
             return true;
           if (element.name.toString().toUpperCase().indexOf(
             $scope.adviceFilter.toString().toUpperCase()) != -1)
+            return true;
+
+          // otherwise return false
+          return false;
+        }
+
+        function containsAdditionalMapEntryInfoFilter(element) {
+
+          // check if advice filter is empty
+          if ($scope.additionalMapEntryInfoFilter === '' || $scope.additionalMapEntryInfoFilter == null)
+            return true;
+
+          // otherwise check if upper-case advice filter
+          // matches upper-case element field or value
+          if (element.field.toString().toUpperCase().indexOf(
+            $scope.additionalMapEntryInfoFilter.toString().toUpperCase()) != -1)
+            return true;
+          if (element.value.toString().toUpperCase().indexOf(
+            $scope.additionalMapEntryInfoFilter.toString().toUpperCase()) != -1)
             return true;
 
           // otherwise return false
@@ -919,6 +980,47 @@ angular
             });
             $scope.allowableMapAdvices = localStorageService.get('mapAdvices');
             $scope.getPagedAdvices(1, '');
+          }).error(function(data, status, headers, config) {
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+        };
+
+        // indicates if any unsaved additional map entry infos
+        $scope.additionalMapEntryInfoInEditingPerformed = function() {
+          for (var i = editingPerformed.length; i--;) {
+            if (editingPerformed[i].field != null && editingPerformed[i].value != null) {
+              return true;
+            }
+          }
+          return false;
+        };
+
+        // reverts additional Map Entry Info to last saved state
+        $scope.revertUnsavedAdditionalMapEntryInfos = function() {
+
+          // clear additional Map Entry Info from editingPerformed
+          for (var i = editingPerformed.length; i--;) {
+            if (editingPerformed[i].field != null && editingPerformed[i].value != null) {
+              editingPerformed.splice(i, 1);
+            }
+          }
+          // get last saved state of advice
+          $http({
+            url : root_mapping + 'additionalMapEntryInfo/additionalMapEntryInfos',
+            dataType : 'json',
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            $scope.additionalMapEntryInfos = data.additionalMapEntryInfo;
+            localStorageService.add('mapAdvices', data.additionalMapEntryInfo);
+            $rootScope.$broadcast('localStorageModule.notification.setAdditionalMapEntryInfos', {
+              key : 'additionalMapEntryInfos',
+              additionalMapEntryInfos : data.additionalMapEntryInfo
+            });
+            $scope.allowableAdditionalMapEntryInfos = localStorageService.get('additionalMapEntryInfos');
+            $scope.getPagedAdditionalMapEntryInfos(1, '');
           }).error(function(data, status, headers, config) {
             $rootScope.handleHttpError(data, status, headers, config);
           });
@@ -1360,6 +1462,71 @@ angular
           });
         };
 
+        $scope.deleteAdditionalMapEntryInfo = function(additionalMapEntryInfo) {
+
+          if (confirm('Are you sure that you want to delete an additional Map Entry Info?') == false)
+            return;
+
+          $http({
+            url : root_mapping + 'additionalMapEntryInfo/delete',
+            dataType : 'json',
+            data : additionalMapEntryInfo,
+            method : 'DELETE',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            // n/a
+          }).error(function(data, status, headers, config) {
+            $scope.recordError = 'Error deleting additional Map Entry Info from application.';
+            $rootScope.handleHttpError(data, status, headers, config);
+          }).then(function(data) {
+            $http({
+              url : root_mapping + 'additionalMapEntryInfo/additionalMapEntryInfos',
+              dataType : 'json',
+              method : 'GET',
+              headers : {
+                'Content-Type' : 'application/json'
+              }
+            }).success(function(data) {
+              $scope.additionalMapEntryInfos = data.additionalMapEntryInfo;
+              $scope.resetAdditionalMapEntryInfoFilter();
+              for (var j = 0; j < $scope.focusProject.additionalMapEntryInfo.length; j++) {
+                if (additionalMapEntryInfo.id === $scope.focusProject.additionalMapEntryInfo[j].id) {
+                  $scope.focusProject.additionalMapEntryInfo[j] = additionalMapEntryInfo;
+                  
+                }
+              }
+              
+              localStorageService.add('additionalMapEntryInfos', data.additionalMapEntryInfo);
+              $rootScope.$broadcast('localStorageModule.notification.setAdditionalMapEntryInfos', {
+                key : 'additionalMapEntryInfos',
+                additionalMapEntryInfos : data.additionalMapEntryInfo
+              });
+              $scope.allowableAdditionalMapEntryInfos = localStorageService.get('additionalMapEntryInfos');
+
+              // update
+              // and
+              // broadcast
+              // the
+              // updated
+              // focus
+              // project
+              localStorageService.add('focusProject', $scope.focusProject);
+              $rootScope.$broadcast('localStorageModule.notification.setFocusProject', {
+                key : 'focusProject',
+                focusProject : $scope.focusProject
+              });
+
+              $scope.updateMapProject($scope.focusProject);
+
+            }).error(function(data, status, headers, config) {
+              $rootScope.handleHttpError(data, status, headers, config);
+            });
+
+          });
+        };
+
         // Update user
         $scope.updateUser = function(user) {
           $http({
@@ -1487,6 +1654,70 @@ angular
           });
         };
 
+        $scope.updateAdditionalMapEntryInfo = function(additionalMapEntryInfo) {
+	      var obj = {
+			'name' : additionalMapEntryInfo.field + "|" + additionalMapEntryInfo.value,
+            'field' : additionalMapEntryInfo.field,
+            'value' : additionalMapEntryInfo.value
+          };
+
+          $http({
+            url : root_mapping + 'additionalMapEntryInfo/update',
+            dataType : 'json',
+            data : obj,
+            method : 'POST',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            removeComponentFromArray(editingPerformed, additionalMapEntryInfo);
+          }).error(function(data, status, headers, config) {
+            $scope.recordError = 'Error updating additional Map Entry Info.';
+            $rootScope.handleHttpError(data, status, headers, config);
+          }).then(function(data) {
+            $http({
+              url : root_mapping + 'additionalMapEntryInfo/additionalMapEntryInfos',
+              dataType : 'json',
+              method : 'GET',
+              headers : {
+                'Content-Type' : 'application/json'
+              }
+            }).success(function(data) {
+              $scope.additionalMapEntryInfos = data.additionalMapEntryInfo;
+              for (var j = 0; j < $scope.focusProject.additionalMapEntryInfos.length; j++) {
+                if (additionalMapEntryInfo.id === $scope.focusProject.additionalMapEntryInfos[j].id) {
+                  $scope.focusProject.additionalMapEntryInfos[j] = additionalMapEntryInfo;
+                }
+              }
+              localStorageService.add('additionalMapEntryInfos', data.additionalMapEntryInfo);
+              $rootScope.$broadcast('localStorageModule.notification.setAdditionalMapEntryInfos', {
+                key : 'additionalMapEntryInfos',
+                additionalMapEntryInfos : data.additionalMapEntryInfo
+              });
+              $scope.allowableAdditionalMapEntryInfos = localStorageService.get('additionalMapEntryInfos');
+
+              // update
+              // and
+              // broadcast
+              // the
+              // updated
+              // focus
+              // project
+              localStorageService.add('focusProject', $scope.focusProject);
+              $rootScope.$broadcast('localStorageModule.notification.setFocusProject', {
+                key : 'focusProject',
+                focusProject : $scope.focusProject
+              });
+
+              $scope.updateMapProject($scope.focusProject);
+
+            }).error(function(data, status, headers, config) {
+              $rootScope.handleHttpError(data, status, headers, config);
+            });
+
+          });
+        };
+
         $scope.submitNewMapUser = function(mapUserName, mapUserFullName, mapUserEmail,
           mapUserApplicationRole) {
         	
@@ -1582,6 +1813,50 @@ angular
                 mapAdvices : data.mapAdvices
               });
               $scope.allowableMapAdvices = localStorageService.get('mapAdvices');
+            }).error(function(data, status, headers, config) {
+              $rootScope.handleHttpError(data, status, headers, config);
+            });
+
+          });
+        };
+
+        $scope.submitNewAdditionalMapEntryInfo = function(additionalMapEntryInfoField, additionalMapEntryInfoValue) {
+          var obj = {
+			'name' : additionalMapEntryInfoField + "|" + additionalMapEntryInfoValue,
+            'field' : additionalMapEntryInfoField,
+            'value' : additionalMapEntryInfoValue
+          };
+
+          $http({
+            url : root_mapping + 'additionalMapEntryInfo/add',
+            dataType : 'json',
+            data : obj,
+            method : 'PUT',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(function(data) {
+            // n/a
+          }).error(function(data, status, headers, config) {
+            $scope.recordError = 'Error adding new map advice.';
+            $rootScope.handleHttpError(data, status, headers, config);
+          }).then(function(data) {
+            $http({
+              url : root_mapping + 'additionalMapEntryInfo/additionalMapEntryInfos',
+              dataType : 'json',
+              method : 'GET',
+              headers : {
+                'Content-Type' : 'application/json'
+              }
+            }).success(function(data) {
+              $scope.additionalMapEntryInfos = data.additionalMapEntryInfo;
+              $scope.resetAdditionalMapEntryInfoFilter();
+              localStorageService.add('additionalMapEntryInfos', data.additionalMapEntryInfo);
+              $rootScope.$broadcast('localStorageModule.notification.setAdditionalMapEntryInfos', {
+                key : 'additionalMapEntryInfos',
+                additionalMapEntryInfos : data.additionalMapEntryInfo
+              });
+              $scope.allowableAdditionalMapEntryInfos = localStorageService.get('additionalMapEntryInfos');
             }).error(function(data, status, headers, config) {
               $rootScope.handleHttpError(data, status, headers, config);
             });
