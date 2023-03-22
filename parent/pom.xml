@@ -49,7 +49,7 @@
     <jersey.core.version>2.29</jersey.core.version>
     <jersey.media.version>2.29</jersey.media.version>
     <jersey.version>2.29</jersey.version>
-    <jettison.version>1.4.0</jettison.version>
+    <jettison.version>1.5.4</jettison.version>
     <junit.version>4.13.1</junit.version>
     <lucene.version>5.5.5</lucene.version>
     
