@@ -69,14 +69,12 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
   /** The delta dir. */
   private File deltaDir;
 
-  /** the defaultPreferredNames type id. */
-  private Long dpnTypeId = 900000000000003001L;
-
-  /** The dpn ref set id. */
-  private Long dpnRefsetId = 900000000000509007L;
-
-  /** The dpn acceptability id. */
-  private Long dpnAcceptabilityId = 900000000000548007L;
+  /** The dpn ref set ids. */
+  private List<Long> dpnRefsetIdArray = new ArrayList<>();
+  
+  /** the type ids. */
+  private static Long fsnTypeId = 900000000000003001L;
+  private static Long definitionTypeId = 900000000000550004L;
 
   /** The concept reader. */
   private BufferedReader conceptReader;
@@ -140,6 +138,9 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 
   /** The delta language refset member ids. */
   private Set<String> deltaLanguageRefSetMemberIds = new HashSet<>();
+  
+  /** The default preferred names set (terminologyId -> {rank, dpn}). */
+  private Map<String, String[]> defaultPreferredNames = new HashMap<>();
 
   /** The "recompute preferred name" concept ids. */
   private Set<String> recomputePnConceptIds = new HashSet<>();
@@ -183,7 +184,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 
     logFile = new File(logDirectory, "load_" + terminology + ".log");
     LoggerUtility.setConfiguration("load", logFile.getAbsolutePath());
-    this.log = LoggerUtility.getLogger("load");
+    log = LoggerUtility.getLogger("load");
   }
 
   @Override
@@ -369,25 +370,23 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
       }
     }
 
-    // set the parameters for determining defaultPreferredNames
-    String prop = config.getProperty("loader.defaultPreferredNames.typeId");
-    if (prop != null) {
-      dpnTypeId = Long.valueOf(prop);
+    // get the config properties for default preferred name variables
+    // set the dpn variables and instantiate the concept dpn map
+    Properties properties = ConfigUtility.getConfigProperties();
+
+
+
+    String props = properties.getProperty("loader.defaultPreferredNames.refSetId");
+    String tokens[] = props.split(",");
+    for (String prop : tokens) {
+      if (prop != null) {
+        dpnRefsetIdArray.add(Long.valueOf(prop));
+      }
     }
 
-    prop = config.getProperty("loader.defaultPreferredNames.refsetId");
-    if (prop != null) {
-      dpnRefsetId = Long.valueOf(prop);
-    }
-    prop = config.getProperty("loader.defaultPreferredNames.acceptabilityId");
-    if (prop != null) {
-      dpnAcceptabilityId = Long.valueOf(prop);
-    }
 
-    // output relevant properties/settings to console
-    log.info("  typeId:          " + dpnTypeId);
-    log.info("  refsetId:        " + dpnRefsetId);
-    log.info("  acceptabilityId: " + dpnAcceptabilityId);
+    log.info("  dpnRefsetIdArray = " + dpnRefsetIdArray);
+    
 
     // Open files
     instantiateFileReaders();
@@ -1031,57 +1030,15 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 
       log.info("Checking concept " + concept.getTerminologyId());
 
-      boolean dpnFound = false;
-
-      // Iterate over descriptions
-      for (Description description : concept.getDescriptions()) {
-        log.info("  Checking description " + description.getTerminologyId()
-            + ", active = " + description.isActive() + ", typeId = "
-            + description.getTypeId());
-        // If active and preferred type
-        if (description.isActive()
-            && description.getTypeId().equals(dpnTypeId)) {
-
-          // Iterate over language refset members
-          for (LanguageRefSetMember language : description
-              .getLanguageRefSetMembers()) {
-            log.info("    Checking language " + language.getTerminologyId()
-                + ", active = " + language.isActive() + ", refsetId = "
-                + language.getRefSetId() + ", acceptabilityId = "
-                + language.getAcceptabilityId());
-
-            // If prefrred and has correct refset
-            if (Long.valueOf(language.getRefSetId()).equals(dpnRefsetId)
-                && language.isActive()
-                && language.getAcceptabilityId().equals(dpnAcceptabilityId)) {
-              log.info("      MATCH FOUND: " + description.getTerm());
-              // print warning for multiple names found
-              if (dpnFound) {
-                log.warn("Multiple default preferred names found for concept "
-                    + concept.getTerminologyId());
-                log.warn(
-                    "  " + "Existing: " + concept.getDefaultPreferredName());
-                log.warn("  " + "Replaced with: " + description.getTerm());
-              }
-
-              // Set preferred name
-              concept.setDefaultPreferredName(description.getTerm());
-
-              // set found to true
-              dpnFound = true;
-
-            }
-          }
-        }
-
-      }
+      String[] result = computeDefaultPreferredName(concept);
       // Pref name not found
-      if (!dpnFound) {
+      if (result == null) {
         dpnNotFoundCt++;
         log.warn("Could not find defaultPreferredName for concept "
             + concept.getTerminologyId());
         concept.setDefaultPreferredName("[Could not be determined]");
       } else {
+        concept.setDefaultPreferredName(result[1]);
         dpnFoundCt++;
       }
       
@@ -1100,6 +1057,81 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 
   }
 
+  /**
+   * Helper function to access/add to dpn set.
+   *
+   * @param concept the concept
+   * @param dpnTypeId the dpn type id
+   * @param dpnRefSetId the dpn ref set id
+   * @param dpnAcceptabilityId the dpn acceptability id
+   * @return the rank dpn tuple
+   * @throws Exception the exception
+   */
+  private String[] computeDefaultPreferredName(Concept concept) throws Exception {
+
+    if (defaultPreferredNames.containsKey(concept.getTerminologyId())) {
+      return defaultPreferredNames.get(concept.getTerminologyId());
+    } else {
+    
+      // cycle over descriptions
+      for (final Description description : concept.getDescriptions()) {
+
+        // cycle over language ref sets
+        for (final LanguageRefSetMember language : description.getLanguageRefSetMembers()) {
+
+          if (description.isActive() && language.isActive()
+              && dpnRefsetIdArray.contains(Long.valueOf(language.getRefSetId()))
+              && !description.getTypeId().equals(definitionTypeId)) {
+
+            // if the description/language refset pair match any of the ranked
+            // refsetId/typeId/acceptabilityId triples,
+            // this is a potential defaultPrefferedName
+            int index = dpnRefsetIdArray.indexOf(Long.valueOf(language.getRefSetId()));
+
+            // retrieve the concept for this description
+            concept = description.getConcept();
+            
+            // check if this concept already had a dpn stored
+            if (defaultPreferredNames.containsKey(concept.getTerminologyId())) {
+              String[] rankValuePair = defaultPreferredNames.get(concept.getTerminologyId());
+              // if the lang refset priority is higher than the priority of the previously
+              // stored dpn, replace it
+              if (dpnRefsetIdArray.indexOf(Long.valueOf(language.getRefSetId())) > Integer
+                  .parseInt(rankValuePair[0])) {
+                String[] newRankValuePair = {
+                    Integer.valueOf(index).toString(), description.getTerm()
+                };
+                defaultPreferredNames.put(concept.getTerminologyId(), newRankValuePair);
+              }
+              // if the lang refset priority is the same as the previously stored dpn, but the typeId is fsn, replace it
+              if (dpnRefsetIdArray.indexOf(Long.valueOf(language.getRefSetId())) == Integer
+                  .parseInt(rankValuePair[0])) {
+                if (description.getTypeId().equals(fsnTypeId)) {
+                  String[] newRankValuePair = {
+                      Integer.valueOf(index).toString(), description.getTerm()
+                  };
+                  defaultPreferredNames.put(concept.getTerminologyId(), newRankValuePair);
+                }
+              }
+            // store first potential dpn
+            } else {
+              String[] newRankValuePair = {
+                  Integer.valueOf(index).toString(), description.getTerm()
+              };
+              defaultPreferredNames.put(concept.getTerminologyId(), newRankValuePair);
+            }
+          }
+        }
+      }
+      if (defaultPreferredNames.containsKey(concept.getTerminologyId())) {
+        return defaultPreferredNames.get(concept.getTerminologyId());
+      } else {
+        log.warn(
+          "Could not retrieve default preferred name for Concept " + concept.getTerminologyId());
+        return null;
+      }
+    }
+  }
   /**
    * Retires concepts that were removed from prior deltas. Find concepts in the
    * DB that are not in the current delta and which have effective times greater
