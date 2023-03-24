@@ -3,6 +3,12 @@
  */
 package org.ihtsdo.otf.mapping.mojo;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.helpers.ConceptList;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
@@ -10,6 +16,7 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.rf2.LanguageRefSetMember;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
  * Goal which recomputes terminology preferred names.
@@ -38,14 +45,16 @@ public class ComputeDefaultPreferredNameMojo extends AbstractOtfMappingMojo {
    */
   private String terminologyVersion;
 
-  /** the defaultPreferredNames type id. */
-  private Long dpnTypeId = 900000000000003001L;
+  /** the type ids. */
+  private static Long fsnTypeId = 900000000000003001L;
+  private static Long definitionTypeId = 900000000000550004L;
 
-  /** The dpn ref set id. */
-  private Long dpnRefsetId = 900000000000509007L;
+  /** The dpn ref set ids. */
+  private List<Long> dpnRefsetIdArray = new ArrayList<>();
 
-  /** The dpn acceptability id. */
-  private Long dpnAcceptabilityId = 900000000000548007L;
+  
+  /** The default preferred names set (terminologyId -> {rank, dpn}). */
+  private Map<String, String[]> defaultPreferredNames = new HashMap<>();
 
   /* see superclass */
   /*
@@ -60,10 +69,22 @@ public class ComputeDefaultPreferredNameMojo extends AbstractOtfMappingMojo {
       getLog().info("Starting comput default preferred names");
       getLog().info("  terminology = " + terminology);
       getLog().info("  terminologyVersion = " + terminologyVersion);
-      getLog().info("  dpnTypeId = " + dpnTypeId);
-      getLog().info("  dpnRefsetId = " + dpnRefsetId);
-      getLog().info("  dpnAcceptabilityId = " + dpnAcceptabilityId);
 
+      // get the config properties for default preferred name variables
+      // set the dpn variables and instantiate the concept dpn map
+      Properties properties = ConfigUtility.getConfigProperties();
+
+      // set the parameters for determining defaultPreferredNames
+      String props = properties.getProperty("loader.defaultPreferredNames.refSetId");
+      String tokens[] = props.split(",");
+      for (String prop : tokens) {
+        if (prop != null) {
+          dpnRefsetIdArray.add(Long.valueOf(prop));
+        }
+      }
+
+      getLog().info("  dpnRefsetIdArray = " + dpnRefsetIdArray);
+      
       setupBindInfoPackage();
 
       computeDefaultPreferredNames();
@@ -114,50 +135,21 @@ public class ComputeDefaultPreferredNameMojo extends AbstractOtfMappingMojo {
 
       boolean dpnFound = false;
 
-      // Iterate over descriptions
-      OUTER: for (Description description : concept.getDescriptions()) {
-
-        // If active andn preferred type
-        if (description.isActive()
-            && description.getTypeId().equals(dpnTypeId)) {
-
-          // Iterate over language refset members
-          for (LanguageRefSetMember language : description
-              .getLanguageRefSetMembers()) {
-            // If prefrred and has correct refset
-            if (Long.valueOf(language.getRefSetId()).equals(dpnRefsetId)
-                && language.isActive()
-                && language.getAcceptabilityId().equals(dpnAcceptabilityId)) {
-              // print warning for multiple names found
-              if (dpnFound) {
-                getLog()
-                    .warn("Multiple default preferred names found for concept "
-                        + concept.getTerminologyId());
-                getLog().warn(
-                    "  " + "Existing: " + concept.getDefaultPreferredName());
-                getLog().warn("  " + "Replaced with: " + description.getTerm());
-              }
-
-              // Set preferred name
-              concept.setDefaultPreferredName(description.getTerm());
-              contentService.updateConcept(concept);
-              // set found to true
-              dpnFound = true;
-              break OUTER;
-            }
-          }
-        }
-
-      }
-
-      // Pref name not found
-      if (!dpnFound) {
-        dpnNotFoundCt++;
-        getLog().warn("Could not find defaultPreferredName for concept "
-            + concept.getTerminologyId());
-        concept.setDefaultPreferredName("[Could not be determined]");
-      } else {
+      String[] result = computeDefaultPreferredName(concept);
+      // If Dpn found
+      if (result[1] != null) {
+        // Set preferred name
+        concept.setDefaultPreferredName(result[1]);
+        contentService.updateConcept(concept);
+        dpnFound = true;
         dpnFoundCt++;
+        // Dpn not found
+      } else {
+        dpnFound = false;
+        dpnNotFoundCt++;
+        getLog()
+            .warn("Could not find defaultPreferredName for concept " + concept.getTerminologyId());
+        concept.setDefaultPreferredName("[Could not be determined]");
       }
 
       // periodically comit
@@ -177,4 +169,76 @@ public class ComputeDefaultPreferredNameMojo extends AbstractOtfMappingMojo {
 
   }
 
+  /**
+   * Helper function to access/add to dpn set.
+   *
+   * @param concept the concept
+   * @return the rank dpn tuple
+   * @throws Exception the exception
+   */
+  private String[] computeDefaultPreferredName(Concept concept) throws Exception {
+
+    if (defaultPreferredNames.containsKey(concept.getTerminologyId())) {
+      return defaultPreferredNames.get(concept.getTerminologyId());
+    } else {
+    
+      // cycle over descriptions
+      for (final Description description : concept.getDescriptions()) {
+
+        // cycle over language ref sets
+        for (final LanguageRefSetMember language : description.getLanguageRefSetMembers()) {
+
+          if (description.isActive() && language.isActive()
+              && dpnRefsetIdArray.contains(Long.valueOf(language.getRefSetId()))
+              && !description.getTypeId().equals(definitionTypeId)) {
+
+            // if the description/language refset pair match any of the ranked
+            // refsetId/typeId/acceptabilityId triples,
+            // this is a potential defaultPrefferedName
+            int index = dpnRefsetIdArray.indexOf(Long.valueOf(language.getRefSetId()));
+
+            // retrieve the concept for this description
+            concept = description.getConcept();
+            
+            // check if this concept already had a dpn stored
+            if (defaultPreferredNames.containsKey(concept.getTerminologyId())) {
+              String[] rankValuePair = defaultPreferredNames.get(concept.getTerminologyId());
+              // if the lang refset priority is higher than the priority of the previously
+              // stored dpn, replace it
+              if (dpnRefsetIdArray.indexOf(Long.valueOf(language.getRefSetId())) > Integer
+                  .parseInt(rankValuePair[0])) {
+                String[] newRankValuePair = {
+                    Integer.valueOf(index).toString(), description.getTerm()
+                };
+                defaultPreferredNames.put(concept.getTerminologyId(), newRankValuePair);
+              }
+              // if the lang refset priority is the same as the previously stored dpn, but the typeId is fsn, replace it
+              if (dpnRefsetIdArray.indexOf(Long.valueOf(language.getRefSetId())) == Integer
+                  .parseInt(rankValuePair[0])) {
+                if (description.getTypeId().equals(fsnTypeId)) {
+                  String[] newRankValuePair = {
+                      Integer.valueOf(index).toString(), description.getTerm()
+                  };
+                  defaultPreferredNames.put(concept.getTerminologyId(), newRankValuePair);
+                }
+              }
+            // store first potential dpn
+            } else {
+              String[] newRankValuePair = {
+                  Integer.valueOf(index).toString(), description.getTerm()
+              };
+              defaultPreferredNames.put(concept.getTerminologyId(), newRankValuePair);
+            }
+          }
+        }
+      }
+      if (defaultPreferredNames.containsKey(concept.getTerminologyId())) {
+        return defaultPreferredNames.get(concept.getTerminologyId());
+      } else {
+        getLog().warn(
+          "Could not retrieve default preferred name for Concept " + concept.getTerminologyId());
+        return null;
+      }
+    }
+  }
 }
