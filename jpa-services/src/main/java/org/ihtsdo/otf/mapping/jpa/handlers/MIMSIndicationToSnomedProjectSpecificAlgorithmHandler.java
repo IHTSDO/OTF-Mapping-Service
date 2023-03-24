@@ -119,14 +119,38 @@ public class MIMSIndicationToSnomedProjectSpecificAlgorithmHandler
     // (qualifier value)  
     
     final List<String> validSemanticTagsList = new ArrayList<>();
-    validSemanticTagsList.add("(finding)");
-    validSemanticTagsList.add("(disorder)");
-    validSemanticTagsList.add("(substance)");
-    validSemanticTagsList.add("(procedure)");
-    validSemanticTagsList.add("(event)");
-    validSemanticTagsList.add("(situation)");
-    validSemanticTagsList.add("(body structure)");
-    validSemanticTagsList.add("(qualifier value)");
+    validSemanticTagsList.add("finding)");
+    validSemanticTagsList.add("disorder)");
+    validSemanticTagsList.add("procedure)");
+    validSemanticTagsList.add("morphologic abnormality)");
+    validSemanticTagsList.add("regime/therapy)");
+    validSemanticTagsList.add("body structure)");
+    validSemanticTagsList.add("qualifier value)");
+    validSemanticTagsList.add("substance)");
+    validSemanticTagsList.add("physical object)");
+    validSemanticTagsList.add("event)");
+    validSemanticTagsList.add("observable entity)");
+    validSemanticTagsList.add("specimen)");
+    validSemanticTagsList.add("cell)");
+    validSemanticTagsList.add("cell structure)");
+    validSemanticTagsList.add("product)");
+    validSemanticTagsList.add("situation)");
+    validSemanticTagsList.add("medicinal product)");
+    validSemanticTagsList.add("disposition)");
+    validSemanticTagsList.add("unit of presentation)");
+    validSemanticTagsList.add("transformation)");
+    validSemanticTagsList.add("basic dose form)");
+    validSemanticTagsList.add("intended site)");
+    validSemanticTagsList.add("release characteristic)");
+    validSemanticTagsList.add("state of matter)");
+    validSemanticTagsList.add("dose form)");
+    validSemanticTagsList.add("administration method)");
+    validSemanticTagsList.add("role)");
+    validSemanticTagsList.add("clinical drug)");
+    validSemanticTagsList.add("medicinal product form)");
+    validSemanticTagsList.add("supplier)");
+    validSemanticTagsList.add("product name)");
+    
    
     // "No target" targets are valid
     if(terminologyId != null && terminologyId.isBlank()) {
@@ -182,6 +206,18 @@ public class MIMSIndicationToSnomedProjectSpecificAlgorithmHandler
     final Set<String> recordMinusEntry = new HashSet<>(recordWords);
     recordMinusEntry.removeAll(entryWords);
 
+    // At least one entry must have a map relation
+    Boolean relationFound = false;
+    for (final MapEntry entry : mapRecord.getMapEntries()) {
+      if(entry.getMapRelation() != null) {
+         relationFound=true;
+         break;
+      }
+    }   
+    if (!relationFound) {
+      result.addError("Map relation required for at least one target.");
+    }
+    
     // If there are entry words and none match, warning
     // if (entryWords.size() > 0 && recordWords.size() ==
     // recordMinusEntry.size()) {
