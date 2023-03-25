@@ -73,14 +73,12 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
   /** Send notifications if true */
   private Boolean sendNotification;
 
-  /** the defaultPreferredNames type id. */
-  private Long dpnTypeId = 900000000000003001L;
-
-  /** The dpn ref set id. */
-  private Long dpnrefsetId = 900000000000509007L;
-
-  /** The dpn acceptability id. */
-  private Long dpnAcceptabilityId = 900000000000548007L;
+  /** The dpn ref set ids. */
+  private List<Long> dpnRefsetIdArray = new ArrayList<>();
+  
+  /** the type ids. */
+  private static Long fsnTypeId = 900000000000003001L;
+  private static Long definitionTypeId = 900000000000550004L;
 
   /** The date format. */
   private final SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd");
@@ -116,7 +114,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
   private Map<String, Concept> conceptCache = new HashMap<>(); // used to
 
   /** hash set for storing default preferred names. */
-  Map<Long, String> defaultPreferredNames = new HashMap<>();
+  Map<String, String[]> defaultPreferredNames = new HashMap<>();
 
   private final String elapsedTime =
       "    elapsed time = %,d (s) (Ended at %s )";
@@ -211,20 +209,15 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
       throw new Exception("Specified input dir missing");
     }
 
-    // set the parameters for determining defaultPreferredNames
-    String prop = config.getProperty("loader.defaultPreferredNames.typeId");
-    if (prop != null) {
-      dpnTypeId = Long.valueOf(prop);
+    String props = config.getProperty("loader.defaultPreferredNames.refSetId");
+    String tokens[] = props.split(",");
+    for (String prop : tokens) {
+      if (prop != null) {
+        dpnRefsetIdArray.add(Long.valueOf(prop));
+      }
     }
+    
 
-    prop = config.getProperty("loader.defaultPreferredNames.refsetId");
-    if (prop != null) {
-      dpnrefsetId = Long.valueOf(prop);
-    }
-    prop = config.getProperty("loader.defaultPreferredNames.acceptabilityId");
-    if (prop != null) {
-      dpnAcceptabilityId = Long.valueOf(prop);
-    }
 
     //
     // Determine version
@@ -235,9 +228,9 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
     // output relevant properties/settings to console
     log.info("  Default preferred name settings:");
-    log.info("    typeId = " + dpnTypeId);
-    log.info("    refsetId = " + dpnrefsetId);
-    log.info("    acceptabilityId = " + dpnAcceptabilityId);
+    log.info("    typeIdArray = " + config.getProperty("loader.defaultPreferredNames.typeId"));
+    log.info("    refsetIdArray = " + config.getProperty("loader.defaultPreferredNames.refSetId"));
+    log.info("    acceptabilityIdArray = " + config.getProperty("loader.defaultPreferredNames.acceptabilityId"));
     log.info("  Objects committed in blocks of " + Integer.toString(commitCt));
 
     // Log memory usage
@@ -1166,7 +1159,49 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
         // Check if this language refset and description form the
         // defaultPreferredName
-        if (description.isActive() && description.getTypeId().equals(dpnTypeId)
+        if (description.isActive() && language.isActive()
+            && dpnRefsetIdArray.contains(Long.valueOf(language.getRefSetId()))
+            && !description.getTypeId().equals(definitionTypeId)) {
+
+          // if the description/language refset pair match any of the ranked
+          // refsetId/typeId/acceptabilityId triples,
+          // this is a potential defaultPrefferedName
+          int index = dpnRefsetIdArray.indexOf(Long.valueOf(language.getRefSetId()));
+
+          // retrieve the concept for this description
+          concept = description.getConcept();
+          
+          // check if this concept already had a dpn stored
+          if (defaultPreferredNames.containsKey(concept.getTerminologyId())) {
+            String[] rankValuePair = defaultPreferredNames.get(concept.getTerminologyId());
+            // if the lang refset priority is higher than the priority of the previously
+            // stored dpn, replace it
+            if (dpnRefsetIdArray.indexOf(Long.valueOf(language.getRefSetId())) > Integer
+                .parseInt(rankValuePair[0])) {
+              String[] newRankValuePair = {
+                  Integer.valueOf(index).toString(), description.getTerm()
+              };
+              defaultPreferredNames.put(concept.getTerminologyId(), newRankValuePair);
+            }
+            // if the lang refset priority is the same as the previously stored dpn, but the typeId is fsn, replace it
+            if (dpnRefsetIdArray.indexOf(Long.valueOf(language.getRefSetId())) == Integer
+                .parseInt(rankValuePair[0])) {
+              if (description.getTypeId().equals(fsnTypeId)) {
+                String[] newRankValuePair = {
+                    Integer.valueOf(index).toString(), description.getTerm()
+                };
+                defaultPreferredNames.put(concept.getTerminologyId(), newRankValuePair);
+              }
+            }
+          // store first potential dpn
+          } else {
+            String[] newRankValuePair = {
+                Integer.valueOf(index).toString(), description.getTerm()
+            };
+            defaultPreferredNames.put(concept.getTerminologyId(), newRankValuePair);
+          }
+        }
+        /**if (description.isActive() && description.getTypeId().equals(dpnTypeId)
             && Long.valueOf(language.getRefSetId()).equals(dpnrefsetId)
             && language.isActive()
             && language.getAcceptabilityId().equals(dpnAcceptabilityId)) {
@@ -1182,7 +1217,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
           }
           defaultPreferredNames.put(concept.getId(), description.getTerm());
 
-        }
+        }*/
 
         // Get the next language ref set member
         language = getNextLanguage(terminology, version);
@@ -1242,9 +1277,9 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
           contentService.getConcept(cachedConcept.getId());
       dbConcept.getDescriptions();
       dbConcept.getRelationships();
-      if (defaultPreferredNames.get(dbConcept.getId()) != null) {
+      if (defaultPreferredNames.containsKey(dbConcept.getTerminologyId())) {
         dbConcept.setDefaultPreferredName(
-            defaultPreferredNames.get(dbConcept.getId()));
+            defaultPreferredNames.get(dbConcept.getTerminologyId())[1]);
       } else {
         dbConcept.setDefaultPreferredName("No default preferred name found");
       }
