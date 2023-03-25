@@ -45,7 +45,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Run the weekly SQLdump report and email to MedDRA staff
+ * Run the weekly SQLdump report and email
  * 
  * See admin/loader/pom.xml for a sample execution.
  * 
@@ -315,12 +315,28 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
         final JsonNode inactiveConceptIds = doc.get("items");
 
         for(int i = 0; i<inactiveConceptIds.size(); i++) {
+          returnedConceptsCount++;
+          
           String inactiveConceptId = inactiveConceptIds.get(i).asText();
+          //Don't include "garbage SCTIDs", defined as concepts that contain "10002" as the
+          //7th through 11th characters.
+          //E.g. "1217661000202103"
+          //From Cato Spook in Norway:
+          //   They got their nickname because earlier we made them as a plan B to satisfy 
+          //   Helseplattformen who wanted SCTIDs to ICD-10 codes that did not have a SCTID 
+          //   mapping to them. You can see the ICD-10 code in the square brackets in the FSN. 
+          //   When we find a reason to inactivate these SCTIDs we do it, because they are very 
+          //   primitive and don’t have the functionality of a properly made SCTID. They are just 
+          //   inactivated without replacements because they are “garbage”. We don’t need them 
+          //   in our list.
+          if(inactiveConceptId.length()>11 && inactiveConceptId.substring(6, 11).equals("10002")) {
+            continue;
+          }
+          
           if(activeInPreviousBranchScopeConcepts.contains(inactiveConceptId)) {
             scopeConceptsInactivatedSincePreviousBranch.add(inactiveConceptId);
           }
 
-          returnedConceptsCount++;
         }
          
         searchAfter = doc.get("searchAfter").asText();
@@ -667,10 +683,10 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
       List<String> results = new ArrayList<>();
       // Add header row
       results.add(
-          "conceptId\tfsn.term\tpt.lang\tpt.term\tICD-10 MAP\tNorsk ICD-10 Map\tinactivationIndicator.pt.term"+
+          "conceptId\tfsn.term\tpt.lang\tpt.term\tICD-10 MAP\tinactivationIndicator.pt.term"+
           "\tassociations.association.pt.term\tassociations.targetId\tassociations.target.fsn.term\t"+
-          "associations.target.pt.lang\tassociations.target.pt.term\tNy SCTID Erstatning OK\tTarget ICD-10 Map\tNorsk Target ICD-10 Map"+
-          "\tOppr map Ja/Nei\tKommentar");
+          "associations.target.pt.lang\tassociations.target.pt.term\tNy SCTID OK\tTarget ICD-10 Map\t"+
+          "Norsk Target ICD-10 Map\tIkkje bruk map\tOppr map Ja/Nei\tKommentar\tKolonne1\tKolonne2");
 
       // Add result rows, in conceptId order
       Collections.sort(inactivedMappedScopeConcepts);
@@ -681,8 +697,8 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
             conceptIdToFSN.get(conceptId) + "\t" +
             (conceptIdToPTNO.get(conceptId)!=null ? "no" : "en") + "\t" +
             (conceptIdToPTNO.get(conceptId)!=null ? conceptIdToPTNO.get(conceptId) : conceptIdToPTEN.get(conceptId)) + "\t"+
-            (internationalMappedConceptsAndTargets.get(conceptId)!=null ? String.join(", ", internationalMappedConceptsAndTargets.get(conceptId)) : "") + "\t"+
-            (norwayMappedConceptsAndTargets.get(conceptId)!=null ? String.join(", ", norwayMappedConceptsAndTargets.get(conceptId)) : "") + "\t"+
+            //Display Norway maps targets if available, otherwise use International targets
+            (norwayMappedConceptsAndTargets.get(conceptId)!=null ? String.join(", ", norwayMappedConceptsAndTargets.get(conceptId)) : internationalMappedConceptsAndTargets.get(conceptId)!=null ? String.join(", ", internationalMappedConceptsAndTargets.get(conceptId)) : "") + "\t"+
             inactivationIndicator;
         if(conceptAssociationTargets.get(conceptId) == null) {
           results.add(inactiveConceptInfo);
@@ -699,8 +715,9 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
               (conceptIdToPTNO.get(targetId)!=null ? "no" : "en") + "\t" +
               (conceptIdToPTNO.get(targetId)!=null ? conceptIdToPTNO.get(targetId) : conceptIdToPTEN.get(targetId)) + "\t"+
               "\t"+
-              (internationalMappedConceptsAndTargets.get(targetId)!=null ? String.join(", ", internationalMappedConceptsAndTargets.get(targetId)) : "") + "\t"+
-              (norwayMappedConceptsAndTargets.get(targetId)!=null ? String.join(", ", norwayMappedConceptsAndTargets.get(targetId)) : "");
+              //Display Norway maps targets if available, otherwise use International targets
+              (norwayMappedConceptsAndTargets.get(targetId)!=null ? String.join(", ", norwayMappedConceptsAndTargets.get(targetId)) : internationalMappedConceptsAndTargets.get(targetId)!=null ? String.join(", ", internationalMappedConceptsAndTargets.get(targetId)) : "");
+
               results.add(inactiveConceptInfo + "\t" + targetConceptInfo);
             }
           }
