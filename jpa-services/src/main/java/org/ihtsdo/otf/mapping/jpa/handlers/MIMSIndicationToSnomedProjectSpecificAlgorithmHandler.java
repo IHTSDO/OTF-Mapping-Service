@@ -194,37 +194,19 @@ public class MIMSIndicationToSnomedProjectSpecificAlgorithmHandler
   public ValidationResult validateSemanticChecks(MapRecord mapRecord) throws Exception {
     final ValidationResult result = new ValidationResultJpa();
 
-    // Map record name must share at least one word with target name
-    final Set<String> recordWords =
-        new HashSet<>(Arrays.asList(mapRecord.getConceptName().toLowerCase().split(" ")));
-    final Set<String> entryWords = new HashSet<>();
-    for (final MapEntry entry : mapRecord.getMapEntries()) {
-      if (entry.getTargetName() != null) {
-        entryWords.addAll(Arrays.asList(entry.getTargetName().toLowerCase().split(" ")));
+    // If record has targets, at least one entry must have a map relation
+    if(!(mapRecord.getMapEntries().size()==1 && mapRecord.getMapEntries().get(0).getTargetName().equals("No target"))) {
+      Boolean relationFound = false;
+      for (final MapEntry entry : mapRecord.getMapEntries()) {
+        if(entry.getMapRelation() != null) {
+           relationFound=true;
+           break;
+        }
+      }   
+      if (!relationFound) {
+        result.addError("Map relation required for at least one target.");
       }
     }
-    final Set<String> recordMinusEntry = new HashSet<>(recordWords);
-    recordMinusEntry.removeAll(entryWords);
-
-    // At least one entry must have a map relation
-    Boolean relationFound = false;
-    for (final MapEntry entry : mapRecord.getMapEntries()) {
-      if(entry.getMapRelation() != null) {
-         relationFound=true;
-         break;
-      }
-    }   
-    if (!relationFound) {
-      result.addError("Map relation required for at least one target.");
-    }
-    
-    // If there are entry words and none match, warning
-    // if (entryWords.size() > 0 && recordWords.size() ==
-    // recordMinusEntry.size()) {
-    // result
-    // .addWarning("From concept and target code names must share at least one
-    // word.");
-    // }
 
     return result;
   }
