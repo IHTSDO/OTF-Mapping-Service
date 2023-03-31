@@ -96,6 +96,18 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
   
   /* see superclass */
   @Override
+  public void preReleaseProcessing() throws Exception {
+    // Only specific projects require this - by default, do nothing
+  }
+  
+  /* see superclass */
+  @Override
+  public void postReleaseProcessing(String effectiveTime) throws Exception {
+    // Only specific projects require this - by default, do nothing
+  }  
+  
+  /* see superclass */
+  @Override
   public Set<String> loadTags(String conceptId) throws Exception {
     // Only specific projects require this - by default, do nothing
     return null;

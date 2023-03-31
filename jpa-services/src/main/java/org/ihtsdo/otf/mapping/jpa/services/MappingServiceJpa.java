@@ -3268,7 +3268,8 @@ public class MappingServiceJpa extends RootServiceJpa
     Logger.getLogger(MappingServiceJpa.class).info("  " + "Changes committed");
 
   }
-
+ 
+  
   /* see superclass */
   @Override
   public Map<String, Map<String, String>> getMapProjectMetadata()
