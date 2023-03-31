@@ -66,6 +66,80 @@
     </profile>
 
     <profile>
+      <id>PreReleaseProcessing</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>prerelease-processing</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>prerelease-processing</goal>
+                </goals>
+                <configuration>
+                  <refsetId>${refset.id}</refsetId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>PostReleaseProcessing</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>postrelease-processing</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>postrelease-processing</goal>
+                </goals>
+                <configuration>
+                  <refsetId>${refset.id}</refsetId>
+                  <!-- e.g. 20150131 -->
+                  <effectiveTime>${time}</effectiveTime>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>NorwayPostUploadProcessing</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>postupload-processing</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>postupload-processing</goal>
+                </goals>
+                <configuration>
+                  <refsetId>${refset.id}</refsetId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
       <id>BeginRelease</id>
       <build>
         <plugins>
