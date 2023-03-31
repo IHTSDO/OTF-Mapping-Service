@@ -74,7 +74,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
   public boolean isTargetCodeValid(String terminologyId) throws Exception;
 
   /**
-   * Indicates whether or not a map record line is valid to load
+   * Indicates whether or not a map record line is valid to load.
    *
    * @param line the line
    * @return <code>true</code> if so, <code>false</code> otherwise
@@ -137,16 +137,35 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * pre-populate the map record for this project
    *
    * @param mapRecord the map record
+   * @return the map record
    * @throws Exception the exception
    */
   public MapRecord computeInitialMapRecord(MapRecord mapRecord) throws Exception;
 
+  /**
+   * Runs any project-specific pre-release processing that may be required
+   * Only select projects need this, so it is blank by default.
+   *
+   * @throws Exception the exception
+   */
+  public void preReleaseProcessing() throws Exception;
+  
+  /**
+   * Runs any project-specific post-release processing that may be required
+   * Only select projects need this, so it is blank by default.
+   *
+   * @param effectiveTime the effective time
+   * @throws Exception the exception
+   */
+  public void postReleaseProcessing(String effectiveTime) throws Exception;  
+  
   /**
    * Load tags associated with the concept. Read in tags from a pipe-delimited file,
    * and if the concept id is associated with tags, return them so they can be
    * assigned to the tracking record for this concept.
    *
    * @param conceptId the concept id
+   * @return the sets the
    * @throws Exception the exception
    */ 
   public Set<String> loadTags(String conceptId) throws Exception;
