@@ -197,6 +197,7 @@ public class MappingCompareReportMojo extends AbstractOtfMappingMojo {
       logger.info("URL: {}", webTarget.getUri());
 
       final Response response = webTarget.request(MediaType.APPLICATION_JSON)
+          .header("User-Agent","WCI")
           .header("Accept-Language",
               "en-X-900000000000509007,en-X-900000000000508004,en")
           .header("Cookie", ConfigUtility.getGenericUserCookie()).get();
