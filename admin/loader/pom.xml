@@ -982,6 +982,52 @@
       </build>
     </profile>
 
+    <profile>
+      <id>UpdateICD10NO</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>update-icd10no</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>update-icd10no</goal>
+                </goals>
+                <configuration>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>UpdateICPC2NO</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>update-icpc2no</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>update-icpc2no</goal>
+                </goals>
+                <configuration>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
     <!-- Send an email using specified subject and body. -Drun.config=.. must also be specified. -->
     <profile>
       <id>SendEmail</id>
