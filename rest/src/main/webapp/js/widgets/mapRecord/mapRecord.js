@@ -2185,7 +2185,7 @@ angular
 
           gpService.increment();
           $http({
-            url : root_workflow + 'message',
+            url : root_workflow + 'translationRequest',
             dataType : 'json',
             method : 'POST',
             data : sList,
@@ -2194,12 +2194,12 @@ angular
             }
 
           }).success(function(data) {
-            console.debug('success to sendFeedbackEmail.');
+            console.debug('success to sendTranslationRequestEmail.');
             gpService.decrement();
             $uibModalInstance.close();
           }).error(function(data, status, headers, config) {
             $uibModalInstance.close();
-            $scope.recordError = 'Error sending feedback email.';
+            $scope.recordError = 'Error sending translation request email.';
             gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
           });
@@ -2209,11 +2209,6 @@ angular
         $scope.cancel = function() {
           $uibModalInstance.dismiss('cancel');
         };
-
-        function validateEmail(email) {
-          var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-          return re.test(email);
-        }
 
         $scope.tinymceOptions = {
 
