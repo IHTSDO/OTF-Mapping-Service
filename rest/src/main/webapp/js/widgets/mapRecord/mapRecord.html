@@ -23,10 +23,16 @@
       <a title="Open Authoring History" ng-if="enableAuthoringHistoryButton == true">
         <i ng-click="openAuthoringHistory(concept)" class="glyphicon glyphicon-inbox"></i>
       </a>
+      <!--  on Norway projects, show submit request button -->
+      <a title="Submit Translation Request" ng-show="deployTitle.indexOf('NORWAY')!=-1"
+      ng-click="openViewerFeedbackModal(record, user.name)">
+      <i class="glyphicon glyphicon glyphicon-comment"></i>
+      </a>
     </td>
   </tr>
   <tr>
     <td style="vertical-align: top; padding: 5px;">
+      
       <strong>Name</strong>
     </td>
     <td style="vertical-align: top; padding: 5px;">{{concept.defaultPreferredName}}</td>
