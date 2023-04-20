@@ -243,4 +243,9 @@ public class WorkflowClientRest extends RootClientRest implements WorkflowServic
 		return null;
 	}
 
+	   @Override
+	    public Response sendTranslationRequestEmail(List<String> messageInfo, String authToken) throws Exception {
+	        // TODO Auto-generated method stub
+	        return null;
+	    }
 }

@@ -2373,4 +2373,61 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       securityService.close();
     }
   }
+  
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#sendTranslationRequestEmail(java
+   * .util.List, java.lang.String)
+   */
+  @Override
+  @POST
+  @Path("/translationRequest")
+  @ApiOperation(value = "Sends a translation request email.",
+      notes = "Sends a translation request email.")
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public Response sendTranslationRequestEmail(
+    @ApiParam(value = "message", required = true) List<String> messageInfo,
+    @ApiParam(value = "Authorization token",
+        required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    // log call
+    Logger.getLogger(WorkflowServiceRestImpl.class).info("RESTful call (Workflow): /translationRequest");
+
+    String userName = "";
+    WorkflowService workflowService = new WorkflowServiceJpa();
+
+    try {
+      // authorize call
+      userName = securityService.getUsernameForToken(authToken);
+      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+        throw new WebApplicationException(Response.status(401)
+            .entity("User does not have permissions to send a translation request email.").build());
+
+      Logger.getLogger(WorkflowServiceRestImpl.class)
+          .info("RESTful call (Workflow): /translationRequest msg: " + messageInfo);
+
+      // Split up message and send parts
+      workflowService.sendTranslationRequestEmail(messageInfo.get(0), messageInfo.get(1), messageInfo.get(2),
+          messageInfo.get(3), messageInfo.get(4), messageInfo.get(5));
+
+      return null;
+
+    } catch (Exception e) {
+      handleException(e, "send a translation request email", userName, "", messageInfo.get(0));
+      return null;
+    } finally {
+      workflowService.close();
+      securityService.close();
+    }
+  }  
 }
