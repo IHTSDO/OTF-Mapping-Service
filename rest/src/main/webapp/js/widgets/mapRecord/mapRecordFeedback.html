@@ -1,0 +1,25 @@
+<div class="modal-header">
+  <h4>Translation Request</h4>
+  <h4>{{record.conceptId}}: {{record.conceptName}}</h4>
+</div>
+
+<div class="modal-body">
+
+  <div>
+    
+    Enter a message describing the new or modified translation:<br>
+    <!--  tinymce text area -->
+    <form method="post" style="padding: 2px;">
+      <textarea id="tinymce-feedback" ui-tinymce="tinymceOptions"
+        style="width: 500px; height: 100px" ng-model="feedbackInput"></textarea>
+    </form>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-xs btn-primary"
+    ng-click="sendFeedback(record, feedbackInput, name, email); 
+    feedbackInput = ''">Send
+    Feedback</button>
+  <button class="btn btn-xs btn-warning" ng-click="cancel()">Cancel</button>
+</div>

@@ -1,5 +1,11 @@
 /*
- *    Copyright 2019 West Coast Informatics, LLC
+ * Copyright 2020 Wci Informatics - All Rights Reserved.
+ *
+ * NOTICE:  All information contained herein is, and remains the property of Wci Informatics
+ * The intellectual and technical concepts contained herein are proprietary to
+ * Wci Informatics and may be covered by U.S. and Foreign Patents, patents in process,
+ * and are protected by trade secret or copyright law.  Dissemination of this information
+ * or reproduction of this material is strictly forbidden.
  */
 package org.ihtsdo.otf.mapping.services;
 
@@ -441,6 +447,19 @@ public interface WorkflowService extends MappingService {
     String conceptName, String refSetId, String feedbackMessage)
     throws Exception;
 
+  /**
+   * Send translation request email.
+   *
+   * @param name the name
+   * @param email the email
+   * @param conceptId the concept id
+   * @param conceptName the concept name
+   * @param refSetId the ref set id
+   * @param message the message
+   * @throws Exception the exception
+   */
+  public void  sendTranslationRequestEmail(String name, String email, String conceptId,
+    String conceptName, String refSetId, String message) throws Exception;
   /**
    * Find available work.
    *
