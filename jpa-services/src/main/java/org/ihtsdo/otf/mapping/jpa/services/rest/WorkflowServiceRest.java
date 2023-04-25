@@ -1,3 +1,12 @@
+/*
+ * Copyright 2020 Wci Informatics - All Rights Reserved.
+ *
+ * NOTICE:  All information contained herein is, and remains the property of Wci Informatics
+ * The intellectual and technical concepts contained herein are proprietary to
+ * Wci Informatics and may be covered by U.S. and Foreign Patents, patents in process,
+ * and are protected by trade secret or copyright law.  Dissemination of this information
+ * or reproduction of this material is strictly forbidden.
+ */
 package org.ihtsdo.otf.mapping.jpa.services.rest;
 
 import java.util.List;
@@ -398,5 +407,15 @@ public interface WorkflowServiceRest {
 	   * @throws Exception the exception
 	   */
 	Response sendFeedbackEmail(List<String> messageInfo, String authToken) throws Exception;
+	
+	/**
+	 * Send translation request email.
+	 *
+	 * @param messageInfo the message info
+	 * @param authToken the auth token
+	 * @return the response
+	 * @throws Exception the exception
+	 */
+	Response sendTranslationRequestEmail(List<String> messageInfo, String authToken) throws Exception;
 
 }

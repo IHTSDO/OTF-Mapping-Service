@@ -133,8 +133,15 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
   /** Map of terminology id to map record. */
   Map<String, MapRecord> mapRecordMap = new HashMap<>();
 
-  /** The default preferred names set (terminologyId -> dpn). */
-  private Map<String, String> defaultPreferredNames = new HashMap<>();
+  /** The default preferred names set (terminologyId -> {rank, dpn}). */
+  private Map<String, String[]> defaultPreferredNames = new HashMap<>();
+
+  /** the type ids. */
+  private static Long fsnTypeId = 900000000000003001L;
+  private static Long definitionTypeId = 900000000000550004L;
+  
+  /** The dpn ref set ids. */
+  private List<Long> dpnRefsetIdArray = new ArrayList<>();
 
   /** The scope concepts. */
   private Map<String, Concept> conceptCache = new HashMap<>();
@@ -1822,7 +1829,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // (observable entity) | <= 28.0 days
     // (disorder)
     String rule = "IFA " + mapRecord.getConceptId() + " | "
-        + defaultPreferredNames.get(mapRecord.getConceptId()) + " |";
+        + defaultPreferredNames.get(mapRecord.getConceptId())[1] + " |";
 
     // if an age or gender rule, append the existing rule
     if (!mapEntry.getRule().contains("TRUE")) {
@@ -2110,10 +2117,13 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     // set the dpn variables and instantiate the concept dpn map
     Properties properties = ConfigUtility.getConfigProperties();
 
-    String dpnTypeId = properties.getProperty("loader.defaultPreferredNames.typeId");
-    String dpnRefSetId = properties.getProperty("loader.defaultPreferredNames.refSetId");
-    String dpnAcceptabilityId =
-        properties.getProperty("loader.defaultPreferredNames.acceptabilityId");
+    String props = properties.getProperty("loader.defaultPreferredNames.refSetId");
+    String tokens[] = props.split(",");
+    for (String prop : tokens) {
+      if (prop != null) {
+        dpnRefsetIdArray.add(Long.valueOf(prop));
+      }
+    }
 
     // Compute preferred names
     int ct = 0;
@@ -2131,10 +2141,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
       }
       conceptCache.put(concept.getTerminologyId(), concept);
       if (testModeFlag) {
-        defaultPreferredNames.put(concept.getTerminologyId(), concept.getDefaultPreferredName());
+        String[] rankDpnArray = new String[]{"1", concept.getDefaultPreferredName()};
+        defaultPreferredNames.put(concept.getTerminologyId(), rankDpnArray);
+        
       } else {
         defaultPreferredNames.put(concept.getTerminologyId(),
-            computeDefaultPreferredName(concept, dpnTypeId, dpnRefSetId, dpnAcceptabilityId));
+            computeDefaultPreferredName(concept));
       }
       if (ct % 5000 == 0) {
         logger.info("    count = " + ct);
@@ -2147,56 +2159,72 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * Helper function to access/add to dpn set.
    *
    * @param concept the concept
-   * @param dpnTypeId the dpn type id
-   * @param dpnRefSetId the dpn ref set id
-   * @param dpnAcceptabilityId the dpn acceptability id
-   * @return the string
+   * @return the rank dpn tuple
    * @throws Exception the exception
    */
-  private String computeDefaultPreferredName(Concept concept, String dpnTypeId, String dpnRefSetId,
-    String dpnAcceptabilityId) throws Exception {
+  private String[] computeDefaultPreferredName(Concept concept) throws Exception {
 
     if (defaultPreferredNames.containsKey(concept.getTerminologyId())) {
       return defaultPreferredNames.get(concept.getTerminologyId());
     } else {
-
+    
       // cycle over descriptions
       for (final Description description : concept.getDescriptions()) {
 
-        // if active and type id matches
-        if (description.isActive() && description.getTypeId().equals(Long.valueOf(dpnTypeId))) {
+        // cycle over language ref sets
+        for (final LanguageRefSetMember language : description.getLanguageRefSetMembers()) {
 
-          // cycle over language ref sets
-          for (final LanguageRefSetMember language : description.getLanguageRefSetMembers()) {
+          if (description.isActive() && language.isActive()
+              && dpnRefsetIdArray.contains(Long.valueOf(language.getRefSetId()))
+              && !description.getTypeId().equals(definitionTypeId)) {
 
-            if (language.getRefSetId().equals(dpnRefSetId) && language.isActive()
-                && language.getAcceptabilityId().equals(Long.valueOf(dpnAcceptabilityId))) {
+            // if the description/language refset pair match any of the ranked
+            // refsetId/typeId/acceptabilityId triples,
+            // this is a potential defaultPrefferedName
+            int index = dpnRefsetIdArray.indexOf(Long.valueOf(language.getRefSetId()));
 
-              defaultPreferredNames.put(concept.getTerminologyId(), description.getTerm());
-
-              // Report info if semantic tag cannot be found
-              if (!description.getTerm().trim().endsWith(")")) {
-                logger.warn("Could not find semantic tag for concept " + concept.getTerminologyId()
-                    + ", name selected=" + description.getTerm());
-                for (final Description d : concept.getDescriptions()) {
-                  logger.warn("Description " + d.getTerminologyId() + ", active=" + d.isActive()
-                      + ", typeId = " + d.getTypeId());
-                  for (final LanguageRefSetMember l : d.getLanguageRefSetMembers()) {
-                    logger.warn("    Language Refset Member " + l.getTerminologyId() + ", active = "
-                        + l.isActive() + ", refsetId=" + l.getRefSetId() + ", acceptabilityId = "
-                        + l.getAcceptabilityId());
-                  }
+            // retrieve the concept for this description
+            concept = description.getConcept();
+            
+            // check if this concept already had a dpn stored
+            if (defaultPreferredNames.containsKey(concept.getTerminologyId())) {
+              String[] rankValuePair = defaultPreferredNames.get(concept.getTerminologyId());
+              // if the lang refset priority is higher than the priority of the previously
+              // stored dpn, replace it
+              if (dpnRefsetIdArray.indexOf(Long.valueOf(language.getRefSetId())) > Integer
+                  .parseInt(rankValuePair[0])) {
+                String[] newRankValuePair = {
+                    Integer.valueOf(index).toString(), description.getTerm()
+                };
+                defaultPreferredNames.put(concept.getTerminologyId(), newRankValuePair);
+              }
+              // if the lang refset priority is the same as the previously stored dpn, but the typeId is fsn, replace it
+              if (dpnRefsetIdArray.indexOf(Long.valueOf(language.getRefSetId())) == Integer
+                  .parseInt(rankValuePair[0])) {
+                if (description.getTypeId().equals(fsnTypeId)) {
+                  String[] newRankValuePair = {
+                      Integer.valueOf(index).toString(), description.getTerm()
+                  };
+                  defaultPreferredNames.put(concept.getTerminologyId(), newRankValuePair);
                 }
               }
-
-              return description.getTerm();
+            // store first potential dpn
+            } else {
+              String[] newRankValuePair = {
+                  Integer.valueOf(index).toString(), description.getTerm()
+              };
+              defaultPreferredNames.put(concept.getTerminologyId(), newRankValuePair);
             }
-
           }
         }
       }
-      throw new Exception(
+      if (defaultPreferredNames.containsKey(concept.getTerminologyId())) {
+        return defaultPreferredNames.get(concept.getTerminologyId());
+      } else {
+        logger.warn(
           "Could not retrieve default preferred name for Concept " + concept.getTerminologyId());
+        return null;
+      }
     }
   }
 

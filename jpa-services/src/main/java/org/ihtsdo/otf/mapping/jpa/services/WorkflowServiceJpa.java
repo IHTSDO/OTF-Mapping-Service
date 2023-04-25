@@ -1956,7 +1956,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
     String baseUrlWebapp = config.getProperty("base.url");
     String conceptUrl = baseUrlWebapp + "/#/record/conceptId/" + conceptId
         + "/autologin?refSetId=" + refSetId;
-
+    
     String from;
     if (config.containsKey("mail.smtp.from")) {
       from = config.getProperty("mail.smtp.from");
@@ -1981,6 +1981,44 @@ public class WorkflowServiceJpa extends MappingServiceJpa
 
   }
 
+  /* see superclass */
+  @Override
+  public void sendTranslationRequestEmail(String name, String email, String conceptId,
+    String conceptName, String refSetId, String message) throws Exception {
+    // get to address from config.properties
+    Properties config = ConfigUtility.getConfigProperties();
+    String feedbackUserRecipient =
+        config.getProperty("mail.smtp.to.translation.request.user");
+
+    //If email was sent from the client, it may have been hidden.  If so, reconstruct here.
+    if(email.equals("Private email")) {
+      email = getMapUser(name).getEmail();
+    }
+    
+    String from;
+    if (config.containsKey("mail.smtp.from")) {
+      from = config.getProperty("mail.smtp.from");
+    } else {
+      from = config.getProperty("mail.smtp.user");
+    }
+    Properties props = new Properties();
+    props.put("mail.smtp.user", config.getProperty("mail.smtp.user"));
+    props.put("mail.smtp.password", config.getProperty("mail.smtp.password"));
+    props.put("mail.smtp.host", config.getProperty("mail.smtp.host"));
+    props.put("mail.smtp.port", config.getProperty("mail.smtp.port"));
+    props.put("mail.smtp.starttls.enable",
+        config.getProperty("mail.smtp.starttls.enable"));
+    props.put("mail.smtp.auth", config.getProperty("mail.smtp.auth"));
+    ConfigUtility.sendEmail(
+        "Mapping Tool Translation Request: " + conceptId + "-" + conceptName, from,
+        feedbackUserRecipient,
+        "<html>User: " + name + "<br>" + "Email: " + email + "<br>"
+            + "Concept: " + conceptId + " - "
+            + conceptName + "<br><br>" + message + "</html>",
+        props, "true".equals(config.getProperty("mail.smtp.auth")));
+
+  }  
+  
   /**
    * Construct error message string for tracking record and validation result.
    *

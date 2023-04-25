@@ -47,6 +47,8 @@ angular
         $scope.concept = null;
         $scope.groups = null;
         $scope.entries = null;
+		$scope.appConfig = appConfig;
+		$scope.deployTitle = appConfig['deploy.title']; 
         $scope.user = localStorageService.get('currentUser');
         $scope.role = localStorageService.get('currentRole');
         $scope.userToken = localStorageService.get('userToken');
@@ -2142,5 +2144,94 @@ angular
         }
         
         
+      $scope.openViewerFeedbackModal = function(lrecord, currentUser) {
+        var modalInstance = $uibModal
+          .open({
+            templateUrl : 'js/widgets/mapRecord/mapRecordFeedback.html',
+            controller : ViewerFeedbackModalCtrl,
+            resolve : {
+              record : function() {
+                return lrecord;
+              },
+              currentUser : function() {
+                return currentUser;
+              }
+            }
+          });
+
+      };
+
+      var ViewerFeedbackModalCtrl = function($scope, $uibModalInstance, record) {
+        console.debug('Entered modal control', record);
+
+        $scope.record = record;
+        $scope.project = localStorageService.get('focusProject');
+        $scope.currentUser = localStorageService.get('currentUser');
+        $scope.returnRecipients = $scope.project.mapLead;
+        $scope.feedbackInput = '';
+
+        $scope.sendFeedback = function(record, feedbackMessage, name, email) {
+          console.debug('Sending feedback email', record);
+
+          if (feedbackMessage == null || feedbackMessage == undefined
+            || feedbackMessage === '') {
+            window.alert('The feedback field cannot be blank. ');
+            return;
+          }
+
+
+          var sList = [ $scope.currentUser.userName, $scope.currentUser.email, record.conceptId, record.conceptName,
+            $scope.project.refSetId, feedbackMessage ];
+
+          gpService.increment();
+          $http({
+            url : root_workflow + 'translationRequest',
+            dataType : 'json',
+            method : 'POST',
+            data : sList,
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+
+          }).success(function(data) {
+            console.debug('success to sendTranslationRequestEmail.');
+            gpService.decrement();
+            $uibModalInstance.close();
+          }).error(function(data, status, headers, config) {
+            $uibModalInstance.close();
+            $scope.recordError = 'Error sending translation request email.';
+            gpService.decrement();
+            $rootScope.handleHttpError(data, status, headers, config);
+          });
+
+        };
+
+        $scope.cancel = function() {
+          $uibModalInstance.dismiss('cancel');
+        };
+
+        $scope.tinymceOptions = {
+
+          menubar : false,
+          statusbar : false,
+          plugins : 'autolink link image charmap searchreplace lists paste',
+          toolbar : 'undo redo | styleselect lists | bold italic underline strikethrough | charmap link image',
+
+          setup : function(ed) {
+
+            // added to fake two-way binding from the html
+            // element
+            // noteInput is not accessible from this javascript
+            // for some reason
+            ed.on('keyup', function(e) {
+              $scope.tinymceContent = ed.getContent();
+              $scope.$apply();
+            });
+          }
+        };
+
+      };
+
+
         //end
       } ]);
