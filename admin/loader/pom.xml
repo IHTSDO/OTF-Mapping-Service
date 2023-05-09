@@ -66,6 +66,8 @@
     <relation.config.file></relation.config.file>
     <report.config.file></report.config.file>
     <user.config.file></user.config.file>
+    <left.url></left.url>
+    <right.url></right.url>
     
   </properties>
 
@@ -1002,6 +1004,32 @@
                 <configuration>
                   <releaseFile>${releaseFile}</releaseFile>
                   <outputFile>SNOMEDtoPHCVS_{DATE}.xlsx</outputFile>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    
+    <profile>
+      <id>MappingCompareReport</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>mapping-compare-report</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>run-mapping-compare-report</goal>
+                </goals>
+                <configuration>
+                  <leftUrl>${left.url}</leftUrl>
+                  <rightUrl>${right.url}</rightUrl>
+                  <!-- <rightUrl>SNOMEDtoPHCVS_{DATE}.xlsx</rightUrl> -->
                 </configuration>
               </execution>
             </executions>
