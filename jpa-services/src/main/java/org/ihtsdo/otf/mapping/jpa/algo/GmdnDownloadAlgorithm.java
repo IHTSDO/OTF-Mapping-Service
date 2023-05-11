@@ -7,23 +7,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPClient;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.algo.Algorithm;
 import org.ihtsdo.otf.mapping.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.ProgressListener;
-
-import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.ChannelSftp.LsEntry;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
-import com.jcraft.jsch.SftpException;
 
 public class GmdnDownloadAlgorithm extends RootServiceJpa implements Algorithm {
 
@@ -51,64 +44,60 @@ public class GmdnDownloadAlgorithm extends RootServiceJpa implements Algorithm {
   @SuppressWarnings("rawtypes")
   @Override
   public void compute() throws Exception {
-    Logger.getLogger(getClass()).info("Checking GMDN SFTP for undownloaded terminologies");
-    
-    JSch jsch = new JSch();
-    Session session = null;
+    Logger.getLogger(getClass()).info("Checking GMDN FTP for undownloaded terminologies");
 
-    final String gmdnsftpHost =
+    final String gmdnftpHost =
         ConfigUtility.getConfigProperties().getProperty("gmdnsftp.host");
-    final int gmdnsftpPort = Integer.parseInt(
+    final int gmdnftpPort = Integer.parseInt(
         ConfigUtility.getConfigProperties().getProperty("gmdnsftp.port"));
-    final String gmdnsftpUser =
+    final String gmdnftpUser =
         ConfigUtility.getConfigProperties().getProperty("gmdnsftp.user");
-    final String gmdnsftpPassword =
+    final String gmdnftpPassword =
         ConfigUtility.getConfigProperties().getProperty("gmdnsftp.password");
     final String gmdnDataDir = 
             ConfigUtility.getConfigProperties().getProperty("gmdnsftp.sftp.data.dir");
     final String saveLocation =
         ConfigUtility.getConfigProperties().getProperty("gmdnsftp.dir");
-
+    
+    FTPClient ftpClient;
+    
+    ftpClient = new FTPClient();
+    
     try {
-      session = jsch.getSession(gmdnsftpUser, gmdnsftpHost, gmdnsftpPort);
-      session.setConfig("StrictHostKeyChecking", "no");
-      session.setPassword(gmdnsftpPassword);
-      session.connect();
+    	ftpClient.connect(gmdnftpHost, gmdnftpPort);
+    	ftpClient.enterLocalPassiveMode();
+    	ftpClient.login(gmdnftpUser, gmdnftpPassword);
+        ftpClient.changeWorkingDirectory(gmdnDataDir);
+        FTPFile[] files = ftpClient.listFiles();
 
-      Channel channel = session.openChannel("sftp");
-      channel.connect();
-      ChannelSftp sftpChannel = (ChannelSftp) channel;
-      sftpChannel.cd(gmdnDataDir);
-      Vector filelist = sftpChannel.ls(gmdnDataDir);
-      for (int i = 0; i < filelist.size(); i++) {
-        LsEntry entry = (LsEntry) filelist.get(i);
+      for (int i = 0; i < files.length; i++) {
+        String entry = files[i].getName();
         // Find all files named gmdnDatayy_M.zip
-        if (entry.getFilename().matches("gmdnData\\d{2}_\\d{1,2}.zip")) {
+        if (entry.matches("gmdnData\\d{2}_\\d{1,2}.zip")) {
 
           final String datePortion =
-              entry.getFilename().replace("gmdnData", "").replace(".zip", "");
+              entry.replace("gmdnData", "").replace(".zip", "");
           final String unzipLocation = saveLocation + "/" + datePortion;
 
           // If destination folder already contains a subfolder named the same
           // as the date portion of the file, this version has already been
           // downloaded previously
           if (new File(unzipLocation).exists()) {
-            Logger.getLogger(getClass()).info(entry.getFilename() + " previously downloaded.  Skipping.");            
+            Logger.getLogger(getClass()).info(entry + " previously downloaded.  Skipping.");            
             continue;
           }
           // If it doesn't exist yet...
           else {
-            Logger.getLogger(getClass()).info("New version identified: " + entry.getFilename() + ".  Downloading.");                        
+            Logger.getLogger(getClass()).info("New version identified: " + entry + ".  Downloading.");                        
             // download the file
-            sftpChannel.get(entry.getFilename(),
-                saveLocation + "/" + entry.getFilename());
+            ftpClient.retrieveFile(entry, new FileOutputStream(new File(saveLocation + "/" + entry))); 
 
             // Create a new folder
             new File(unzipLocation).mkdir();
 
             // unzip all contents to the new folder
             ZipInputStream zipIn = new ZipInputStream(
-                new FileInputStream(saveLocation + "/" + entry.getFilename()));
+                new FileInputStream(saveLocation + "/" + entry));
 
             ZipEntry zipEntry = zipIn.getNextEntry();
             // iterates over entries in the zip file
@@ -122,18 +111,24 @@ public class GmdnDownloadAlgorithm extends RootServiceJpa implements Algorithm {
             zipIn.close();
 
             // delete the zip file
-            new File(saveLocation + "/" + entry.getFilename()).delete();
+            new File(saveLocation + "/" + entry).delete();
           }
         }
       }
-      sftpChannel.exit();
-      session.disconnect();
-    } catch (JSchException e) {
-      e.printStackTrace();
-    } catch (SftpException e) {
-      e.printStackTrace();
+      ftpClient.logout();
+    } catch (IOException e) {
+        e.printStackTrace();
+    } catch (Exception e) {
+        e.printStackTrace();
+    } finally {
+        if (ftpClient.isConnected()) {
+            try {
+                ftpClient.disconnect();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
-
   }
 
   /**
