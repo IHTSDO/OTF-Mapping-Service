@@ -132,7 +132,7 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
       
       int returnedConceptsCount = 0;
       
-      String targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/MAIN%2FSNOMEDCT-NO%2FREFSETS-HP/members?referenceSet=88161000202101&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
+      String targetUri = "https://demo.terminologi.ehelse.no/snowstorm/snomed-ct/MAIN%2FSNOMEDCT-NO%2FREFSETS/members?referenceSet=88161000202101&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
       WebTarget target = client.target(targetUri);
       target = client.target(targetUri);
       Logger.getLogger(getClass()).info(targetUri);
@@ -195,7 +195,7 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
 
       int returnedConceptsCount = 0;
       
-      String targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/codesystems?forBranch=MAIN%2FSNOMEDCT-NO%2FREFSET-HP";
+      String targetUri = " https://demo.terminologi.ehelse.no/snowstorm/snomed-ct/codesystems?forBranch=MAIN%2FSNOMEDCT-NO%2FREFSETS";
       WebTarget target = client.target(targetUri);
       target = client.target(targetUri);
       Logger.getLogger(getClass()).info(targetUri);
@@ -248,7 +248,7 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
         
         returnedConceptsCount = 0;
         
-        targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/"+previousVersionBranch.replaceAll("/", "%2F")+"/concepts?activeFilter=true&returnIdOnly=true&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
+        targetUri = "https://demo.terminologi.ehelse.no/snowstorm/snomed-ct/"+previousVersionBranch.replaceAll("/", "%2F")+"/concepts?activeFilter=true&returnIdOnly=true&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
         target = client.target(targetUri);
         Logger.getLogger(getClass()).info(targetUri);
      
@@ -293,7 +293,7 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
         
         returnedConceptsCount = 0;
         
-        targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/"+currentBranch.replaceAll("/", "%2F")+"/concepts?activeFilter=false&returnIdOnly=true&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
+        targetUri = "https://demo.terminologi.ehelse.no/snowstorm/snomed-ct/"+currentBranch.replaceAll("/", "%2F")+"/concepts?activeFilter=false&returnIdOnly=true&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
         target = client.target(targetUri);
         Logger.getLogger(getClass()).info(targetUri);
      
@@ -346,7 +346,7 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
         }
       }        
       
-      getLog().info("Grab all ICD-10-NO maps from one of the inactivated concepts, keeping international and norwegian maps separate");
+      getLog().info("Grab all ICD-10-NO maps, keeping international and norwegian maps separate");
       //Sample JSON
       /*
 {
@@ -389,7 +389,11 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
       
       List<String> inactivedMappedScopeConcepts = new ArrayList<>();
       Map<String,Set<String>> norwayMappedConceptsAndTargets = new HashMap<>();
+      Map<String,Set<String>> norwayMappedConceptsAndTargetsInactive = new HashMap<>();
+      Map<String,Set<String>> norwayMappedConceptsAndTargetsActive = new HashMap<>();
       Map<String,Set<String>> internationalMappedConceptsAndTargets = new HashMap<>();
+      Map<String,Set<String>> internationalMappedConceptsAndTargetsInactive = new HashMap<>();
+      Map<String,Set<String>> internationalMappedConceptsAndTargetsActive = new HashMap<>();
       searchAfter = null;
       limit = 10000;
       
@@ -397,7 +401,7 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
         
         int returnedMapsCount = 0;
         
-        targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/MAIN%2FSNOMEDCT-NO%2FREFSETS-ICD10/members?referenceSet=447562003&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
+        targetUri = "https://demo.terminologi.ehelse.no/snowstorm/snomed-ct/MAIN%2FSNOMEDCT-NO%2FREFSETS/members?referenceSet=447562003&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
         target = client.target(targetUri);
         Logger.getLogger(getClass()).info(targetUri);
      
@@ -419,6 +423,7 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
         for (final JsonNode mapNode : doc.get("items")) {
           final String conceptId = mapNode.get("referencedComponentId").asText();
           final String module = mapNode.get("moduleId").asText();
+          final String active = mapNode.get("active").asText();
           
           //If the mapped concept is one of the ones recently inactivated, track it
           if(scopeConceptsInactivatedSincePreviousBranch.contains(conceptId) && !inactivedMappedScopeConcepts.contains(conceptId)) {
@@ -428,29 +433,54 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
           //Store international and Norwegian maps separately
           if(module.equals("449080006")) {
             if(!internationalMappedConceptsAndTargets.containsKey(conceptId)) {
-              Set<String> targetSet = new HashSet<>();
-              internationalMappedConceptsAndTargets.put(conceptId, targetSet);
+              internationalMappedConceptsAndTargets.put(conceptId, new HashSet<>());
+              internationalMappedConceptsAndTargetsInactive.put(conceptId, new HashSet<>());
+              internationalMappedConceptsAndTargetsActive.put(conceptId, new HashSet<>());
             }
             final JsonNode additionalFieldsNode = mapNode.get("additionalFields");
             if(additionalFieldsNode != null && additionalFieldsNode.findValue("mapTarget") != null) {
-              Set<String> targetSet = internationalMappedConceptsAndTargets.get(conceptId);
               String mapTarget = additionalFieldsNode.get("mapTarget").asText();
-              if(mapTarget != null && mapTarget != "") {
-                targetSet.add(additionalFieldsNode.get("mapTarget").asText());
+              if(active.equals("true")) {
+                Set<String> targetSet = internationalMappedConceptsAndTargetsActive.get(conceptId);
+                if(mapTarget != null && mapTarget != "") {
+                  targetSet.add(additionalFieldsNode.get("mapTarget").asText());
+                }
+                internationalMappedConceptsAndTargetsActive.put(conceptId, targetSet);
               }
-              internationalMappedConceptsAndTargets.put(conceptId, targetSet);
+              else if (active.equals("false")) {
+                Set<String> targetSet = internationalMappedConceptsAndTargetsInactive.get(conceptId);
+                if(mapTarget != null && mapTarget != "") {
+                  targetSet.add(additionalFieldsNode.get("mapTarget").asText());
+                }                
+                internationalMappedConceptsAndTargetsInactive.put(conceptId, targetSet);
+              } 
+              else {
+                throw new Exception ("active flag neither true nor false on map for concept " + conceptId);
+              }
             }
           }
           else if(module.equals("51000202101")) {
             if(!norwayMappedConceptsAndTargets.containsKey(conceptId)) {
-              Set<String> targetSet = new HashSet<>();
-              norwayMappedConceptsAndTargets.put(conceptId, targetSet);
+              norwayMappedConceptsAndTargets.put(conceptId, new HashSet<>());
+              norwayMappedConceptsAndTargetsInactive.put(conceptId, new HashSet<>());
+              norwayMappedConceptsAndTargetsActive.put(conceptId, new HashSet<>());
             }
             final JsonNode additionalFieldsNode = mapNode.get("additionalFields");
             if(additionalFieldsNode != null && additionalFieldsNode.findValue("mapTarget") != null) {
-              Set<String> targetSet = norwayMappedConceptsAndTargets.get(conceptId);
-              targetSet.add(additionalFieldsNode.get("mapTarget").asText());
-              norwayMappedConceptsAndTargets.put(conceptId, targetSet);
+              String mapTarget = additionalFieldsNode.get("mapTarget").asText();
+              if(active.equals("true")) {
+                Set<String> targetSet = norwayMappedConceptsAndTargetsActive.get(conceptId);
+                targetSet.add(additionalFieldsNode.get("mapTarget").asText());
+                norwayMappedConceptsAndTargetsActive.put(conceptId, targetSet);
+              }
+              else if (active.equals("false")){
+                Set<String> targetSet = norwayMappedConceptsAndTargetsInactive.get(conceptId);
+                targetSet.add(additionalFieldsNode.get("mapTarget").asText());
+                norwayMappedConceptsAndTargetsInactive.put(conceptId, targetSet);
+              }
+              else {
+                throw new Exception ("active flag neither true nor false on map for concept " + conceptId);
+              }
             }
           }
           else {
@@ -507,7 +537,7 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
       
       while (!reachedFinalConcept) {
         
-        targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/browser/MAIN%2FSNOMEDCT-NO/concepts?";
+        targetUri = "https://demo.terminologi.ehelse.no/snowstorm/snomed-ct/browser/MAIN%2FSNOMEDCT-NO/concepts?";
         for(int i=0; i < batchSize; i++ ) {
           targetUri = targetUri + "conceptIds=" + inactivedMappedScopeConcepts.get(counter) + "&";
           counter++;
@@ -611,7 +641,7 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
         
         returnedConceptsCount = 0;
         
-        targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/MAIN%2FSNOMEDCT-NO/descriptions?";
+        targetUri = "https://demo.terminologi.ehelse.no/snowstorm/snomed-ct/MAIN%2FSNOMEDCT-NO/descriptions?";
         for(int i=0; i < batchSize; i++ ) {
           targetUri = targetUri + "conceptIds=" + inactiveAndReplacementTargets.get(counter) + "&";
           counter++;
@@ -691,6 +721,11 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
       // Add result rows, in conceptId order
       Collections.sort(inactivedMappedScopeConcepts);
       for (String conceptId : inactivedMappedScopeConcepts) {
+        
+        //If active maps are present for this concept, use them.  If no active maps exist, use the inactive ones.
+        norwayMappedConceptsAndTargets.put(conceptId, norwayMappedConceptsAndTargetsActive.get(conceptId) != null ? norwayMappedConceptsAndTargetsActive.get(conceptId) : norwayMappedConceptsAndTargetsInactive.get(conceptId));
+        internationalMappedConceptsAndTargets.put(conceptId, internationalMappedConceptsAndTargetsActive.get(conceptId) != null ? internationalMappedConceptsAndTargetsActive.get(conceptId) : internationalMappedConceptsAndTargetsInactive.get(conceptId));
+        
         final String inactivationIndicator = conceptInactivationIndicators.get(conceptId);
         final String inactiveConceptInfo = 
             conceptId + "\t" +
@@ -708,6 +743,11 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
             String associationTargets = conceptAssociationTargets.get(conceptId).get(associationTerm);
             List<String> targetIds = Arrays.asList(associationTargets.split(","));
             for(String targetId : targetIds) {
+              
+              //If active maps are present for this concept, use them.  If no active maps exist, use the inactive ones.
+              norwayMappedConceptsAndTargets.put(targetId, norwayMappedConceptsAndTargetsActive.get(targetId) != null ? norwayMappedConceptsAndTargetsActive.get(targetId) : norwayMappedConceptsAndTargetsInactive.get(targetId));
+              internationalMappedConceptsAndTargets.put(targetId, internationalMappedConceptsAndTargetsActive.get(targetId) != null ? internationalMappedConceptsAndTargetsActive.get(targetId) : internationalMappedConceptsAndTargetsInactive.get(targetId));
+              
               final String targetConceptInfo = 
                   associationTerm + "\t" + 
               targetId + "\t"+
