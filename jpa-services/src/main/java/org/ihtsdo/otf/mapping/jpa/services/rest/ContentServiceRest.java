@@ -213,11 +213,12 @@ public interface ContentServiceRest {
    * @param terminology The terminology.
    * @param version The terminology version.
    * @param inputDir The directory where the input files are located.
+   * @param metadataCounter The starting id for metadata concepts.
    * @param authToken The auth token
    * @throws Exception The execution exception
    */
   void loadTerminologyClaml3(String terminology, String version, String inputDir,
-    String authToken) throws Exception;
+    String metadataCounter, String authToken) throws Exception;
   
   /**
    * Download terminology gmdn.

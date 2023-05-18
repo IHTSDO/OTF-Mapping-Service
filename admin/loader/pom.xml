@@ -305,6 +305,7 @@
                   <inputFile>${input.file}</inputFile>
                   <terminology>${terminology}</terminology>
                   <version>${version}</version>
+                  <metadataCounter>${metadataCounter}</metadataCounter>
                 </configuration>
               </execution>
             </executions>

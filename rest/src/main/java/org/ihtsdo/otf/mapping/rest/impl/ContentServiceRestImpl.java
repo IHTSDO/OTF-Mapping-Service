@@ -830,19 +830,20 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
   /* see superclass */
   @Override
   @PUT
-  @Path("/terminology/load/claml3/{terminology}/{version}")
+  @Path("/terminology/load/claml3/{terminology}/{version}/{metadataCounter}")
   @Consumes(MediaType.TEXT_PLAIN)
   @ApiOperation(value = "Loads terminology Claml 3 from file", notes = "Loads terminology from ClaML 3 file for specified terminology and version")
   public void loadTerminologyClaml3(
     @ApiParam(value = "Terminology, e.g. SNOMEDCT_US", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Version, e.g. 2014_09_01", required = true) @PathParam("version") String version,
     @ApiParam(value = "Claml 3 input file", required = true) String inputFile,
+    @ApiParam(value = "Starting ID for metadata concepts", required = true) @PathParam("metadataCounter") String metadataCounter,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass())
         .info("RESTful call (Content): /terminology/load/claml3/" + terminology
-            + "/" + version + " from input file " + inputFile);
+            + "/" + version + " from input file " + inputFile + ", with metadata starting at id=" + metadataCounter);
 
     // Track system level information
     long startTimeOrig = System.nanoTime();
@@ -860,7 +861,7 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     }
 
     try (final Claml3LoaderAlgorithm algo =
-        new Claml3LoaderAlgorithm(localTerminology, localVersion, inputFile);) {
+        new Claml3LoaderAlgorithm(localTerminology, localVersion, inputFile, metadataCounter);) {
 
       algo.compute();
 
