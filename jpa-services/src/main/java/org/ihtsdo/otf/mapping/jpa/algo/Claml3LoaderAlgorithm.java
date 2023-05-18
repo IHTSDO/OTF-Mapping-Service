@@ -72,6 +72,9 @@ public class Claml3LoaderAlgorithm extends RootServiceJpa implements Algorithm, 
   /** The terminology version. */
   private String terminologyVersion;
 
+  /** Metadata counter. */
+  private int metadataCounter;
+
   /** The content service. */
   private ContentService contentService;
 
@@ -107,13 +110,15 @@ public class Claml3LoaderAlgorithm extends RootServiceJpa implements Algorithm, 
   /** The log file. */
   private File logFile;
 
-  public Claml3LoaderAlgorithm(String terminology, String terminologyVersion, String inputFile)
+  public Claml3LoaderAlgorithm(String terminology, String terminologyVersion, String inputFile,
+    String metadataCounter)
       throws Exception {
 
     super();
     this.terminology = terminology;
     this.terminologyVersion = terminologyVersion;
     this.inputFile = inputFile;
+    this.metadataCounter = metadataCounter == null ? 1 : Integer.parseInt(metadataCounter);
 
     // initialize logger
     String rootPath =
@@ -154,6 +159,7 @@ public class Claml3LoaderAlgorithm extends RootServiceJpa implements Algorithm, 
     log.info("  Create metadata classes");
     helper =
         new Claml3MetadataHelper(terminology, terminologyVersion, effectiveTime, contentService);
+    helper.setMetadataCounter(metadataCounter);
     conceptMap = helper.createMetadata();
 
     chdParMap = new HashMap<>();
@@ -379,6 +385,12 @@ public class Claml3LoaderAlgorithm extends RootServiceJpa implements Algorithm, 
     public void endElement(String uri, String localName, String qName) throws SAXException {
       try {
 
+        //TESTTEST
+        if(code != null && (code.equals("X") || code.equals("10"))) {
+          log.info("  Stop here!");
+        }
+        //ENDTESTTEST
+        
         // See if we're at the end of a mid-label element
         if(tagStack.contains("label") && !tagStack.peek().equals("label")) {
           // Don't end link references - we're skipping those

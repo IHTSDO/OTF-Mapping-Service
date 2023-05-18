@@ -58,7 +58,7 @@ public class TerminologySimpleLoaderMojo extends AbstractTerminologyLoaderMojo {
   private String version;
 
 	 /**
-     * Version of terminology to be loaded.
+     * The digit to start the metadata terminologyIds at.
      * 
      * @parameter
      */
@@ -88,7 +88,7 @@ public class TerminologySimpleLoaderMojo extends AbstractTerminologyLoaderMojo {
     getLog().info("  Terminology        : " + terminology);
     getLog().info("  Version            : " + version);
     getLog().info("  Input directory    : " + inputDir);
-        getLog().info("  Metadata counter   : " + metadataCounter);
+    getLog().info("  Metadata counter   : " + metadataCounter);
     getLog().info("  Expect server up   : " + server);
 
     setupBindInfoPackage();

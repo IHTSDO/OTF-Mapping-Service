@@ -282,7 +282,7 @@ public class ContentClientRest extends RootClientRest
     /* see superclass */
     @Override
     public void loadTerminologyClaml3(String terminology, String version,
-            String inputFile, String authToken) throws Exception {
+            String inputFile, String metadataCounter, String authToken) throws Exception {
 
         Logger.getLogger(getClass())
                 .debug("Content Client - load terminology CLAML 3 " + terminology
@@ -291,11 +291,12 @@ public class ContentClientRest extends RootClientRest
         validateNotEmpty(inputFile, "inputFile");
         validateNotEmpty(terminology, "terminology");
         validateNotEmpty(version, "version");
+        validateNotEmpty(metadataCounter, "metadataCounter");
 
         final Client client = ClientBuilder.newClient();
         final WebTarget target = client.target(config.getProperty("base.url")
                 + URL_SERVICE_ROOT + "/terminology/load/claml3/" + terminology
-                + "/" + version);
+                + "/" + version + "/" + metadataCounter);
         
         final Response response = target.request(MediaType.APPLICATION_JSON)
                 .header("Authorization", authToken).put(Entity.text(inputFile));

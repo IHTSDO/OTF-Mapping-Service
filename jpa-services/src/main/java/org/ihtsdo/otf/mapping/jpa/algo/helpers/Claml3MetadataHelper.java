@@ -40,6 +40,9 @@ public class Claml3MetadataHelper {
   /** The concept map. */
   private Map<String, Concept> conceptMap;
 
+  // terminology metadata id counter, start at 1
+  private int metadataCounter = 1;
+  
   /**
    * Instantiates a {@link Claml3MetadataHelper} from the specified parameters.
    * 
@@ -56,6 +59,15 @@ public class Claml3MetadataHelper {
     this.contentService = contentService;
   }
 
+  /**
+   * Sets the metadata counter.
+   *
+   * @param metadataCounter the metadata counter
+   */
+  public void setMetadataCounter(int metadataCounter) {
+    this.metadataCounter = metadataCounter;
+  }
+  
   /**
    * Creates the metadata in the form of a map of keys to metadata concepts.
    * 
@@ -100,9 +112,6 @@ public class Claml3MetadataHelper {
    */
   public Map<String, Concept> createMetadata() throws Exception {
     conceptMap = new HashMap<>();
-
-    // terminology id counter, start at 1
-    int metadataCounter = 1;
 
     //
     // Create concepts representing defaults needed to create
@@ -511,13 +520,13 @@ public class Claml3MetadataHelper {
     final Concept asteriskRefsetConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Asterisk refset", effectiveTime);
-    conceptMap.put("aster", asteriskRefsetConcept);
+    conceptMap.put("*", asteriskRefsetConcept);
     contentService.addConcept(asteriskRefsetConcept);
 
     final Concept daggerRefsetConcept =
         createNewActiveConcept("" + metadataCounter++, terminology,
             terminologyVersion, "Dagger refset", effectiveTime);
-    conceptMap.put("dagger", daggerRefsetConcept);
+    conceptMap.put("+", daggerRefsetConcept);
     contentService.addConcept(daggerRefsetConcept);
 
     createIsaRelationship(metadataConcept, refsetsConcept,

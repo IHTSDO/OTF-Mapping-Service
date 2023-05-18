@@ -49,6 +49,13 @@ public class TerminologyClaml3LoaderMojo extends AbstractTerminologyLoaderMojo {
   protected String version;
 
   /**
+  * The digit to start the metadata terminologyIds at.
+  * 
+  * @parameter
+  */
+ private String metadataCounter = "1";
+
+  /**
    * Whether to send email notification of any errors. Default is false.
    * 
    * @parameter
@@ -76,6 +83,7 @@ public class TerminologyClaml3LoaderMojo extends AbstractTerminologyLoaderMojo {
     getLog().info("  inputFile    = " + inputFile);
     getLog().info("  terminology = " + terminology);
     getLog().info("  version     = " + version);
+    getLog().info("  Metadata counter   : " + metadataCounter);
 
     setupBindInfoPackage();
 
@@ -92,7 +100,7 @@ public class TerminologyClaml3LoaderMojo extends AbstractTerminologyLoaderMojo {
         getLog().info("Running directly");
 
         ContentServiceRestImpl service = new ContentServiceRestImpl();
-        service.loadTerminologyClaml3(terminology, version, inputFile,
+        service.loadTerminologyClaml3(terminology, version, inputFile, metadataCounter,
             getAuthToken());
 
       } else {
@@ -100,7 +108,7 @@ public class TerminologyClaml3LoaderMojo extends AbstractTerminologyLoaderMojo {
 
         // invoke the client
         ContentClientRest client = new ContentClientRest(properties);
-        client.loadTerminologyClaml3(terminology, version, inputFile,
+        client.loadTerminologyClaml3(terminology, version, inputFile, metadataCounter,
             getAuthToken());
       }
 
