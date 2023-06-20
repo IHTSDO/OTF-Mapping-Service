@@ -195,7 +195,7 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
 
       int returnedConceptsCount = 0;
       
-      String targetUri = " https://demo.terminologi.ehelse.no/snowstorm/snomed-ct/codesystems?forBranch=MAIN%2FSNOMEDCT-NO%2FREFSETS";
+      String targetUri = "https://demo.terminologi.ehelse.no/snowstorm/snomed-ct/codesystems?forBranch=MAIN%2FSNOMEDCT-NO%2FREFSETS";
       WebTarget target = client.target(targetUri);
       target = client.target(targetUri);
       Logger.getLogger(getClass()).info(targetUri);
