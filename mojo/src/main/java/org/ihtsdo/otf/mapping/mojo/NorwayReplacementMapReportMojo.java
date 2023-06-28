@@ -132,7 +132,7 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
       
       int returnedConceptsCount = 0;
       
-      String targetUri = "https://demo.terminologi.ehelse.no/snowstorm/snomed-ct/MAIN%2FSNOMEDCT-NO%2FREFSETS/members?referenceSet=88161000202101&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
+      String targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/MAIN%2FSNOMEDCT-NO%2FREFSETS/members?referenceSet=88161000202101&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
       WebTarget target = client.target(targetUri);
       target = client.target(targetUri);
       Logger.getLogger(getClass()).info(targetUri);
@@ -195,7 +195,7 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
 
       int returnedConceptsCount = 0;
       
-      String targetUri = "https://demo.terminologi.ehelse.no/snowstorm/snomed-ct/codesystems?forBranch=MAIN%2FSNOMEDCT-NO%2FREFSETS";
+      String targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/codesystems?forBranch=MAIN%2FSNOMEDCT-NO%2FREFSETS";
       WebTarget target = client.target(targetUri);
       target = client.target(targetUri);
       Logger.getLogger(getClass()).info(targetUri);
@@ -248,7 +248,7 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
         
         returnedConceptsCount = 0;
         
-        targetUri = "https://demo.terminologi.ehelse.no/snowstorm/snomed-ct/"+previousVersionBranch.replaceAll("/", "%2F")+"/concepts?activeFilter=true&returnIdOnly=true&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
+        targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/"+previousVersionBranch.replaceAll("/", "%2F")+"/concepts?activeFilter=true&returnIdOnly=true&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
         target = client.target(targetUri);
         Logger.getLogger(getClass()).info(targetUri);
      
@@ -293,7 +293,7 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
         
         returnedConceptsCount = 0;
         
-        targetUri = "https://demo.terminologi.ehelse.no/snowstorm/snomed-ct/"+currentBranch.replaceAll("/", "%2F")+"/concepts?activeFilter=false&returnIdOnly=true&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
+        targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/"+currentBranch.replaceAll("/", "%2F")+"/concepts?activeFilter=false&returnIdOnly=true&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
         target = client.target(targetUri);
         Logger.getLogger(getClass()).info(targetUri);
      
@@ -401,7 +401,7 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
         
         int returnedMapsCount = 0;
         
-        targetUri = "https://demo.terminologi.ehelse.no/snowstorm/snomed-ct/MAIN%2FSNOMEDCT-NO%2FREFSETS/members?referenceSet=447562003&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
+        targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/MAIN%2FSNOMEDCT-NO%2FREFSETS/members?referenceSet=447562003&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
         target = client.target(targetUri);
         Logger.getLogger(getClass()).info(targetUri);
      
@@ -497,6 +497,155 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
         }
       }      
       
+      getLog().info("Grab all ICPC maps, keeping international and norwegian maps separate");
+      //Sample JSON
+      /*
+{
+  "items": [
+    {
+      "active": true,
+      "moduleId": "449080006",
+      "released": true,
+      "releasedEffectiveTime": 20150731,
+      "memberId": "ffff7fc0-eda4-5ac2-837f-a0638ae35961",
+      "refsetId": "447562003",
+      "referencedComponentId": "93342009",
+      "additionalFields": {
+        "mapCategoryId": "447637006",
+        "mapRule": "TRUE",
+        "mapAdvice": "ALWAYS Q50.6",
+        "mapPriority": "1",
+        "mapGroup": "1",
+        "correlationId": "447561005",
+        "mapTarget": "Q50.6"
+      },
+      "referencedComponent": {
+        "conceptId": "93342009",
+        "active": true,
+        "definitionStatus": "FULLY_DEFINED",
+        "moduleId": "900000000000207008",
+        "fsn": {
+          "term": "Congenital malposition of fallopian tube (disorder)",
+          "lang": "en"
+        },
+        "pt": {
+          "term": "Congenital malposition of fallopian tube",
+          "lang": "en"
+        },
+        "id": "93342009"
+      },
+      "effectiveTime": "20150731"
+    },
+     */
+      
+      Map<String,Set<String>> norwayMappedConceptsAndICPCTargets = new HashMap<>();
+      Map<String,Set<String>> norwayMappedConceptsAndICPCTargetsInactive = new HashMap<>();
+      Map<String,Set<String>> norwayMappedConceptsAndICPCTargetsActive = new HashMap<>();
+      Map<String,Set<String>> internationalMappedConceptsAndICPCTargets = new HashMap<>();
+      Map<String,Set<String>> internationalMappedConceptsAndICPCTargetsInactive = new HashMap<>();
+      Map<String,Set<String>> internationalMappedConceptsAndICPCTargetsActive = new HashMap<>();
+      searchAfter = null;
+      limit = 10000;
+      
+      while (true) {
+        
+        int returnedMapsCount = 0;
+        
+        targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/MAIN%2FSNOMEDCT-NO%2FREFSETS/members?referenceSet=68101000202102&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
+        target = client.target(targetUri);
+        Logger.getLogger(getClass()).info(targetUri);
+     
+        response =
+            target.request(accept)
+            .get();
+        resultString = response.readEntity(String.class);
+        if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+          // n/a
+        } else {
+          throw new LocalException(
+              "Unexpected terminology server failure. Message = " + resultString);
+        }
+        
+        doc = mapper.readTree(resultString);
+     
+        // get total amount
+        // Get concepts returned in this call (up to 10000)
+        for (final JsonNode mapNode : doc.get("items")) {
+          final String conceptId = mapNode.get("referencedComponentId").asText();
+          final String module = mapNode.get("moduleId").asText();
+          final String active = mapNode.get("active").asText();
+          
+          //Per Norway, they are only interested in ICPC mapped concepts that also contain an ICD-10 map, so we reuse the existing list of inactivedMappedScopeConcepts.
+//          if(scopeConceptsInactivatedSincePreviousBranch.contains(conceptId) && !inactivedMappedScopeConcepts.contains(conceptId)) {
+//            inactivedMappedScopeConcepts.add(conceptId);
+//          }
+          
+          //Store international and Norwegian maps separately
+          if(module.equals("449080006")) {
+            if(!internationalMappedConceptsAndICPCTargets.containsKey(conceptId)) {
+              internationalMappedConceptsAndICPCTargets.put(conceptId, new HashSet<>());
+              internationalMappedConceptsAndICPCTargetsInactive.put(conceptId, new HashSet<>());
+              internationalMappedConceptsAndICPCTargetsActive.put(conceptId, new HashSet<>());
+            }
+            final JsonNode additionalFieldsNode = mapNode.get("additionalFields");
+            if(additionalFieldsNode != null && additionalFieldsNode.findValue("mapTarget") != null) {
+              String mapTarget = additionalFieldsNode.get("mapTarget").asText();
+              if(active.equals("true")) {
+                Set<String> targetSet = internationalMappedConceptsAndICPCTargetsActive.get(conceptId);
+                if(mapTarget != null && mapTarget != "") {
+                  targetSet.add(additionalFieldsNode.get("mapTarget").asText());
+                }
+                internationalMappedConceptsAndICPCTargetsActive.put(conceptId, targetSet);
+              }
+              else if (active.equals("false")) {
+                Set<String> targetSet = internationalMappedConceptsAndICPCTargetsInactive.get(conceptId);
+                if(mapTarget != null && mapTarget != "") {
+                  targetSet.add(additionalFieldsNode.get("mapTarget").asText());
+                }                
+                internationalMappedConceptsAndICPCTargetsInactive.put(conceptId, targetSet);
+              } 
+              else {
+                throw new Exception ("active flag neither true nor false on map for concept " + conceptId);
+              }
+            }
+          }
+          else if(module.equals("51000202101")) {
+            if(!norwayMappedConceptsAndICPCTargets.containsKey(conceptId)) {
+              norwayMappedConceptsAndICPCTargets.put(conceptId, new HashSet<>());
+              norwayMappedConceptsAndICPCTargetsInactive.put(conceptId, new HashSet<>());
+              norwayMappedConceptsAndICPCTargetsActive.put(conceptId, new HashSet<>());
+            }
+            final JsonNode additionalFieldsNode = mapNode.get("additionalFields");
+            if(additionalFieldsNode != null && additionalFieldsNode.findValue("mapTarget") != null) {
+              String mapTarget = additionalFieldsNode.get("mapTarget").asText();
+              if(active.equals("true")) {
+                Set<String> targetSet = norwayMappedConceptsAndICPCTargetsActive.get(conceptId);
+                targetSet.add(additionalFieldsNode.get("mapTarget").asText());
+                norwayMappedConceptsAndICPCTargetsActive.put(conceptId, targetSet);
+              }
+              else if (active.equals("false")){
+                Set<String> targetSet = norwayMappedConceptsAndICPCTargetsInactive.get(conceptId);
+                targetSet.add(additionalFieldsNode.get("mapTarget").asText());
+                norwayMappedConceptsAndICPCTargetsInactive.put(conceptId, targetSet);
+              }
+              else {
+                throw new Exception ("active flag neither true nor false on map for concept " + conceptId);
+              }
+            }
+          }
+          else {
+            //If map is neither international nor Norwegian, ignore
+          }
+
+          returnedMapsCount++;
+        }
+         
+        searchAfter = doc.get("searchAfter").asText();
+        // if we don't get a full page of results, we've processed the final page
+        if(returnedMapsCount < limit) {
+            break;
+        }
+      }            
       
       getLog().info("Grab all replacement concepts");
       //Sample JSON
@@ -537,7 +686,7 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
       
       while (!reachedFinalConcept) {
         
-        targetUri = "https://demo.terminologi.ehelse.no/snowstorm/snomed-ct/browser/MAIN%2FSNOMEDCT-NO/concepts?";
+        targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/browser/MAIN%2FSNOMEDCT-NO/concepts?";
         for(int i=0; i < batchSize; i++ ) {
           targetUri = targetUri + "conceptIds=" + inactivedMappedScopeConcepts.get(counter) + "&";
           counter++;
@@ -641,7 +790,7 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
         
         returnedConceptsCount = 0;
         
-        targetUri = "https://demo.terminologi.ehelse.no/snowstorm/snomed-ct/MAIN%2FSNOMEDCT-NO/descriptions?";
+        targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/MAIN%2FSNOMEDCT-NO/descriptions?";
         for(int i=0; i < batchSize; i++ ) {
           targetUri = targetUri + "conceptIds=" + inactiveAndReplacementTargets.get(counter) + "&";
           counter++;
@@ -713,18 +862,20 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
       List<String> results = new ArrayList<>();
       // Add header row
       results.add(
-          "conceptId\tfsn.term\tpt.lang\tpt.term\tICD-10 MAP\tinactivationIndicator.pt.term"+
+          "conceptId\tfsn.term\tpt.lang\tpt.term\tICD-10 MAP\tICPC MAP\tinactivationIndicator.pt.term"+
           "\tassociations.association.pt.term\tassociations.targetId\tassociations.target.fsn.term\t"+
           "associations.target.pt.lang\tassociations.target.pt.term\tNy SCTID OK\tTarget ICD-10 Map\t"+
-          "Norsk Target ICD-10 Map\tIkkje bruk map\tOppr map Ja/Nei\tKommentar\tKolonne1\tKolonne2");
+          "Target ICPC MAP\tIkkje bruk map\tOppr map Ja/Nei\tKommentar\tKolonne1\tKolonne2");
 
       // Add result rows, in conceptId order
       Collections.sort(inactivedMappedScopeConcepts);
       for (String conceptId : inactivedMappedScopeConcepts) {
         
         //If active maps are present for this concept, use them.  If no active maps exist, use the inactive ones.
-        norwayMappedConceptsAndTargets.put(conceptId, norwayMappedConceptsAndTargetsActive.get(conceptId) != null ? norwayMappedConceptsAndTargetsActive.get(conceptId) : norwayMappedConceptsAndTargetsInactive.get(conceptId));
-        internationalMappedConceptsAndTargets.put(conceptId, internationalMappedConceptsAndTargetsActive.get(conceptId) != null ? internationalMappedConceptsAndTargetsActive.get(conceptId) : internationalMappedConceptsAndTargetsInactive.get(conceptId));
+        norwayMappedConceptsAndTargets.put(conceptId, norwayMappedConceptsAndTargetsActive.get(conceptId) != null && !norwayMappedConceptsAndTargetsActive.get(conceptId).isEmpty() ? norwayMappedConceptsAndTargetsActive.get(conceptId) : norwayMappedConceptsAndTargetsInactive.get(conceptId));
+        internationalMappedConceptsAndTargets.put(conceptId, internationalMappedConceptsAndTargetsActive.get(conceptId) != null && !internationalMappedConceptsAndTargetsActive.get(conceptId).isEmpty() ? internationalMappedConceptsAndTargetsActive.get(conceptId) : internationalMappedConceptsAndTargetsInactive.get(conceptId));
+        norwayMappedConceptsAndICPCTargets.put(conceptId, norwayMappedConceptsAndICPCTargetsActive.get(conceptId) != null && !norwayMappedConceptsAndICPCTargetsActive.get(conceptId).isEmpty() ? norwayMappedConceptsAndICPCTargetsActive.get(conceptId) : norwayMappedConceptsAndICPCTargetsInactive.get(conceptId));
+        internationalMappedConceptsAndICPCTargets.put(conceptId, internationalMappedConceptsAndICPCTargetsActive.get(conceptId) != null && !internationalMappedConceptsAndICPCTargetsActive.get(conceptId).isEmpty() ? internationalMappedConceptsAndICPCTargetsActive.get(conceptId) : internationalMappedConceptsAndICPCTargetsInactive.get(conceptId));
         
         final String inactivationIndicator = conceptInactivationIndicators.get(conceptId);
         final String inactiveConceptInfo = 
@@ -732,8 +883,10 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
             conceptIdToFSN.get(conceptId) + "\t" +
             (conceptIdToPTNO.get(conceptId)!=null ? "no" : "en") + "\t" +
             (conceptIdToPTNO.get(conceptId)!=null ? conceptIdToPTNO.get(conceptId) : conceptIdToPTEN.get(conceptId)) + "\t"+
-            //Display Norway maps targets if available, otherwise use International targets
+            //Display Norway ICD10 maps targets if available, otherwise use International targets
             (norwayMappedConceptsAndTargets.get(conceptId)!=null ? String.join(", ", norwayMappedConceptsAndTargets.get(conceptId)) : internationalMappedConceptsAndTargets.get(conceptId)!=null ? String.join(", ", internationalMappedConceptsAndTargets.get(conceptId)) : "") + "\t"+
+            //Do the same for Norway ICPC map targets
+            (norwayMappedConceptsAndICPCTargets.get(conceptId)!=null ? String.join(", ", norwayMappedConceptsAndICPCTargets.get(conceptId)) : internationalMappedConceptsAndICPCTargets.get(conceptId)!=null ? String.join(", ", internationalMappedConceptsAndICPCTargets.get(conceptId)) : "") + "\t"+
             inactivationIndicator;
         if(conceptAssociationTargets.get(conceptId) == null) {
           results.add(inactiveConceptInfo);
@@ -747,6 +900,8 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
               //If active maps are present for this concept, use them.  If no active maps exist, use the inactive ones.
               norwayMappedConceptsAndTargets.put(targetId, norwayMappedConceptsAndTargetsActive.get(targetId) != null ? norwayMappedConceptsAndTargetsActive.get(targetId) : norwayMappedConceptsAndTargetsInactive.get(targetId));
               internationalMappedConceptsAndTargets.put(targetId, internationalMappedConceptsAndTargetsActive.get(targetId) != null ? internationalMappedConceptsAndTargetsActive.get(targetId) : internationalMappedConceptsAndTargetsInactive.get(targetId));
+              norwayMappedConceptsAndICPCTargets.put(targetId, norwayMappedConceptsAndICPCTargetsActive.get(targetId) != null ? norwayMappedConceptsAndICPCTargetsActive.get(targetId) : norwayMappedConceptsAndICPCTargetsInactive.get(targetId));
+              internationalMappedConceptsAndICPCTargets.put(targetId, internationalMappedConceptsAndICPCTargetsActive.get(targetId) != null ? internationalMappedConceptsAndICPCTargetsActive.get(targetId) : internationalMappedConceptsAndICPCTargetsInactive.get(targetId));
               
               final String targetConceptInfo = 
                   associationTerm + "\t" + 
@@ -756,7 +911,9 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
               (conceptIdToPTNO.get(targetId)!=null ? conceptIdToPTNO.get(targetId) : conceptIdToPTEN.get(targetId)) + "\t"+
               "\t"+
               //Display Norway maps targets if available, otherwise use International targets
-              (norwayMappedConceptsAndTargets.get(targetId)!=null ? String.join(", ", norwayMappedConceptsAndTargets.get(targetId)) : internationalMappedConceptsAndTargets.get(targetId)!=null ? String.join(", ", internationalMappedConceptsAndTargets.get(targetId)) : "");
+              (norwayMappedConceptsAndTargets.get(targetId)!=null ? String.join(", ", norwayMappedConceptsAndTargets.get(targetId)) : internationalMappedConceptsAndTargets.get(targetId)!=null ? String.join(", ", internationalMappedConceptsAndTargets.get(targetId)) : "") + "\t" +
+              //Do the same for Norway ICPC map targets              
+              (norwayMappedConceptsAndICPCTargets.get(targetId)!=null ? String.join(", ", norwayMappedConceptsAndICPCTargets.get(targetId)) : internationalMappedConceptsAndICPCTargets.get(targetId)!=null ? String.join(", ", internationalMappedConceptsAndICPCTargets.get(targetId)) : "");
 
               results.add(inactiveConceptInfo + "\t" + targetConceptInfo);
             }
