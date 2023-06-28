@@ -2351,7 +2351,8 @@ public class ContentServiceJpa extends RootServiceJpa
             || terminology.toLowerCase().startsWith("gmdn")
             || terminology.toLowerCase().startsWith("atc")
             || terminology.toLowerCase().startsWith("icpc")
-            || terminology.toLowerCase().startsWith("phcvs")) {
+            || terminology.toLowerCase().startsWith("phcvs")
+            || terminology.toLowerCase().startsWith("cci")) {
           Collections.sort(treePositions, new Comparator<TreePosition>() {
             @Override
             public int compare(TreePosition o1, TreePosition o2) {

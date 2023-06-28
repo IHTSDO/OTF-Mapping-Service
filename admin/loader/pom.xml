@@ -233,9 +233,9 @@
       </build>
     </profile>
 
-    <!-- Fix CCI concept names after being loaded via ClaML3 -Drun.config=.. must also be specified. -->
+    <!-- Runs fixes to CCI concepts after being loaded via ClaML3 -Drun.config=.. must also be specified. -->
     <profile>
-      <id>CCIConceptNameFixer</id>
+      <id>CCIPostLoadFixer</id>
       <build>
         <plugins>
           <plugin>
@@ -243,10 +243,10 @@
             <artifactId>mapping-admin-mojo</artifactId>
             <executions>
               <execution>
-                <id>cci-concept-name-fixer</id>
+                <id>cci-post-load-fixer</id>
                 <phase>package</phase>
                 <goals>
-                  <goal>cci-concept-name-fixer</goal>
+                  <goal>cci-post-load-fixer</goal>
                 </goals>
                 <configuration>
                   <terminology>${terminology}</terminology>
