@@ -45,6 +45,9 @@ public class Mims2SqlReportMojo extends AbstractOtfMappingMojo {
    * @required
    */
   private String projectIds;
+  
+  /** The map name. */
+  private String mapName;
 
   /** The manager. */
   EntityManager manager;
@@ -53,7 +56,7 @@ public class Mims2SqlReportMojo extends AbstractOtfMappingMojo {
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
 
-    getLog().info("Start MIMS Condition to SNOMED SQLReport Mojo");
+    
 
     setupBindInfoPackage();
 
@@ -72,7 +75,7 @@ public class Mims2SqlReportMojo extends AbstractOtfMappingMojo {
       }
 
     } catch (Exception e) {
-      getLog().error("Error running MIMS Condition to SNOMED SQLReport Mojo.", e);
+      getLog().error("Error running " + mapName + " Report Mojo.", e);
     }
   }
 
@@ -83,11 +86,18 @@ public class Mims2SqlReportMojo extends AbstractOtfMappingMojo {
    * @throws Exception the exception
    */
   private void runReport(long mapProjectId) throws Exception {
+    
+    MappingService mappingService = new MappingServiceJpa();
+    final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+    mapName = mapProject.getName();
+    
+    getLog().info("Start " + mapProject.getName() + " Mojo");
+    
     try (ContentService service = new ContentServiceJpa() {
       {
         Mims2SqlReportMojo.this.manager = manager;
       }
-    }; MappingService mappingService = new MappingServiceJpa();) {
+    }; ) {
 
       // Run the SQL report
       final javax.persistence.Query query = manager.createNativeQuery(
@@ -162,7 +172,7 @@ public class Mims2SqlReportMojo extends AbstractOtfMappingMojo {
       final DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
       final String dateStamp = dateFormat.format(new Date());
 
-      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      
       final String filename = "/sqlReport_"
           + mapProject.getName().replace(" ", "") + "_" + dateStamp;
 
@@ -205,7 +215,7 @@ public class Mims2SqlReportMojo extends AbstractOtfMappingMojo {
     } catch (Exception e) {
       getLog().error(e);
       throw new MojoExecutionException(
-          "MIMS Condition to SNOMED SQLReport mojo failed to complete", e);
+          mapProject.getName() + " mojo failed to complete", e);
     }
   }
 
@@ -249,7 +259,7 @@ public class Mims2SqlReportMojo extends AbstractOtfMappingMojo {
     props.put("mail.smtp.auth", config.getProperty("mail.smtp.auth"));
 
     ConfigUtility.sendEmailWithAttachment(
-        "[OTF-Mapping-Tool] Nightly MIMS Condition to SNOMED SQL report", from, notificationRecipients,
+        "[OTF-Mapping-Tool] Nightly " + mapName + " SQL report", from, notificationRecipients,
         notificationMessage, props, fileName,
         "true".equals(config.getProperty("mail.smtp.auth")));
   }
