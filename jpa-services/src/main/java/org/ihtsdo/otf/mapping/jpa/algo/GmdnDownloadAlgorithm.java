@@ -29,7 +29,7 @@ public class GmdnDownloadAlgorithm extends RootServiceJpa implements Algorithm {
   /**
    * Size of the buffer to read/write data
    */
-  private static final int BUFFER_SIZE = 1024;
+  private static final int BUFFER_SIZE = 4096;
 
   /**
    * Instantiates an empty {@link GmdnDownloadAlgorithm}.
@@ -104,14 +104,11 @@ public class GmdnDownloadAlgorithm extends RootServiceJpa implements Algorithm {
             while (zipEntry != null) {
               final String filePath =
                   unzipLocation + File.separator + zipEntry.getName();
-              Logger.getLogger(getClass()).info("Unzipping " + entry);                        
               extractFile(zipIn, filePath);
               zipIn.closeEntry();
               zipEntry = zipIn.getNextEntry();
             }
-            Logger.getLogger(getClass()).info("Closing zip stream for " + entry);                        
             zipIn.close();
-            Logger.getLogger(getClass()).info("Zip stream closed.");                        
 
             // delete the zip file
             // Sometimes there is a delay before the delete works.  If it doesn't go through, try again after a brief pause.
@@ -135,18 +132,15 @@ public class GmdnDownloadAlgorithm extends RootServiceJpa implements Algorithm {
                 break;
               }
               
-              Thread.currentThread().sleep(6000);
+              Thread.currentThread().sleep(1000);
             }
           }
         }
       }
       ftpClient.logout();
     } catch (IOException e) {
-      Logger.getLogger(getClass()).error("IOException - " + e.getMessage());
-      Logger.getLogger(getClass()).error("IOException - " + e.getStackTrace());
         e.printStackTrace();
     } catch (Exception e) {
-      Logger.getLogger(getClass()).error("Exception");
         e.printStackTrace();
     } finally {
         if (ftpClient.isConnected()) {
@@ -167,13 +161,14 @@ public class GmdnDownloadAlgorithm extends RootServiceJpa implements Algorithm {
    */
   private void extractFile(ZipInputStream zipIn, String filePath)
     throws IOException {
-    FileOutputStream fos = new FileOutputStream(filePath);
+    BufferedOutputStream bos =
+        new BufferedOutputStream(new FileOutputStream(filePath));
     byte[] bytesIn = new byte[BUFFER_SIZE];
     int read = 0;
     while ((read = zipIn.read(bytesIn)) != -1) {
-      fos.write(bytesIn, 0, read);
+      bos.write(bytesIn, 0, read);
     }
-    fos.close();
+    bos.close();
   }
 
   @Override
