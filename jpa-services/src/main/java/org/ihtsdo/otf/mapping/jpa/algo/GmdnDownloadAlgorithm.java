@@ -111,7 +111,29 @@ public class GmdnDownloadAlgorithm extends RootServiceJpa implements Algorithm {
             zipIn.close();
 
             // delete the zip file
-            new File(saveLocation + "/" + entry).delete();
+            // Sometimes there is a delay before the delete works.  If it doesn't go through, try again after a brief pause.
+            // Stop trying after 10 attempts.
+            boolean deleteSuccessful = false;
+            int deleteAttemptCount = 0;
+            
+            Logger.getLogger(getClass()).info("Trying to delete " + saveLocation + "/" + entry);
+            
+            while(!deleteSuccessful) {
+              deleteAttemptCount++;
+              Logger.getLogger(getClass()).info("Attempt " + deleteAttemptCount);
+              deleteSuccessful = new File(saveLocation + "/" + entry).delete();
+              
+              if(deleteSuccessful) {
+                Logger.getLogger(getClass()).info(saveLocation + "/" + entry + " successfully deleted.");
+              }
+              
+              if(deleteAttemptCount > 10) {
+                Logger.getLogger(getClass()).error("Unable to delete file: " + saveLocation + "/" + entry);
+                break;
+              }
+              
+              Thread.currentThread().sleep(1000);
+            }
           }
         }
       }
