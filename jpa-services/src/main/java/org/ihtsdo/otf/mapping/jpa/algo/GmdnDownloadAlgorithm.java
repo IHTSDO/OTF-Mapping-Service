@@ -29,7 +29,7 @@ public class GmdnDownloadAlgorithm extends RootServiceJpa implements Algorithm {
   /**
    * Size of the buffer to read/write data
    */
-  private static final int BUFFER_SIZE = 4096;
+  private static final int BUFFER_SIZE = 1024;
 
   /**
    * Instantiates an empty {@link GmdnDownloadAlgorithm}.
@@ -135,7 +135,7 @@ public class GmdnDownloadAlgorithm extends RootServiceJpa implements Algorithm {
                 break;
               }
               
-              Thread.currentThread().sleep(1000);
+              Thread.currentThread().sleep(6000);
             }
           }
         }
@@ -167,14 +167,13 @@ public class GmdnDownloadAlgorithm extends RootServiceJpa implements Algorithm {
    */
   private void extractFile(ZipInputStream zipIn, String filePath)
     throws IOException {
-    BufferedOutputStream bos =
-        new BufferedOutputStream(new FileOutputStream(filePath));
+    FileOutputStream fos = new FileOutputStream(filePath);
     byte[] bytesIn = new byte[BUFFER_SIZE];
     int read = 0;
     while ((read = zipIn.read(bytesIn)) != -1) {
-      bos.write(bytesIn, 0, read);
+      fos.write(bytesIn, 0, read);
     }
-    bos.close();
+    fos.close();
   }
 
   @Override
