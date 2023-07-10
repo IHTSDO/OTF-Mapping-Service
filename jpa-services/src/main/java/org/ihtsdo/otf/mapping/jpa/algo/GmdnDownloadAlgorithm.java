@@ -67,6 +67,7 @@ public class GmdnDownloadAlgorithm extends RootServiceJpa implements Algorithm {
     	ftpClient.connect(gmdnftpHost, gmdnftpPort);
     	ftpClient.enterLocalPassiveMode();
     	ftpClient.login(gmdnftpUser, gmdnftpPassword);
+        ftpClient.setFileType(org.apache.commons.net.ftp.FTP.BINARY_FILE_TYPE);
         ftpClient.changeWorkingDirectory(gmdnDataDir);
         FTPFile[] files = ftpClient.listFiles();
 
@@ -132,7 +133,7 @@ public class GmdnDownloadAlgorithm extends RootServiceJpa implements Algorithm {
                 break;
               }
               
-              Thread.currentThread().sleep(1000);
+              Thread.currentThread().sleep(6000);
             }
           }
         }
