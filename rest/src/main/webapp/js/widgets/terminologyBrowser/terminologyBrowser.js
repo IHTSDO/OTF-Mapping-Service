@@ -21,7 +21,6 @@ angular.module('mapProjectApp').controller(
   function($scope, $rootScope, $q, $timeout, $http, $routeParams, $location, localStorageService,
     utilService, gpService) {
 
-//Testing to see if deploy is going through
     // Scope variables
     $scope.paging = {};
     $scope.listMode = false;
