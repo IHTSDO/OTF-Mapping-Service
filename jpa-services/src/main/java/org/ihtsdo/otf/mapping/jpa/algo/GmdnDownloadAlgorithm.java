@@ -104,11 +104,14 @@ public class GmdnDownloadAlgorithm extends RootServiceJpa implements Algorithm {
             while (zipEntry != null) {
               final String filePath =
                   unzipLocation + File.separator + zipEntry.getName();
+              Logger.getLogger(getClass()).info("Unzipping " + entry);                        
               extractFile(zipIn, filePath);
               zipIn.closeEntry();
               zipEntry = zipIn.getNextEntry();
             }
+            Logger.getLogger(getClass()).info("Closing zip stream for " + entry);                        
             zipIn.close();
+            Logger.getLogger(getClass()).info("Zip stream closed.");                        
 
             // delete the zip file
             // Sometimes there is a delay before the delete works.  If it doesn't go through, try again after a brief pause.
@@ -139,8 +142,10 @@ public class GmdnDownloadAlgorithm extends RootServiceJpa implements Algorithm {
       }
       ftpClient.logout();
     } catch (IOException e) {
+      Logger.getLogger(getClass()).error("IOException");
         e.printStackTrace();
     } catch (Exception e) {
+      Logger.getLogger(getClass()).error("Exception");
         e.printStackTrace();
     } finally {
         if (ftpClient.isConnected()) {
