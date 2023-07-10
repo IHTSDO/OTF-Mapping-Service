@@ -142,7 +142,8 @@ public class GmdnDownloadAlgorithm extends RootServiceJpa implements Algorithm {
       }
       ftpClient.logout();
     } catch (IOException e) {
-      Logger.getLogger(getClass()).error("IOException");
+      Logger.getLogger(getClass()).error("IOException - " + e.getMessage());
+      Logger.getLogger(getClass()).error("IOException - " + e.getStackTrace());
         e.printStackTrace();
     } catch (Exception e) {
       Logger.getLogger(getClass()).error("Exception");
