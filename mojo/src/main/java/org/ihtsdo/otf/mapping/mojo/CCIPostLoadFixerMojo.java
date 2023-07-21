@@ -255,48 +255,13 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
    Map<String,String> newConceptToNameMap = new HashMap<>();
    Map<String,Long> newConceptToParentIdMap = new HashMap<>();
 
-   Pattern pattern = Pattern.compile(".*-[A-Z][A-Z]$");
-   Pattern pattern2 = Pattern.compile(".*-[A-Z]$");   
+   Pattern pattern = Pattern.compile(".*-[A-Z0-9]$");   
+   Pattern pattern2 = Pattern.compile(".*-[A-Z0-9][A-Z0-9]");
    
-   for (Concept concept : concepts.getConcepts()) {
-     // Check if needs to generate a -^^ partial code
-     if(pattern.matcher(concept.getTerminologyId()).find()) {
-       //Calculate the new concept's terminologyId
-       final String newConceptTerminologyId = concept.getTerminologyId().substring(0, concept.getTerminologyId().length()-3) + "-^^";
-       
-       //Only set up each new concept once
-       if(!newConceptTerminologyIds.contains(newConceptTerminologyId)) {
-         newConceptTerminologyIds.add(newConceptTerminologyId);
-       }
-       else {
-         continue;
-       }
-       
-       //Identify the concept's parent, and link the new concept terminologyId to it
-       List<Concept> parents = TerminologyUtility.getActiveParents(contentService.getConcept(concept.getId()));
-       if(parents.size() != 1) {
-         getLog().error("Parent for concept " + concept.getTerminologyId() + " cannot be found. Skipping.");
-         continue;
-       }
-       final Concept parentConcept = parents.get(0);
-       newConceptToParentIdMap.put(newConceptTerminologyId, parentConcept.getId());
-       
-       // Check if a direct predecessor exists (e.g. for 1.VG.53.LA-PM, the predecessor would be 1.VG.53.LA)
-       // If so, use its name to generate the new partial-code concept's name
-       final String predecessorTerminologyId = concept.getTerminologyId().substring(0, concept.getTerminologyId().length()-3);
-       if(existingTerminologyIdstoNames.keySet().contains(predecessorTerminologyId)) {
-         String newConceptName = calculatePartialCodeName(newConceptTerminologyId, existingTerminologyIdstoNames.get(predecessorTerminologyId));
-         newConceptToNameMap.put(newConceptTerminologyId, newConceptName);
-       }
-       // If no predecessor exists, use the concept's parent instead.
-       else {
-         String newConceptName = calculatePartialCodeName(newConceptTerminologyId, parentConcept.getDefaultPreferredName());
-         newConceptToNameMap.put(newConceptTerminologyId, newConceptName);
-       }
-     }
-
+   for (Concept concept : concepts.getConcepts()) {   
+     
      // Check if needs to generate a -^ partial code
-     else if(pattern2.matcher(concept.getTerminologyId()).find()) {
+     if(pattern.matcher(concept.getTerminologyId()).find()) {
        //Calculate the new concept's terminologyId
        final String newConceptTerminologyId = concept.getTerminologyId().substring(0, concept.getTerminologyId().length()-2) + "-^";
        
@@ -320,6 +285,42 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
        // Check if a direct predecessor exists (e.g. for 1.VG.53.LA-PM-A, the predecessor would be 1.VG.53.LA-PM)
        // If so, use its name to generate the new partial-code concept's name
        final String predecessorTerminologyId = concept.getTerminologyId().substring(0, concept.getTerminologyId().length()-2);
+       if(existingTerminologyIdstoNames.keySet().contains(predecessorTerminologyId)) {
+         String newConceptName = calculatePartialCodeName(newConceptTerminologyId, existingTerminologyIdstoNames.get(predecessorTerminologyId));
+         newConceptToNameMap.put(newConceptTerminologyId, newConceptName);
+       }
+       // If no predecessor exists, use the concept's parent instead.
+       else {
+         String newConceptName = calculatePartialCodeName(newConceptTerminologyId, parentConcept.getDefaultPreferredName());
+         newConceptToNameMap.put(newConceptTerminologyId, newConceptName);
+       }
+     }
+     
+     // Check if needs to generate a -^^ partial code
+     if(pattern2.matcher(concept.getTerminologyId()).find() && concept.getTerminologyId().length() >= 10) {
+       //Calculate the new concept's terminologyId
+       final String newConceptTerminologyId = concept.getTerminologyId().substring(0, 10) + "-^^";
+       
+       //Only set up each new concept once
+       if(!newConceptTerminologyIds.contains(newConceptTerminologyId)) {
+         newConceptTerminologyIds.add(newConceptTerminologyId);
+       }
+       else {
+         continue;
+       }
+       
+       //Identify the concept's parent, and link the new concept terminologyId to it
+       List<Concept> parents = TerminologyUtility.getActiveParents(contentService.getConcept(concept.getId()));
+       if(parents.size() != 1) {
+         getLog().error("Parent for concept " + concept.getTerminologyId() + " cannot be found. Skipping.");
+         continue;
+       }
+       final Concept parentConcept = parents.get(0);
+       newConceptToParentIdMap.put(newConceptTerminologyId, parentConcept.getId());
+       
+       // Check if a direct predecessor exists (e.g. for 1.VG.53.LA-PM, the predecessor would be 1.VG.53.LA)
+       // If so, use its name to generate the new partial-code concept's name
+       final String predecessorTerminologyId = concept.getTerminologyId().substring(0, 10);
        if(existingTerminologyIdstoNames.keySet().contains(predecessorTerminologyId)) {
          String newConceptName = calculatePartialCodeName(newConceptTerminologyId, existingTerminologyIdstoNames.get(predecessorTerminologyId));
          newConceptToNameMap.put(newConceptTerminologyId, newConceptName);
