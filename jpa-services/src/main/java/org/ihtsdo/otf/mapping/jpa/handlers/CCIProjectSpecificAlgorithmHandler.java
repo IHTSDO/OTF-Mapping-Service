@@ -256,7 +256,7 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
           if (concept != null) {
             final String terminologyId = concept.getTerminologyId();
             final MapEntry entry = mapRecord.getMapEntries().get(i);
-            if(!terminologyId.endsWith("^") && entry.getMapRelation() != null && entry.getMapRelation().getName().toLowerCase().contains("partially classified")) {
+            if(!terminologyId.endsWith("^") && (entry.getMapRelation() == null || !entry.getMapRelation().getName().toLowerCase().contains("fully classified"))) {
                 result
                 .addWarning("Target id for entry " + entry.getMapGroup() + "/" + entry.getMapPriority() + " does not end with '^', and should be assigned one of the 'Fully classified' Relations.");
             }
