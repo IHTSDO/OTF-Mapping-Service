@@ -48,6 +48,12 @@ public class ComputeDefaultPreferredNameMojo extends AbstractOtfMappingMojo {
   /** the type ids. */
   private static Long fsnTypeId = 900000000000003001L;
   private static Long definitionTypeId = 900000000000550004L;
+  
+  /** the defaultPreferredNames type id - default to FSN. */
+  private Long dpnTypeId = fsnTypeId;
+
+  /** The dpn acceptability id - default to Preferred. */
+  private Long dpnAcceptabilityId = 900000000000548007L;
 
   /** The dpn ref set ids. */
   private List<Long> dpnRefsetIdArray = new ArrayList<>();
@@ -82,8 +88,23 @@ public class ComputeDefaultPreferredNameMojo extends AbstractOtfMappingMojo {
           dpnRefsetIdArray.add(Long.valueOf(prop));
         }
       }
+      
+      // If typeId is specified, override default
+      String prop = properties.getProperty("loader.defaultPreferredNames.typeId");
+      if (prop != null) {
+        dpnTypeId = Long.valueOf(prop);
+      }
 
-      getLog().info("  dpnRefsetIdArray = " + dpnRefsetIdArray);
+      // If acceptabilityId is specified, override default
+      prop = properties.getProperty("loader.defaultPreferredNames.acceptabilityId");
+      if (prop != null) {
+        dpnAcceptabilityId = Long.valueOf(prop);
+      }
+
+      getLog().info("  Default preferred name settings:");
+      getLog().info("    dpnRefsetIdArray = " + dpnRefsetIdArray);
+      getLog().info("    dpnTypeId = " + dpnTypeId);
+      getLog().info("    dpnAcceptabilityId = " + dpnAcceptabilityId);
       
       setupBindInfoPackage();
 
@@ -212,10 +233,10 @@ public class ComputeDefaultPreferredNameMojo extends AbstractOtfMappingMojo {
                 };
                 defaultPreferredNames.put(concept.getTerminologyId(), newRankValuePair);
               }
-              // if the lang refset priority is the same as the previously stored dpn, but the typeId is fsn, replace it
+              // if the lang refset priority is the same as the previously stored dpn, but the type and acceptability is preferred, replace it
               if (dpnRefsetIdArray.indexOf(Long.valueOf(language.getRefSetId())) == Integer
                   .parseInt(rankValuePair[0])) {
-                if (description.getTypeId().equals(fsnTypeId)) {
+                if (description.getTypeId().equals(dpnTypeId) && language.getAcceptabilityId().equals(dpnAcceptabilityId)) {
                   String[] newRankValuePair = {
                       Integer.valueOf(index).toString(), description.getTerm()
                   };

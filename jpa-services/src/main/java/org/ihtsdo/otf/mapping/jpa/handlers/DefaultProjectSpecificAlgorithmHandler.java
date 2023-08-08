@@ -990,6 +990,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
     // does not apply
     return null;
   }
+  
+  /* see superclass */
+  @Override
+  public MapRelation getDefaultNullTargetUpPropagatedMapRelation() throws Exception {
+    // does not apply
+    return null;
+  }  
 
   /* see superclass */
   @Override
