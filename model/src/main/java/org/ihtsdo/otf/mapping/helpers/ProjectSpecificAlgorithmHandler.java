@@ -211,6 +211,14 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
   public MapRelation getDefaultUpPropagatedMapRelation() throws Exception;
 
   /**
+   * Returns the default up propagated map relation for null target entries.
+   *
+   * @return the default up propagated map relation for null target entries
+   * @throws Exception the exception
+   */
+  public MapRelation getDefaultNullTargetUpPropagatedMapRelation() throws Exception;  
+  
+  /**
    * Returns the default target name for blank target.
    *
    * @return the default target name for blank target

@@ -919,6 +919,21 @@ public class ICD10CMProjectSpecificAlgorithmHandler
     mappingService.close();
     return null;
   }
+  
+  /* see superclass */
+  @Override
+  public MapRelation getDefaultNullTargetUpPropagatedMapRelation() throws Exception {
+    MappingService mappingService = new MappingServiceJpa();
+    for (final MapRelation rel : mappingService.getMapRelations()
+        .getMapRelations()) {
+      if (rel.getTerminologyId().equals("447638001")) {
+        mappingService.close();
+        return rel;
+      }
+    }
+    mappingService.close();
+    return null;
+  }  
 
   /* see superclass */
   @Override

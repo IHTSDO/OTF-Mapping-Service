@@ -485,10 +485,16 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       // Prep map relation to use for up propagated records
       final MapRelation ifaRuleRelation = algorithmHandler.getDefaultUpPropagatedMapRelation();
+      final MapRelation ifaRuleNullTargetRelation = algorithmHandler.getDefaultNullTargetUpPropagatedMapRelation();
+      
       if (mapProject.isPropagatedFlag() && ifaRuleRelation == null) {
         throw new Exception("Unable to find default map relation for up propagated records");
       }
 
+      if (mapProject.isPropagatedFlag() && ifaRuleNullTargetRelation == null) {
+        throw new Exception("Unable to find default map relation for null target up propagated records");
+      }      
+      
       logger.info("  Processing release");
       // cycle over the map records marked for publishing
       int ct = 0;
@@ -535,7 +541,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
                     .getPropagationDescendantThreshold()) {
 
           // Handle up propagation for this record
-          if (!handleUpPropagation(mapRecord, entriesByGroup, ifaRuleRelation)) {
+          if (!handleUpPropagation(mapRecord, entriesByGroup, ifaRuleRelation, ifaRuleNullTargetRelation)) {
             // handle cases that cannot be up propagated
             continue;
           }
@@ -858,7 +864,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @throws Exception the exception
    */
   private boolean handleUpPropagation(MapRecord mapRecord,
-    Map<Integer, List<MapEntry>> entriesByGroup, MapRelation ifaRuleRelation) throws Exception {
+    Map<Integer, List<MapEntry>> entriesByGroup, MapRelation ifaRuleRelation, MapRelation ifaRuleNullTargetRelation) throws Exception {
     
     // /////////////////////////////////////////////////////
     // Get the tree positions for this concept
@@ -1045,7 +1051,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
                     newEntry = setPropagatedRuleForMapEntry(newEntry);
                   }
                   
-                  newEntry.setMapRelation(ifaRuleRelation);
+                  newEntry.setMapRelation(ifaRuleNullTargetRelation);
 
                   // add to the list
                   existingEntries.add(newEntry);
