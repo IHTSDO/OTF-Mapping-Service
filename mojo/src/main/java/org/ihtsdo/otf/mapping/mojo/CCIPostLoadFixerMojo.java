@@ -45,6 +45,8 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
  */
 public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
 
+  private Map<String, Set<String>> sevenCharSets = new HashMap<>();
+  
   private Map<String, Set<String>> tenCharSets = new HashMap<>();
 
   private Map<String, Set<String>> thirteenCharSets = new HashMap<>();
@@ -140,6 +142,16 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
 
         terminologyIdToName.put(concept.getTerminologyId(), concept.getDefaultPreferredName());
 
+        if (concept.getTerminologyId().length() >= 7) {
+          String tenCharSubstring = concept.getTerminologyId().substring(0, 7);
+          if (sevenCharSets.get(tenCharSubstring) == null) {
+            sevenCharSets.put(tenCharSubstring, new HashSet<>());
+          }
+          Set<String> terminologyIds = sevenCharSets.get(tenCharSubstring);
+          terminologyIds.add(concept.getTerminologyId());
+          sevenCharSets.put(tenCharSubstring, terminologyIds);
+        }
+        
         if (concept.getTerminologyId().length() >= 10) {
           String tenCharSubstring = concept.getTerminologyId().substring(0, 10);
           if (tenCharSets.get(tenCharSubstring) == null) {
@@ -535,16 +547,38 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
     //
 
     for (Concept concept : concepts.getConcepts()) {
-      // A -XX or -XX-X terminology id is encountered. Grab all of the terminology ids
+      // A -XX or -XX-X terminology id is encountered. Grab all of the
+      // terminology ids
       // that share same first 10 characters as it
-      // For example, if "1.DA.87.LA-AG" or "1.DA.87.LA-AG-A" is encountered, grab all concepts that
-      // start with "1.DA.87.LA"
+      // For example, if "1.DA.87.LA-AG" or "1.DA.87.LA-AG-A" is encountered,
+      // grab all concepts that start with "1.DA.87.LA"
       if (concept.getTerminologyId().length() == 13 || concept.getTerminologyId().length() == 15) {
 
         String partialCodeId = concept.getTerminologyId().substring(0, 10) + "-^^";
-        
-        // Only continue if a name has not already been calculated for this partial
+
+        // If a code exists that is the partial code minus the "-^^", then the
+        // partial is redundant and not needed.
+        // For example: "1.NA.56.FA" exists, so we should not create
+        // "1.NA.56.FA-^^"
+        if (terminologyIdToName.containsKey(concept.getTerminologyId().substring(0, 10))) {
+          continue;
+        }
+
+        // Only continue if a name has not already been calculated for this
+        // partial
         if (terminologyIdToName.get(partialCodeId) == null) {
+          
+          // If there is only a single code in the rubric, we should not create
+          // a partial
+          // For example:
+          //
+          // 1.EB.03.^^ Immobilization, zygoma
+          // 1.EB.03.JA-SR using external splinting device
+          Set<String> sevenCharIds = sevenCharSets.get(concept.getTerminologyId().substring(0, 7));
+          if (sevenCharIds.size() == 2) {
+            continue;
+          }   
+          
           Set<String> tenCharIds = tenCharSets.get(concept.getTerminologyId().substring(0, 10));
           Set<String> tenCharNames = new HashSet<>();
           for (String tenCharId : tenCharIds) {
@@ -557,93 +591,172 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
           // assign the wildcard version
 
           String sharedName = "";
+          String phraseFound = "";
 
-          // If there is more than one name, find common substring shared across all names.
-          if (tenCharNames.size() > 1) {
-            for (String name : tenCharNames) {
-              if (sharedName.equals("")) {
-                sharedName = name;
-                continue;
-              } else {
-                sharedName = name.substring(0, StringUtils.indexOfDifference(sharedName, name));
+          // "LA" codes are a special case.
+          // When 9-10'th characters are "LA", pattern should be "open approach,
+          // unknown agent or device"
+          // E.g.:
+          // 1.EC.55.LA-KD of wire or mesh using open approach
+          // 1.EC.55.LA-NW of plate/screw using open approach
+          // 1.EC.55.LA-TP of tissue expander using open approach
+          // 1.EC.55.LA-^^ open approach, unknown agent or device
+
+          if (concept.getTerminologyId().substring(8, 10).equals("LA")) {
+            sharedName = "open approach of";
+          }
+
+          else {
+            // If there is more than one name, find common substring shared
+            // across all names.
+            // Look from the front and the back
+            if (tenCharNames.size() > 1) {
+              for (String name : tenCharNames) {
+                if (sharedName.equals("")) {
+                  sharedName = name;
+                  continue;
+                } else {
+                  sharedName = name.substring(0, StringUtils.indexOfDifference(sharedName, name));
+                }
               }
             }
-          }
-          
-          // If no shared name has been identified, use single name to look for certain phrases:
-          if (sharedName.equals("")) {
+
+            // Also single name to look for certain phrases
             for (String name : tenCharNames) {
               int usingIndex = name.indexOf("using");
+              int ofIndex = name.indexOf("of");
+              int withIndex = name.indexOf("with");
+              int endoscopicIndex = name.indexOf("endosopic");
+              int perIndex = name.indexOf("per");
+              int noIndex = name.indexOf("no");
               int approachIndex = name.indexOf("approach");
               int techniqueIndex = name.indexOf("technique");
               int injectionIndex = name.indexOf("injection");
               int infusionIndex = name.indexOf("infusion");
               int openIndex = name.indexOf("open");
+              int deviceIndex = name.indexOf("device");
+              int agentIndex = name.indexOf("agent");
+              int fixationIndex = name.indexOf("fixation");
+              int implantIndex = name.indexOf("implant");
+              int wireIndex = name.indexOf("wire");
+              int plateIndex = name.indexOf("plate");
+              int tissueIndex = name.indexOf("tissue");
+              int usedIndex = name.indexOf("used");
+              int usingWireIndex = name.indexOf("using wire");
+              int syntheticTissueIndex = name.indexOf("synthetic tissue");
+              int combinedSourcesIndex = name.indexOf("combined sources");
+              int deviceAloneIndex = name.indexOf("device alone");
+              int uncementedIndex = name.indexOf("uncemented");
 
-              if(usingIndex != -1) {
+              if (usingIndex != -1) {
                 // using ... approach
-                if(approachIndex != -1 && approachIndex > usingIndex) {
-                  sharedName=name.substring(usingIndex,approachIndex+8);
+                if (approachIndex != -1 && approachIndex > usingIndex) {
+                  phraseFound = name.substring(usingIndex, approachIndex + 8);
                   break;
                 }
                 // using ... technique
                 else if (techniqueIndex != -1 && techniqueIndex > usingIndex) {
-                  sharedName=name.substring(usingIndex,techniqueIndex+9);
+                  phraseFound = name.substring(usingIndex, techniqueIndex + 9);
                   break;
                 }
                 // using ... injection
                 else if (injectionIndex != -1 && injectionIndex > usingIndex) {
-                  sharedName=name.substring(usingIndex,injectionIndex+9);
+                  phraseFound = name.substring(usingIndex, injectionIndex + 9);
                   break;
                 }
                 // using ... infusion
                 else if (infusionIndex != -1 && infusionIndex > usingIndex) {
-                  sharedName=name.substring(usingIndex,infusionIndex+8);
+                  phraseFound = name.substring(usingIndex, infusionIndex + 8);
                   break;
                 }
               }
-              
+
               else if (openIndex != -1) {
                 // open ... approach
-                if(approachIndex != -1 && approachIndex > openIndex) {
-                  sharedName=name.substring(openIndex,approachIndex+8);
+                if (approachIndex != -1 && approachIndex > openIndex) {
+                  phraseFound = name.substring(openIndex, approachIndex + 8);
                   break;
                 }
               }
             }
           }
-                
+
+          // Compare the sharedName vs the phraseFound, and keep the longer of
+          // the two.
+          String bestMatch = "";
+          if (sharedName.length() > phraseFound.length()) {
+            bestMatch = sharedName;
+          } else {
+            bestMatch = phraseFound;
+          }
+
           String partialCodeName = "";
 
-          // Now we have the shared-name. Tack an "unknown" suffix to the end to
+          // Now we have the best match. Tack an "unknown" suffix to the end to
           // create the partial code name.
-          if (sharedName.equals("")) {
+          if (bestMatch.equals("")) {
             partialCodeName = "UNCALCULATABLE";
           } else {
-            sharedName = sharedName.trim();
-            String[] joiners = {"of", "with", "using", "and", "by"};
-            if(!StringUtils.endsWithAny(sharedName, joiners)) {
-              sharedName = sharedName + ",";
+            bestMatch = bestMatch.trim();
+            String[] joiners = {
+                "of", "with", "using", "and", "by"
+            };
+            if (!StringUtils.endsWithAny(bestMatch, joiners)) {
+              bestMatch = bestMatch + ",";
             }
-            
-            partialCodeName = sharedName + " unknown agent or device";
+
+            // Section 6 lowest-level concepts:
+            if (partialCodeId.startsWith("6")) {
+              partialCodeName = bestMatch + " unknown method or tool";
+            }
+            // All other sections use the same pattern
+            else {
+            partialCodeName = bestMatch + " unknown agent or device";
+            }
           }
 
           // Add the code and name to the name map
           terminologyIdToName.put(partialCodeId, partialCodeName);
         }
       }
-      
+    }
+
+    for (Concept concept : concepts.getConcepts()) {
+
       // A -XX-X terminology id is encountered. Grab all of the terminology ids
       // that share same first 13 characters as it
-      // For example, if "1.DA.87.LA-AG-A" is encountered, grab all concepts that
+      // For example, if "1.DA.87.LA-AG-A" is encountered, grab all concepts
+      // that
       // start with "1.DA.87.LA-AG"
       if (concept.getTerminologyId().length() == 15) {
 
         String partialCodeId = concept.getTerminologyId().substring(0, 13) + "-^";
-        // Only continue if a name has not already been calculated for this partial
+
+        // If a code exists that is the partial code minus the "-^", then the
+        // partial is redundant and not needed.
+        // For example: "1.EA.87.LA-NW" exists, so we should not create
+        // "1.EA.87.LA-NW-^"
+        if (terminologyIdToName.containsKey(concept.getTerminologyId().substring(0, 13))) {
+          continue;
+        }
+
+        // Only continue if a name has not already been calculated for this
+        // partial
         if (terminologyIdToName.get(partialCodeId) == null) {
-          Set<String> thirteenCharIds = thirteenCharSets.get(concept.getTerminologyId().substring(0, 13));
+          
+          // If there is only a single code in the rubric, we should not create
+          // a partial
+          // For example:
+          //
+          // 8.MS.70.^^ Immunization (to prevent) haemophilus influenza and hepatitis
+          // 8.MS.70.HA-BV-B    by intramuscular [IM] injection of bacterial polysaccharide and inactivated viral antigen type B (Hib HEP B)
+          Set<String> sevenCharIds = sevenCharSets.get(concept.getTerminologyId().substring(0, 7));
+          if (sevenCharIds.size() == 2) {
+            continue;
+          }  
+          
+          Set<String> thirteenCharIds =
+              thirteenCharSets.get(concept.getTerminologyId().substring(0, 13));
           Set<String> thirteenCharNames = new HashSet<>();
           for (String thirteenCharId : thirteenCharIds) {
             thirteenCharNames.add(terminologyIdToName.get(thirteenCharId));
@@ -655,82 +768,226 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
           // assign the wildcard version
 
           String sharedName = "";
+          String prefixSharedName = "";
+          String suffixSharedName = "";
 
-          // If there is more than one name, find common substring shared across all names.
-          if (thirteenCharNames.size() > 1) {
-            for (String name : thirteenCharNames) {
-              if (sharedName.equals("")) {
-                sharedName = name;
-                continue;
-              } else {
-                sharedName = name.substring(0, StringUtils.indexOfDifference(sharedName, name));
+          // "LA" codes are a special case.
+          // When 9-10'th characters are "LA", pattern should be "Open approach
+          // " + shared name starting from end of string + "unknown tissue."
+          // E.g.:
+          // 1.EC.80.LA-KD no tissue used for repair [reshaping only] using wire
+          // 1.EC.80.LA-KD-A autograft [e.g. bone] using wire
+          // 1.EC.80.LA-KD-N synthetic tissue[Silastic sheath edging] using wire
+          // 1.EC.80.LA-KD-Q combined sources of tissue [bone and Silastic
+          // sheath edging] using wire
+          // 1.EC.80.LA-KD-^ Open approach, using wire, unknown tissue
+
+          if (concept.getTerminologyId().substring(8, 10).equals("LA")) {
+            // LA-XX are a special subcase, and will always be set to "open
+            // approach using"
+            if (concept.getTerminologyId().substring(8, 13).equals("LA-XX")) {
+              sharedName = "open approach using";
+            } else {
+              if (thirteenCharNames.size() > 1) {
+                boolean firstName = true;
+                for (String name : thirteenCharNames) {
+                  if (firstName) {
+                    sharedName = name;
+                    firstName = false;
+                    continue;
+                  }
+                  // If a previous loop identified that there is no common
+                  // string, stop checking
+                  if (sharedName.length() == 0) {
+                    break;
+                  }
+
+                  // Check each character, starting from the end going
+                  // backwards,
+                  // until a difference is found
+                  else {
+                    int sharedNameLength = sharedName.length();
+                    int nameLength = name.length();
+                    for (int i = 0; i <= Math.min(sharedNameLength, nameLength); i++) {
+                      // When the first difference is found, set sharedName to
+                      // be
+                      // the shared portion of the string
+                      if (!sharedName.substring(sharedNameLength - i, sharedNameLength)
+                          .equals(name.substring(nameLength - i, nameLength))) {
+                        sharedName =
+                            sharedName.substring(sharedNameLength - (i - 1), sharedNameLength);
+                        break;
+                      }
+                    }
+                  }
+                }
+              }
+
+              // If a shared name was identified, prepend with "open approach"
+              if (!sharedName.equals("")) {
+                sharedName = "open approach, " + sharedName.trim();
               }
             }
           }
-          
-//          // If no shared name has been identified, use single name to look for certain phrases:
-//          if (sharedName.equals("")) {
-//            for (String name : thirteenCharNames) {
-//              int usingIndex = name.indexOf("using");
-//              int approachIndex = name.indexOf("approach");
-//              int techniqueIndex = name.indexOf("technique");
-//              int injectionIndex = name.indexOf("injection");
-//              int infusionIndex = name.indexOf("infusion");
-//              int openIndex = name.indexOf("open");
-  //
-//              if(usingIndex != -1) {
-//                // using ... approach
-//                if(approachIndex != -1 && approachIndex > usingIndex) {
-//                  sharedName=name.substring(usingIndex,approachIndex+8);
-//                  break;
-//                }
-//                // using ... technique
-//                else if (techniqueIndex != -1 && techniqueIndex > usingIndex) {
-//                  sharedName=name.substring(usingIndex,techniqueIndex+9);
-//                  break;
-//                }
-//                // using ... injection
-//                else if (injectionIndex != -1 && injectionIndex > usingIndex) {
-//                  sharedName=name.substring(usingIndex,injectionIndex+9);
-//                  break;
-//                }
-//                // using ... infusion
-//                else if (infusionIndex != -1 && infusionIndex > usingIndex) {
-//                  sharedName=name.substring(usingIndex,infusionIndex+8);
-//                  break;
-//                }
-//              }
-//              
-//              else if (openIndex != -1) {
-//                // open ... approach
-//                if(approachIndex != -1 && approachIndex > openIndex) {
-//                  sharedName=name.substring(openIndex,approachIndex+8);
-//                  break;
-//                }
-//              }
-//            }
-//          }
-                
+
+          else {
+            // If there is more than one name, find common substring shared
+            // across all names.
+            if (thirteenCharNames.size() > 1) {
+              // Find the longest common string at the beginning
+              for (String name : thirteenCharNames) {
+                if (prefixSharedName.equals("")) {
+                  prefixSharedName = name;
+                  continue;
+                } else {
+                  prefixSharedName =
+                      name.substring(0, StringUtils.indexOfDifference(prefixSharedName, name));
+                }
+              }
+              // Find the longest common string at the end
+              boolean firstName = true;
+              for (String name : thirteenCharNames) {
+                if (firstName) {
+                  suffixSharedName = name;
+                  firstName = false;
+                  continue;
+                }
+                // If a previous loop identified that there is no common
+                // string, stop checking
+                if (suffixSharedName.length() == 0) {
+                  break;
+                }
+
+                // Check each character, starting from the end going
+                // backwards,
+                // until a difference is found
+                else {
+                  int sharedNameLength = suffixSharedName.length();
+                  int nameLength = name.length();
+                  for (int i = 0; i <= Math.min(sharedNameLength, nameLength); i++) {
+                    // When the first difference is found, set sharedName to
+                    // be the shared portion of the string
+                    if (!suffixSharedName.substring(sharedNameLength - i, sharedNameLength)
+                        .equals(name.substring(nameLength - i, nameLength))) {
+                      suffixSharedName =
+                          suffixSharedName.substring(sharedNameLength - (i - 1), sharedNameLength);
+                      break;
+                    }
+                  }
+                }
+              }
+            }
+
+            // // If no shared name has been identified, use single name to look
+            // for certain phrases:
+            // if (sharedName.equals("")) {
+            // for (String name : thirteenCharNames) {
+            // int usingIndex = name.indexOf("using");
+            // int approachIndex = name.indexOf("approach");
+            // int techniqueIndex = name.indexOf("technique");
+            // int injectionIndex = name.indexOf("injection");
+            // int infusionIndex = name.indexOf("infusion");
+            // int openIndex = name.indexOf("open");
+            //
+            // if(usingIndex != -1) {
+            // // using ... approach
+            // if(approachIndex != -1 && approachIndex > usingIndex) {
+            // sharedName=name.substring(usingIndex,approachIndex+8);
+            // break;
+            // }
+            // // using ... technique
+            // else if (techniqueIndex != -1 && techniqueIndex > usingIndex) {
+            // sharedName=name.substring(usingIndex,techniqueIndex+9);
+            // break;
+            // }
+            // // using ... injection
+            // else if (injectionIndex != -1 && injectionIndex > usingIndex) {
+            // sharedName=name.substring(usingIndex,injectionIndex+9);
+            // break;
+            // }
+            // // using ... infusion
+            // else if (infusionIndex != -1 && infusionIndex > usingIndex) {
+            // sharedName=name.substring(usingIndex,infusionIndex+8);
+            // break;
+            // }
+            // }
+            //
+            // else if (openIndex != -1) {
+            // // open ... approach
+            // if(approachIndex != -1 && approachIndex > openIndex) {
+            // sharedName=name.substring(openIndex,approachIndex+8);
+            // break;
+            // }
+            // }
+            // }
+            // }
+          }
+
           String partialCodeName = "";
 
           // Now we have the shared-name. Tack an "unknown" suffix to the end to
           // create the partial code name.
-          if (sharedName.equals("")) {
+          if (sharedName.equals("") && prefixSharedName.equals("") && suffixSharedName.equals("")) {
             partialCodeName = "UNCALCULATABLE";
           } else {
-            sharedName = sharedName.trim();
-            String[] joiners = {"of", "with", "using", "and", "by"};
-            if(!StringUtils.endsWithAny(sharedName, joiners)) {
-              sharedName = sharedName + ",";
-            }
-            
-            // Section 8 lowest-level concepts are a special case
-            if (partialCodeId.startsWith("8")) {
-              partialCodeName = sharedName + " unknown type, group, or strain";
-            }
-            // All other sections use the same pattern
-            else {
-              partialCodeName = sharedName + " unknown tissue";
+            if (!sharedName.equals("")) {
+              sharedName = sharedName.trim();
+              String[] joiners = {
+                  "of", "with", "using", "and", "by"
+              };
+              if (!StringUtils.endsWithAny(sharedName, joiners)) {
+                sharedName = sharedName + ",";
+              }
+
+              // Section 8 lowest-level concepts:
+              if (partialCodeId.startsWith("8")) {
+                partialCodeName = sharedName + " unknown type, group, or strain";
+              }
+              // All other sections use the same pattern
+              else {
+                partialCodeName = sharedName + " unknown tissue";
+              }
+            } else {
+              if (!prefixSharedName.equals("")) {
+                prefixSharedName = prefixSharedName.trim();
+                String[] joiners = {
+                    "of", "with", "using", "and", "by"
+                };
+                if (!StringUtils.endsWithAny(prefixSharedName, joiners)) {
+                  prefixSharedName = prefixSharedName + ",";
+                }
+
+                // Section 8 lowest-level concepts:
+                if (partialCodeId.startsWith("8")) {
+                  partialCodeName = prefixSharedName + " unknown type, group, or strain";
+                }
+                // All other sections use the same pattern
+                else {
+                  partialCodeName = prefixSharedName + " unknown tissue";
+                }
+              }
+              if (!suffixSharedName.equals("")) {
+                //Cleanup
+                if(suffixSharedName.startsWith("]") || suffixSharedName.startsWith(",")) {
+                  suffixSharedName = suffixSharedName.substring(1);
+                }
+                
+                suffixSharedName = suffixSharedName.trim();
+                
+                // If no name has been constructed so far, add unknown prefix
+                if (partialCodeName.equals("")) {
+                  // Section 8 lowest-level concepts:
+                  if (partialCodeId.startsWith("8")) {
+                    partialCodeName = "unknown type, group, or strain";
+                  }
+                  // All other sections use the same pattern
+                  else {
+                    partialCodeName = "unknown tissue";
+                  }
+                }
+                // Now tack on the suffix
+                partialCodeName = partialCodeName + " " + suffixSharedName;
+              }
             }
           }
 
