@@ -3,6 +3,9 @@
  */
 package org.ihtsdo.otf.mapping.mojo;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -14,6 +17,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -31,6 +35,7 @@ import org.ihtsdo.otf.mapping.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.mapping.rf2.jpa.RelationshipJpa;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
  * Goal is run after loading CCI in via ClaML3. Adds the Rubric name to all
@@ -52,6 +57,10 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
   private Map<String, Set<String>> thirteenCharSets = new HashMap<>();
 
   private Map<String, String> terminologyIdToName = new HashMap<>();
+  
+  private Set<String> newConceptTerminologyIds = new HashSet<>();
+  
+  private String isaRelType = "";
 
   /**
    * Name of terminology.
@@ -88,11 +97,11 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
 
       setupBindInfoPackage();
 
-      // TESTTEST re-enable this
       cacheConceptNames();
-      determinePartialConceptNames();
-      // fixCCIConceptNames();
-      // addCCIPartialCodes();
+      identifyPartialConceptsAndCalculateNames();
+      addCCIPartialConcepts();
+      prependRubricNameToChildrenConcepts();
+      regenerateTreePositions();
 
       getLog().info("Done...");
 
@@ -173,6 +182,39 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
         }
       }
     }
+    
+    // Also grab any names that have been added to the manual-override document
+    final Properties config = ConfigUtility.getConfigProperties();
+    final String dataDir = config.getProperty("data.dir");
+    if (dataDir == null) {
+      throw new Exception("Config file must specify a data.dir property");
+    }
+    
+    // Check preconditions
+    if (!new File(dataDir + "/" + terminology + "/" + terminologyVersion + "/" + "partialNameOverride.txt").exists()) {
+      throw new Exception(
+          "Specified input file missing: " + dataDir + "/" + terminology + "/" + terminologyVersion + "/" + "partialNameOverride.txt");
+    }
+
+    // Open reader and service
+    BufferedReader partialNameOverrideReader =
+        new BufferedReader(new FileReader(new File(dataDir + "/" + terminology + "/" + terminologyVersion + "/" + "partialNameOverride.txt")));
+
+    String line = null;
+
+    while ((line = partialNameOverrideReader.readLine()) != null) {
+      String tokens[] = line.split("\t");
+      final String terminologyId = tokens[0].trim();
+      final String name = tokens[1].trim();
+      // If this is concept that is not contained in the base ClaML, add to new concept Id list
+      if(!terminologyIdToName.containsKey(terminologyId)) {
+        newConceptTerminologyIds.add(terminologyId);
+      }
+      // Add/override name specified in file, so it is used over name specified in CLaML, or calculated by this algorithm
+      terminologyIdToName.put(terminologyId, name);
+    }
+
+    partialNameOverrideReader.close();
 
     contentService.close();
   }
@@ -181,12 +223,12 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
    *
    * @throws Exception the exception
    */
-  private void fixCCIConceptNames() throws Exception {
+  private void prependRubricNameToChildrenConcepts() throws Exception {
     ContentService contentService = new ContentServiceJpa();
     contentService.setTransactionPerOperation(false);
     contentService.beginTransaction();
 
-    // TODO: Lookup metatdata concepts (isa rel type, module id, etc.)
+    // TODO: Lookup metatdata concepts (module id, definition status id, etc.)
     // Currently hard-coded in, but this is hacky.
 
     // Setup vars
@@ -219,8 +261,8 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
       }
 
       // Only look at sub-rubric concepts (concepts with "." in their
-      // terminology Id, but no "^^" wildcard characters
-      if (!concept.getTerminologyId().contains(".") || concept.getTerminologyId().contains("^^")) {
+      // terminology Id, that don't have "^^" wildcards in the 9th and 10th positions
+      if (!concept.getTerminologyId().contains(".") || concept.getTerminologyId().substring(8, 10).equals("^^")) {
         continue;
       }
 
@@ -228,7 +270,7 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
       // preferred name description, and the concept itself.
       // Calculate the concept's rubric ancestor, which is the first 8
       // characters of the current concept, followed by "^^".
-      final String conceptRubricId = concept.getTerminologyId().substring(0, 8).concat("^^");
+      final String conceptRubricId = getRubricId(concept.getTerminologyId());
 
       getLog().debug(
           "  Concept " + concept.getTerminologyId() + ", rubric ancestor " + conceptRubricId);
@@ -280,7 +322,7 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
   /*
    * @throws Exception the exception
    */
-  private void addCCIPartialCodes() throws Exception {
+  private void addCCIPartialConcepts() throws Exception {
     ContentService contentService = new ContentServiceJpa();
     contentService.setTransactionPerOperation(false);
     contentService.beginTransaction();
@@ -293,13 +335,15 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
     int relIdCounter = 100000;
     int descriptionIdCounter = 100000;
 
-    // first get isaRelType from metadata
+    // get isaRelType from metadata, if it hasn't been determined already
+    if(isaRelType.isEmpty()) {
     final MetadataService metadataService = new MetadataServiceJpa();
     final Map<String, String> hierRelTypeMap =
         metadataService.getHierarchicalRelationshipTypes(terminology, terminologyVersion);
 
-    final String isaRelType = hierRelTypeMap.keySet().iterator().next().toString();
+    isaRelType = hierRelTypeMap.keySet().iterator().next().toString();
     metadataService.close();
+    }
 
     final SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd");
 
@@ -308,128 +352,17 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
     ConceptList concepts = contentService.getAllConcepts(terminology, terminologyVersion);
     contentService.clear();
 
-    // Iterate through once to collect all existing terminology ids and their
-    // names.
-    // Also grab all of the root concepts (those that start with "Section") so
-    // we can generate tree positions later
-    Map<String, String> existingTerminologyIdstoNames = new HashMap<>();
-    List<String> roots = new ArrayList<>();
+    // Iterate through to collect all existing terminology ids and their
+    // Concept ids (this is to aid more efficient concept lookups later).
+    Map<String, Long> existingTerminologyIdstoConceptIds = new HashMap<>();
 
     for (Concept concept : concepts.getConcepts()) {
-      existingTerminologyIdstoNames.put(concept.getTerminologyId(),
-          concept.getDefaultPreferredName());
-
-      if (concept.getTerminologyId().startsWith("Section")) {
-        roots.add(concept.getTerminologyId());
-      }
+      existingTerminologyIdstoConceptIds.put(concept.getTerminologyId(),
+          concept.getId());
     }
 
-    // Iterate over concepts once, identifying places where a new partial code
-    // is required.
-    // Examples:
-    // 1.VG.53.LA-PM requires a 1.VG.53.LA-^^
-    // 1.VG.53.LA-PM-A require a 1.VG.53.LA-PM-^ and a 1.VG.53.LA-^^
-    //
-
-    Set<String> newConceptTerminologyIds = new HashSet<>();
-    Map<String, String> newConceptToNameMap = new HashMap<>();
-    Map<String, Long> newConceptToParentIdMap = new HashMap<>();
-
-    Pattern pattern = Pattern.compile(".*-[A-Z0-9]$");
-    Pattern pattern2 = Pattern.compile(".*-[A-Z0-9][A-Z0-9]");
-
-    for (Concept concept : concepts.getConcepts()) {
-
-      // Check if needs to generate a -^ partial code
-      if (pattern.matcher(concept.getTerminologyId()).find()) {
-        // Calculate the new concept's terminologyId
-        final String newConceptTerminologyId =
-            concept.getTerminologyId().substring(0, concept.getTerminologyId().length() - 2) + "-^";
-
-        // Only set up each new concept once
-        if (!newConceptTerminologyIds.contains(newConceptTerminologyId)) {
-          newConceptTerminologyIds.add(newConceptTerminologyId);
-        } else {
-          continue;
-        }
-
-        // Identify the concept's parent, and link the new concept terminologyId
-        // to it
-        List<Concept> parents =
-            TerminologyUtility.getActiveParents(contentService.getConcept(concept.getId()));
-        if (parents.size() != 1) {
-          getLog().error(
-              "Parent for concept " + concept.getTerminologyId() + " cannot be found. Skipping.");
-          continue;
-        }
-        final Concept parentConcept = parents.get(0);
-        newConceptToParentIdMap.put(newConceptTerminologyId, parentConcept.getId());
-
-        // Check if a direct predecessor exists (e.g. for 1.VG.53.LA-PM-A, the
-        // predecessor would be 1.VG.53.LA-PM)
-        // If so, use its name to generate the new partial-code concept's name
-        final String predecessorTerminologyId =
-            concept.getTerminologyId().substring(0, concept.getTerminologyId().length() - 2);
-        if (existingTerminologyIdstoNames.keySet().contains(predecessorTerminologyId)) {
-          String newConceptName = calculatePartialCodeName(newConceptTerminologyId,
-              existingTerminologyIdstoNames.get(predecessorTerminologyId));
-          newConceptToNameMap.put(newConceptTerminologyId, newConceptName);
-        }
-        // If no predecessor exists, use the concept's parent instead.
-        else {
-          String newConceptName = calculatePartialCodeName(newConceptTerminologyId,
-              parentConcept.getDefaultPreferredName());
-          newConceptToNameMap.put(newConceptTerminologyId, newConceptName);
-        }
-      }
-
-      // Check if needs to generate a -^^ partial code
-      if (pattern2.matcher(concept.getTerminologyId()).find()
-          && concept.getTerminologyId().length() >= 10) {
-        // Calculate the new concept's terminologyId
-        final String newConceptTerminologyId = concept.getTerminologyId().substring(0, 10) + "-^^";
-
-        // Only set up each new concept once
-        if (!newConceptTerminologyIds.contains(newConceptTerminologyId)) {
-          newConceptTerminologyIds.add(newConceptTerminologyId);
-        } else {
-          continue;
-        }
-
-        // Identify the concept's parent, and link the new concept terminologyId
-        // to it
-        List<Concept> parents =
-            TerminologyUtility.getActiveParents(contentService.getConcept(concept.getId()));
-        if (parents.size() != 1) {
-          getLog().error(
-              "Parent for concept " + concept.getTerminologyId() + " cannot be found. Skipping.");
-          continue;
-        }
-        final Concept parentConcept = parents.get(0);
-        newConceptToParentIdMap.put(newConceptTerminologyId, parentConcept.getId());
-
-        // Check if a direct predecessor exists (e.g. for 1.VG.53.LA-PM, the
-        // predecessor would be 1.VG.53.LA)
-        // If so, use its name to generate the new partial-code concept's name
-        final String predecessorTerminologyId = concept.getTerminologyId().substring(0, 10);
-        if (existingTerminologyIdstoNames.keySet().contains(predecessorTerminologyId)) {
-          String newConceptName = calculatePartialCodeName(newConceptTerminologyId,
-              existingTerminologyIdstoNames.get(predecessorTerminologyId));
-          newConceptToNameMap.put(newConceptTerminologyId, newConceptName);
-        }
-        // If no predecessor exists, use the concept's parent instead.
-        else {
-          String newConceptName = calculatePartialCodeName(newConceptTerminologyId,
-              parentConcept.getDefaultPreferredName());
-          newConceptToNameMap.put(newConceptTerminologyId, newConceptName);
-        }
-      }
-    }
-
-    // Now that we've identified the new partial-code concepts, their parents,
-    // and their names,
-    // go through and construct the required objects (concept, description,
-    // relationship).
+    // Now go through and construct the required objects (concept, description,
+    // relationship) for the new partial concepts.
 
     for (final String newConceptTerminologyId : newConceptTerminologyIds) {
       // Create the new concept
@@ -438,7 +371,7 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
       newConcept.setTerminology(terminology);
       newConcept.setTerminologyVersion(terminologyVersion);
       newConcept.setEffectiveTime(dt.parse(effectiveTime));
-      newConcept.setDefaultPreferredName(newConceptToNameMap.get(newConceptTerminologyId));
+      newConcept.setDefaultPreferredName(terminologyIdToName.get(newConceptTerminologyId));
       newConcept.setActive(true);
       newConcept.setDefinitionStatusId(1L);
       newConcept.setModuleId(2L);
@@ -451,7 +384,7 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
       desc.setModuleId(2L);
       desc.setTerminology(terminology);
       desc.setTerminologyVersion(terminologyVersion);
-      desc.setTerm(newConceptToNameMap.get(newConceptTerminologyId));
+      desc.setTerm(terminologyIdToName.get(newConceptTerminologyId));
       desc.setConcept(newConcept);
       desc.setCaseSignificanceId(3L);
       desc.setLanguageCode("en");
@@ -459,7 +392,7 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
 
       newConcept.addDescription(desc);
 
-      // Create a relationship connecting the concept to its parent
+      // Create a relationship connecting the concept to its Rubric parent
       final Relationship relationship = new RelationshipJpa();
       relationship.setTerminologyId(relIdCounter++ + "");
       relationship.setEffectiveTime(dt.parse(effectiveTime));
@@ -470,7 +403,7 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
       relationship.setCharacteristicTypeId(6L);
       relationship.setModifierId(5L);
       relationship.setDestinationConcept(
-          contentService.getConcept(newConceptToParentIdMap.get(newConceptTerminologyId)));
+          contentService.getConcept(existingTerminologyIdstoConceptIds.get(getRubricId(newConceptTerminologyId))));
       relationship.setSourceConcept(newConcept);
       relationship.setTypeId(Long.parseLong(isaRelType));
       final Set<Relationship> rels = new HashSet<>();
@@ -489,12 +422,37 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
     }
 
     contentService.commit();
-    contentService.clear();
+    contentService.close();
+  }
+  
+  // Now since we added a bunch of new par/chd relationships between concepts,
+  // we need to remove and regenerate the tree positions
+  private void regenerateTreePositions() throws Exception {
+    ContentService contentService = new ContentServiceJpa();
+    contentService.setTransactionPerOperation(false);
     contentService.beginTransaction();
 
-    // Now since we added a bunch of new par/chd relationships between concepts,
-    // we
-    // need to remove and regenerate the tree positions
+    // get isaRelType from metadata, if it hasn't been determined already
+    if(isaRelType.isEmpty()) {
+    final MetadataService metadataService = new MetadataServiceJpa();
+    final Map<String, String> hierRelTypeMap =
+        metadataService.getHierarchicalRelationshipTypes(terminology, terminologyVersion);
+
+    isaRelType = hierRelTypeMap.keySet().iterator().next().toString();
+    metadataService.close();
+    }
+
+    ConceptList concepts = contentService.getAllConcepts(terminology, terminologyVersion);
+    
+    // Grab all of the root concepts (those that start with "Section") so
+    // we can generate tree positions based on them
+    List<String> roots = new ArrayList<>();
+
+    for (Concept concept : concepts.getConcepts()) {
+      if (concept.getTerminologyId().startsWith("Section")) {
+        roots.add(concept.getTerminologyId());
+      }
+    }
 
     contentService.clearTreePositions(terminology, terminologyVersion);
     contentService.commit();
@@ -508,31 +466,10 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
     contentService.close();
   }
 
-  private String calculatePartialCodeName(String newConceptTerminologyId,
-    String predecessorConceptName) throws Exception {
-
-    if (newConceptTerminologyId.length() == 13) {
-      return predecessorConceptName + ", unknown agent or device";
-    } else if (newConceptTerminologyId.length() == 15) {
-      // Section 8 lowest-level concepts are a special case
-      if (newConceptTerminologyId.startsWith("8")) {
-        return predecessorConceptName + ", unknown type, group, or strain";
-      }
-      // All other sections use the same pattern
-      else {
-        return predecessorConceptName + ", unknown tissue";
-      }
-    }
-    // Shouldn't ever get here
-    else {
-      return "";
-    }
-  }
-
   /*
    * @throws Exception the exception
    */
-  private void determinePartialConceptNames() throws Exception {
+  private void identifyPartialConceptsAndCalculateNames() throws Exception {
     ContentService contentService = new ContentServiceJpa();
 
     ConceptList concepts = contentService.getAllConcepts(terminology, terminologyVersion);
@@ -594,7 +531,7 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
           String phraseFound = "";
 
           // "LA" codes are a special case.
-          // When 9-10'th characters are "LA", pattern should be "open approach,
+          // When 9th-10th characters are "LA", pattern should be "open approach,
           // unknown agent or device"
           // E.g.:
           // 1.EC.55.LA-KD of wire or mesh using open approach
@@ -621,32 +558,32 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
               }
             }
 
-            // Also single name to look for certain phrases
+            // Also look for certain phrases
             for (String name : tenCharNames) {
               int usingIndex = name.indexOf("using");
-              int ofIndex = name.indexOf("of");
-              int withIndex = name.indexOf("with");
-              int endoscopicIndex = name.indexOf("endosopic");
-              int perIndex = name.indexOf("per");
-              int noIndex = name.indexOf("no");
+//              int ofIndex = name.indexOf("of");
+//              int withIndex = name.indexOf("with");
+//              int endoscopicIndex = name.indexOf("endosopic");
+//              int perIndex = name.indexOf("per");
+//              int noIndex = name.indexOf("no");
               int approachIndex = name.indexOf("approach");
               int techniqueIndex = name.indexOf("technique");
               int injectionIndex = name.indexOf("injection");
               int infusionIndex = name.indexOf("infusion");
               int openIndex = name.indexOf("open");
-              int deviceIndex = name.indexOf("device");
-              int agentIndex = name.indexOf("agent");
-              int fixationIndex = name.indexOf("fixation");
-              int implantIndex = name.indexOf("implant");
-              int wireIndex = name.indexOf("wire");
-              int plateIndex = name.indexOf("plate");
-              int tissueIndex = name.indexOf("tissue");
-              int usedIndex = name.indexOf("used");
-              int usingWireIndex = name.indexOf("using wire");
-              int syntheticTissueIndex = name.indexOf("synthetic tissue");
-              int combinedSourcesIndex = name.indexOf("combined sources");
-              int deviceAloneIndex = name.indexOf("device alone");
-              int uncementedIndex = name.indexOf("uncemented");
+//              int deviceIndex = name.indexOf("device");
+//              int agentIndex = name.indexOf("agent");
+//              int fixationIndex = name.indexOf("fixation");
+//              int implantIndex = name.indexOf("implant");
+//              int wireIndex = name.indexOf("wire");
+//              int plateIndex = name.indexOf("plate");
+//              int tissueIndex = name.indexOf("tissue");
+//              int usedIndex = name.indexOf("used");
+//              int usingWireIndex = name.indexOf("using wire");
+//              int syntheticTissueIndex = name.indexOf("synthetic tissue");
+//              int combinedSourcesIndex = name.indexOf("combined sources");
+//              int deviceAloneIndex = name.indexOf("device alone");
+//              int uncementedIndex = name.indexOf("uncemented");
 
               if (usingIndex != -1) {
                 // using ... approach
@@ -717,6 +654,7 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
 
           // Add the code and name to the name map
           terminologyIdToName.put(partialCodeId, partialCodeName);
+          newConceptTerminologyIds.add(partialCodeId);
         }
       }
     }
@@ -877,50 +815,6 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
                 }
               }
             }
-
-            // // If no shared name has been identified, use single name to look
-            // for certain phrases:
-            // if (sharedName.equals("")) {
-            // for (String name : thirteenCharNames) {
-            // int usingIndex = name.indexOf("using");
-            // int approachIndex = name.indexOf("approach");
-            // int techniqueIndex = name.indexOf("technique");
-            // int injectionIndex = name.indexOf("injection");
-            // int infusionIndex = name.indexOf("infusion");
-            // int openIndex = name.indexOf("open");
-            //
-            // if(usingIndex != -1) {
-            // // using ... approach
-            // if(approachIndex != -1 && approachIndex > usingIndex) {
-            // sharedName=name.substring(usingIndex,approachIndex+8);
-            // break;
-            // }
-            // // using ... technique
-            // else if (techniqueIndex != -1 && techniqueIndex > usingIndex) {
-            // sharedName=name.substring(usingIndex,techniqueIndex+9);
-            // break;
-            // }
-            // // using ... injection
-            // else if (injectionIndex != -1 && injectionIndex > usingIndex) {
-            // sharedName=name.substring(usingIndex,injectionIndex+9);
-            // break;
-            // }
-            // // using ... infusion
-            // else if (infusionIndex != -1 && infusionIndex > usingIndex) {
-            // sharedName=name.substring(usingIndex,infusionIndex+8);
-            // break;
-            // }
-            // }
-            //
-            // else if (openIndex != -1) {
-            // // open ... approach
-            // if(approachIndex != -1 && approachIndex > openIndex) {
-            // sharedName=name.substring(openIndex,approachIndex+8);
-            // break;
-            // }
-            // }
-            // }
-            // }
           }
 
           String partialCodeName = "";
@@ -993,6 +887,7 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
 
           // Add the code and name to the name map
           terminologyIdToName.put(partialCodeId, partialCodeName);
+          newConceptTerminologyIds.add(partialCodeId);
         }
       }
     }
@@ -1014,5 +909,12 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
 
     contentService.close();
   }
-
+  
+  private String getRubricId(String terminologyId) throws Exception {
+    if(terminologyId == null || terminologyId.length() < 8) {
+      throw new Exception("TerminologyId " + terminologyId + " is not valid for determining a Rubric");
+    }
+    
+    return terminologyId.substring(0, 8).concat("^^");
+  }
 }
