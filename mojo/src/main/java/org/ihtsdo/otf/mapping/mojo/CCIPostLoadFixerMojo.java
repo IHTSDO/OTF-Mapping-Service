@@ -899,12 +899,16 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
     List<String> terminologyIds = new ArrayList<>(terminologyIdToName.keySet());
     Collections.sort(terminologyIds);
 
+    final Properties config = ConfigUtility.getConfigProperties();
+    final String dataDir = config.getProperty("data.dir");
+    
     try (PrintWriter writer =
-        new PrintWriter(Files.newBufferedWriter(Paths.get("C:\\mapping\\cihi\\cciNames.txt")))) {
+        new PrintWriter(Files.newBufferedWriter(Paths.get(dataDir + "/" + terminology + "/" + terminologyVersion + "/" + "cciNames.txt")))) {
       for (String terminologyId : terminologyIds) {
         writer.print(terminologyId + "\t" + terminologyIdToName.get(terminologyId));
         writer.println();
       }
+      writer.close();
     }
 
     contentService.close();
