@@ -2945,9 +2945,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         member.setTerminologyVersion(version);
 
         // set Concept
-        final Concept concept = contentService.getConcept(
-            !mapProject.getReverseMapPattern() ? fields[5] : fields[6], terminology, version);
-        ;
+        Concept concept = null;
+        if(mapProject.getReverseMapPattern() == null || !mapProject.getReverseMapPattern()) {
+        	concept = contentService.getConcept(fields[5], terminology, version);
+        } else {
+        	concept = contentService.getConcept(fields[6], terminology, version);
+        }
 
         if (mapProject.getMapRefsetPattern() != MapRefsetPattern.SimpleMap) {
 
