@@ -1503,6 +1503,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
     deletedAdvices.add("USE ADDITIONAL CODE TO IDENTIFY PRIMARY MALIGNANT NEOPLASM OR HISTORY OF MALIGNANT NEOPLASM");
     // removed WMT-75 07/13/2023
     deletedAdvices.add("MAPPED FOLLOWING CIHI GUIDANCE");
+    deletedAdvices.add("MAPPED FOLLOWING WHO GUIDANCE");
     
     
 
