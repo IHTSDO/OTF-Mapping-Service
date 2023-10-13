@@ -280,30 +280,27 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
         //
         // PREDICATE: primary map target is a 4th digit ICD code having a fifth
         // digit option of 0 (open) or 1 (closed).
-        // GUIDANCE: Remap to 5 digits and consider “MAPPED FOLLOWING CIHI
-        // GUIDANCE" if SNOMED does not indicate open or "closed"
+        // GUIDANCE: Remap to 5 digits or 6 digits
         //
         final List<Concept> children = TerminologyUtility.getActiveChildren(concepts.get(1).get(0));
         if (concepts.get(1).get(0) != null && primaryCode.length() == 5 && children.size() > 1
             && (children.get(0).getDefaultPreferredName().endsWith("open")
                 || children.get(0).getDefaultPreferredName().endsWith("closed"))) {
-          result.addError("Remap to 5 or 6 digits and add \"MAPPED FOLLOWING CIHI GUIDANCE\" "
-              + "advice if SNOMED does not indicate open or closed");
+          result.addError("Remap to 5 or 6 digits");
 
         }
 
         //
         // PREDICATE: primary map target is a 5th digit ICD code for "open"
         // where SNOMED doesn't indicate "open" or "closed".
-        // GUIDANCE: Remap to "open" and add MAPPED FOLLOWING CIHI GUIDANCE
+        // GUIDANCE: Remap to "open
         //
         if (concepts.get(1).get(0) != null
             && (primaryCode.length() == 6 || primaryCode.length() == 7)
             && concepts.get(1).get(0).getDefaultPreferredName().endsWith("open")
             && !mapRecord.getConceptName().toLowerCase().contains("open")
             && !mapRecord.getConceptName().toLowerCase().contains("closed")) {
-          result.addWarning("Remap fracture to \"closed\" and "
-              + "add \"MAPPED FOLLOWING CIHI GUIDANCE\" advice");
+          result.addWarning("Remap fracture to \"closed\"");
         }
         if (concepts.get(1).get(0) != null
             && (primaryCode.length() == 6 || primaryCode.length() == 7)
@@ -669,7 +666,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
       // PREDICATE: Primary target is a poisoning code and there is a secondary
       // code indicating accidental intent and the SNOMED concept does not
       // indicate intent and the entry does not have the advice
-      // "MAPPED FOLLOWING CIHI GUIDANCE"
+      // "CONSIDER AVAILABILITY OF A MORE SPECIFIC CODE"
       // ACTION: add the advice
       //
       // final String adviceP21a = "MAPPED FOLLOWING CIHI GUIDANCE";
