@@ -72,13 +72,19 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
   /** Send notifications if true */
   private Boolean sendNotification;
-
-  /** The dpn ref set ids. */
-  private List<Long> dpnRefsetIdArray = new ArrayList<>();
   
   /** the type ids. */
   private static Long fsnTypeId = 900000000000003001L;
   private static Long definitionTypeId = 900000000000550004L;
+  
+  /** the defaultPreferredNames type id - default to FSN. */
+  private Long dpnTypeId = fsnTypeId;
+
+  /** The dpn acceptability id - default to Preferred. */
+  private Long dpnAcceptabilityId = 900000000000548007L;
+
+  /** The dpn ref set ids. */
+  private List<Long> dpnRefsetIdArray = new ArrayList<>();  
 
   /** The date format. */
   private final SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd");
@@ -209,6 +215,7 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
       throw new Exception("Specified input dir missing");
     }
 
+    // set the parameters for determining defaultPreferredNames
     String props = config.getProperty("loader.defaultPreferredNames.refSetId");
     String tokens[] = props.split(",");
     for (String prop : tokens) {
@@ -217,7 +224,17 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
       }
     }
     
+    // If typeId is specified, override default
+    String prop = config.getProperty("loader.defaultPreferredNames.typeId");
+    if (prop != null) {
+      dpnTypeId = Long.valueOf(prop);
+    }
 
+    // If acceptabilityId is specified, override default
+    prop = config.getProperty("loader.defaultPreferredNames.acceptabilityId");
+    if (prop != null) {
+      dpnAcceptabilityId = Long.valueOf(prop);
+    }
 
     //
     // Determine version
@@ -228,9 +245,9 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
 
     // output relevant properties/settings to console
     log.info("  Default preferred name settings:");
-    log.info("    typeIdArray = " + config.getProperty("loader.defaultPreferredNames.typeId"));
-    log.info("    refsetIdArray = " + config.getProperty("loader.defaultPreferredNames.refSetId"));
-    log.info("    acceptabilityIdArray = " + config.getProperty("loader.defaultPreferredNames.acceptabilityId"));
+    log.info("    dpnRefsetIdArray = " + dpnRefsetIdArray);
+    log.info("    dpnTypeId = " + dpnTypeId);
+    log.info("    dpnAcceptabilityId = " + dpnAcceptabilityId);
     log.info("  Objects committed in blocks of " + Integer.toString(commitCt));
 
     // Log memory usage
@@ -1183,10 +1200,10 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
               };
               defaultPreferredNames.put(concept.getTerminologyId(), newRankValuePair);
             }
-            // if the lang refset priority is the same as the previously stored dpn, but the typeId is fsn, replace it
+            // if the lang refset priority is the same as the previously stored dpn, but the typeId is preferred, replace it
             if (dpnRefsetIdArray.indexOf(Long.valueOf(language.getRefSetId())) == Integer
                 .parseInt(rankValuePair[0])) {
-              if (description.getTypeId().equals(fsnTypeId)) {
+              if (description.getTypeId().equals(dpnTypeId) && language.getAcceptabilityId().equals(dpnAcceptabilityId)) {
                 String[] newRankValuePair = {
                     Integer.valueOf(index).toString(), description.getTerm()
                 };

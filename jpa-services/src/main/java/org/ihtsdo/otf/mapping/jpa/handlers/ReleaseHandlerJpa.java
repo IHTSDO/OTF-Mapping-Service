@@ -403,6 +403,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         if (!scopeConceptTerminologyIds.contains(mr.getConceptId())) {
           continue;
         }
+        
         mapRecordMap.put(mr.getConceptId(), mr);
       }
 
@@ -484,10 +485,16 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
       // Prep map relation to use for up propagated records
       final MapRelation ifaRuleRelation = algorithmHandler.getDefaultUpPropagatedMapRelation();
+      final MapRelation ifaRuleNullTargetRelation = algorithmHandler.getDefaultNullTargetUpPropagatedMapRelation();
+      
       if (mapProject.isPropagatedFlag() && ifaRuleRelation == null) {
         throw new Exception("Unable to find default map relation for up propagated records");
       }
 
+      if (mapProject.isPropagatedFlag() && ifaRuleNullTargetRelation == null) {
+        throw new Exception("Unable to find default map relation for null target up propagated records");
+      }      
+      
       logger.info("  Processing release");
       // cycle over the map records marked for publishing
       int ct = 0;
@@ -534,7 +541,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
                     .getPropagationDescendantThreshold()) {
 
           // Handle up propagation for this record
-          if (!handleUpPropagation(mapRecord, entriesByGroup, ifaRuleRelation)) {
+          if (!handleUpPropagation(mapRecord, entriesByGroup, ifaRuleRelation, ifaRuleNullTargetRelation)) {
             // handle cases that cannot be up propagated
             continue;
           }
@@ -857,7 +864,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @throws Exception the exception
    */
   private boolean handleUpPropagation(MapRecord mapRecord,
-    Map<Integer, List<MapEntry>> entriesByGroup, MapRelation ifaRuleRelation) throws Exception {
+    Map<Integer, List<MapEntry>> entriesByGroup, MapRelation ifaRuleRelation, MapRelation ifaRuleNullTargetRelation) throws Exception {
     
     // /////////////////////////////////////////////////////
     // Get the tree positions for this concept
@@ -910,53 +917,52 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         // below, after the up-propagated entries
         if (!tp.getTerminologyId().equals(mapRecord.getConceptId())) {
 
-          // get the parent map record for this tree position
-          // used to check if entries are duplicated on parent
-          String parent = tp.getAncestorPath().substring(tp.getAncestorPath().lastIndexOf("~") + 1);
-          MapRecord mrParent = getMapRecordForTerminologyId(parent);
+//          // get the parent map record for this tree position
+//          // used to check if entries are duplicated on parent
+//          String parent = tp.getAncestorPath().substring(tp.getAncestorPath().lastIndexOf("~") + 1);
+//          MapRecord mrParent = getMapRecordForTerminologyId(parent);
 
           // get the map record corresponding to this specific
           // ancestor path + concept Id
           MapRecord mr = getMapRecordForTerminologyId(tp.getTerminologyId());
 
-          // If the map record is the same as its parent map record (for
+          // If the map record is the same as the source map record (for
           // everything except
           // for conceptId/conceptName, etc.), do not up-propagate the record.
           // Otherwise, up-propagate all entries, even if some entries match.
 
-          // flag for whether this record is a duplicate of its parent record
+          // flag for whether this record is a duplicate of the source record
           boolean equivalentMap = true;
 
-          if (mr != null && mrParent != null) {
+          if (mr != null && mapRecord != null) {
 
             logger.debug("     Adding entries from map record " + mr.getId() + ", "
                 + mr.getConceptId() + ", " + mr.getConceptName());
 
             // Quick check: if there are different number of entries, then maps cannot be equivalent.
-            if (mr.getMapEntries().size() != mrParent.getMapEntries().size()) {
+            if (mr.getMapEntries().size() != mapRecord.getMapEntries().size()) {
               equivalentMap = false;
             }
 
             // Sort entries by group/priority.
             Collections.sort(mr.getMapEntries(), new TerminologyUtility.MapEntryComparator());
-            Collections.sort(mrParent.getMapEntries(), new TerminologyUtility.MapEntryComparator());
+            Collections.sort(mapRecord.getMapEntries(), new TerminologyUtility.MapEntryComparator());
             
-            // Check each map entry against its parent. If any are not
+            // Check each map entry against the source. If any are not
             // equivalent, the whole map is marked non-equivalent
             if (equivalentMap) {
               for (final MapEntry me : mr.getMapEntries()) {
-                for (final MapEntry parentEntry : mrParent.getMapEntries()) {
-                  if (parentEntry.getMapGroup() == me.getMapGroup()
-                      && parentEntry.getMapPriority() == me.getMapPriority()
-                      && !parentEntry.isEquivalent(me)) {
+                for (final MapEntry sourceEntry : mapRecord.getMapEntries()) {
+                  if (sourceEntry.getMapGroup() == me.getMapGroup()
+                      && sourceEntry.getMapPriority() == me.getMapPriority()
+                      && !sourceEntry.isEquivalent(me)) {
                     equivalentMap = false;
-                    break;
                   }
                 }
               }
             }
 
-            // If the map is not equivalent to its parent, add all of its
+            // If the map is not equivalent to the source, add all of its
             // entries to the map.
             if (!equivalentMap) {
 
@@ -967,7 +973,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
                   existingEntries = new ArrayList<>();
                 }
 
-                logger.debug("  Entry is not a duplicate of parent");
+                logger.debug("  Entry is not a duplicate of source");
                 logger.debug("    entry = " + me);
 
                 // create new map entry to prevent
@@ -1003,6 +1009,56 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
                 // replace existing list with modified list - unnecessary
                 entriesByGroup.put(newEntry.getMapGroup(), existingEntries);
 
+              }
+              
+              // Determine the maximum Map Groups for both map records.
+              // If the source has more Map Groups than the child, add a NULL-target map entry for each additional Map Group.
+              int mrMaxMapGroup = 0;
+              int mrSourceMaxMapGroup = 0;
+
+              for (final MapEntry me : mr.getMapEntries()) {
+                if(me.getMapGroup() > mrMaxMapGroup) {
+                  mrMaxMapGroup = me.getMapGroup();
+                }
+              }
+              for (final MapEntry sourceEntry : mapRecord.getMapEntries()) {
+                if(sourceEntry.getMapGroup() > mrSourceMaxMapGroup) {
+                  mrSourceMaxMapGroup = sourceEntry.getMapGroup();
+                }
+              }
+              
+              if(mrSourceMaxMapGroup > mrMaxMapGroup) {
+                for(int i = mrMaxMapGroup + 1; i <= mrSourceMaxMapGroup; i++) {                 
+                  // get the current list of entries for this group
+                  List<MapEntry> existingEntries = entriesByGroup.get(i);
+                  if (existingEntries == null) {
+                    existingEntries = new ArrayList<>();
+                  }
+                  
+                  // Create new null-target entry
+                  logger.debug("  Creating NULL-target entry for Map Group " + i);
+                  
+                  MapEntry newEntry = new MapEntryJpa();
+                  newEntry.setMapGroup(i);
+                  newEntry.setMapBlock(0); // default value
+                  newEntry.setMapRecord(mr);
+                  newEntry.setRule("TRUE");
+                  newEntry.setTargetId(null);
+                  newEntry.setTargetName("NULL");
+                  
+                  // set the propagated rule for this entry
+                  if (mapProject.isRuleBased()) {
+                    newEntry = setPropagatedRuleForMapEntry(newEntry);
+                  }
+                  
+                  newEntry.setMapRelation(ifaRuleNullTargetRelation);
+
+                  // add to the list
+                  existingEntries.add(newEntry);
+                  
+                  // replace existing list with modified list - unnecessary
+                  entriesByGroup.put(newEntry.getMapGroup(), existingEntries);
+                }
               }
             }
           } else {
@@ -2889,9 +2945,12 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         member.setTerminologyVersion(version);
 
         // set Concept
-        final Concept concept = contentService.getConcept(
-            !mapProject.getReverseMapPattern() ? fields[5] : fields[6], terminology, version);
-        ;
+        Concept concept = null;
+        if(mapProject.getReverseMapPattern() == null || !mapProject.getReverseMapPattern()) {
+        	concept = contentService.getConcept(fields[5], terminology, version);
+        } else {
+        	concept = contentService.getConcept(fields[6], terminology, version);
+        }
 
         if (mapProject.getMapRefsetPattern() != MapRefsetPattern.SimpleMap) {
 

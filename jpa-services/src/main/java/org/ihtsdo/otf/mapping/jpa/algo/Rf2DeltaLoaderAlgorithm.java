@@ -68,14 +68,20 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
 
   /** The delta dir. */
   private File deltaDir;
-
-  /** The dpn ref set ids. */
-  private List<Long> dpnRefsetIdArray = new ArrayList<>();
   
   /** the type ids. */
   private static Long fsnTypeId = 900000000000003001L;
   private static Long definitionTypeId = 900000000000550004L;
+  
+  /** the defaultPreferredNames type id - default to FSN. */
+  private Long dpnTypeId = fsnTypeId;
 
+  /** The dpn acceptability id - default to Preferred. */
+  private Long dpnAcceptabilityId = 900000000000548007L;
+
+  /** The dpn ref set ids. */
+  private List<Long> dpnRefsetIdArray = new ArrayList<>();  
+  
   /** The concept reader. */
   private BufferedReader conceptReader;
 
@@ -375,7 +381,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
     Properties properties = ConfigUtility.getConfigProperties();
 
 
-
+    // set the parameters for determining defaultPreferredNames
     String props = properties.getProperty("loader.defaultPreferredNames.refSetId");
     String tokens[] = props.split(",");
     for (String prop : tokens) {
@@ -383,9 +389,23 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
         dpnRefsetIdArray.add(Long.valueOf(prop));
       }
     }
+    
+    // If typeId is specified, override default
+    String prop = properties.getProperty("loader.defaultPreferredNames.typeId");
+    if (prop != null) {
+      dpnTypeId = Long.valueOf(prop);
+    }
 
+    // If acceptabilityId is specified, override default
+    prop = properties.getProperty("loader.defaultPreferredNames.acceptabilityId");
+    if (prop != null) {
+      dpnAcceptabilityId = Long.valueOf(prop);
+    }
 
-    log.info("  dpnRefsetIdArray = " + dpnRefsetIdArray);
+    log.info("  Default preferred name settings:");
+    log.info("    dpnRefsetIdArray = " + dpnRefsetIdArray);
+    log.info("    dpnTypeId = " + dpnTypeId);
+    log.info("    dpnAcceptabilityId = " + dpnAcceptabilityId);
     
 
     // Open files
@@ -1103,10 +1123,10 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
                 };
                 defaultPreferredNames.put(concept.getTerminologyId(), newRankValuePair);
               }
-              // if the lang refset priority is the same as the previously stored dpn, but the typeId is fsn, replace it
+              // if the lang refset priority is the same as the previously stored dpn, but the typeId is preferred, replace it
               if (dpnRefsetIdArray.indexOf(Long.valueOf(language.getRefSetId())) == Integer
                   .parseInt(rankValuePair[0])) {
-                if (description.getTypeId().equals(fsnTypeId)) {
+                if (description.getTypeId().equals(dpnTypeId) && language.getAcceptabilityId().equals(dpnAcceptabilityId)) {
                   String[] newRankValuePair = {
                       Integer.valueOf(index).toString(), description.getTerm()
                   };

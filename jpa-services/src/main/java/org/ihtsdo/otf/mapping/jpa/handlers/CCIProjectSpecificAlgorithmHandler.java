@@ -201,7 +201,7 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
               }
               if(!gradePresent) {
                 result
-                .addWarning("Partially classified entry " + entry.getMapGroup() + "/" + entry.getMapPriority() + " must be assigned a Grade.");
+                .addError("Partially classified entry " + entry.getMapGroup() + "/" + entry.getMapPriority() + " must be assigned a Grade.");
               }
             }
           }
@@ -225,8 +225,40 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
               }
               if(gradePresent) {
                 result
-                .addWarning("Non-partially classified entry " + entry.getMapGroup() + "/" + entry.getMapPriority() + " must not be assigned a Grade.");
+                .addError("Non-partially classified entry " + entry.getMapGroup() + "/" + entry.getMapPriority() + " must not be assigned a Grade.");
               }
+            }
+          }
+        }      
+        
+        //
+        // PREDICATE: for map entries that have a target that ends in a wildcard "^" character,
+        // they should have the relation "Partially classified"
+        //
+        for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+          final Concept concept = concepts.get(i + 1).get(0);
+          if (concept != null) {
+            final String terminologyId = concept.getTerminologyId();
+            final MapEntry entry = mapRecord.getMapEntries().get(i);
+            if(terminologyId.endsWith("^") && (entry.getMapRelation() == null || !entry.getMapRelation().getName().toLowerCase().contains("partially classified"))) {
+                result
+                .addWarning("Target id for entry " + entry.getMapGroup() + "/" + entry.getMapPriority() + " ends with '^', and should be assigned the 'Partially classified' Relation.");
+            }
+          }
+        }              
+
+        //
+        // PREDICATE: for map entries that have a target that don't end in a wildcard "^" character,
+        // they should NOT have the relation "Partially classified"
+        //
+        for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+          final Concept concept = concepts.get(i + 1).get(0);
+          if (concept != null) {
+            final String terminologyId = concept.getTerminologyId();
+            final MapEntry entry = mapRecord.getMapEntries().get(i);
+            if(!terminologyId.endsWith("^") && (entry.getMapRelation() == null || !entry.getMapRelation().getName().toLowerCase().contains("fully classified"))) {
+                result
+                .addWarning("Target id for entry " + entry.getMapGroup() + "/" + entry.getMapPriority() + " does not end with '^', and should be assigned one of the 'Fully classified' Relations.");
             }
           }
         }        
