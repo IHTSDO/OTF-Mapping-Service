@@ -280,30 +280,27 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
         //
         // PREDICATE: primary map target is a 4th digit ICD code having a fifth
         // digit option of 0 (open) or 1 (closed).
-        // GUIDANCE: Remap to 5 digits and consider “MAPPED FOLLOWING CIHI
-        // GUIDANCE" if SNOMED does not indicate open or "closed"
+        // GUIDANCE: Remap to 5 digits or 6 digits
         //
         final List<Concept> children = TerminologyUtility.getActiveChildren(concepts.get(1).get(0));
         if (concepts.get(1).get(0) != null && primaryCode.length() == 5 && children.size() > 1
             && (children.get(0).getDefaultPreferredName().endsWith("open")
                 || children.get(0).getDefaultPreferredName().endsWith("closed"))) {
-          result.addError("Remap to 5 or 6 digits and add \"MAPPED FOLLOWING CIHI GUIDANCE\" "
-              + "advice if SNOMED does not indicate open or closed");
+          result.addError("Remap to 5 or 6 digits");
 
         }
 
         //
         // PREDICATE: primary map target is a 5th digit ICD code for "open"
         // where SNOMED doesn't indicate "open" or "closed".
-        // GUIDANCE: Remap to "open" and add MAPPED FOLLOWING CIHI GUIDANCE
+        // GUIDANCE: Remap to "open
         //
         if (concepts.get(1).get(0) != null
             && (primaryCode.length() == 6 || primaryCode.length() == 7)
             && concepts.get(1).get(0).getDefaultPreferredName().endsWith("open")
             && !mapRecord.getConceptName().toLowerCase().contains("open")
             && !mapRecord.getConceptName().toLowerCase().contains("closed")) {
-          result.addWarning("Remap fracture to \"closed\" and "
-              + "add \"MAPPED FOLLOWING CIHI GUIDANCE\" advice");
+          result.addWarning("Remap fracture to \"closed\"");
         }
         if (concepts.get(1).get(0) != null
             && (primaryCode.length() == 6 || primaryCode.length() == 7)
@@ -669,10 +666,10 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
       // PREDICATE: Primary target is a poisoning code and there is a secondary
       // code indicating accidental intent and the SNOMED concept does not
       // indicate intent and the entry does not have the advice
-      // "MAPPED FOLLOWING CIHI GUIDANCE"
+      // "CONSIDER AVAILABILITY OF A MORE SPECIFIC CODE"
       // ACTION: add the advice
       //
-      final String adviceP21a = "MAPPED FOLLOWING CIHI GUIDANCE";
+      // final String adviceP21a = "MAPPED FOLLOWING CIHI GUIDANCE";
       final String advice = "CONSIDER AVAILABILITY OF A MORE SPECIFIC CODE";
       boolean isPoisoning = mapRecord.getConceptId().equals("75478009") || contentService
           .isDescendantOf(mapRecord.getConceptId(), mapProject.getSourceTerminology(),
@@ -684,33 +681,12 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
           && !mapRecord.getConceptName().toLowerCase().matches("undetermined")
           && mapEntry.getMapGroup() > 1 && mapEntry.getMapPriority() == 1
           && getIcd10AccidentalPoisoningCodes().contains(mapEntry.getTargetId())
-          && (!TerminologyUtility.hasAdvice(mapEntry, adviceP21a)
-              || !TerminologyUtility.hasAdvice(mapEntry, advice))) {
-        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP21a));
+          && (
+              // !TerminologyUtility.hasAdvice(mapEntry, adviceP21a) || 
+              !TerminologyUtility.hasAdvice(mapEntry, advice))) {
+        // advices.add(TerminologyUtility.getAdvice(mapProject, adviceP21a));
         advices.add(TerminologyUtility.getAdvice(mapProject, advice));
       }
-
-      //
-      // PREDICATE: Fracture mapped to "closed" and SNOMED does not
-      // indicate open or closed.
-      // ACTION: "add MAPPED FOLLOWING CIHI GUIDANCE" advice if mapped to closed
-      //
-      if (mapEntry.getMapGroup() == 1 && mapEntry.getMapPriority() == 1
-          && !mapRecord.getConceptName().toLowerCase().contains("open")
-          && !mapRecord.getConceptName().toLowerCase().contains("closed")
-          && mapEntry.getTargetName().endsWith("closed")
-          && !TerminologyUtility.hasAdvice(mapEntry, adviceP21a)) {
-        advices.add(TerminologyUtility.getAdvice(mapProject, adviceP21a));
-      }
-
-      else if (mapEntry.getMapGroup() == 1 && mapEntry.getMapPriority() == 1
-          && !mapRecord.getConceptName().toLowerCase().contains("open")
-          && !mapRecord.getConceptName().toLowerCase().contains("closed")
-          && mapEntry.getTargetName().endsWith("open")
-          && TerminologyUtility.hasAdvice(mapEntry, adviceP21a)) {
-        advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP21a));
-      }
-
 
 
       //
@@ -1525,13 +1501,18 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
     deletedAdvices.add("USE ADDITIONAL CODE TO IDENTIFY THE PRESENCE OF HYPERTENSION");
     deletedAdvices.add("MANDATORY REQUIREMENT FOR AN EXTERNAL CAUSE CODE");
     deletedAdvices.add("USE ADDITIONAL CODE TO IDENTIFY PRIMARY MALIGNANT NEOPLASM OR HISTORY OF MALIGNANT NEOPLASM");
+    // removed WMT-75 07/13/2023
+    deletedAdvices.add("MAPPED FOLLOWING CIHI GUIDANCE");
+    deletedAdvices.add("MAPPED FOLLOWING WHO GUIDANCE");
+    
+    
 
     // These advices have different wording in ICD10CA, and need to be
     // replaced
     final Map<String, String> changedAdvices = new HashMap<>();
     // changedAdvices.put("POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE",
     // "MANDATORY REQUIREMENT FOR AN EXTERNAL CAUSE CODE");
-    changedAdvices.put("MAPPED FOLLOWING WHO GUIDANCE", "MAPPED FOLLOWING CIHI GUIDANCE");
+    // changedAdvices.put("MAPPED FOLLOWING WHO GUIDANCE", "MAPPED FOLLOWING CIHI GUIDANCE");
     //changedAdvices.put("POSSIBLE REQUIREMENT FOR PLACE OF OCCURRENCE",
     //    "MANDATORY REQUIREMENT FOR PLACE OF OCCURRENCE");
     changedAdvices.put("MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT",
