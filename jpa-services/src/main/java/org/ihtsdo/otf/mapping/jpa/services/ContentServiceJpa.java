@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.persistence.EntityTransaction;
@@ -2344,15 +2345,9 @@ public class ContentServiceJpa extends RootServiceJpa
         });
       } else {
 
-        // explicit check for ICD terminologies -- sort by terminology id
-        // TODO: this should really have a project specific handler aspect
-        // also see directives.js - treeSearchResult
-        if (terminology.toLowerCase().startsWith("icd")
-            || terminology.toLowerCase().startsWith("gmdn")
-            || terminology.toLowerCase().startsWith("atc")
-            || terminology.toLowerCase().startsWith("icpc")
-            || terminology.toLowerCase().startsWith("phcvs")
-            || terminology.toLowerCase().startsWith("cci")) {
+        String sortField = getSortField(terminology);
+        
+        if (sortField.equals("terminologyId")) {
           Collections.sort(treePositions, new Comparator<TreePosition>() {
             @Override
             public int compare(TreePosition o1, TreePosition o2) {
@@ -2379,6 +2374,28 @@ public class ContentServiceJpa extends RootServiceJpa
     }
   }
 
+  
+  private String getSortField(String terminology) {
+    // explicit check for ICD terminologies -- sort by terminology id
+    String sortField = "defaultPreferredName";
+    try {
+      Properties config;
+      config = ConfigUtility.getConfigProperties();
+      String terminologiesToSortById = config.getProperty("deploy.terminology.browser.sort.id");
+
+      String[] items = terminologiesToSortById.split(",");
+
+      for (var i = 0; i < items.length; i++) {
+        if (terminology.toLowerCase().startsWith(items[i])) {
+          sortField = "terminologyId";
+        }
+      }
+    } catch (Exception e) {
+      //n/a
+    }
+    return sortField;
+  }
+  
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override

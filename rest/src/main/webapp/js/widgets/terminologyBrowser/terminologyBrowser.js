@@ -19,7 +19,7 @@ angular.module('mapProjectApp.widgets.terminologyBrowser', [ 'adf.provider' ]).c
 angular.module('mapProjectApp').controller(
   'terminologyBrowserWidgetCtrl',
   function($scope, $rootScope, $q, $timeout, $http, $routeParams, $location, localStorageService,
-    utilService, gpService) {
+    utilService, gpService, appConfig) {
 
     // Scope variables
     $scope.paging = {};
@@ -29,6 +29,7 @@ angular.module('mapProjectApp').controller(
     $scope.browserRequest = localStorageService.get('browserRequest');
     $scope.terminology = null;
     $scope.terminologyVersion = null;
+	$scope.appConfig = appConfig;
 
     // initialize currently displayed concept as empty object
     $scope.currentOpenConcepts = {};
@@ -39,6 +40,7 @@ angular.module('mapProjectApp').controller(
     // the query input
     $scope.query = '';
     $scope.treeQuery = '';
+	$scope.terminologyList = (appConfig['deploy.terminology.browser.sort.id'] == undefined ? '' : appConfig['deploy.terminology.browser.sort.id']);
     $scope.searchResults = [];
     $scope.selectedResult = null;
     $scope.paging.tree = {
@@ -46,7 +48,6 @@ angular.module('mapProjectApp').controller(
       pageSize : 100,
       pages : null,
       totalCount : null
-
     }
 
     // Paging -- list view
@@ -711,7 +712,8 @@ angular.module('mapProjectApp').controller(
 
     $scope.srtParameters = {
       query : $scope.query,
-      expandAll : false
+      expandAll : false,
+	  terminologyList : $scope.terminologyList
     }
 
   });
