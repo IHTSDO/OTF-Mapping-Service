@@ -70,9 +70,9 @@ public class ICD10CMProjectSpecificAlgorithmHandler
 
   /** The asterisk codes. */
   private static Set<String> asteriskCodes = null;
-//
-//  /** The valid3 digit codes. */
-//  private static Set<String> valid3DigitCodes = new HashSet<>();
+  //
+  // /** The valid3 digit codes. */
+  // private static Set<String> valid3DigitCodes = new HashSet<>();
 
   /** The laterality codes. */
   private static Set<String> lateralityCodes = null;
@@ -97,7 +97,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
    */
   @Override
   public ValidationResult validateTargetCodes(MapRecord mapRecord)
-    throws Exception {
+      throws Exception {
 
     final ValidationResult validationResult = new ValidationResultJpa();
     final ContentService contentService = new ContentServiceJpa();
@@ -107,30 +107,32 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       // double check that expected map advice has not been lost for each entry
       MapAdviceList expectedAdviceList = computeMapAdvice(mapRecord, mapEntry);
       if (expectedAdviceList.getTotalCount() > 0) {
-    	  boolean adviceNotFound = false;
-    	  for (MapAdvice thisExpectedAdvice : expectedAdviceList.getMapAdvices()) {
-    		  if (!mapEntry.getMapAdvices().contains(thisExpectedAdvice))
-    			  adviceNotFound = true;
-    	  }
-    	  if (adviceNotFound) {
-    	    validationResult.addError(
-    	    "Automated map advice was not added for target " + mapEntry.getTargetId() + ".  Please confirm on Record Summary below. Map advice can be recomputed by clicking the Set button again on the Target panel.");   
-    	  }
+        boolean adviceNotFound = false;
+        for (MapAdvice thisExpectedAdvice : expectedAdviceList.getMapAdvices()) {
+          if (!mapEntry.getMapAdvices().contains(thisExpectedAdvice))
+            adviceNotFound = true;
+        }
+        if (adviceNotFound) {
+          validationResult.addError(
+              "Automated map advice was not added for target " + mapEntry.getTargetId()
+                  + ".  Please confirm on Record Summary below. Map advice can be recomputed by clicking the Set button again on the Target panel.");
+        }
       }
-      
+
       // double check that expected map relation has not been lost for each entry
       MapRelation expectedRelation = computeMapRelation(mapRecord, mapEntry);
-      if (expectedRelation != null) {   	  
-    	  if (!expectedRelation.equals(mapEntry.getMapRelation())) {
-    	    validationResult.addError(
-    	    "Automated map relation was not set for " + mapEntry.getTargetId() + ".  Please confirm on Record Summary below. Map relation can be recomputed by clicking the Set button or the Set Empty Target button on the Target panel.");   
-    	  }
+      if (expectedRelation != null) {
+        if (!expectedRelation.equals(mapEntry.getMapRelation())) {
+          validationResult.addError(
+              "Automated map relation was not set for " + mapEntry.getTargetId()
+                  + ".  Please confirm on Record Summary below. Map relation can be recomputed by clicking the Set button or the Set Empty Target button on the Target panel.");
+        }
       }
-    	
+
       // add an error if neither relation nor target are set
-      if (mapEntry.getMapRelation() == null 
-    		  && (mapEntry.getTargetId() == null
-          || mapEntry.getTargetId().equals(""))) {
+      if (mapEntry.getMapRelation() == null
+          && (mapEntry.getTargetId() == null
+              || mapEntry.getTargetId().equals(""))) {
 
         validationResult.addError(
             "A relation indicating the reason must be selected when no target is assigned.");
@@ -184,19 +186,142 @@ public class ICD10CMProjectSpecificAlgorithmHandler
 
   }
 
+  @Override
+  public ValidationResult validateSemanticChecks(MapRecord mapRecord) throws Exception {
+    ValidationResult validationResult = new ValidationResultJpa();
+    final List<MapEntry> entries = mapRecord.getMapEntries();
+    List<String[]> maleRules = new ArrayList<>();
+    List<String[]> femaleRules = new ArrayList<>();
+    List<String[]> otherRules = new ArrayList<>();
+    for (int i = 0; i < entries.size(); i++) {
+      MapEntry j = entries.get(i);
+      if (j.getRule().contains("Male (finding)")) {
+        if (maleRules.stream()
+            .filter(e -> e[1].equals(Integer.toString(j.getMapGroup())))
+            .findAny().isPresent()) {
+          validationResult.addError("Duplicate Male entries found");
+        } else if (femaleRules.stream()
+            .filter(e -> e[1].equals(Integer.toString(j.getMapGroup())) && e[2].equals(j.getTargetId()))
+            .findAny().isPresent()) {
+          validationResult.addError("Duplicate target codes found in Male and Female entries");
+        } else if (otherRules.stream()
+            .filter(e -> e[1].equals(Integer.toString(j.getMapGroup())) && e[2].equals(j.getTargetId()))
+            .findAny().isPresent()) {
+          validationResult.addError("Duplicate target codes found in Male and Default entries");
+        } else {
+          maleRules.add(new String[] { j.getRule(), Integer.toString(j.getMapGroup()), j.getTargetId() });
+        }
+      } else if (j.getRule().contains("Female (finding)")) {
+        if (femaleRules.stream()
+            .filter(e -> e[1].equals(Integer.toString(j.getMapGroup())))
+            .findAny().isPresent()) {
+          validationResult.addError("Duplicate Female entries found");
+        } else if (maleRules.stream()
+            .filter(e -> e[1].equals(Integer.toString(j.getMapGroup())) && e[2].equals(j.getTargetId()))
+            .findAny().isPresent()) {
+          validationResult.addError("Duplicate target codes found in Male and Female entries");
+        } else if (otherRules.stream()
+            .filter(e -> e[1].equals(Integer.toString(j.getMapGroup())) && e[2].equals(j.getTargetId()))
+            .findAny().isPresent()) {
+          validationResult.addError("Duplicate target codes found in Female and Default entries");
+        } else {
+          femaleRules.add(new String[] { j.getRule(), Integer.toString(j.getMapGroup()), j.getTargetId() });
+        }
+      } else if (j.getRule().contains("TRUE")) {
+        if (otherRules.stream()
+            .filter(e -> e[1].equals(Integer.toString(j.getMapGroup())))
+            .findAny().isPresent()) {
+          validationResult.addError("Duplicate Default entries found");
+        } else if (maleRules.stream()
+            .filter(e -> e[1].equals(Integer.toString(j.getMapGroup())) && e[2].equals(j.getTargetId()))
+            .findAny().isPresent()) {
+          validationResult.addError("Duplicate target codes found in Male and Default entries");
+        } else if (femaleRules.stream()
+            .filter(e -> e[1].equals(Integer.toString(j.getMapGroup())) && e[2].equals(j.getTargetId()))
+            .findAny().isPresent()) {
+          validationResult.addError("Duplicate target codes found in Female and Default entries");
+        } else {
+          otherRules.add(new String[] { j.getRule(), Integer.toString(j.getMapGroup()), j.getTargetId() });
+        }
+      }
+    }
+    return validationResult;
+  }
+
+  @SuppressWarnings("static-method")
+  public ValidationResult checkMapRecordForDuplicateEntries(MapRecord mapRecord) {
+    ValidationResult validationResult = new ValidationResultJpa();
+    final List<MapEntry> entries = mapRecord.getMapEntries();
+
+    // cycle over all entries but last
+    for (int i = 0; i < entries.size() - 1; i++) {
+
+      // cycle over all entries after this one
+      // NOTE: separated boolean checks for easier handling of possible null
+      // relations
+      for (int j = i + 1; j < entries.size(); j++) {
+
+        // if first entry target null
+        if (entries.get(i).getTargetId() == null || entries.get(i).getTargetId().equals("")) {
+
+          // if both null, check relations
+          if (entries.get(j).getTargetId() == null || entries.get(j).getTargetId().equals("")) {
+
+            if (entries.get(i).getMapRelation() != null && entries.get(j).getMapRelation() != null
+                && entries.get(i).getMapRelation().equals(entries.get(j).getMapRelation())
+                && !entries.get(i).getMapRelation().getName()
+                    .equals("MAP SOURCE CONCEPT CANNOT BE CLASSIFIED WITH AVAILABLE DATA")) {
+              validationResult
+                  .addError("Duplicate entries (null target code, same map relation) found: "
+                      + "Group " + Integer.toString(entries.get(i).getMapGroup()) + ", priority "
+                      + Integer.toString(entries.get(i).getMapPriority()) + " and " + "Group "
+                      + Integer.toString(entries.get(j).getMapGroup()) + ", priority "
+                      + Integer.toString(entries.get(j).getMapPriority()));
+            }
+          }
+
+        } else if (entries.get(i).getRule() != null && entries.get(j).getRule() != null) {
+
+          // check if second entry's target identical to this one
+          if (entries.get(i).getTargetId().equals(entries.get(j).getTargetId())
+              && entries.get(i).getRule().equals(entries.get(j).getRule())) {
+            validationResult.addError("Duplicate entries (same target code and rule) found: "
+                + "Group " + Integer.toString(entries.get(i).getMapGroup()) + ", priority "
+                + Integer.toString(entries.get(i).getMapPriority()) + " and " + "Group "
+                + Integer.toString(entries.get(j).getMapGroup()) + ", priority "
+                + Integer.toString(entries.get(j).getMapPriority()));
+          }
+
+        } else {
+
+          // check if second entry's target identical to this one
+          if (entries.get(i).getTargetId().equals(entries.get(j).getTargetId())) {
+            validationResult.addError("Duplicate entries (same target code) found: " + "Group "
+                + Integer.toString(entries.get(i).getMapGroup()) + ", priority "
+                + Integer.toString(entries.get(i).getMapPriority()) + " and " + "Group "
+                + Integer.toString(entries.get(j).getMapGroup()) + ", priority "
+                + Integer.toString(entries.get(j).getMapPriority()));
+          }
+        }
+
+      }
+    }
+    return validationResult;
+  }
+
   /**
    * Computes the map relation for the SNOMEDCT to ICD10CM map project. Based
    * solely on whether an entry has a TRUE rule or not. No advices are computed
    * for this project.
    *
    * @param mapRecord the map record
-   * @param mapEntry the map entry
+   * @param mapEntry  the map entry
    * @return the map relation
    * @throws Exception the exception
    */
   @Override
   public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry)
-    throws Exception {
+      throws Exception {
 
     if (mapEntry == null) {
       return null;
@@ -287,7 +412,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
   /* see superclass */
   @Override
   public MapAdviceList computeMapAdvice(MapRecord mapRecord, MapEntry mapEntry)
-    throws Exception {
+      throws Exception {
     cacheCodes();
     cacheLateralityCodes();
     cacheAdditionalAdviceCodes();
@@ -323,9 +448,8 @@ public class ICD10CMProjectSpecificAlgorithmHandler
         return new MapAdviceListJpa();
       }
 
-      final List<Concept> descendants =
-          TerminologyUtility.getActiveDescendants(sourceConcept);
-       
+      final List<Concept> descendants = TerminologyUtility.getActiveDescendants(sourceConcept);
+
       // Remove any advices that are purely computed and keep only
       // manually
       // assigned ones
@@ -355,8 +479,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
           break;
         }
       }
-      final String adviceP01 =
-          "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE";
+      final String adviceP01 = "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE";
       if (!found && mapEntry.getTargetId().matches("(S[0-9].|T[0-7][0-9].|T[8][0-8]).*")
           && !mapEntry.getTargetId().matches("(T3[6-9].|T4[0-9].|T5[0-9].|T6[0-5]).*")) {
         if (!TerminologyUtility.hasAdvice(mapEntry, adviceP01)) {
@@ -425,8 +548,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       // "CONSIDER WHICH FETUS IS AFFECTED BY THE MATERNAL CONDITION"
       // ACTION: add the advice
       //
-      final String adviceP05 =
-          "CONSIDER WHICH FETUS IS AFFECTED BY THE MATERNAL CONDITION";
+      final String adviceP05 = "CONSIDER WHICH FETUS IS AFFECTED BY THE MATERNAL CONDITION";
       if ((mapEntry.getTargetId().startsWith("O31")
           || mapEntry.getTargetId().startsWith("O32")
           || mapEntry.getTargetId().matches("(O33.[3-7]).*")
@@ -451,8 +573,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       // "THIS IS AN EXTERNAL CAUSE CODE FOR USE IN A SECONDARY POSITION"
       // ACTION: add the advice
       //
-      final String adviceP06 =
-          "THIS IS AN EXTERNAL CAUSE CODE FOR USE IN A SECONDARY POSITION";
+      final String adviceP06 = "THIS IS AN EXTERNAL CAUSE CODE FOR USE IN A SECONDARY POSITION";
       if (mapEntry.getTargetId().matches("^[VWXY].*")
           && mapEntry.getMapGroup() == 1) {
         if (!TerminologyUtility.hasAdvice(mapEntry, adviceP06)) {
@@ -469,8 +590,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       // USE AS A SUPPLEMENTARY CODE WITH CATEGORIES T20-T25 (Burns)"
       // ACTION: add the advice
       //
-      final String adviceP07 =
-          "USE AS PRIMARY CODE ONLY IF SITE OF BURN UNSPECIFIED, OTHERWISE USE AS A SUPPLEMENTARY CODE WITH CATEGORIES T20-T25 (Burns)";
+      final String adviceP07 = "USE AS PRIMARY CODE ONLY IF SITE OF BURN UNSPECIFIED, OTHERWISE USE AS A SUPPLEMENTARY CODE WITH CATEGORIES T20-T25 (Burns)";
       if (mapEntry.getTargetId().startsWith("T31")) {
         if (!TerminologyUtility.hasAdvice(mapEntry, adviceP07)) {
           advices.add(TerminologyUtility.getAdvice(mapProject, adviceP07));
@@ -489,8 +609,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       // USE AS A SUPPLEMENTARY CODE WITH CATEGORIES T20-T25 (Burns)"
       // ACTION: add the advice
       //
-      final String adviceP08 =
-          "USE AS PRIMARY CODE ONLY IF SITE OF CORROSION UNSPECIFIED, OTHERWISE USE AS A SUPPLEMENTARY CODE WITH CATEGORIES T20-T25 (Burns)";
+      final String adviceP08 = "USE AS PRIMARY CODE ONLY IF SITE OF CORROSION UNSPECIFIED, OTHERWISE USE AS A SUPPLEMENTARY CODE WITH CATEGORIES T20-T25 (Burns)";
       if (mapEntry.getTargetId().startsWith("T32")) {
         if (!TerminologyUtility.hasAdvice(mapEntry, adviceP08)) {
           advices.add(TerminologyUtility.getAdvice(mapProject, adviceP08));
@@ -512,7 +631,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       if ((mapEntry.getTargetId().startsWith("H40.20")
           || mapEntry.getTargetId().startsWith("H40.22")
           || mapEntry.getTargetId().matches("(^H40.1[0-4]).*")
-          || mapEntry.getTargetId().matches("(^H40.[3-6]).*")) 
+          || mapEntry.getTargetId().matches("(^H40.[3-6]).*"))
           && mapEntry.getTargetName().contains("stage unspecified")) {
         if (!TerminologyUtility.hasAdvice(mapEntry, adviceP09)) {
           advices.add(TerminologyUtility.getAdvice(mapProject, adviceP09));
@@ -528,12 +647,12 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       // ACTION: add the advice
       //
       final String adviceP10 = "CONSIDER TOPHUS SPECIFICATION";
-//      if (mapEntry.getTargetId().startsWith("M1A")) {
-//        if (!TerminologyUtility.hasAdvice(mapEntry, adviceP10)) {
-//          advices.add(TerminologyUtility.getAdvice(mapProject, adviceP10));
-//        }
-//      } else 
-        if (TerminologyUtility.hasAdvice(mapEntry, adviceP10)) {
+      // if (mapEntry.getTargetId().startsWith("M1A")) {
+      // if (!TerminologyUtility.hasAdvice(mapEntry, adviceP10)) {
+      // advices.add(TerminologyUtility.getAdvice(mapProject, adviceP10));
+      // }
+      // } else
+      if (TerminologyUtility.hasAdvice(mapEntry, adviceP10)) {
         advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP10));
       } else if (TerminologyUtility.hasAdvice(mapEntry, adviceP10)) {
         advices.remove(TerminologyUtility.getAdvice(mapProject, adviceP10));
@@ -565,8 +684,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       // IDENTIFY SPECIFIC CONDITION OR DISEASE"
       // ACTION: add the advice
       //
-      final String adviceP12 =
-          "CONSIDER ADDITIONAL CODE TO IDENTIFY SPECIFIC CONDITION OR DISEASE";
+      final String adviceP12 = "CONSIDER ADDITIONAL CODE TO IDENTIFY SPECIFIC CONDITION OR DISEASE";
       if (additionalAdviceCodes.contains(mapEntry.getTargetId())) {
         if (!TerminologyUtility.hasAdvice(mapEntry, adviceP12)) {
           advices.add(TerminologyUtility.getAdvice(mapProject, adviceP12));
@@ -681,7 +799,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
   /* see superclass */
   @Override
   public void computeTargetTerminologyNotes(List<TreePosition> treePositionList)
-    throws Exception {
+      throws Exception {
 
     Logger.getLogger(ICD10CMProjectSpecificAlgorithmHandler.class)
         .info("Computing target terminology notes.");
@@ -697,13 +815,13 @@ public class ICD10CMProjectSpecificAlgorithmHandler
   /**
    * Compute target terminology notes helper.
    * 
-   * @param treePosition the tree position
+   * @param treePosition     the tree position
    * @param asteriskRefSetId the asterisk ref set id
-   * @param daggerRefSetId the dagger ref set id
+   * @param daggerRefSetId   the dagger ref set id
    * @throws Exception the exception
    */
   private void computeTargetTerminologyNotesHelper(TreePosition treePosition,
-    String asteriskRefSetId, String daggerRefSetId) throws Exception {
+      String asteriskRefSetId, String daggerRefSetId) throws Exception {
 
     Logger.getLogger(ICD10CMProjectSpecificAlgorithmHandler.class)
         .info("Computing target terminology note for "
@@ -746,7 +864,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
   /* see superclass */
   @Override
   public ValidationResult validateForRelease(ComplexMapRefSetMember member)
-    throws Exception {
+      throws Exception {
     ValidationResult result = super.validateForRelease(member);
 
     // Verify mapTarget is not null when mapCategory is 447637006 or
@@ -919,7 +1037,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
     mappingService.close();
     return null;
   }
-  
+
   /* see superclass */
   @Override
   public MapRelation getDefaultNullTargetUpPropagatedMapRelation() throws Exception {
@@ -933,7 +1051,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
     }
     mappingService.close();
     return null;
-  }  
+  }
 
   /* see superclass */
   @Override
@@ -1023,11 +1141,10 @@ public class ICD10CMProjectSpecificAlgorithmHandler
             .warn("Could not find Dagger refset");
 
       // Look up asterisk codes
-      final javax.persistence.Query asteriskQuery =
-          manager.createQuery("select m.concept from SimpleRefSetMemberJpa m "
-              + "where m.terminology = :terminology "
-              + "and m.terminologyVersion = :terminologyVersion "
-              + "and m.refSetId = :refSetId ");
+      final javax.persistence.Query asteriskQuery = manager.createQuery("select m.concept from SimpleRefSetMemberJpa m "
+          + "where m.terminology = :terminology "
+          + "and m.terminologyVersion = :terminologyVersion "
+          + "and m.refSetId = :refSetId ");
       asteriskQuery.setParameter("terminology",
           mapProject.getDestinationTerminology());
       asteriskQuery.setParameter("terminologyVersion",
@@ -1039,11 +1156,10 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       }
 
       // Look up dagger codes
-      final javax.persistence.Query daggerQuery =
-          manager.createQuery("select m.concept from SimpleRefSetMemberJpa m "
-              + "where m.terminology = :terminology "
-              + "and m.terminologyVersion = :terminologyVersion "
-              + "and m.refSetId = :refSetId ");
+      final javax.persistence.Query daggerQuery = manager.createQuery("select m.concept from SimpleRefSetMemberJpa m "
+          + "where m.terminology = :terminology "
+          + "and m.terminologyVersion = :terminologyVersion "
+          + "and m.refSetId = :refSetId ");
       daggerQuery.setParameter("terminology",
           mapProject.getDestinationTerminology());
       daggerQuery.setParameter("terminologyVersion",
@@ -1057,8 +1173,8 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       // Report to log
       Logger.getLogger(getClass()).info("  asterisk codes = " + asteriskCodes);
       Logger.getLogger(getClass()).info("  dagger codes = " + daggerCodes);
-//      Logger.getLogger(getClass())
-//          .info("  valid 3 digit codes* = " + );
+      // Logger.getLogger(getClass())
+      // .info(" valid 3 digit codes* = " + );
     } catch (Exception e) {
       throw e;
     } finally {
@@ -1077,11 +1193,11 @@ public class ICD10CMProjectSpecificAlgorithmHandler
   private void cacheLateralityCodes() throws Exception {
 
     // Check if codes are already cached
-    if(lateralityCodes != null){
+    if (lateralityCodes != null) {
       return;
     }
     lateralityCodes = new HashSet<>();
-    
+
     final Properties config = ConfigUtility.getConfigProperties();
     final String dataDir = config.getProperty("data.dir");
     if (dataDir == null) {
@@ -1116,11 +1232,11 @@ public class ICD10CMProjectSpecificAlgorithmHandler
   private void cacheAdditionalAdviceCodes() throws Exception {
 
     // Check if codes are already cached
-    if(additionalAdviceCodes != null){
+    if (additionalAdviceCodes != null) {
       return;
     }
-    additionalAdviceCodes = new HashSet<>();    
-    
+    additionalAdviceCodes = new HashSet<>();
+
     final Properties config = ConfigUtility.getConfigProperties();
     final String dataDir = config.getProperty("data.dir");
     if (dataDir == null) {
@@ -1130,7 +1246,7 @@ public class ICD10CMProjectSpecificAlgorithmHandler
     // Check preconditions
     if (!new File(
         dataDir + "/ICD10CM/CONSIDER ADDITIONAL CODE ADVICE ICD10CM.txt")
-            .exists()) {
+        .exists()) {
       throw new Exception("Specified input file missing");
     }
 
@@ -1151,6 +1267,6 @@ public class ICD10CMProjectSpecificAlgorithmHandler
   public String getReleaseFile3rdElement() throws Exception {
     // For the US release files, 3rd element is "US1000124".
     return "US1000124";
-  }  
-  
+  }
+
 }
