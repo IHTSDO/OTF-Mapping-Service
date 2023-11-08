@@ -190,26 +190,34 @@ mapProjectAppDirectives.directive('treeSearchResult', [
         // NOTE: ui-tree-node does not particularly like orderBy in ng-repeat,
         // with nodes model values disconnected from their display slot (i.e.
         // clicking to expand one node will actually expand another)
-        var sortComparator = null;
-        scope.$watch('searchResults', function() {
+			    var sortComparator = null;
+				scope.$watch('searchResults', function() {
 
-          if (scope.searchResults && scope.searchResults.length > 0) {
-            // if ICD9 or ICD10, sort by terminologyId; otherwise, by name
-            // NOTE: This should be abstracted somewhere else, like a project
-            // setting
-            var lc = scope.searchResults[0].terminology.toLowerCase();
-            var sortField = (lc.startsWith('icd') || lc.startsWith('gmdn') || lc.startsWith('atc') || lc.startsWith('icpc') || lc.startsWith('phcvs') || lc.startsWith('cci')) ? 'terminologyId'
-              : 'defaultPreferredName';
-            sortComparator = function(a, b) {
-              if (a[sortField] < b[sortField]) {
-                return -1;
-              } else {
-                return 1;
-              }
-              return 0;
-            }
-          }
-        });
+					if (scope.searchResults && scope.searchResults.length > 0) {
+						// if ICD9 or ICD10, sort by terminologyId; otherwise, by name
+						// NOTE: This should be abstracted somewhere else, like a project
+						// setting
+						var lc = scope.searchResults[0].terminology.toLowerCase();
+
+						var terminologiesSortedByIdList = scope.parameters.terminologyList;
+						var items = terminologiesSortedByIdList.split(",");
+						var sortField = 'defaultPreferredName';
+						for (var i = 0; i < items.length; i++) {
+							if (lc.startsWith(items[i])) {
+								sortField = 'terminologyId';
+							}
+						}
+
+						sortComparator = function(a, b) {
+							if (a[sortField] < b[sortField]) {
+								return -1;
+							} else {
+								return 1;
+							}
+							return 0;
+						}
+					}
+				});
 
         // computed tooltip html for derived labels
         // NOTE: Must not be null or empty string, or uib-tooltip-html
