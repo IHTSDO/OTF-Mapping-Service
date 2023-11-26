@@ -933,6 +933,10 @@ angular
 
 
           updateEntry($scope.entry);
+
+          // compute advices
+          computeAdvices($scope.record);
+
         };
 
         // removes additional map entry info from a map entry
