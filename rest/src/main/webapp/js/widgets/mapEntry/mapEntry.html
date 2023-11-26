@@ -61,12 +61,28 @@
 
     <tr>
       <td style="vertical-align: top; padding: 5px; width: 50px;">
-        <strong>Relation</strong>
+       <span ng-switch on="project.destinationTerminology">
+    		<span ng-switch-when="CCI">
+        		<strong>Outcome</strong>
+    		</span>
+    		<span ng-switch-default>
+        		<strong>Relation</strong>
+    		</span>
+		</span>
       </td>
       <td style="vertical-align: top; padding: 5px;">
-        <span style="color: lightgray;"
-          ng-show="allowableMapRelations.length == 0 && !entry.mapRelation">No
-          relations available to select.</span>
+      	<span ng-switch on="project.destinationTerminology">
+    		<span ng-switch-when="CCI">
+        		<span style="color: lightgray;"
+          			ng-show="allowableMapRelations.length == 0 && !entry.mapRelation">No
+          			outcomes available to select.</span>
+    		</span>
+    		<span ng-switch-default>
+        		<span style="color: lightgray;"
+          			ng-show="allowableMapRelations.length == 0 && !entry.mapRelation">No
+          			relations available to select.</span>
+    		</span>
+		</span>
         <span ng-show="allowableMapRelations.length > 0 || entry.mapRelation">
           <span ng-show="allowableMapRelations.length > 0 || entry.mapRelation">
             <select ng-show="allowableMapRelations.length > 0"
