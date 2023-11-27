@@ -177,7 +177,7 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
       if (concepts.keySet().size() == mapRecord.getMapEntries().size()) {
 
         //
-        // PREDICATE: map entries must all have a relation
+        // PREDICATE: map entries must all have an outcome
         //
         for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
           final MapEntry entry = mapRecord.getMapEntries().get(i);
