@@ -57,6 +57,8 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
   private Map<String, Set<String>> thirteenCharSets = new HashMap<>();
 
   private Map<String, String> terminologyIdToName = new HashMap<>();
+
+  private Map<String, String> terminologyIdToNameOverride = new HashMap<>();
   
   private Set<String> newConceptTerminologyIds = new HashSet<>();
   
@@ -211,7 +213,7 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
         newConceptTerminologyIds.add(terminologyId);
       }
       // Add/override name specified in file, so it is used over name specified in CLaML, or calculated by this algorithm
-      terminologyIdToName.put(terminologyId, name);
+      terminologyIdToNameOverride.put(terminologyId, name);
     }
 
     partialNameOverrideReader.close();
@@ -289,6 +291,11 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
           if (updatedTerm.length() >= 4000) {
             getLog().warn("Concept " + concept.getTerminologyId() + " name too long - truncating");
             updatedTerm = updatedTerm.substring(0, 4000);
+          }
+          
+          // If this concept has an entry in the manual override document, set the name here.
+          if(terminologyIdToNameOverride.containsKey(concept.getTerminologyId())) {
+            updatedTerm = terminologyIdToNameOverride.get(concept.getTerminologyId());
           }
 
           description.setTerm(updatedTerm);
@@ -902,7 +909,7 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
         }
       }
     }
-
+    
     // Once all concepts have been processed, print the terminologyIds and names
     // to a document for review.
     // Include all previously-existing concepts and newly calculated partials.
