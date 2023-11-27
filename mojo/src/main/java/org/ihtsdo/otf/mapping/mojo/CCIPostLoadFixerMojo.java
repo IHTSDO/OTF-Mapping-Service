@@ -516,7 +516,18 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
             continue;
           }   
           
+          // If there is only a single code with specific 9-10 characters in the rubric, 
+          // we should not create a partial
+          // For example:
+          //
+          // Full code 1.GZ.31.GP-ND is the only code with GP in this rubric
+          // so there isn't a need for partial code 1.GZ.31.GP-^^
           Set<String> tenCharIds = tenCharSets.get(concept.getTerminologyId().substring(0, 10));
+          if (tenCharIds.size() == 1) {
+            continue;
+          }  
+          
+          
           Set<String> tenCharNames = new HashSet<>();
           for (String tenCharId : tenCharIds) {
             tenCharNames.add(terminologyIdToName.get(tenCharId));
