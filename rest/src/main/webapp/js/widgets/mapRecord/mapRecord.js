@@ -490,6 +490,15 @@ angular
             $scope.addMapGroup();
           } else {
 
+
+    	    $scope.record.mapEntry.sort((a, b) => {
+    		  // sort by mapGroup
+    		  if (a.mapGroup < b.mapGroup) return -1;
+    		  if (a.mapGroup > b.mapGroup) return 1;
+
+    		  // sort by mapPriority
+    		  return a.mapPriority - b.mapPriority;
+    		});
             for (var i = 0; i < $scope.record.mapEntry.length; i++) {
               // get the entry
               var entry = $scope.record.mapEntry[i];
