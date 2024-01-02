@@ -190,6 +190,8 @@ public class ICD10CMProjectSpecificAlgorithmHandler
   public ValidationResult validateSemanticChecks(MapRecord mapRecord) throws Exception {
     ValidationResult validationResult = new ValidationResultJpa();
     final List<MapEntry> entries = mapRecord.getMapEntries();
+    
+    //Gender Rule Check
     List<String[]> maleRules = new ArrayList<>();
     List<String[]> femaleRules = new ArrayList<>();
     List<String[]> otherRules = new ArrayList<>();
@@ -245,6 +247,37 @@ public class ICD10CMProjectSpecificAlgorithmHandler
         }
       }
     }
+    
+    //Age Rule Check
+    List<String[]> ageRules = new ArrayList<>();
+    for (int i = 0; i < entries.size(); i++) {
+      MapEntry mapEntry = entries.get(i);
+      if (mapEntry.getRule().contains("Age")) {
+        if (ageRules.stream()
+            .filter(e -> e[0].equals(mapEntry.getRule()))
+            .findAny().isPresent()) {
+          validationResult.addError("Duplicate age rules found: " + mapEntry.getRule());
+        } else if (ageRules.stream()
+            .filter(e -> e[2].equals(mapEntry.getTargetId()))
+            .findAny().isPresent()) {
+          validationResult.addError("Identical target code for different age range entries found: " + mapEntry.getTargetId());
+        }
+        else {
+          ageRules.add(new String[] { mapEntry.getRule(), Integer.toString(mapEntry.getMapGroup()), mapEntry.getTargetId() });
+        }
+      }
+      if (mapEntry.getRule().contains("TRUE")) {
+        if (ageRules.stream()
+            .filter(e -> e[2].equals(mapEntry.getTargetId()))
+            .findAny().isPresent()) {
+          validationResult.addError("Identical target code for age range and TRUE entries found: " + mapEntry.getTargetId());
+        }
+        else {
+          ageRules.add(new String[] { mapEntry.getRule(), Integer.toString(mapEntry.getMapGroup()), mapEntry.getTargetId() });
+        }
+      }      
+    }    
+    
     return validationResult;
   }
 
