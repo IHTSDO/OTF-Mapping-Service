@@ -91,80 +91,79 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
       String searchAfter = null;
       final ObjectMapper mapper = new ObjectMapper();
 
-      // WMT-104: Removing 88161000202101-refset filter, per Norway's request. 
-//    getLog().info("Identify full list of concepts Norway is interested in, as stored in a refset");
-//    //Sample JSON
-//    /*
-//{
-//  "items": [
-//    {
-//      "active": true,
-//      "moduleId": "51000202101",
-//      "released": true,
-//      "releasedEffectiveTime": 20221222,
-//      "memberId": "ffff31c3-7206-4a52-b95b-da19d98bf627",
-//      "refsetId": "88161000202101",
-//      "referencedComponentId": "735581004",
-//      "additionalFields": {
-//        "targetComponentId": ""
-//      },
-//      "referencedComponent": {
-//        "conceptId": "735581004",
-//        "active": true,
-//        "definitionStatus": "FULLY_DEFINED",
-//        "moduleId": "900000000000207008",
-//        "fsn": {
-//          "term": "Ventricular septal defect following procedure (disorder)",
-//          "lang": "en"
-//        },
-//        "pt": {
-//          "term": "Ventricular septal defect following procedure",
-//          "lang": "en"
-//        },
-//        "id": "735581004"
-//      }
-//    },
-//   */
-//    
-//    Set<String> scopeConceptIds = new HashSet<>();
-//    int limit = 10000;
-//    
-//    while (true) {
-//      
-//      int returnedConceptsCount = 0;
-//      
-//      String targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/MAIN%2FSNOMEDCT-NO%2FREFSETS/members?referenceSet=88161000202101&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
-//      WebTarget target = client.target(targetUri);
-//      target = client.target(targetUri);
-//      Logger.getLogger(getClass()).info(targetUri);
-//   
-//      Response response =
-//          target.request(accept)
-//          .header("Cookie", ConfigUtility.getGenericUserCookie())
-//          .get();
-//      String resultString = response.readEntity(String.class);
-//      if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-//        // n/a
-//      } else {
-//        throw new LocalException(
-//            "Unexpected terminology server failure. Message = " + resultString);
-//      }
-//      
-//      final JsonNode doc = mapper.readTree(resultString);
-//   
-//      // get total amount
-//      // Get concepts returned in this call (up to 1000)
-//      for (final JsonNode conceptNode : doc.get("items")) {
-//        scopeConceptIds.add(conceptNode.get("referencedComponentId").asText());
-//        returnedConceptsCount++;
-//      }
-//       
-//      searchAfter = doc.get("searchAfter").asText();
-//      // if we don't get a full page of results, we've processed the final page
-//      if(returnedConceptsCount < limit) {
-//          break;
-//      }
-//    }      
+    getLog().info("Identify full list of concepts Norway is interested in, as stored in the Helseplattformens refset");
+    //Sample JSON
+    /*
+{
+  "items": [
+    {
+      "active": true,
+      "moduleId": "51000202101",
+      "released": true,
+      "releasedEffectiveTime": 20221222,
+      "memberId": "ffff31c3-7206-4a52-b95b-da19d98bf627",
+      "refsetId": "88161000202101",
+      "referencedComponentId": "735581004",
+      "additionalFields": {
+        "targetComponentId": ""
+      },
+      "referencedComponent": {
+        "conceptId": "735581004",
+        "active": true,
+        "definitionStatus": "FULLY_DEFINED",
+        "moduleId": "900000000000207008",
+        "fsn": {
+          "term": "Ventricular septal defect following procedure (disorder)",
+          "lang": "en"
+        },
+        "pt": {
+          "term": "Ventricular septal defect following procedure",
+          "lang": "en"
+        },
+        "id": "735581004"
+      }
+    },
+   */
+    
+    Set<String> helseplattformensConceptIds = new HashSet<>();
+    int limit = 10000;
+    
+    while (true) {
+      
+      int returnedConceptsCount = 0;
+      
+      String targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/MAIN%2FSNOMEDCT-NO%2FREFSETS/members?referenceSet=88161000202101&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
+      WebTarget target = client.target(targetUri);
+      target = client.target(targetUri);
+      Logger.getLogger(getClass()).info(targetUri);
+   
+      Response response =
+          target.request(accept)
+          .header("Cookie", ConfigUtility.getGenericUserCookie())
+          .get();
+      String resultString = response.readEntity(String.class);
+      if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+        // n/a
+      } else {
+        throw new LocalException(
+            "Unexpected terminology server failure. Message = " + resultString);
+      }
+      
+      final JsonNode doc = mapper.readTree(resultString);
+   
+      // get total amount
+      // Get concepts returned in this call (up to 1000)
+      for (final JsonNode conceptNode : doc.get("items")) {
+        helseplattformensConceptIds.add(conceptNode.get("referencedComponentId").asText());
+        returnedConceptsCount++;
+      }
+       
+      searchAfter = doc.get("searchAfter").asText();
+      // if we don't get a full page of results, we've processed the final page
+      if(returnedConceptsCount < limit) {
+          break;
+      }
+    }      
       
       getLog().info("Identify current and dependent branch paths");
       //Sample JSON
@@ -243,7 +242,7 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
       
       Set<String> activeInPreviousBranchScopeConcepts = new HashSet<>();
       searchAfter = null;
-      int limit = 10000;
+      limit = 10000;
       
       while (true) {
         
@@ -272,9 +271,7 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
 
         for(int i = 0; i<conceptIds.size(); i++) {
           String activeConceptId = conceptIds.get(i).asText();
-//          if(scopeConceptIds.contains(activeConceptId)) {
-            activeInPreviousBranchScopeConcepts.add(activeConceptId);
-//          }
+          activeInPreviousBranchScopeConcepts.add(activeConceptId);
 
           returnedConceptsCount++;
         }
@@ -863,7 +860,7 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
       List<String> results = new ArrayList<>();
       // Add header row
       results.add(
-          "conceptId\tfsn.term\tpt.lang\tpt.term\tICD-10 MAP\tICPC MAP\tinactivationIndicator.pt.term"+
+          "conceptId\tfsn.term\tpt.lang\tpt.term\tHelseplattformens refset member\tICD-10 MAP\tICPC MAP\tinactivationIndicator.pt.term"+
           "\tassociations.association.pt.term\tassociations.targetId\tassociations.target.fsn.term\t"+
           "associations.target.pt.lang\tassociations.target.pt.term\tNy SCTID OK\tTarget ICD-10 Map\t"+
           "Target ICPC MAP\tIkkje bruk map\tOppr map Ja/Nei\tKommentar\tKolonne1\tKolonne2");
@@ -878,12 +875,19 @@ public class NorwayReplacementMapReportMojo extends AbstractOtfMappingMojo {
         norwayMappedConceptsAndICPCTargets.put(conceptId, norwayMappedConceptsAndICPCTargetsActive.get(conceptId) != null && !norwayMappedConceptsAndICPCTargetsActive.get(conceptId).isEmpty() ? norwayMappedConceptsAndICPCTargetsActive.get(conceptId) : norwayMappedConceptsAndICPCTargetsInactive.get(conceptId));
         internationalMappedConceptsAndICPCTargets.put(conceptId, internationalMappedConceptsAndICPCTargetsActive.get(conceptId) != null && !internationalMappedConceptsAndICPCTargetsActive.get(conceptId).isEmpty() ? internationalMappedConceptsAndICPCTargetsActive.get(conceptId) : internationalMappedConceptsAndICPCTargetsInactive.get(conceptId));
         
+        //Per Norway, if the ICD10 map is no-target, they are not interested.
+        if((internationalMappedConceptsAndTargets.get(conceptId) == null || internationalMappedConceptsAndTargets.get(conceptId).isEmpty()) &&  
+            (norwayMappedConceptsAndTargets.get(conceptId) == null || norwayMappedConceptsAndTargets.get(conceptId).isEmpty())){
+          continue;
+        }
+        
         final String inactivationIndicator = conceptInactivationIndicators.get(conceptId);
         final String inactiveConceptInfo = 
             conceptId + "\t" +
             conceptIdToFSN.get(conceptId) + "\t" +
             (conceptIdToPTNO.get(conceptId)!=null ? "no" : "en") + "\t" +
             (conceptIdToPTNO.get(conceptId)!=null ? conceptIdToPTNO.get(conceptId) : conceptIdToPTEN.get(conceptId)) + "\t"+
+            (helseplattformensConceptIds.contains(conceptId) ? "TRUE" : "FALSE") + "\t" +
             //Display Norway ICD10 maps targets if available, otherwise use International targets
             (norwayMappedConceptsAndTargets.get(conceptId)!=null ? String.join(", ", norwayMappedConceptsAndTargets.get(conceptId)) : internationalMappedConceptsAndTargets.get(conceptId)!=null ? String.join(", ", internationalMappedConceptsAndTargets.get(conceptId)) : "") + "\t"+
             //Do the same for Norway ICPC map targets
