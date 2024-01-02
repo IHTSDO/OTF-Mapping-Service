@@ -1064,6 +1064,30 @@
     </profile>
 
     <profile>
+      <id>NorwayReplacementTranslationReport</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>norway-replacement-translation-report</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>run-norway-replacement-translation-report</goal>
+                </goals>
+                <configuration>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+
+    <profile>
       <id>UpdateICD10NO</id>
       <build>
         <plugins>
