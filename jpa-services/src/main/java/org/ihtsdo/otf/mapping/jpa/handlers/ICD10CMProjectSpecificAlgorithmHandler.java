@@ -254,11 +254,11 @@ public class ICD10CMProjectSpecificAlgorithmHandler
       MapEntry mapEntry = entries.get(i);
       if (mapEntry.getRule().contains("Age")) {
         if (ageRules.stream()
-            .filter(e -> e[0].equals(mapEntry.getRule()))
+            .filter(e -> e[1].equals(Integer.toString(mapEntry.getMapGroup())) && e[0].equals(mapEntry.getRule()))
             .findAny().isPresent()) {
           validationResult.addError("Duplicate age rules found: " + mapEntry.getRule());
         } else if (ageRules.stream()
-            .filter(e -> e[2].equals(mapEntry.getTargetId()))
+            .filter(e -> e[1].equals(Integer.toString(mapEntry.getMapGroup())) && e[2] != null && e[2].equals(mapEntry.getTargetId()))
             .findAny().isPresent()) {
           validationResult.addError("Identical target code for different age range entries found: " + mapEntry.getTargetId());
         }
@@ -266,9 +266,9 @@ public class ICD10CMProjectSpecificAlgorithmHandler
           ageRules.add(new String[] { mapEntry.getRule(), Integer.toString(mapEntry.getMapGroup()), mapEntry.getTargetId() });
         }
       }
-      if (mapEntry.getRule().contains("TRUE")) {
+      else if (mapEntry.getRule().contains("TRUE")) {
         if (ageRules.stream()
-            .filter(e -> e[2].equals(mapEntry.getTargetId()))
+            .filter(e -> e[1].equals(Integer.toString(mapEntry.getMapGroup())) && e[2] != null && e[2].equals(mapEntry.getTargetId()))
             .findAny().isPresent()) {
           validationResult.addError("Identical target code for age range and TRUE entries found: " + mapEntry.getTargetId());
         }
