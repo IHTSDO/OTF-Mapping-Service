@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.jpa.algo.ICPC2NODownloadAlgorithm;
+import org.ihtsdo.otf.mapping.jpa.algo.RemoverAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.SimpleLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapProject;
@@ -38,63 +39,73 @@ public class NorwayICPC2NOUpdaterMojo extends AbstractOtfMappingMojo {
     getLog().info("Start ICPC2NO Updater Mojo");
 
     try {
-    final MappingService mappingService = new MappingServiceJpa();
+      final MappingService mappingService = new MappingServiceJpa();
 
-    
-    // Calculate today's date to set as version
-    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy_MM_dd");  
-    LocalDateTime now = LocalDateTime.now();  
-    String version =  dtf.format(now);
-    
-    //Download the newest version of ICPC2NO from the terminology server
-    try (final ICPC2NODownloadAlgorithm algo = new ICPC2NODownloadAlgorithm();) {
+      // Calculate today's date to set as version
+      DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy_MM_dd");
+      LocalDateTime now = LocalDateTime.now();
+      String version = dtf.format(now);
 
-      algo.compute();
+      // Download the newest version of ICPC2NO from the terminology server
+      try (final ICPC2NODownloadAlgorithm algo = new ICPC2NODownloadAlgorithm();) {
+
+        algo.compute();
+
+      } catch (Exception e) {
+        throw new MojoExecutionException(
+            "trying to download most recent terminology ICPC2NO from API", e);
+      }
+
+      // Load the newly downloaded version of ICPC2NO into the mapping tool
+      String inputDir = "";
+      try {
+        inputDir = ConfigUtility.getConfigProperties().getProperty("icpc2noAPI.dir");
+        // Strip off final /, if it exists
+        if (inputDir.endsWith("/")) {
+          inputDir = inputDir.substring(0, inputDir.length() - 1);
+        }
+        inputDir = inputDir + "/" + version;
+
+        Logger.getLogger(getClass())
+            .info("Input directory generated from config.properties, and set to " + inputDir);
+      } catch (Exception e) {
+        throw new MojoExecutionException(
+            "trying to set the input directory from config.properties");
+      }
+
+      try (final SimpleLoaderAlgorithm algo =
+          new SimpleLoaderAlgorithm("ICPC2_NO", version, inputDir, "0");) {
+
+        algo.compute();
+
+      } catch (Exception e) {
+        throw new MojoExecutionException("trying to load terminology ICPC2NO from directory", e);
+      }
+
+      // Set the ICPC2NO forvaltning project to point to the newly downloaded
+      // ICPC2NO version
+      MapProject ICPC2NOProject = mappingService.getMapProject(2L);
+      String previousICPC2Terminology = ICPC2NOProject.getDestinationTerminology();
+      String previousICPC2Version = ICPC2NOProject.getDestinationTerminologyVersion();
+      ICPC2NOProject.setDestinationTerminologyVersion(version);
+      mappingService.updateMapProject(ICPC2NOProject);
+
+      mappingService.close();
+
+      // Remove the version of ICPC2 that was previously assigned to the
+      // project
+      try (final RemoverAlgorithm algo =
+          new RemoverAlgorithm(previousICPC2Terminology, previousICPC2Version);) {
+
+        algo.compute();
+
+      } catch (Exception e) {
+        throw new MojoExecutionException("trying to remove previous version of terminology ICD10NO",
+            e);
+      }
 
     } catch (Exception e) {
-      throw new MojoExecutionException("trying to download most recent terminology ICPC2NO from API", e
-          );
-    }
-    
-    //Load the newly downloaded version of ICPC2NO into the mapping tool
-    String inputDir = "";
-    try {
-    inputDir = ConfigUtility.getConfigProperties()
-        .getProperty("icpc2noAPI.dir");
-    // Strip off final /, if it exists
-    if (inputDir.endsWith("/")) {
-      inputDir = inputDir.substring(0, inputDir.length() - 1);
-    }
-    inputDir = inputDir + "/" + version;
-    
-
-    Logger.getLogger(getClass())
-        .info("Input directory generated from config.properties, and set to "
-            + inputDir);
-    }
-    catch (Exception e) {
-      throw new MojoExecutionException("trying to set the input directory from config.properties");
-    }
-    
-    
-    try (final SimpleLoaderAlgorithm algo =
-            new SimpleLoaderAlgorithm("ICPC2_NO", version, inputDir, "0");) {
-
-      algo.compute();
-
-    } catch (Exception e) {
-      throw new MojoExecutionException("trying to load terminology ICPC2NO from directory", e);
-    }
-    
-    //Set the ICPC2NO forvaltning project to point to the newly downloaded ICPC2NO version
-    MapProject ICPC2NOProject = mappingService.getMapProject(2L);
-    ICPC2NOProject.setDestinationTerminologyVersion(version); 
-    mappingService.updateMapProject(ICPC2NOProject);
-    
-    mappingService.close();
-    
-    } catch (Exception e) {
-      throw new MojoExecutionException("ICPC2NO Updater failed.", e);      
+      throw new MojoExecutionException("ICPC2NO Updater failed.", e);
     }
   }
 
@@ -112,14 +123,11 @@ public class NorwayICPC2NOUpdaterMojo extends AbstractOtfMappingMojo {
     } catch (Exception e1) {
       throw new MojoExecutionException("Failed to retrieve config properties");
     }
-    String notificationRecipients =
-        config.getProperty("report.send.notification.recipients.norway."
-            + getClass().getSimpleName());
+    String notificationRecipients = config
+        .getProperty("report.send.notification.recipients.norway." + getClass().getSimpleName());
     String notificationMessage = "";
-    getLog().info("Request to send notification email to recipients: "
-        + notificationRecipients);
-    notificationMessage +=
-        "Hello,\n\nICPC2NO has been updated.";
+    getLog().info("Request to send notification email to recipients: " + notificationRecipients);
+    notificationMessage += "Hello,\n\nICPC2NO has been updated.";
 
     String from;
     if (config.containsKey("mail.smtp.from")) {
@@ -133,13 +141,11 @@ public class NorwayICPC2NOUpdaterMojo extends AbstractOtfMappingMojo {
     props.put("mail.smtp.password", config.getProperty("mail.smtp.password"));
     props.put("mail.smtp.host", config.getProperty("mail.smtp.host"));
     props.put("mail.smtp.port", config.getProperty("mail.smtp.port"));
-    props.put("mail.smtp.starttls.enable",
-        config.getProperty("mail.smtp.starttls.enable"));
+    props.put("mail.smtp.starttls.enable", config.getProperty("mail.smtp.starttls.enable"));
     props.put("mail.smtp.auth", config.getProperty("mail.smtp.auth"));
 
-    ConfigUtility.sendEmailWithAttachment(
-        "[OTF-Mapping-Tool] ICPC2NO Updater", from, notificationRecipients,
-        notificationMessage, props, fileName,
+    ConfigUtility.sendEmailWithAttachment("[OTF-Mapping-Tool] ICPC2NO Updater", from,
+        notificationRecipients, notificationMessage, props, fileName,
         "true".equals(config.getProperty("mail.smtp.auth")));
   }
 }
