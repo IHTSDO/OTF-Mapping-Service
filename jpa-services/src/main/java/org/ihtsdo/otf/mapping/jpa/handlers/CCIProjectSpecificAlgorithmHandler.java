@@ -92,7 +92,6 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
     cacheCodeRubricsToAdvices();
   }
 
-
   /* see superclass */
   @Override
   public ValidationResult validateSemanticChecks(MapRecord mapRecord) throws Exception {
@@ -141,45 +140,49 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
       if (concepts.keySet().size() == mapRecord.getMapEntries().size()) {
 
         //
-        // PREDICATE: Group 1/Priority 1 map entries that have a target must have a relationship
+        // PREDICATE: Group 1/Priority 1 map entries that have a target must
+        // have a relationship
         //
         for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
           final MapEntry entry = mapRecord.getMapEntries().get(i);
-          if (entry.getMapGroup() == 1 && entry.getMapPriority() == 1 && !entry.getTargetId().equals("") && entry.getMapRelation() == null) {
+          if (entry.getMapGroup() == 1 && entry.getMapPriority() == 1
+              && !entry.getTargetId().equals("") && entry.getMapRelation() == null) {
             result.addError("Entry 1/1 has a target, and must be assigned a Map Relationship.");
           }
         }
 
         //
-        // PREDICATE: Only Group 1/Priority 1 map entries can have a relationship
+        // PREDICATE: Only Group 1/Priority 1 map entries can have a
+        // relationship
         //
         for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
           final MapEntry entry = mapRecord.getMapEntries().get(i);
-          if ((entry.getMapGroup() != 1 || entry.getMapPriority() != 1) && entry.getMapRelation() != null) {
+          if ((entry.getMapGroup() != 1 || entry.getMapPriority() != 1)
+              && entry.getMapRelation() != null) {
             result.addError("Entry " + entry.getMapGroup() + "/" + entry.getMapPriority()
                 + " cannot be assigned a Map Relationship - outcomes are only allowed on entry 1/1.");
           }
-        }          
-        
+        }
+
         //
-        // PREDICATE: Map entries that have no target cannot have a Map Relationship
+        // PREDICATE: Map entries that have no target cannot have a Map
+        // Relationship
         //
         for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
           final MapEntry entry = mapRecord.getMapEntries().get(i);
           if (entry.getTargetId().equals("") && entry.getMapRelation() != null) {
             result.addError("Entry " + entry.getMapGroup() + "/" + entry.getMapPriority()
-            + " has no target, and cannot be assigned a Map Relationship.");
+                + " has no target, and cannot be assigned a Map Relationship.");
           }
-        }        
-        
+        }
+
         //
         // PREDICATE: Map entries with a target must have a grade
         //
         for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
           final MapEntry entry = mapRecord.getMapEntries().get(i);
           Boolean gradePresent = false;
-          for (AdditionalMapEntryInfo additionalMapEntryInfo : entry
-              .getAdditionalMapEntryInfos()) {
+          for (AdditionalMapEntryInfo additionalMapEntryInfo : entry.getAdditionalMapEntryInfos()) {
             if (additionalMapEntryInfo.getField().equals("Grade")) {
               gradePresent = true;
               break;
@@ -187,18 +190,17 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
           }
           if (!entry.getTargetId().equals("") && !gradePresent) {
             result.addError("Entry " + entry.getMapGroup() + "/" + entry.getMapPriority()
-            + " has a target, and must be assigned a grade.");
+                + " has a target, and must be assigned a grade.");
           }
-        }         
-        
+        }
+
         //
         // PREDICATE: Map entries that have no target cannot have a grade
         //
         for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
           final MapEntry entry = mapRecord.getMapEntries().get(i);
           Boolean gradePresent = false;
-          for (AdditionalMapEntryInfo additionalMapEntryInfo : entry
-              .getAdditionalMapEntryInfos()) {
+          for (AdditionalMapEntryInfo additionalMapEntryInfo : entry.getAdditionalMapEntryInfos()) {
             if (additionalMapEntryInfo.getField().equals("Grade")) {
               gradePresent = true;
               break;
@@ -206,18 +208,17 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
           }
           if (entry.getTargetId().equals("") && gradePresent) {
             result.addError("Entry " + entry.getMapGroup() + "/" + entry.getMapPriority()
-            + " has no target, and cannot be assigned a grade.");
+                + " has no target, and cannot be assigned a grade.");
           }
-        }            
-        
+        }
+
         //
         // PREDICATE: Map entries with a target cannot have an Unmappable Reason
         //
         for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
           final MapEntry entry = mapRecord.getMapEntries().get(i);
           Boolean unmappableReasonPresent = false;
-          for (AdditionalMapEntryInfo additionalMapEntryInfo : entry
-              .getAdditionalMapEntryInfos()) {
+          for (AdditionalMapEntryInfo additionalMapEntryInfo : entry.getAdditionalMapEntryInfos()) {
             if (additionalMapEntryInfo.getField().equals("Unmappable Reason")) {
               unmappableReasonPresent = true;
               break;
@@ -225,18 +226,18 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
           }
           if (!entry.getTargetId().equals("") && unmappableReasonPresent) {
             result.addError("Entry " + entry.getMapGroup() + "/" + entry.getMapPriority()
-            + " has a target, and cannot be assigned an Unmappable Reason.");
+                + " has a target, and cannot be assigned an Unmappable Reason.");
           }
-        }         
-        
+        }
+
         //
-        // PREDICATE: Map entries that have no target must have an Unmappable Reason
+        // PREDICATE: Map entries that have no target must have an Unmappable
+        // Reason
         //
         for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
           final MapEntry entry = mapRecord.getMapEntries().get(i);
           Boolean unmappableReasonPresent = false;
-          for (AdditionalMapEntryInfo additionalMapEntryInfo : entry
-              .getAdditionalMapEntryInfos()) {
+          for (AdditionalMapEntryInfo additionalMapEntryInfo : entry.getAdditionalMapEntryInfos()) {
             if (additionalMapEntryInfo.getField().equals("Unmappable Reason")) {
               unmappableReasonPresent = true;
               break;
@@ -244,99 +245,110 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
           }
           if (entry.getTargetId().equals("") && !unmappableReasonPresent) {
             result.addError("Entry " + entry.getMapGroup() + "/" + entry.getMapPriority()
-            + " has no target, and must be assigned an Unmappable Reason.");
+                + " has no target, and must be assigned an Unmappable Reason.");
           }
-        }            
-                
-//        //
-//        // PREDICATE: for map entries that have the relation "not exact match",
-//        // they must also be assigned a Grade.
-//        //
-//        for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
-//          final Concept concept = concepts.get(i + 1).get(0);
-//          if (concept != null) {
-//            final MapEntry entry = mapRecord.getMapEntries().get(i);
-//            if (entry.getMapRelation() != null && entry.getMapRelation().getName().toLowerCase()
-//                .contains("not exact match")) {
-//              Boolean gradePresent = false;
-//              for (AdditionalMapEntryInfo additionalMapEntryInfo : entry
-//                  .getAdditionalMapEntryInfos()) {
-//                if (additionalMapEntryInfo.getField().equals("Grade")) {
-//                  gradePresent = true;
-//                  break;
-//                }
-//              }
-//              if (!gradePresent) {
-//                result.addError("Not exact match entry " + entry.getMapGroup() + "/"
-//                    + entry.getMapPriority() + " must be assigned a Grade.");
-//              }
-//            }
-//          }
-//        }
-//
-//        //
-//        // PREDICATE: for map entries that don't have the relation "not exact match",
-//        // they must Not be assigned a Grade.
-//        //
-//        for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
-//          final Concept concept = concepts.get(i + 1).get(0);
-//          if (concept != null) {
-//            final MapEntry entry = mapRecord.getMapEntries().get(i);
-//            if (entry.getMapRelation() != null && !entry.getMapRelation().getName().toLowerCase()
-//                .contains("not exact match")) {
-//              Boolean gradePresent = false;
-//              for (AdditionalMapEntryInfo additionalMapEntryInfo : entry
-//                  .getAdditionalMapEntryInfos()) {
-//                if (additionalMapEntryInfo.getField().equals("Grade")) {
-//                  gradePresent = true;
-//                  break;
-//                }
-//              }
-//              if (gradePresent) {
-//                result.addError("Exact match classified entry " + entry.getMapGroup() + "/"
-//                    + entry.getMapPriority() + " must not be assigned a Grade.");
-//              }
-//            }
-//          }
-//        }
-//
-//        //
-//        // PREDICATE: for map entries that have a target that ends in a wildcard
-//        // "^" character,
-//        // they should have the relation "not exact match"
-//        //
-//        for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
-//          final Concept concept = concepts.get(i + 1).get(0);
-//          if (concept != null) {
-//            final String terminologyId = concept.getTerminologyId();
-//            final MapEntry entry = mapRecord.getMapEntries().get(i);
-//            if (terminologyId.endsWith("^") && (entry.getMapRelation() == null || !entry
-//                .getMapRelation().getName().toLowerCase().contains("not exact match"))) {
-//              result.addWarning("Target id for entry " + entry.getMapGroup() + "/"
-//                  + entry.getMapPriority()
-//                  + " ends with '^', and should be assigned a 'not exact match' Outcome.");
-//            }
-//          }
-//        }
-//
-//        //
-//        // PREDICATE: for map entries that have a target that don't end in a
-//        // wildcard "^" character,
-//        // they should NOT have the relation "Partially classified"
-//        //
-//        for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
-//          final Concept concept = concepts.get(i + 1).get(0);
-//          if (concept != null) {
-//            final String terminologyId = concept.getTerminologyId();
-//            final MapEntry entry = mapRecord.getMapEntries().get(i);
-//            if (!terminologyId.endsWith("^") && (entry.getMapRelation() == null
-//                || entry.getMapRelation().getName().toLowerCase().contains("not exact match"))) {
-//              result.addWarning("Target id for entry " + entry.getMapGroup() + "/"
-//                  + entry.getMapPriority()
-//                  + " does not end with '^', and should not be assigned one of the 'not exact match' Outcomes.");
-//            }
-//          }
-//        }
+        }
+
+        // //
+        // // PREDICATE: for map entries that have the relation "not exact
+        // match",
+        // // they must also be assigned a Grade.
+        // //
+        // for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+        // final Concept concept = concepts.get(i + 1).get(0);
+        // if (concept != null) {
+        // final MapEntry entry = mapRecord.getMapEntries().get(i);
+        // if (entry.getMapRelation() != null &&
+        // entry.getMapRelation().getName().toLowerCase()
+        // .contains("not exact match")) {
+        // Boolean gradePresent = false;
+        // for (AdditionalMapEntryInfo additionalMapEntryInfo : entry
+        // .getAdditionalMapEntryInfos()) {
+        // if (additionalMapEntryInfo.getField().equals("Grade")) {
+        // gradePresent = true;
+        // break;
+        // }
+        // }
+        // if (!gradePresent) {
+        // result.addError("Not exact match entry " + entry.getMapGroup() + "/"
+        // + entry.getMapPriority() + " must be assigned a Grade.");
+        // }
+        // }
+        // }
+        // }
+        //
+        // //
+        // // PREDICATE: for map entries that don't have the relation "not exact
+        // match",
+        // // they must Not be assigned a Grade.
+        // //
+        // for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+        // final Concept concept = concepts.get(i + 1).get(0);
+        // if (concept != null) {
+        // final MapEntry entry = mapRecord.getMapEntries().get(i);
+        // if (entry.getMapRelation() != null &&
+        // !entry.getMapRelation().getName().toLowerCase()
+        // .contains("not exact match")) {
+        // Boolean gradePresent = false;
+        // for (AdditionalMapEntryInfo additionalMapEntryInfo : entry
+        // .getAdditionalMapEntryInfos()) {
+        // if (additionalMapEntryInfo.getField().equals("Grade")) {
+        // gradePresent = true;
+        // break;
+        // }
+        // }
+        // if (gradePresent) {
+        // result.addError("Exact match classified entry " + entry.getMapGroup()
+        // + "/"
+        // + entry.getMapPriority() + " must not be assigned a Grade.");
+        // }
+        // }
+        // }
+        // }
+        //
+        // //
+        // // PREDICATE: for map entries that have a target that ends in a
+        // wildcard
+        // // "^" character,
+        // // they should have the relation "not exact match"
+        // //
+        // for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+        // final Concept concept = concepts.get(i + 1).get(0);
+        // if (concept != null) {
+        // final String terminologyId = concept.getTerminologyId();
+        // final MapEntry entry = mapRecord.getMapEntries().get(i);
+        // if (terminologyId.endsWith("^") && (entry.getMapRelation() == null ||
+        // !entry
+        // .getMapRelation().getName().toLowerCase().contains("not exact
+        // match"))) {
+        // result.addWarning("Target id for entry " + entry.getMapGroup() + "/"
+        // + entry.getMapPriority()
+        // + " ends with '^', and should be assigned a 'not exact match'
+        // Outcome.");
+        // }
+        // }
+        // }
+        //
+        // //
+        // // PREDICATE: for map entries that have a target that don't end in a
+        // // wildcard "^" character,
+        // // they should NOT have the relation "Partially classified"
+        // //
+        // for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+        // final Concept concept = concepts.get(i + 1).get(0);
+        // if (concept != null) {
+        // final String terminologyId = concept.getTerminologyId();
+        // final MapEntry entry = mapRecord.getMapEntries().get(i);
+        // if (!terminologyId.endsWith("^") && (entry.getMapRelation() == null
+        // || entry.getMapRelation().getName().toLowerCase().contains("not exact
+        // match"))) {
+        // result.addWarning("Target id for entry " + entry.getMapGroup() + "/"
+        // + entry.getMapPriority()
+        // + " does not end with '^', and should not be assigned one of the 'not
+        // exact match' Outcomes.");
+        // }
+        // }
+        // }
 
         //
         // PREDICATE: an entry cannot have multiple Grades selected at the same
@@ -410,40 +422,47 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
       advices.clear();
       advices.addAll(notComputed);
 
-      //2024-02-04 - requested to be removed by CIHI
-//      //
-//      // PREDICATE: If map grade = B or C, then map advice is required.
-//      // ACTION: add advice: Requires additional qualifier 2 and/or qualifier 3
-//      //
-//      final String requiresAdditionalQualifier = "Requires additional qualifier 2 and/or qualifier 3";
-//
-//      Set<AdditionalMapEntryInfo> additionalMapInfos = mapEntry.getAdditionalMapEntryInfos();
-//      Boolean hasGradeBorC = false;
-//      for (AdditionalMapEntryInfo additionalMapEntryInfo : additionalMapInfos) {
-//        if (additionalMapEntryInfo.getName().contains("Grade|B")
-//            || additionalMapEntryInfo.getName().contains("Grade|C")) {
-//          hasGradeBorC = true;
-//        }
-//      }
-//
-//      if (hasGradeBorC) {
-//        if (!TerminologyUtility.hasAdvice(mapEntry, requiresAdditionalQualifier)) {
-//          advices.add(TerminologyUtility.getAdvice(mapProject, requiresAdditionalQualifier));
-//        }
-//      }
+      // 2024-02-04 - requested to be removed by CIHI
+      // //
+      // // PREDICATE: If map grade = B or C, then map advice is required.
+      // // ACTION: add advice: Requires additional qualifier 2 and/or qualifier
+      // 3
+      // //
+      // final String requiresAdditionalQualifier = "Requires additional
+      // qualifier 2 and/or qualifier 3";
+      //
+      // Set<AdditionalMapEntryInfo> additionalMapInfos =
+      // mapEntry.getAdditionalMapEntryInfos();
+      // Boolean hasGradeBorC = false;
+      // for (AdditionalMapEntryInfo additionalMapEntryInfo :
+      // additionalMapInfos) {
+      // if (additionalMapEntryInfo.getName().contains("Grade|B")
+      // || additionalMapEntryInfo.getName().contains("Grade|C")) {
+      // hasGradeBorC = true;
+      // }
+      // }
+      //
+      // if (hasGradeBorC) {
+      // if (!TerminologyUtility.hasAdvice(mapEntry,
+      // requiresAdditionalQualifier)) {
+      // advices.add(TerminologyUtility.getAdvice(mapProject,
+      // requiresAdditionalQualifier));
+      // }
+      // }
 
       //
       // PREDICATE: code rubric is listed in CODE_RUBRICS_TO_ADVICES.txt
       // ACTION: add the listed advice(s)
       //
       if (codeRubricToAdvicesMap.containsKey(getRubric(mapEntry.getTargetId()))) {
-        for (final String adviceStr : codeRubricToAdvicesMap.get(getRubric(mapEntry.getTargetId()))) {
+        for (final String adviceStr : codeRubricToAdvicesMap
+            .get(getRubric(mapEntry.getTargetId()))) {
           if (!TerminologyUtility.hasAdvice(mapEntry, adviceStr)) {
             advices.add(TerminologyUtility.getAdvice(mapProject, adviceStr));
           }
         }
-      }      
-      
+      }
+
       // Deduplicate advices
 
       MapAdviceList mapAdviceList = new MapAdviceListJpa();
@@ -504,14 +523,16 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
           String mapTargetId = mapEntry.getTargetId();
           // Modify targetId to the 5 digit rubric level, and lookup the updated
           // concept name
-          final String modifiedTargetId = mapTargetId.substring(0, 7).concat(".^^");
-          final Concept modifiedTargetConcept =
-              contentService.getConcept(modifiedTargetId, mapProject.getDestinationTerminology(),
-                  mapProject.getDestinationTerminologyVersion());
-          String modifiedTargetName = modifiedTargetConcept == null ? "CONCEPT NOT FOUND"
-              : modifiedTargetConcept.getDefaultPreferredName();
-          mapEntry.setTargetId(modifiedTargetId);
-          mapEntry.setTargetName(modifiedTargetName);
+          if (mapTargetId != null && mapTargetId.length() >= 7) {
+            final String modifiedTargetId = mapTargetId.substring(0, 7).concat(".^^");
+            final Concept modifiedTargetConcept =
+                contentService.getConcept(modifiedTargetId, mapProject.getDestinationTerminology(),
+                    mapProject.getDestinationTerminologyVersion());
+            String modifiedTargetName = modifiedTargetConcept == null ? "CONCEPT NOT FOUND"
+                : modifiedTargetConcept.getDefaultPreferredName();
+            mapEntry.setTargetId(modifiedTargetId);
+            mapEntry.setTargetName(modifiedTargetName);
+          }
         }
       }
 
@@ -587,7 +608,7 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
       contentService.close();
     }
   }
-  
+
   /**
    * Cache the explicit code to advices map.
    *
@@ -637,18 +658,18 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
 
     codeListReader.close();
   }
+
   /**
-   * Take a code, and return its rubric.
-   * The Rubric is the first 5 alpha-numeric characters (not including periods)
-   * e.g. 1.AA.13.HA-C2 has a Rubric of 1.AA.13
+   * Take a code, and return its rubric. The Rubric is the first 5 alpha-numeric
+   * characters (not including periods) e.g. 1.AA.13.HA-C2 has a Rubric of
+   * 1.AA.13
    *
    * @throws Exception the exception
    */
-  private String getRubric(String code) throws Exception{
-    if(code != null && code.length()>=7) {
-      return code.substring(0,7);
-    }
-    else {
+  private String getRubric(String code) throws Exception {
+    if (code != null && code.length() >= 7) {
+      return code.substring(0, 7);
+    } else {
       return null;
     }
   }
