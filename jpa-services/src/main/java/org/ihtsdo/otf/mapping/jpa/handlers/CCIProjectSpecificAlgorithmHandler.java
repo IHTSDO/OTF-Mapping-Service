@@ -521,9 +521,12 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
         existingMapRecord = new MapRecordJpa(parentMaps.iterator().next(), false);
         for (MapEntry mapEntry : existingMapRecord.getMapEntries()) {
           String mapTargetId = mapEntry.getTargetId();
-          // Modify targetId to the 5 digit rubric level, and lookup the updated
-          // concept name
-          if (mapTargetId != null && mapTargetId.length() >= 7) {
+          // If parent is mapped to No Target, don't do pre-assigning
+          if(mapTargetId == null || mapTargetId == "") {
+            existingMapRecord = null;
+          }
+          // Otherwise, modify targetId to the 5 digit rubric level, and lookup the updated concept name
+          if (mapTargetId.length() >= 7) {
             final String modifiedTargetId = mapTargetId.substring(0, 7).concat(".^^");
             final Concept modifiedTargetConcept =
                 contentService.getConcept(modifiedTargetId, mapProject.getDestinationTerminology(),
