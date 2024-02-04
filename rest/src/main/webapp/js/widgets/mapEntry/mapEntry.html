@@ -62,9 +62,11 @@
     <tr>
       <td style="vertical-align: top; padding: 5px; width: 50px;">
        <span ng-switch on="project.destinationTerminology">
+    		<!-- 
     		<span ng-switch-when="CCI">
-        		<strong>Outcome</strong>
+        		<strong>Map Relationship</strong>
     		</span>
+    		 -->
     		<span ng-switch-default>
         		<strong>Relation</strong>
     		</span>
@@ -72,11 +74,13 @@
       </td>
       <td style="vertical-align: top; padding: 5px;">
       	<span ng-switch on="project.destinationTerminology">
+    		<!-- 
     		<span ng-switch-when="CCI">
         		<span style="color: lightgray;"
           			ng-show="allowableMapRelations.length == 0 && !entry.mapRelation">No
-          			outcomes available to select.</span>
+          			map relationships available to select.</span>
     		</span>
+    		 -->
     		<span ng-switch-default>
         		<span style="color: lightgray;"
           			ng-show="allowableMapRelations.length == 0 && !entry.mapRelation">No

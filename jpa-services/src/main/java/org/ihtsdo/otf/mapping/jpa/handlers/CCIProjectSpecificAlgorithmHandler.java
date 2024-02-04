@@ -9,11 +9,15 @@
  */
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -37,6 +41,7 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
  * The {@link ProjectSpecificAlgorithmHandler} for CCI project.
@@ -67,8 +72,8 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
   /** The icd10 external cause codes. */
   private static Map<String, Set<String>> externalCauseCodesMap = new HashMap<>();
 
-  /** The code to advices map. */
-  private static Map<String, Set<String>> codeToAdvicesMap = new HashMap<>();
+  /** The code rubric to advices map. */
+  private static Map<String, Set<String>> codeRubricToAdvicesMap = new HashMap<>();
 
   /**
    * The parser.
@@ -84,6 +89,7 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
   public void initialize() throws Exception {
     Logger.getLogger(getClass()).info("Running initialize for " + getClass().getSimpleName());
     // Populate any project-specific caches.
+    cacheCodeRubricsToAdvices();
   }
 
 
@@ -135,34 +141,34 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
       if (concepts.keySet().size() == mapRecord.getMapEntries().size()) {
 
         //
-        // PREDICATE: Group 1/Priority 1 map entries that have a target must have an outcome
+        // PREDICATE: Group 1/Priority 1 map entries that have a target must have a relationship
         //
         for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
           final MapEntry entry = mapRecord.getMapEntries().get(i);
           if (entry.getMapGroup() == 1 && entry.getMapPriority() == 1 && !entry.getTargetId().equals("") && entry.getMapRelation() == null) {
-            result.addError("Entry 1/1 has a target, and must be assigned an Outcome.");
+            result.addError("Entry 1/1 has a target, and must be assigned a Map Relationship.");
           }
         }
 
         //
-        // PREDICATE: Only Group 1/Priority 1 map entries can have an outcome
+        // PREDICATE: Only Group 1/Priority 1 map entries can have a relationship
         //
         for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
           final MapEntry entry = mapRecord.getMapEntries().get(i);
           if ((entry.getMapGroup() != 1 || entry.getMapPriority() != 1) && entry.getMapRelation() != null) {
             result.addError("Entry " + entry.getMapGroup() + "/" + entry.getMapPriority()
-                + " cannot be assigned an Outcome - outcomes are only allowed on entry 1/1.");
+                + " cannot be assigned a Map Relationship - outcomes are only allowed on entry 1/1.");
           }
         }          
         
         //
-        // PREDICATE: Map entries that have no target cannot have an outcome
+        // PREDICATE: Map entries that have no target cannot have a Map Relationship
         //
         for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
           final MapEntry entry = mapRecord.getMapEntries().get(i);
           if (entry.getTargetId().equals("") && entry.getMapRelation() != null) {
             result.addError("Entry " + entry.getMapGroup() + "/" + entry.getMapPriority()
-            + " has no target, and cannot be assigned an Outcome.");
+            + " has no target, and cannot be assigned a Map Relationship.");
           }
         }        
         
@@ -204,6 +210,44 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
           }
         }            
         
+        //
+        // PREDICATE: Map entries with a target cannot have an Unmappable Reason
+        //
+        for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+          final MapEntry entry = mapRecord.getMapEntries().get(i);
+          Boolean unmappableReasonPresent = false;
+          for (AdditionalMapEntryInfo additionalMapEntryInfo : entry
+              .getAdditionalMapEntryInfos()) {
+            if (additionalMapEntryInfo.getField().equals("Unmappable Reason")) {
+              unmappableReasonPresent = true;
+              break;
+            }
+          }
+          if (!entry.getTargetId().equals("") && unmappableReasonPresent) {
+            result.addError("Entry " + entry.getMapGroup() + "/" + entry.getMapPriority()
+            + " has a target, and cannot be assigned an Unmappable Reason.");
+          }
+        }         
+        
+        //
+        // PREDICATE: Map entries that have no target must have an Unmappable Reason
+        //
+        for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+          final MapEntry entry = mapRecord.getMapEntries().get(i);
+          Boolean unmappableReasonPresent = false;
+          for (AdditionalMapEntryInfo additionalMapEntryInfo : entry
+              .getAdditionalMapEntryInfos()) {
+            if (additionalMapEntryInfo.getField().equals("Unmappable Reason")) {
+              unmappableReasonPresent = true;
+              break;
+            }
+          }
+          if (entry.getTargetId().equals("") && !unmappableReasonPresent) {
+            result.addError("Entry " + entry.getMapGroup() + "/" + entry.getMapPriority()
+            + " has no target, and must be assigned an Unmappable Reason.");
+          }
+        }            
+                
 //        //
 //        // PREDICATE: for map entries that have the relation "not exact match",
 //        // they must also be assigned a Grade.
@@ -366,27 +410,40 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
       advices.clear();
       advices.addAll(notComputed);
 
+      //2024-02-04 - requested to be removed by CIHI
+//      //
+//      // PREDICATE: If map grade = B or C, then map advice is required.
+//      // ACTION: add advice: Requires additional qualifier 2 and/or qualifier 3
+//      //
+//      final String requiresAdditionalQualifier = "Requires additional qualifier 2 and/or qualifier 3";
+//
+//      Set<AdditionalMapEntryInfo> additionalMapInfos = mapEntry.getAdditionalMapEntryInfos();
+//      Boolean hasGradeBorC = false;
+//      for (AdditionalMapEntryInfo additionalMapEntryInfo : additionalMapInfos) {
+//        if (additionalMapEntryInfo.getName().contains("Grade|B")
+//            || additionalMapEntryInfo.getName().contains("Grade|C")) {
+//          hasGradeBorC = true;
+//        }
+//      }
+//
+//      if (hasGradeBorC) {
+//        if (!TerminologyUtility.hasAdvice(mapEntry, requiresAdditionalQualifier)) {
+//          advices.add(TerminologyUtility.getAdvice(mapProject, requiresAdditionalQualifier));
+//        }
+//      }
+
       //
-      // PREDICATE: If map grade = B or C, then map advice is required.
-      // ACTION: add advice: Requires additional qualifier 2 and/or qualifier 3
+      // PREDICATE: code rubric is listed in CODE_RUBRICS_TO_ADVICES.txt
+      // ACTION: add the listed advice(s)
       //
-      final String requiresAdditionalQualifier = "Requires additional qualifier 2 and/or qualifier 3";
-
-      Set<AdditionalMapEntryInfo> additionalMapInfos = mapEntry.getAdditionalMapEntryInfos();
-      Boolean hasGradeBorC = false;
-      for (AdditionalMapEntryInfo additionalMapEntryInfo : additionalMapInfos) {
-        if (additionalMapEntryInfo.getName().contains("Grade|B")
-            || additionalMapEntryInfo.getName().contains("Grade|C")) {
-          hasGradeBorC = true;
+      if (codeRubricToAdvicesMap.containsKey(getRubric(mapEntry.getTargetId()))) {
+        for (final String adviceStr : codeRubricToAdvicesMap.get(getRubric(mapEntry.getTargetId()))) {
+          if (!TerminologyUtility.hasAdvice(mapEntry, adviceStr)) {
+            advices.add(TerminologyUtility.getAdvice(mapProject, adviceStr));
+          }
         }
-      }
-
-      if (hasGradeBorC) {
-        if (!TerminologyUtility.hasAdvice(mapEntry, requiresAdditionalQualifier)) {
-          advices.add(TerminologyUtility.getAdvice(mapProject, requiresAdditionalQualifier));
-        }
-      }
-
+      }      
+      
       // Deduplicate advices
 
       MapAdviceList mapAdviceList = new MapAdviceListJpa();
@@ -528,6 +585,71 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
       throw e;
     } finally {
       contentService.close();
+    }
+  }
+  
+  /**
+   * Cache the explicit code to advices map.
+   *
+   * @throws Exception the exception
+   */
+  private void cacheCodeRubricsToAdvices() throws Exception {
+
+    // Check if map is already cached
+    if (!codeRubricToAdvicesMap.isEmpty()) {
+      return;
+    }
+
+    Logger.getLogger(CCIProjectSpecificAlgorithmHandler.class)
+        .info("Caching the code rubric to advices map");
+
+    codeRubricToAdvicesMap = new HashMap<>();
+
+    final Properties config = ConfigUtility.getConfigProperties();
+    final String dataDir = config.getProperty("data.dir");
+    if (dataDir == null) {
+      throw new Exception("Config file must specify a data.dir property");
+    }
+
+    // Check preconditions
+    if (!new File(dataDir + "/CCI/CODE_RUBRICS_TO_ADVICES.txt").exists()) {
+      throw new Exception(
+          "Specified input file missing: " + dataDir + "/CCI/CODE_RUBRICS_TO_ADVICES.txt");
+    }
+
+    // Open reader and service
+    BufferedReader codeListReader =
+        new BufferedReader(new FileReader(new File(dataDir + "/CCI/CODE_RUBRICS_TO_ADVICES.txt")));
+
+    String line = null;
+
+    while ((line = codeListReader.readLine()) != null) {
+      String tokens[] = line.split("\t");
+      final String codeRubric = tokens[0].trim();
+      final String advice = tokens[1].trim();
+      if (codeRubricToAdvicesMap.get(codeRubric) == null) {
+        codeRubricToAdvicesMap.put(codeRubric, new HashSet<>());
+      }
+      final Set<String> advices = codeRubricToAdvicesMap.get(codeRubric);
+      advices.add(advice);
+      codeRubricToAdvicesMap.put(codeRubric, advices);
+    }
+
+    codeListReader.close();
+  }
+  /**
+   * Take a code, and return its rubric.
+   * The Rubric is the first 5 alpha-numeric characters (not including periods)
+   * e.g. 1.AA.13.HA-C2 has a Rubric of 1.AA.13
+   *
+   * @throws Exception the exception
+   */
+  private String getRubric(String code) throws Exception{
+    if(code != null && code.length()>=7) {
+      return code.substring(0,7);
+    }
+    else {
+      return null;
     }
   }
 }
