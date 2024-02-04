@@ -522,7 +522,7 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
         for (MapEntry mapEntry : existingMapRecord.getMapEntries()) {
           String mapTargetId = mapEntry.getTargetId();
           // If parent is mapped to No Target, don't do pre-assigning
-          if(mapTargetId == null || mapTargetId == "") {
+          if(mapTargetId == null || mapTargetId.equals("")) {
             existingMapRecord = null;
           }
           // Otherwise, modify targetId to the 5 digit rubric level, and lookup the updated concept name
