@@ -41,6 +41,9 @@ public class NorwayReplacementTranslationReport
   /** The Constant LOG. */
   private static final Logger LOGGER =
       LoggerFactory.getLogger(NorwayReplacementTranslationReport.class);
+  
+  /**  The Constant COLUMN_DELIMITER. */
+  private static final String COLUMN_DELIMITER = "\t";
 
   /**
    * Instantiates an empty {@link NorwayReplacementTranslationReport}.
@@ -969,14 +972,14 @@ public class NorwayReplacementTranslationReport
         final String inactivationIndicator =
             conceptInactivationIndicators.get(conceptId);
         final String inactiveConceptInfo =
-            conceptId + "\t" + conceptIdToFSN.get(conceptId) + "\t"
-                + (conceptIdToPTNO.get(conceptId) != null ? "no" : "en") + "\t"
+            conceptId + COLUMN_DELIMITER + conceptIdToFSN.get(conceptId) + COLUMN_DELIMITER
+                + (conceptIdToPTNO.get(conceptId) != null ? "no" : "en") + COLUMN_DELIMITER
                 + (conceptIdToPTNO.get(conceptId) != null
                     ? conceptIdToPTNO.get(conceptId)
                     : conceptIdToPTEN.get(conceptId))
-                + "\t" + (helseplattformensConceptIds.contains(conceptId)
+                + COLUMN_DELIMITER + (helseplattformensConceptIds.contains(conceptId)
                     ? "TRUE" : "FALSE")
-                + "\t" +
+                + COLUMN_DELIMITER +
                 // Display Norway ICD10 maps targets if available, otherwise use
                 // International targets
                 (norwayMappedConceptsAndTargets.get(conceptId) != null
@@ -988,7 +991,7 @@ public class NorwayReplacementTranslationReport
                                 internationalMappedConceptsAndTargets
                                     .get(conceptId))
                             : "")
-                + "\t" +
+                + COLUMN_DELIMITER +
                 // Do the same for Norway ICPC map targets
                 (norwayMappedConceptsAndICPCTargets.get(conceptId) != null
                     ? String.join(", ",
@@ -999,7 +1002,7 @@ public class NorwayReplacementTranslationReport
                                 internationalMappedConceptsAndICPCTargets
                                     .get(conceptId))
                             : "")
-                + "\t" + inactivationIndicator;
+                + COLUMN_DELIMITER + inactivationIndicator;
         if (conceptAssociationTargets.get(conceptId) == null) {
           results.add(inactiveConceptInfo);
         } else {
@@ -1037,13 +1040,13 @@ public class NorwayReplacementTranslationReport
                           : internationalMappedConceptsAndICPCTargetsInactive
                               .get(targetId));
 
-              final String targetConceptInfo = associationTerm + "\t" + targetId
-                  + "\t" + conceptIdToFSN.get(targetId) + "\t"
-                  + (conceptIdToPTNO.get(targetId) != null ? "no" : "en") + "\t"
+              final String targetConceptInfo = associationTerm + COLUMN_DELIMITER + targetId
+                  + COLUMN_DELIMITER + conceptIdToFSN.get(targetId) + COLUMN_DELIMITER
+                  + (conceptIdToPTNO.get(targetId) != null ? "no" : "en") + COLUMN_DELIMITER
                   + (conceptIdToPTNO.get(targetId) != null
                       ? conceptIdToPTNO.get(targetId)
                       : conceptIdToPTEN.get(targetId))
-                  + "\t" + "\t" +
+                  + COLUMN_DELIMITER + COLUMN_DELIMITER +
                   // Display Norway maps targets if available, otherwise use
                   // International targets
                   (norwayMappedConceptsAndTargets.get(targetId) != null
@@ -1055,7 +1058,7 @@ public class NorwayReplacementTranslationReport
                                   internationalMappedConceptsAndTargets
                                       .get(targetId))
                               : "")
-                  + "\t" +
+                  + COLUMN_DELIMITER +
                   // Do the same for Norway ICPC map targets
                   (norwayMappedConceptsAndICPCTargets.get(targetId) != null
                       ? String.join(", ",
@@ -1067,7 +1070,7 @@ public class NorwayReplacementTranslationReport
                                       .get(targetId))
                               : "");
 
-              results.add(inactiveConceptInfo + "\t" + targetConceptInfo);
+              results.add(inactiveConceptInfo + COLUMN_DELIMITER + targetConceptInfo);
             }
           }
         }
