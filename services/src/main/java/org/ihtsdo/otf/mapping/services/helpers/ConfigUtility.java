@@ -3,18 +3,25 @@
  */
 package org.ihtsdo.otf.mapping.services.helpers;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -40,18 +47,22 @@ import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.ihtsdo.otf.mapping.helpers.Configurable;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
-import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
-import org.ihtsdo.otf.mapping.model.MapProject;
+
 
 /**
  * Loads and serves configuration.
  */
 public class ConfigUtility {
 
+  /** The Constant LOGGER. */
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(ConfigUtility.class); 
+  
   /** The config. */
   public static Properties config = null;
 
@@ -132,11 +143,11 @@ public class ConfigUtility {
         label = candidateLabel;
       }
     } else {
-      Logger.getLogger(ConfigUtility.class.getName())
+      LOGGER
           .info("  label.prop resource cannot be found, using default");
 
     }
-    Logger.getLogger(ConfigUtility.class.getName())
+    LOGGER
         .info("  run.config.label = " + label);
 
     return label;
@@ -151,13 +162,13 @@ public class ConfigUtility {
   public synchronized static Properties getConfigProperties() throws Exception {
     if (config == null) {
       String configFileName = System.getProperty("run.config");
-      Logger.getLogger(ConfigUtility.class.getName())
+      LOGGER
           .info("  run.config = " + configFileName);
       config = new Properties();
       FileReader in = new FileReader(new File(configFileName));
       config.load(in);
       in.close();
-      Logger.getLogger(ConfigUtility.class).info("  properties = " + config);
+      LOGGER.info("  properties = " + config);
     }
     return config;
   }
@@ -200,13 +211,13 @@ public class ConfigUtility {
     throws Exception {
     if (testConfig == null) {
       String configFileName = System.getProperty("run.config.test");
-      Logger.getLogger(ConfigUtility.class.getName())
+      LOGGER
           .info("  run.config.test = " + configFileName);
       testConfig = new Properties();
       FileReader in = new FileReader(new File(configFileName));
       testConfig.load(in);
       in.close();
-      Logger.getLogger(ConfigUtility.class)
+      LOGGER
           .info("  properties = " + testConfig);
     }
     return testConfig;
@@ -269,7 +280,7 @@ public class ConfigUtility {
       throw new Exception("Unexpected null classkey " + classKey);
     }
     String handlerClass = config.getProperty(classKey);
-    Logger.getLogger(ConfigUtility.class).info("Instantiate " + handlerClass);
+    LOGGER.info("Instantiate " + handlerClass);
     T handler =
         ConfigUtility.newHandlerInstance(handlerName, handlerClass, type);
 
@@ -284,7 +295,7 @@ public class ConfigUtility {
             .substring((property + "." + handlerName + ".").length());
         if (!shortKey.contains("secret") 
             && !shortKey.contains("client")) {
-          Logger.getLogger(ConfigUtility.class).info(" property " + shortKey
+          LOGGER.info(" property " + shortKey
               + " = " + config.getProperty(key.toString()));
         }
         handlerProperties.put(shortKey, config.getProperty(key.toString()));
@@ -845,4 +856,63 @@ public class ConfigUtility {
 	    genericUserCookie = sb.toString();
 	    return genericUserCookie;
 	  }
+  	
+  /**
+   * Creates the file from a List<String>
+   *
+   * @param filename the filename
+   * @param reportRows the report rows
+   * @return the string
+   * @throws Exception the exception
+   */
+  public static File createFile(final String filename,
+    final List<String> reportRows) throws Exception {
+
+    // Add results to file
+    final File resultFile =
+        new File(System.getProperty("java.io.tmpdir") + filename + ".txt");
+    LOGGER.info("Created result file: " + resultFile.getAbsolutePath());
+
+    try (final FileWriter writer = new FileWriter(resultFile);) {
+      for (String str : reportRows) {
+        writer.write(str);
+        writer.write(System.getProperty("line.separator"));
+      }
+    }
+
+    return resultFile;
+  }
+
+  /**
+   * Zip a file.
+   *
+   * @param filename the filename
+   * @param resultFile the result file
+   * @return the file
+   * @throws Exception the exception
+   */
+  public static File zipFile(final String filename, final File resultFile)
+    throws Exception {
+
+    // Zip results file
+    final File zipFile =
+        new File(System.getProperty("java.io.tmpdir") + filename + ".zip");
+
+    try (final FileOutputStream fos = new FileOutputStream(zipFile);
+        final ZipOutputStream zipOut =
+            new ZipOutputStream(new BufferedOutputStream(fos));
+        final FileInputStream fis = new FileInputStream(resultFile);) {
+
+      final ZipEntry ze = new ZipEntry(resultFile.getName());
+      LOGGER.info("Zipping the file: " + resultFile.getName());
+      zipOut.putNextEntry(ze);
+      byte[] tmp = new byte[4 * 1024];
+      int size = 0;
+      while ((size = fis.read(tmp)) != -1) {
+        zipOut.write(tmp, 0, size);
+      }
+
+      return zipFile;
+    }
+  }
 }
