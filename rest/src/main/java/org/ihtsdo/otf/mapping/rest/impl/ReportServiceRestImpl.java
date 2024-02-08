@@ -743,19 +743,20 @@ public class ReportServiceRestImpl extends RootServiceRestImpl
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public String executeReport(@PathParam("userName") final String userName,
-    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") final String authToken,
+  public String executeReport(@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") final String authToken,
     @ApiParam(value = "Name of the report to execute", required = true) final String reportName)
     throws Exception {
 
     LOGGER.info("RESTful call (Report):  /report/execute for " + reportName);
 
+    String userName = "";
+    
     try {
       // authorize call
-      authorizeApp(authToken, MapUserRole.SPECIALIST, "run report",
+      userName = authorizeApp(authToken, MapUserRole.SPECIALIST, "run report",
           securityService);
 
-      if (StringUtils.isNotBlank(reportName)) {
+      if (StringUtils.isBlank(reportName)) {
         throw new Exception("Report name is blank.");
       }
 
