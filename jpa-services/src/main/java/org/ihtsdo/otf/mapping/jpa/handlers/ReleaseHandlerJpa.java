@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -54,6 +55,7 @@ import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MetadataServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
+import org.ihtsdo.otf.mapping.model.AdditionalMapEntryInfo;
 import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapProject;
@@ -663,7 +665,11 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             // convert this map entry into a complex map ref set member
             ComplexMapRefSetMember member =
                 getComplexMapRefSetMemberForMapEntry(mapEntry, mapRecord, mapProject, concept);
-
+            
+            for (AdditionalMapEntryInfo entry : mapEntry.getAdditionalMapEntryInfos()) {
+            	// for future additional map entry handling
+            }
+            
             if (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap) {
               // Run member through simple/complex conversion
               // This makes sure what was read from the database
@@ -1109,7 +1115,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     return filename;
   }
 
-  /**
+/**
    * Write delta.
    *
    * @param activeMembers the active members
@@ -3560,18 +3566,27 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @return the header
    */
   private String getHeader(MapProject mapProject) {
+	// collect unique fields in additional map entry information
+	String mapEntryFields = mapProject.getAdditionalMapEntryInfos().stream()
+          .map(AdditionalMapEntryInfo::getField)
+          .collect(Collectors.toSet())
+          .stream()
+          .collect(Collectors.joining("\t"));
+  	if(!mapEntryFields.isEmpty()) {
+  		mapEntryFields = "\t" + mapEntryFields;
+  	}
     if (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap) {
       if (mapProject.getReverseMapPattern() != null && mapProject.getReverseMapPattern() == true) {
-        return "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tmapSource";
+        return "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tmapSource" + mapEntryFields;
       } else {
-        return "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tmapTarget";
+        return "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\tmapTarget" + mapEntryFields;
       }
     } else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap) {
       return "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\t"
-          + "mapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId";
+          + "mapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId" + mapEntryFields;
     } else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ExtendedMap) {
       return "id\teffectiveTime\tactive\tmoduleId\trefsetId\treferencedComponentId\t"
-          + "mapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId\tmapCategoryId";
+          + "mapGroup\tmapPriority\tmapRule\tmapAdvice\tmapTarget\tcorrelationId\tmapCategoryId" + mapEntryFields;
     }
     return null;
   }
