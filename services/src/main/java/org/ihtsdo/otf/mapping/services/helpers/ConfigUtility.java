@@ -1,5 +1,5 @@
 /*
- *    Copyright 2016 West Coast Informatics, LLC
+ *    Copyright 2024 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.services.helpers;
 
@@ -40,19 +40,19 @@ import javax.mail.internet.MimeMultipart;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.client.Invocation.Builder;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.ihtsdo.otf.mapping.helpers.Configurable;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Loads and serves configuration.
@@ -61,18 +61,20 @@ public class ConfigUtility {
 
   /** The Constant LOGGER. */
   private static final Logger LOGGER =
-      LoggerFactory.getLogger(ConfigUtility.class); 
-  
+      LoggerFactory.getLogger(ConfigUtility.class);
+
   /** The config. */
   public static Properties config = null;
 
   /** The test config. */
   public static Properties testConfig = null;
-  
-  protected static Map<Long, Set<String>> projectIdToScopeConcepts = new HashMap<>();
-  
-  protected static String genericUserCookie = null;
 
+  /**  The project id to scope concepts. */
+  protected static Map<Long, Set<String>> projectIdToScopeConcepts =
+      new HashMap<>();
+
+  /**  The generic user cookie. */
+  protected static String genericUserCookie = null;
 
   /**
    * The get local config file.
@@ -91,10 +93,9 @@ public class ConfigUtility {
    * @throws Exception the exception
    */
   public static String getLocalConfigFolder() throws Exception {
-    return System.getProperty("user.home") + "/.mapping-service/" + getConfigLabel()
-        + "/";
+    return System.getProperty("user.home") + "/.mapping-service/"
+        + getConfigLabel() + "/";
   }
-  
 
   /**
    * Gets the scope concepts for map project.
@@ -105,18 +106,18 @@ public class ConfigUtility {
   public static Set<String> getScopeConceptsForMapProject(Long id) {
     return projectIdToScopeConcepts.get(id);
   }
-  
+
   /**
    * Sets the scope concepts for map project.
    *
    * @param id the id
    * @param scopeConcepts the scope concepts
    */
-  public static void setScopeConceptsForMapProject(Long id, Set<String> scopeConcepts) {
+  public static void setScopeConceptsForMapProject(Long id,
+    Set<String> scopeConcepts) {
     projectIdToScopeConcepts.put(id, scopeConcepts);
   }
 
-  
   /**
    * Get the config label.
    *
@@ -143,16 +144,14 @@ public class ConfigUtility {
         label = candidateLabel;
       }
     } else {
-      LOGGER
-          .info("  label.prop resource cannot be found, using default");
+      LOGGER.info("  label.prop resource cannot be found, using default");
 
     }
-    LOGGER
-        .info("  run.config.label = " + label);
+    LOGGER.info("  run.config.label = " + label);
 
     return label;
   }
-  
+
   /**
    * Returns the config properties.
    * @return the config properties
@@ -162,8 +161,7 @@ public class ConfigUtility {
   public synchronized static Properties getConfigProperties() throws Exception {
     if (config == null) {
       String configFileName = System.getProperty("run.config");
-      LOGGER
-          .info("  run.config = " + configFileName);
+      LOGGER.info("  run.config = " + configFileName);
       config = new Properties();
       FileReader in = new FileReader(new File(configFileName));
       config.load(in);
@@ -211,14 +209,12 @@ public class ConfigUtility {
     throws Exception {
     if (testConfig == null) {
       String configFileName = System.getProperty("run.config.test");
-      LOGGER
-          .info("  run.config.test = " + configFileName);
+      LOGGER.info("  run.config.test = " + configFileName);
       testConfig = new Properties();
       FileReader in = new FileReader(new File(configFileName));
       testConfig.load(in);
       in.close();
-      LOGGER
-          .info("  properties = " + testConfig);
+      LOGGER.info("  properties = " + testConfig);
     }
     return testConfig;
   }
@@ -293,10 +289,9 @@ public class ConfigUtility {
       if (key.toString().startsWith(property + "." + handlerName + ".")) {
         String shortKey = key.toString()
             .substring((property + "." + handlerName + ".").length());
-        if (!shortKey.contains("secret") 
-            && !shortKey.contains("client")) {
-          LOGGER.info(" property " + shortKey
-              + " = " + config.getProperty(key.toString()));
+        if (!shortKey.contains("secret") && !shortKey.contains("client")) {
+          LOGGER.info(" property " + shortKey + " = "
+              + config.getProperty(key.toString()));
         }
         handlerProperties.put(shortKey, config.getProperty(key.toString()));
       }
@@ -431,8 +426,9 @@ public class ConfigUtility {
    * @param authFlag the auth flag
    * @throws Exception the exception
    */
-  public static void sendEmailWithAttachment(String subject, String from, String recipients,
-    String body, Properties details, String filename, boolean authFlag) throws Exception {
+  public static void sendEmailWithAttachment(String subject, String from,
+    String recipients, String body, Properties details, String filename,
+    boolean authFlag) throws Exception {
     // avoid sending mail if disabled
     if ("false".equals(details.getProperty("mail.enabled"))) {
       // do nothing
@@ -447,7 +443,7 @@ public class ConfigUtility {
     }
 
     MimeMessage msg = new MimeMessage(session);
-    
+
     // Create the message part
     BodyPart messageBodyPart = new MimeBodyPart();
 
@@ -456,13 +452,13 @@ public class ConfigUtility {
       messageBodyPart.setContent(body.toString(), "text/html; charset=utf-8");
     } else {
       messageBodyPart.setText(body.toString());
-    }    
-    
+    }
+
     // Create a multipart message
     Multipart multipart = new MimeMultipart();
-    
-    multipart.addBodyPart(messageBodyPart);    
-    
+
+    multipart.addBodyPart(messageBodyPart);
+
     // Set the attachment
     messageBodyPart = new MimeBodyPart();
     DataSource source = new FileDataSource(filename);
@@ -471,7 +467,7 @@ public class ConfigUtility {
     multipart.addBodyPart(messageBodyPart);
 
     // Send the complete message parts
-    msg.setContent(multipart);    
+    msg.setContent(multipart);
 
     msg.setSubject(subject);
     msg.setFrom(new InternetAddress(from));
@@ -481,8 +477,8 @@ public class ConfigUtility {
           new InternetAddress(recipient));
     }
     Transport.send(msg);
-  }  
-  
+  }
+
   /**
    * SMTPAuthenticator.
    */
@@ -738,7 +734,7 @@ public class ConfigUtility {
       }
     }
   };
-  
+
   /**
    * To arabic.
    *
@@ -788,77 +784,83 @@ public class ConfigUtility {
     return number
         .matches("^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$");
   }
-  
-	/**
-	 * Indicates whether or not the server is active.
-	 *
-	 * @return <code>true</code> if so, <code>false</code> otherwise
-	 * @throws Exception
-	 *             the exception
-	 */
-	public static boolean isServerActive() throws Exception {
-		if (config == null)
-			config = ConfigUtility.getConfigProperties();
 
-		try {
-			// Attempt to logout to verify service is up (this works like a
-			// "ping").
-			Client client = ClientBuilder.newClient();
-			WebTarget target = client.target(config.getProperty("base.url") 
-					+ "/security/logout/user/id/dummy");
-
-			Response response = target.request(MediaType.TEXT_PLAIN).post(null);			
-			if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-				return true;
-			} else {
-				return false;
-			}
-		} catch (Exception e) {
-			return false;
-		}
-	}
-	
-	  /**
-  	 * Gets the generic user cookie.
-  	 *
-  	 * @return the generic user cookie
-  	 * @throws Exception the exception
-  	 */
-  	public static String getGenericUserCookie() throws Exception {
-
-	    if (genericUserCookie != null) {
-	      return genericUserCookie;
-	    }
-
-	    // Login the generic user, then save and return the cookie
-	    final String userName =
-	        ConfigUtility.getConfigProperties().getProperty("generic.user.userName");
-	    final String password =
-	        ConfigUtility.getConfigProperties().getProperty("generic.user.password");
-	    final String imsUrl =
-	        ConfigUtility.getConfigProperties().getProperty("generic.user.authenticationUrl");
-
-	    Client client = ClientBuilder.newClient();
-	    WebTarget target = client.target(imsUrl + "/authenticate");
-	    Builder builder = target.request(MediaType.APPLICATION_JSON);
-
-	    Response response = builder.post(
-	        Entity.json("{ \"login\": \"" + userName + "\", \"password\": \"" + password + "\" }"));
-	    if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
-	      throw new LocalException("Authentication of generic user failed. " + response.toString());
-	    }
-	    Map<String, NewCookie> genericUserCookies = response.getCookies();
-	    StringBuilder sb = new StringBuilder();
-	    for (String key : genericUserCookies.keySet()) {
-	      sb.append(genericUserCookies.get(key));
-	      sb.append(";");
-	    }
-	    genericUserCookie = sb.toString();
-	    return genericUserCookie;
-	  }
-  	
   /**
-   * Creates the file from a List<String>
+   * Indicates whether or not the server is active.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   * @throws Exception the exception
+   */
+  public static boolean isServerActive() throws Exception {
+    if (config == null)
+      config = ConfigUtility.getConfigProperties();
+
+    try {
+      // Attempt to logout to verify service is up (this works like a
+      // "ping").
+      Client client = ClientBuilder.newClient();
+      WebTarget target = client.target(
+          config.getProperty("base.url") + "/security/logout/user/id/dummy");
+
+      Response response = target.request(MediaType.TEXT_PLAIN).post(null);
+      if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  /**
+   * Gets the generic user cookie.
+   *
+   * @return the generic user cookie
+   * @throws Exception the exception
+   */
+  public static String getGenericUserCookie() throws Exception {
+
+    if (genericUserCookie != null) {
+      return genericUserCookie;
+    }
+
+    // Login the generic user, then save and return the cookie
+    final String userName = ConfigUtility.getConfigProperties()
+        .getProperty("generic.user.userName");
+    final String password = ConfigUtility.getConfigProperties()
+        .getProperty("generic.user.password");
+    final String imsUrl = ConfigUtility.getConfigProperties()
+        .getProperty("generic.user.authenticationUrl");
+
+    if (StringUtils.isAnyBlank(userName, password, imsUrl)) {
+      throw new LocalException("Verify properties for generic.user are set.");
+    }
+
+    final Client client = ClientBuilder.newClient();
+    final WebTarget target = client.target(imsUrl + "/authenticate");
+    final Builder builder = target.request(MediaType.APPLICATION_JSON);
+
+    try (Response response = builder.post(Entity.json("{ \"login\": \""
+        + userName + "\", \"password\": \"" + password + "\" }"));) {
+      if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
+        throw new LocalException(
+            "Authentication of generic user failed. " + response.toString());
+      }
+      final Map<String, NewCookie> genericUserCookies = response.getCookies();
+      final StringBuilder sb = new StringBuilder();
+      for (final String key : genericUserCookies.keySet()) {
+        sb.append(genericUserCookies.get(key));
+        sb.append(";");
+      }
+
+      genericUserCookie = sb.toString();
+      return genericUserCookie;
+    }
+  }
+
+  /**
+   * Creates the file from a List<String>.
    *
    * @param filename the filename
    * @param reportRows the report rows
