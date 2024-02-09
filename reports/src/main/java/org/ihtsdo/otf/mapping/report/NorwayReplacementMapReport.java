@@ -41,9 +41,9 @@ public class NorwayReplacementMapReport extends AbstractOtfMappingReport {
   private static final Logger LOGGER =
       LoggerFactory.getLogger(NorwayReplacementMapReport.class);
 
-  /**  The Constant COLUMN_DELIMITER. */
+  /** The Constant COLUMN_DELIMITER. */
   private static final String COLUMN_DELIMITER = "\t";
-  
+
   /**
    * Instantiates an empty {@link NorwayReplacementMapReport}.
    */
@@ -64,6 +64,8 @@ public class NorwayReplacementMapReport extends AbstractOtfMappingReport {
 
       final Client client = ClientBuilder.newClient();
       final String accept = MediaType.APPLICATION_JSON;
+      // @SuppressWarnings("unused")
+      // final String genericUserCookie = ConfigUtility.getGenericUserCookie();
 
       String searchAfter = null;
       final ObjectMapper mapper = new ObjectMapper();
@@ -118,12 +120,9 @@ public class NorwayReplacementMapReport extends AbstractOtfMappingReport {
         final WebTarget target = client.target(targetUri);
         LOGGER.info(targetUri);
 
-        final Response response = target.request(accept)
-            .header("Cookie", ConfigUtility.getGenericUserCookie()).get();
+        final Response response = target.request(accept).get();
         final String resultString = response.readEntity(String.class);
-        if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-          // n/a
-        } else {
+        if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
           throw new LocalException(
               "Unexpected terminology server failure. Message = "
                   + resultString);
@@ -182,12 +181,9 @@ public class NorwayReplacementMapReport extends AbstractOtfMappingReport {
       WebTarget target = client.target(targetUri);
       LOGGER.info(targetUri);
 
-      Response response = target.request(accept)
-          .header("Cookie", ConfigUtility.getGenericUserCookie()).get();
+      Response response = target.request(accept).get();
       String resultString = response.readEntity(String.class);
-      if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-        // n/a
-      } else {
+      if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
         throw new LocalException(
             "Unexpected terminology server failure. Message = " + resultString);
       }
@@ -230,9 +226,7 @@ public class NorwayReplacementMapReport extends AbstractOtfMappingReport {
 
         response = target.request(accept).get();
         resultString = response.readEntity(String.class);
-        if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-          // n/a
-        } else {
+        if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
           throw new LocalException(
               "Unexpected terminology server failure. Message = "
                   + resultString);
@@ -279,9 +273,7 @@ public class NorwayReplacementMapReport extends AbstractOtfMappingReport {
 
         response = target.request(accept).get();
         resultString = response.readEntity(String.class);
-        if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-          // n/a
-        } else {
+        if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
           throw new LocalException(
               "Unexpected terminology server failure. Message = "
                   + resultString);
@@ -405,9 +397,7 @@ public class NorwayReplacementMapReport extends AbstractOtfMappingReport {
 
         response = target.request(accept).get();
         resultString = response.readEntity(String.class);
-        if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-          // n/a
-        } else {
+        if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
           throw new LocalException(
               "Unexpected terminology server failure. Message = "
                   + resultString);
@@ -585,9 +575,7 @@ public class NorwayReplacementMapReport extends AbstractOtfMappingReport {
 
         response = target.request(accept).get();
         resultString = response.readEntity(String.class);
-        if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-          // n/a
-        } else {
+        if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
           throw new LocalException(
               "Unexpected terminology server failure. Message = "
                   + resultString);
@@ -756,12 +744,11 @@ public class NorwayReplacementMapReport extends AbstractOtfMappingReport {
         target = client.target(targetUri);
         LOGGER.info(targetUri);
 
-        response = target.request(accept)
-            .header("Cookie", ConfigUtility.getGenericUserCookie()).get();
+        // response = target.request(accept)
+        // .header("Cookie", genericUserCookie).get();
+        response = target.request(accept).get();
         resultString = response.readEntity(String.class);
-        if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-          // n/a
-        } else {
+        if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
           throw new LocalException(
               "Unexpected terminology server failure. Message = "
                   + resultString);
@@ -867,12 +854,11 @@ public class NorwayReplacementMapReport extends AbstractOtfMappingReport {
         target = client.target(targetUri);
         LOGGER.info(targetUri);
 
-        response = target.request(accept)
-            .header("Cookie", ConfigUtility.getGenericUserCookie()).get();
+        // response = target.request(accept)
+        // .header("Cookie", genericUserCookie).get();
+        response = target.request(accept).get();
         resultString = response.readEntity(String.class);
-        if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-          // n/a
-        } else {
+        if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
           throw new LocalException(
               "Unexpected terminology server failure. Message = "
                   + resultString);
@@ -983,38 +969,38 @@ public class NorwayReplacementMapReport extends AbstractOtfMappingReport {
 
         final String inactivationIndicator =
             conceptInactivationIndicators.get(conceptId);
-        final String inactiveConceptInfo =
-            conceptId + COLUMN_DELIMITER + conceptIdToFSN.get(conceptId) + COLUMN_DELIMITER
-                + (conceptIdToPTNO.get(conceptId) != null ? "no" : "en") + COLUMN_DELIMITER
-                + (conceptIdToPTNO.get(conceptId) != null
-                    ? conceptIdToPTNO.get(conceptId)
-                    : conceptIdToPTEN.get(conceptId))
-                + COLUMN_DELIMITER + (helseplattformensConceptIds.contains(conceptId)
-                    ? "TRUE" : "FALSE")
-                + COLUMN_DELIMITER +
-                // Display Norway ICD10 maps targets if available, otherwise use
-                // International targets
-                (norwayMappedConceptsAndTargets.get(conceptId) != null
+        final String inactiveConceptInfo = conceptId + COLUMN_DELIMITER
+            + conceptIdToFSN.get(conceptId) + COLUMN_DELIMITER
+            + (conceptIdToPTNO.get(conceptId) != null ? "no" : "en")
+            + COLUMN_DELIMITER
+            + (conceptIdToPTNO.get(conceptId) != null
+                ? conceptIdToPTNO.get(conceptId)
+                : conceptIdToPTEN.get(conceptId))
+            + COLUMN_DELIMITER
+            + (helseplattformensConceptIds.contains(conceptId) ? "TRUE"
+                : "FALSE")
+            + COLUMN_DELIMITER +
+            // Display Norway ICD10 maps targets if available, otherwise use
+            // International targets
+            (norwayMappedConceptsAndTargets.get(conceptId) != null
+                ? String.join(", ",
+                    norwayMappedConceptsAndTargets.get(conceptId))
+                : internationalMappedConceptsAndTargets.get(conceptId) != null
                     ? String.join(", ",
-                        norwayMappedConceptsAndTargets.get(conceptId))
-                    : internationalMappedConceptsAndTargets
-                        .get(conceptId) != null
-                            ? String.join(", ",
-                                internationalMappedConceptsAndTargets
-                                    .get(conceptId))
-                            : "")
-                + COLUMN_DELIMITER +
-                // Do the same for Norway ICPC map targets
-                (norwayMappedConceptsAndICPCTargets.get(conceptId) != null
-                    ? String.join(", ",
-                        norwayMappedConceptsAndICPCTargets.get(conceptId))
-                    : internationalMappedConceptsAndICPCTargets
-                        .get(conceptId) != null
-                            ? String.join(", ",
-                                internationalMappedConceptsAndICPCTargets
-                                    .get(conceptId))
-                            : "")
-                + COLUMN_DELIMITER + inactivationIndicator;
+                        internationalMappedConceptsAndTargets.get(conceptId))
+                    : "")
+            + COLUMN_DELIMITER +
+            // Do the same for Norway ICPC map targets
+            (norwayMappedConceptsAndICPCTargets.get(conceptId) != null
+                ? String.join(", ",
+                    norwayMappedConceptsAndICPCTargets.get(conceptId))
+                : internationalMappedConceptsAndICPCTargets
+                    .get(conceptId) != null
+                        ? String.join(", ",
+                            internationalMappedConceptsAndICPCTargets
+                                .get(conceptId))
+                        : "")
+            + COLUMN_DELIMITER + inactivationIndicator;
         if (conceptAssociationTargets.get(conceptId) == null) {
           results.add(inactiveConceptInfo);
         } else {
@@ -1052,9 +1038,11 @@ public class NorwayReplacementMapReport extends AbstractOtfMappingReport {
                           : internationalMappedConceptsAndICPCTargetsInactive
                               .get(targetId));
 
-              final String targetConceptInfo = associationTerm + COLUMN_DELIMITER + targetId
-                  + COLUMN_DELIMITER + conceptIdToFSN.get(targetId) + COLUMN_DELIMITER
-                  + (conceptIdToPTNO.get(targetId) != null ? "no" : "en") + COLUMN_DELIMITER
+              final String targetConceptInfo = associationTerm
+                  + COLUMN_DELIMITER + targetId + COLUMN_DELIMITER
+                  + conceptIdToFSN.get(targetId) + COLUMN_DELIMITER
+                  + (conceptIdToPTNO.get(targetId) != null ? "no" : "en")
+                  + COLUMN_DELIMITER
                   + (conceptIdToPTNO.get(targetId) != null
                       ? conceptIdToPTNO.get(targetId)
                       : conceptIdToPTEN.get(targetId))
@@ -1066,9 +1054,10 @@ public class NorwayReplacementMapReport extends AbstractOtfMappingReport {
                           norwayMappedConceptsAndTargets.get(targetId))
                       : internationalMappedConceptsAndTargets
                           .get(targetId) != null
-                              ? String.join(", ",
-                                  internationalMappedConceptsAndTargets
-                                      .get(targetId))
+                              ? String
+                                  .join(", ",
+                                      internationalMappedConceptsAndTargets
+                                          .get(targetId))
                               : "")
                   + COLUMN_DELIMITER +
                   // Do the same for Norway ICPC map targets
@@ -1082,7 +1071,8 @@ public class NorwayReplacementMapReport extends AbstractOtfMappingReport {
                                       .get(targetId))
                               : "");
 
-              results.add(inactiveConceptInfo + COLUMN_DELIMITER + targetConceptInfo);
+              results.add(
+                  inactiveConceptInfo + COLUMN_DELIMITER + targetConceptInfo);
             }
           }
         }
@@ -1106,11 +1096,14 @@ public class NorwayReplacementMapReport extends AbstractOtfMappingReport {
       LOGGER.info("Norway Replacement Map Report completed.");
 
     } catch (Exception e) {
-      emailReportError("Error generating Norway Replacement Map Report",
-          "report.send.notification.recipients.norway.",
-          "There was an error generating the Normay Replacement Map Report.  Please contact support for assistance.");
 
       LOGGER.error("ERROR", e);
+
+      emailReportError("Error generating Norway Replacement Map Report",
+          "report.send.notification.recipients.norway."
+              + NorwayReplacementMapReport.class.getSimpleName(),
+          "There was an error generating the Normay Replacement Map Report.  Please contact support for assistance.");
+
       throw new Exception("Norway Replacement Map Report failed to complete",
           e);
     }

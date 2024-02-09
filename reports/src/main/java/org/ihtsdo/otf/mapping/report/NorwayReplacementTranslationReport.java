@@ -41,8 +41,8 @@ public class NorwayReplacementTranslationReport
   /** The Constant LOG. */
   private static final Logger LOGGER =
       LoggerFactory.getLogger(NorwayReplacementTranslationReport.class);
-  
-  /**  The Constant COLUMN_DELIMITER. */
+
+  /** The Constant COLUMN_DELIMITER. */
   private static final String COLUMN_DELIMITER = "\t";
 
   /**
@@ -63,6 +63,8 @@ public class NorwayReplacementTranslationReport
 
       final Client client = ClientBuilder.newClient();
       final String accept = MediaType.APPLICATION_JSON;
+      // @SuppressWarnings("unused")
+      // final String genericUserCookie = ConfigUtility.getGenericUserCookie();
 
       String searchAfter = null;
       final ObjectMapper mapper = new ObjectMapper();
@@ -107,20 +109,16 @@ public class NorwayReplacementTranslationReport
 
         int returnedConceptsCount = 0;
 
-        String targetUri =
+        final String targetUri =
             "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/MAIN%2FSNOMEDCT-NO%2FREFSETS/members?referenceSet=88161000202101&limit="
                 + limit
                 + (searchAfter != null ? "&searchAfter=" + searchAfter : "");
-        WebTarget target = client.target(targetUri);
-        target = client.target(targetUri);
+        final WebTarget target = client.target(targetUri);
         LOGGER.info(targetUri);
 
-        Response response = target.request(accept)
-            .header("Cookie", ConfigUtility.getGenericUserCookie()).get();
-        String resultString = response.readEntity(String.class);
-        if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-          // n/a
-        } else {
+        final Response response = target.request(accept).get();
+        final String resultString = response.readEntity(String.class);
+        if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
           throw new LocalException(
               "Unexpected terminology server failure. Message = "
                   + resultString);
@@ -181,12 +179,9 @@ public class NorwayReplacementTranslationReport
       target = client.target(targetUri);
       LOGGER.info(targetUri);
 
-      Response response = target.request(accept)
-          .header("Cookie", ConfigUtility.getGenericUserCookie()).get();
+      Response response = target.request(accept).get();
       String resultString = response.readEntity(String.class);
-      if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-        // n/a
-      } else {
+      if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
         throw new LocalException(
             "Unexpected terminology server failure. Message = " + resultString);
       }
@@ -235,9 +230,7 @@ public class NorwayReplacementTranslationReport
 
         response = target.request(accept).get();
         resultString = response.readEntity(String.class);
-        if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-          // n/a
-        } else {
+        if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
           throw new LocalException(
               "Unexpected terminology server failure. Message = "
                   + resultString);
@@ -284,9 +277,7 @@ public class NorwayReplacementTranslationReport
 
         response = target.request(accept).get();
         resultString = response.readEntity(String.class);
-        if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-          // n/a
-        } else {
+        if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
           throw new LocalException(
               "Unexpected terminology server failure. Message = "
                   + resultString);
@@ -408,9 +399,7 @@ public class NorwayReplacementTranslationReport
 
         response = target.request(accept).get();
         resultString = response.readEntity(String.class);
-        if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-          // n/a
-        } else {
+        if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
           throw new LocalException(
               "Unexpected terminology server failure. Message = "
                   + resultString);
@@ -586,9 +575,7 @@ public class NorwayReplacementTranslationReport
 
         response = target.request(accept).get();
         resultString = response.readEntity(String.class);
-        if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-          // n/a
-        } else {
+        if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
           throw new LocalException(
               "Unexpected terminology server failure. Message = "
                   + resultString);
@@ -756,12 +743,9 @@ public class NorwayReplacementTranslationReport
         target = client.target(targetUri);
         LOGGER.info(targetUri);
 
-        response = target.request(accept)
-            .header("Cookie", ConfigUtility.getGenericUserCookie()).get();
+        response = target.request(accept).get();
         resultString = response.readEntity(String.class);
-        if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-          // n/a
-        } else {
+        if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
           throw new LocalException(
               "Unexpected terminology server failure. Message = "
                   + resultString);
@@ -772,12 +756,12 @@ public class NorwayReplacementTranslationReport
         // get total amount
         // Get concepts returned in this call (up to 1000)
         for (final JsonNode conceptNode : doc.get("items")) {
-          String conceptId = conceptNode.get("conceptId").asText();
-          String inactivationIndicator = conceptNode
+          final String conceptId = conceptNode.get("conceptId").asText();
+          final String inactivationIndicator = conceptNode
               .get("inactivationIndicator").asText().replaceAll("_", " ");
           conceptInactivationIndicators.put(conceptId, inactivationIndicator);
 
-          JsonNode associationTargetsNode =
+          final JsonNode associationTargetsNode =
               conceptNode.findValue("associationTargets");
           if (associationTargetsNode == null
               || associationTargetsNode.size() == 0
@@ -786,9 +770,9 @@ public class NorwayReplacementTranslationReport
             continue;
           }
 
-          Entry<String, JsonNode> entry =
+          final Entry<String, JsonNode> entry =
               associationTargetsNode.fields().next();
-          String associationType = entry.getKey().replaceAll("_", " ")
+          final String associationType = entry.getKey().replaceAll("_", " ")
               + " association reference set";
           String values = entry.getValue().toString();
           if (values.contains("[")) {
@@ -797,10 +781,10 @@ public class NorwayReplacementTranslationReport
           values = values.replaceAll("\"", "");
           // Keep track of all replacement concept Ids for description lookup
           // later
-          for (String value : values.split(",")) {
+          for (final String value : values.split(",")) {
             replacementConceptIds.add(value);
           }
-          Map<String, String> associationTargets = new HashMap<>();
+          final Map<String, String> associationTargets = new HashMap<>();
           associationTargets.put(associationType, values);
           conceptAssociationTargets.put(conceptId, associationTargets);
         }
@@ -818,14 +802,14 @@ public class NorwayReplacementTranslationReport
        * "caseSignificance": "CASE_INSENSITIVE", "effectiveTime": "20220415" },
        */
 
-      Map<String, String> conceptIdToFSN = new HashMap<>();
-      Map<String, String> conceptIdToPTEN = new HashMap<>();
-      Map<String, String> conceptIdToPTNO = new HashMap<>();
+      final Map<String, String> conceptIdToFSN = new HashMap<>();
+      final Map<String, String> conceptIdToPTEN = new HashMap<>();
+      final Map<String, String> conceptIdToPTNO = new HashMap<>();
 
       batchSize = 10;
       counter = 0;
 
-      List<String> inactiveAndReplacementTargets = new ArrayList<>();
+      final List<String> inactiveAndReplacementTargets = new ArrayList<>();
       inactiveAndReplacementTargets.addAll(inactivedMappedScopeConcepts);
       inactiveAndReplacementTargets.addAll(replacementConceptIds);
 
@@ -855,12 +839,9 @@ public class NorwayReplacementTranslationReport
         target = client.target(targetUri);
         LOGGER.info(targetUri);
 
-        response = target.request(accept)
-            .header("Cookie", ConfigUtility.getGenericUserCookie()).get();
+        response = target.request(accept).get();
         resultString = response.readEntity(String.class);
-        if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-          // n/a
-        } else {
+        if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
           throw new LocalException(
               "Unexpected terminology server failure. Message = "
                   + resultString);
@@ -871,23 +852,23 @@ public class NorwayReplacementTranslationReport
         // get total amount
         // Get concepts returned in this call (up to 1000)
         for (final JsonNode conceptNode : doc.get("items")) {
-          String active = conceptNode.get("active").asText();
+          final String active = conceptNode.get("active").asText();
           if (active.equals("false")) {
             continue;
           }
 
-          String conceptId = conceptNode.get("conceptId").asText();
-          String type = conceptNode.get("type").asText();
-          String term = conceptNode.get("term").asText();
+          final String conceptId = conceptNode.get("conceptId").asText();
+          final String type = conceptNode.get("type").asText();
+          final String term = conceptNode.get("term").asText();
 
           if (type.equals("FSN")) {
             conceptIdToFSN.put(conceptId, term);
             continue;
           }
 
-          String lang = conceptNode.get("lang").asText();
+          final String lang = conceptNode.get("lang").asText();
 
-          JsonNode acceptabilityMapNode =
+          final JsonNode acceptabilityMapNode =
               conceptNode.findValue("acceptabilityMap");
           if (acceptabilityMapNode == null || acceptabilityMapNode.size() == 0
               || acceptabilityMapNode.fields() == null) {
@@ -971,48 +952,48 @@ public class NorwayReplacementTranslationReport
 
         final String inactivationIndicator =
             conceptInactivationIndicators.get(conceptId);
-        final String inactiveConceptInfo =
-            conceptId + COLUMN_DELIMITER + conceptIdToFSN.get(conceptId) + COLUMN_DELIMITER
-                + (conceptIdToPTNO.get(conceptId) != null ? "no" : "en") + COLUMN_DELIMITER
-                + (conceptIdToPTNO.get(conceptId) != null
-                    ? conceptIdToPTNO.get(conceptId)
-                    : conceptIdToPTEN.get(conceptId))
-                + COLUMN_DELIMITER + (helseplattformensConceptIds.contains(conceptId)
-                    ? "TRUE" : "FALSE")
-                + COLUMN_DELIMITER +
-                // Display Norway ICD10 maps targets if available, otherwise use
-                // International targets
-                (norwayMappedConceptsAndTargets.get(conceptId) != null
+        final String inactiveConceptInfo = conceptId + COLUMN_DELIMITER
+            + conceptIdToFSN.get(conceptId) + COLUMN_DELIMITER
+            + (conceptIdToPTNO.get(conceptId) != null ? "no" : "en")
+            + COLUMN_DELIMITER
+            + (conceptIdToPTNO.get(conceptId) != null
+                ? conceptIdToPTNO.get(conceptId)
+                : conceptIdToPTEN.get(conceptId))
+            + COLUMN_DELIMITER
+            + (helseplattformensConceptIds.contains(conceptId) ? "TRUE"
+                : "FALSE")
+            + COLUMN_DELIMITER +
+            // Display Norway ICD10 maps targets if available, otherwise use
+            // International targets
+            (norwayMappedConceptsAndTargets.get(conceptId) != null
+                ? String.join(", ",
+                    norwayMappedConceptsAndTargets.get(conceptId))
+                : internationalMappedConceptsAndTargets.get(conceptId) != null
                     ? String.join(", ",
-                        norwayMappedConceptsAndTargets.get(conceptId))
-                    : internationalMappedConceptsAndTargets
-                        .get(conceptId) != null
-                            ? String.join(", ",
-                                internationalMappedConceptsAndTargets
-                                    .get(conceptId))
-                            : "")
-                + COLUMN_DELIMITER +
-                // Do the same for Norway ICPC map targets
-                (norwayMappedConceptsAndICPCTargets.get(conceptId) != null
-                    ? String.join(", ",
-                        norwayMappedConceptsAndICPCTargets.get(conceptId))
-                    : internationalMappedConceptsAndICPCTargets
-                        .get(conceptId) != null
-                            ? String.join(", ",
-                                internationalMappedConceptsAndICPCTargets
-                                    .get(conceptId))
-                            : "")
-                + COLUMN_DELIMITER + inactivationIndicator;
+                        internationalMappedConceptsAndTargets.get(conceptId))
+                    : "")
+            + COLUMN_DELIMITER +
+            // Do the same for Norway ICPC map targets
+            (norwayMappedConceptsAndICPCTargets.get(conceptId) != null
+                ? String.join(", ",
+                    norwayMappedConceptsAndICPCTargets.get(conceptId))
+                : internationalMappedConceptsAndICPCTargets
+                    .get(conceptId) != null
+                        ? String.join(", ",
+                            internationalMappedConceptsAndICPCTargets
+                                .get(conceptId))
+                        : "")
+            + COLUMN_DELIMITER + inactivationIndicator;
         if (conceptAssociationTargets.get(conceptId) == null) {
           results.add(inactiveConceptInfo);
         } else {
-          for (String associationTerm : conceptAssociationTargets.get(conceptId)
-              .keySet()) {
-            String associationTargets =
+          for (final String associationTerm : conceptAssociationTargets
+              .get(conceptId).keySet()) {
+            final String associationTargets =
                 conceptAssociationTargets.get(conceptId).get(associationTerm);
-            List<String> targetIds =
+            final List<String> targetIds =
                 Arrays.asList(associationTargets.split(","));
-            for (String targetId : targetIds) {
+            for (final String targetId : targetIds) {
 
               // If active maps are present for this concept, use them. If no
               // active maps exist, use the inactive ones.
@@ -1040,9 +1021,11 @@ public class NorwayReplacementTranslationReport
                           : internationalMappedConceptsAndICPCTargetsInactive
                               .get(targetId));
 
-              final String targetConceptInfo = associationTerm + COLUMN_DELIMITER + targetId
-                  + COLUMN_DELIMITER + conceptIdToFSN.get(targetId) + COLUMN_DELIMITER
-                  + (conceptIdToPTNO.get(targetId) != null ? "no" : "en") + COLUMN_DELIMITER
+              final String targetConceptInfo = associationTerm
+                  + COLUMN_DELIMITER + targetId + COLUMN_DELIMITER
+                  + conceptIdToFSN.get(targetId) + COLUMN_DELIMITER
+                  + (conceptIdToPTNO.get(targetId) != null ? "no" : "en")
+                  + COLUMN_DELIMITER
                   + (conceptIdToPTNO.get(targetId) != null
                       ? conceptIdToPTNO.get(targetId)
                       : conceptIdToPTEN.get(targetId))
@@ -1054,9 +1037,10 @@ public class NorwayReplacementTranslationReport
                           norwayMappedConceptsAndTargets.get(targetId))
                       : internationalMappedConceptsAndTargets
                           .get(targetId) != null
-                              ? String.join(", ",
-                                  internationalMappedConceptsAndTargets
-                                      .get(targetId))
+                              ? String
+                                  .join(", ",
+                                      internationalMappedConceptsAndTargets
+                                          .get(targetId))
                               : "")
                   + COLUMN_DELIMITER +
                   // Do the same for Norway ICPC map targets
@@ -1070,7 +1054,8 @@ public class NorwayReplacementTranslationReport
                                       .get(targetId))
                               : "");
 
-              results.add(inactiveConceptInfo + COLUMN_DELIMITER + targetConceptInfo);
+              results.add(
+                  inactiveConceptInfo + COLUMN_DELIMITER + targetConceptInfo);
             }
           }
         }
@@ -1088,17 +1073,21 @@ public class NorwayReplacementTranslationReport
       emailReportFile(
           "[OTF-Mapping-Tool] Norway Replacement Translation Report",
           zipFile.getAbsolutePath(),
-          "report.send.notification.recipients.norway.",
+          "report.send.notification.recipients.norway."
+              + NorwayReplacementTranslationReport.class.getSimpleName(),
           "Hello,\n\nThe Norway replacement translation report has been generated.");
 
       LOGGER.info("Norway Replacement Translation Report completed.");
 
     } catch (Exception e) {
-      emailReportError("Error generating Norway Replacement Translation Report",
-          "report.send.notification.recipients.norway.",
-          "There was an error generating the Normay Replacement Translation Report.  Please contact support for assistance.");
 
       LOGGER.error("ERROR", e);
+
+      emailReportError("Error generating Norway Replacement Translation Report",
+          "report.send.notification.recipients.norway."
+              + NorwayReplacementTranslationReport.class.getSimpleName(),
+          "There was an error generating the Normay Replacement Translation Report.  Please contact support for assistance.");
+
       throw new Exception(
           "Norway Replacement Translation Report failed to complete", e);
     }
