@@ -56,13 +56,13 @@ public class AbstractOtfMappingReport {
       throw e;
     }
   }
-  
 
   /**
    * Email report error.
    *
    * @param emailSubject the email subject
-   * @param notificationRecipientsPropertyKey the notification recipients property key
+   * @param notificationRecipientsPropertyKey the notification recipients
+   *          property key
    * @param notificationMessage the notification message
    * @throws Exception the exception
    */
@@ -83,10 +83,10 @@ public class AbstractOtfMappingReport {
           ? config.getProperty("mail.smtp.from")
           : config.getProperty("mail.smtp.user");
 
-     final Properties props = getEmailProperties(config);
+      final Properties props = getEmailProperties(config);
 
-      ConfigUtility.sendEmail(emailSubject, from,
-          notificationRecipients, notificationMessage, props,
+      ConfigUtility.sendEmail(emailSubject, from, notificationRecipients,
+          notificationMessage, props,
           "true".equals(config.getProperty("mail.smtp.auth")));
 
     } catch (final Exception e) {
@@ -94,7 +94,7 @@ public class AbstractOtfMappingReport {
       throw e;
     }
   }
-  
+
   /**
    * Returns the email properties.
    *
@@ -102,16 +102,17 @@ public class AbstractOtfMappingReport {
    * @return the email properties
    */
   private static Properties getEmailProperties(final Properties config) {
-    
+
     final Properties emailProps = new Properties();
     emailProps.put("mail.smtp.user", config.getProperty("mail.smtp.user"));
-    emailProps.put("mail.smtp.password", config.getProperty("mail.smtp.password"));
+    emailProps.put("mail.smtp.password",
+        config.getProperty("mail.smtp.password"));
     emailProps.put("mail.smtp.host", config.getProperty("mail.smtp.host"));
     emailProps.put("mail.smtp.port", config.getProperty("mail.smtp.port"));
     emailProps.put("mail.smtp.starttls.enable",
         config.getProperty("mail.smtp.starttls.enable"));
     emailProps.put("mail.smtp.auth", config.getProperty("mail.smtp.auth"));
-    
+
     return emailProps;
   }
 
