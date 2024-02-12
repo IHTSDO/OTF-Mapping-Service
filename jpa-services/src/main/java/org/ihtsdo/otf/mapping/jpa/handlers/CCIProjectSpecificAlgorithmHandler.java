@@ -177,7 +177,7 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
         }
 
         //
-        // PREDICATE: Map entries with a target must have a grade
+        // PREDICATE: Only map entry 1/1 can have a grade
         //
         for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
           final MapEntry entry = mapRecord.getMapEntries().get(i);
@@ -188,9 +188,8 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
               break;
             }
           }
-          if (!entry.getTargetId().equals("") && !gradePresent) {
-            result.addError("Entry " + entry.getMapGroup() + "/" + entry.getMapPriority()
-                + " has a target, and must be assigned a grade.");
+          if (gradePresent && !(entry.getMapGroup() == 1 && entry.getMapPriority() == 1)) {
+            result.addError("Only Entry 1/1 can be assiged a grade.");
           }
         }
 
@@ -212,6 +211,24 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
           }
         }
 
+        //
+        // PREDICATE: Map entries cannot have more than one grade
+        //
+        for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+          final MapEntry entry = mapRecord.getMapEntries().get(i);
+          int gradesPresent = 0;
+          for (AdditionalMapEntryInfo additionalMapEntryInfo : entry
+              .getAdditionalMapEntryInfos()) {
+            if (additionalMapEntryInfo.getField().equals("Grade")) {
+              gradesPresent++;
+            }
+          }
+          if (gradesPresent > 1) {
+            result.addError("An entry can only have 0 or 1 Grades, but Entry " + entry.getMapGroup() + "/" + entry.getMapPriority()
+            + " has " + gradesPresent);
+          }
+        }             
+        
         //
         // PREDICATE: Map entries with a target cannot have an Unmappable Reason
         //
