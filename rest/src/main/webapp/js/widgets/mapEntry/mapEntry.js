@@ -63,6 +63,7 @@ angular
 			for(var i = 0; i < $scope.additionalMapEntryFields.length; i++){
 				$scope.allowableMapEntryInfos[$scope.additionalMapEntryFields[i]] = 
 				$scope.getAllowableMapEntryInfosForField($scope.entry, $scope.additionalMapEntryFields[i]);
+				sortByKey($scope.allowableMapEntryInfos[$scope.additionalMapEntryFields[i]],'value');
 			}
 
 
@@ -231,6 +232,7 @@ angular
           entry.targetName = null;
           entry.mapRelation = null;
           entry.mapAdvice = [];
+		  entry['additionalMapEntryInfo'] = [];
 
           console
             .debug('broadcast mapEntryWidget.notification.clearTargetConcept');
