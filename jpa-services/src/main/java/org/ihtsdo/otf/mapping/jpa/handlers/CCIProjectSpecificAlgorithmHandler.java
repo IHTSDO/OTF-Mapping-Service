@@ -139,17 +139,18 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
       // Only process these rules if these is a single entry per group
       if (concepts.keySet().size() == mapRecord.getMapEntries().size()) {
 
-        //
-        // PREDICATE: Group 1/Priority 1 map entries that have a target must
-        // have a relationship
-        //
-        for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
-          final MapEntry entry = mapRecord.getMapEntries().get(i);
-          if (entry.getMapGroup() == 1 && entry.getMapPriority() == 1
-              && !entry.getTargetId().equals("") && entry.getMapRelation() == null) {
-            result.addError("Entry 1/1 has a target, and must be assigned a Map Relationship.");
-          }
-        }
+        // 2024/02/13 - removing relationship requirement for now, per CIHI request.
+//        //
+//        // PREDICATE: Group 1/Priority 1 map entries that have a target must
+//        // have a relationship
+//        //
+//        for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+//          final MapEntry entry = mapRecord.getMapEntries().get(i);
+//          if (entry.getMapGroup() == 1 && entry.getMapPriority() == 1
+//              && !entry.getTargetId().equals("") && entry.getMapRelation() == null) {
+//            result.addError("Entry 1/1 has a target, and must be assigned a Map Relationship.");
+//          }
+//        }
 
         //
         // PREDICATE: Only Group 1/Priority 1 map entries can have a
@@ -173,23 +174,6 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
           if (entry.getTargetId().equals("") && entry.getMapRelation() != null) {
             result.addError("Entry " + entry.getMapGroup() + "/" + entry.getMapPriority()
                 + " has no target, and cannot be assigned a Map Relationship.");
-          }
-        }
-
-        //
-        // PREDICATE: Only map entry 1/1 can have a grade
-        //
-        for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
-          final MapEntry entry = mapRecord.getMapEntries().get(i);
-          Boolean gradePresent = false;
-          for (AdditionalMapEntryInfo additionalMapEntryInfo : entry.getAdditionalMapEntryInfos()) {
-            if (additionalMapEntryInfo.getField().equals("Grade")) {
-              gradePresent = true;
-              break;
-            }
-          }
-          if (gradePresent && !(entry.getMapGroup() == 1 && entry.getMapPriority() == 1)) {
-            result.addError("Only Entry 1/1 can be assiged a grade.");
           }
         }
 
