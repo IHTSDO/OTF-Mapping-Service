@@ -182,6 +182,7 @@ angular
 				for(var i = 0; i < $scope.additionalMapEntryFields.length; i++){
 					$scope.allowableMapEntryInfos[$scope.additionalMapEntryFields[i]] = 
 					$scope.getAllowableMapEntryInfosForField($scope.entry, $scope.additionalMapEntryFields[i]);
+					sortByKey($scope.allowableMapEntryInfos[$scope.additionalMapEntryFields[i]],'value');
 				}
 
               } else {
@@ -245,6 +246,13 @@ angular
           sortByKey($scope.allowableAdvices, 'detail');
           $scope.allowableMapRelations = getAllowableRelations($scope.entry,
             $scope.project.mapRelation);
+
+			$scope.allowableMapEntryInfos = {};
+			for(var i = 0; i < $scope.additionalMapEntryFields.length; i++){
+				$scope.allowableMapEntryInfos[$scope.additionalMapEntryFields[i]] = 
+				$scope.getAllowableMapEntryInfosForField($scope.entry, $scope.additionalMapEntryFields[i]);
+				sortByKey($scope.allowableMapEntryInfos[$scope.additionalMapEntryFields[i]],'value');
+			}
 
           // if project rule based, reset rule to TRUE
           if ($scope.project.ruleBased) {
