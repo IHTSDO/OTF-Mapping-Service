@@ -48,7 +48,7 @@ public class ReportDefinitionJpa implements ReportDefinition {
   private String name;
 
   /** The report description. */
-  @Column(length = 4000, nullable = true)
+  @Column(name = "[description]", length = 4000, nullable = true)
   private String description;
 
   /** The is diff report. */
