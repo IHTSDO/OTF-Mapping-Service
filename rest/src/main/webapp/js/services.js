@@ -112,6 +112,31 @@ mapProjectApp
           return notes[projectId];
         };
 
+		// Transform the entries into a post-coordinated expression
+		this.getFullExpression = function(mapRecord) {
+			
+		  var fullExpression = "";
+		  var currentGroup = "0";
+	
+		    for(var i=0; i<mapRecord.mapEntry.length; i++){
+			  // Every time we encounter a new group, start a new chunk
+		      if(mapRecord.mapEntry[i].mapGroup != currentGroup){
+		          fullExpression = fullExpression + "/" + mapRecord.mapEntry[i].targetId;
+				  currentGroup = mapRecord.mapEntry[i].mapGroup;
+		      }
+			  // If it's not a new group, append the target
+			  else{
+				fullExpression = fullExpression + "&" + mapRecord.mapEntry[i].targetId;
+			  }
+		    }
+	
+		  // Remove the leading "/"
+		  fullExpression = fullExpression.substring(1);
+	
+		  return fullExpression;
+			
+		}
+
         // Prep query
         this.prepQuery = function(query) {
           if (!query) {
