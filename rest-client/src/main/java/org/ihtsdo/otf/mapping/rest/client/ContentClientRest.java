@@ -169,6 +169,55 @@ public class ContentClientRest extends RootClientRest
 		}
 	}
 	
+    @Override
+    public void loadMapRecordRf2ComplexMapAdditionalInfo(String inputFile, Boolean memberFlag,
+            Boolean recordFlag, String refsetId, String workflowStatus, String userName, String authToken)
+            throws Exception {
+
+        Logger.getLogger(getClass())
+                .debug("Content Client - load map record RF2 complex additional info "
+                        + " input file:" + inputFile + " member flag:"
+                        + memberFlag + " record flag:" + recordFlag
+                        + " refset Id:" + refsetId
+                        + " workflow status: " + workflowStatus
+                        + " user name:" + userName);
+
+        validateNotEmpty(inputFile, "inputFile");
+
+        StringBuilder qs = new StringBuilder();
+        qs.append("?");
+        if (recordFlag != null) {
+            qs.append("memberFlag=").append(memberFlag);
+        }
+        if (recordFlag != null) {
+            qs.append("recordFlag=").append(recordFlag);
+        }
+        if (refsetId != null) {
+          qs.append("refsetId=").append(refsetId);
+        }
+        if (workflowStatus != null) {
+            qs.append("workflowStatus=").append(workflowStatus);
+        }
+        if (userName != null) {
+          qs.append("userName=").append(userName);
+      }
+
+        final Client client = ClientBuilder.newClient();
+        final WebTarget target = client.target(config.getProperty("base.url")
+                + URL_SERVICE_ROOT + "/map/record/rf2/complex/additionalInfo" + qs.toString());
+
+        final Response response = target.request(MediaType.TEXT_PLAIN)
+                .header("Authorization", authToken).put(Entity.text(inputFile));
+
+        if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+            // do nothing
+        } else {
+            if (response.getStatus() != 204)
+                throw new Exception(
+                        "Unexpected status " + response.getStatus());
+        }
+    }	
+	
 	  @Override
 	  public void appendMapRecordRf2ComplexMap(String inputFile, String refsetId,
 	    String workflowStatus, String authToken) throws Exception {
