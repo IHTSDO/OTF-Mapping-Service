@@ -1,3 +1,12 @@
+/*
+ * Copyright 2020 Wci Informatics - All Rights Reserved.
+ *
+ * NOTICE:  All information contained herein is, and remains the property of Wci Informatics
+ * The intellectual and technical concepts contained herein are proprietary to
+ * Wci Informatics and may be covered by U.S. and Foreign Patents, patents in process,
+ * and are protected by trade secret or copyright law.  Dissemination of this information
+ * or reproduction of this material is strictly forbidden.
+ */
 package org.ihtsdo.otf.mapping.jpa.services.rest;
 
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
@@ -168,6 +177,22 @@ public interface ContentServiceRest {
     String authToken) throws Exception;
 
   /**
+   * Load map record rf 2 complex map additional info.
+   *
+   * @param inputFile the input file
+   * @param memberFlag the member flag
+   * @param recordFlag the record flag
+   * @param refsetId the refset id
+   * @param workflowStatus the workflow status
+   * @param userName the user name
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  void loadMapRecordRf2ComplexMapAdditionalInfo(String inputFile, Boolean memberFlag,
+    Boolean recordFlag, String refsetId, String workflowStatus, String userName, 
+    String authToken) throws Exception;  
+  
+  /**
    * Append map record rf 2 complex map.
    *
    * @param inputFile the input file
@@ -248,8 +273,8 @@ public interface ContentServiceRest {
   void downloadTerminologyAtc(String authToken) throws Exception;
   
   /**
-   * Loads ATC data
-   * 
+   * Loads ATC data.
+   *
    * @param version The terminology version.
    * @param inputDir The directory where the input files are located.
    * @param authToken The auth token
@@ -267,8 +292,8 @@ public interface ContentServiceRest {
   void downloadTerminologyIcpc2NO(String authToken) throws Exception;  
   
   /**
-   * Loads ICPC-2 data
-   * 
+   * Loads ICPC-2 data.
+   *
    * @param version The terminology version.
    * @param inputDir The directory where the input files are located.
    * @param authToken The auth token
@@ -286,8 +311,8 @@ public interface ContentServiceRest {
   void downloadTerminologyIcd10NO(String authToken) throws Exception;  
   
   /**
-   * Loads icd10no data
-   * 
+   * Loads icd10no data.
+   *
    * @param version The terminology version.
    * @param inputDir The directory where the input files are located.
    * @param authToken The auth token
@@ -472,8 +497,8 @@ public interface ContentServiceRest {
 
   
   /**
-   * Loads Mims-Allergy data
-   * 
+   * Loads Mims-Allergy data.
+   *
    * @param authToken The auth token
    * @param mimsAllergyVersion The mims allergy version
    * @throws Exception The execution exception
