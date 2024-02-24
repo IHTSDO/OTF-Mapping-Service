@@ -67,6 +67,7 @@ import org.ihtsdo.otf.mapping.jpa.algo.GmdnDownloadAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.GmdnLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.ICD10NODownloadAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.ICPC2NODownloadAlgorithm;
+import org.ihtsdo.otf.mapping.jpa.algo.MapRecordRf2ComplexMapAdditionalInfoLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.MapRecordRf2ComplexMapAppenderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.MapRecordRf2ComplexMapLoaderAlgorithm;
 import org.ihtsdo.otf.mapping.jpa.algo.MapRecordRf2SimpleMapLoaderAlgorithm;
@@ -703,6 +704,49 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     }
   }
 
+  /* see superclass */
+  @Override
+  @PUT
+  @Path("/map/record/rf2/complex/additionalInfo")
+  @Consumes(MediaType.TEXT_PLAIN)
+  @ApiOperation(value = "Load complex RF2 map additional information", notes = "Load complex map additional information.")
+  public void loadMapRecordRf2ComplexMapAdditionalInfo(
+    @ApiParam(value = "RF2 input file", required = true) String inputFile,
+    @ApiParam(value = "Member flag", required = true) @QueryParam("memberFlag") Boolean memberFlag,
+    @ApiParam(value = "Record flag", required = true) @QueryParam("recordFlag") Boolean recordFlag,
+    @ApiParam(value = "Refset id", required = false) @QueryParam("refsetId") String refsetId,
+    @ApiParam(value = "Workflow status", required = true) @QueryParam("workflowStatus") String workflowStatus,
+    @ApiParam(value = "User name", required = false) @QueryParam("userName") String userName,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass())
+        .info("RESTful call (Content): /map/record/rf2/complex/additionalInfo");
+
+    // Track system level information
+    long startTimeOrig = System.nanoTime();
+
+    authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "load map record additional info",
+        securityService);
+
+    try (final MapRecordRf2ComplexMapAdditionalInfoLoaderAlgorithm algo =
+        new MapRecordRf2ComplexMapAdditionalInfoLoaderAlgorithm(inputFile, memberFlag,
+            recordFlag, refsetId, workflowStatus, userName);) {
+
+      algo.compute();
+
+      Logger.getLogger(getClass())
+          .info("Elapsed time = " + getTotalElapsedTimeStr(startTimeOrig));
+
+    } catch (Exception e) {
+      handleException(e, "trying to load complex map additional info");
+
+    } finally {
+      securityService.close();
+    }
+  }
+  
+  
   /* see superclass */
   @Override
   @PUT
