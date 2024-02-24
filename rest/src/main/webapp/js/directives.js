@@ -23,6 +23,8 @@ mapProjectAppDirectives.directive('otfMapRecordNarrow', function($sce, utilServi
       if (scope.project) {
         scope.notes = utilService.getNotes(scope.project.id);
       }
+	  scope.recordAsFullExpression = "TEST";
+	  //scope.recordAsFullExpression = utilService.getFullExpression(scope.record);
 
       // function to return trusted html code (for tooltip
       // content)
