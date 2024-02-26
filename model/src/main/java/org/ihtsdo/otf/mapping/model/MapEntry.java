@@ -1,3 +1,12 @@
+/*
+ * Copyright 2020 Wci Informatics - All Rights Reserved.
+ *
+ * NOTICE:  All information contained herein is, and remains the property of Wci Informatics
+ * The intellectual and technical concepts contained herein are proprietary to
+ * Wci Informatics and may be covered by U.S. and Foreign Patents, patents in process,
+ * and are protected by trade secret or copyright law.  Dissemination of this information
+ * or reproduction of this material is strictly forbidden.
+ */
 package org.ihtsdo.otf.mapping.model;
 
 import java.util.Set;
@@ -56,23 +65,51 @@ public interface MapEntry {
    */
   public void setTargetName(String targetName);
 
-//  /**
-//   * Gets the terminology note.  
-//   * This is a place where a terminology like ICD10 can decorate
-//   * the code with asterisk/dagger.
-//   * 
-//   * @return the terminology note
-//   */
-//  public String getTerminologyNote();
-//
-//  /**
-//   * Lists the terminology note.
-//   * 
-//   * @param terminologyNote the new terminology note
-//   */
-//  public void setTerminologyNote(String terminologyNote);
+  // /**
+  // * Gets the terminology note.
+  // * This is a place where a terminology like ICD10 can decorate
+  // * the code with asterisk/dagger.
+  // *
+  // * @return the terminology note
+  // */
+  // public String getTerminologyNote();
+  //
+  // /**
+  // * Lists the terminology note.
+  // *
+  // * @param terminologyNote the new terminology note
+  // */
+  // public void setTerminologyNote(String terminologyNote);
 
-  /** 
+  /**
+   * Returns the additional map entry info.
+   * 
+   * @return the additional map entry info
+   */
+  public Set<AdditionalMapEntryInfo> getAdditionalMapEntryInfos();
+
+  /**
+   * Sets the additionalMapEntryInfo.
+   * 
+   * @param additionalMapEntryInfo the additional Map Entry Info
+   */
+  public void setAdditionalMapEntryInfos(Set<AdditionalMapEntryInfo> additionalMapEntryInfo);
+
+  /**
+   * Adds the additional map entry info.
+   *
+   * @param additionalMapEntryInfo the additional map entry info
+   */
+  public void addAdditionalMapEntryInfo(AdditionalMapEntryInfo additionalMapEntryInfo);
+
+  /**
+   * Removes the additional map entry info.
+   *
+   * @param additionalMapEntryInfo the additional map entry info
+   */
+  public void removeAdditionalMapEntryInfo(AdditionalMapEntryInfo additionalMapEntryInfo);
+
+  /**
    * Returns the advices.
    * 
    * @return the advices
@@ -86,20 +123,6 @@ public interface MapEntry {
    */
   public void setMapAdvices(Set<MapAdvice> mapAdvices);
 
-  /** 
-   * Returns the additional map entry info.
-   * 
-   * @return the additional map entry info
-   */
-  public Set<AdditionalMapEntryInfo> getAdditionalMapEntryInfos();
-
-  /**
-   * Sets the additionalMapEntryInfo.
-   * 
-   * @param additionalMapEntryInfo the additional Map Entry Info
-   */
-  public void setAdditionalMapEntryInfos(Set<AdditionalMapEntryInfo> additionalMapEntryInfo);  
-  
   /**
    * Adds the advice.
    * 
