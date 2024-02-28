@@ -83,13 +83,6 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
     final ContentService contentService = new ContentServiceJpa();
 
     try {
-      // check that code has at least three characters, that the second
-      // character
-      // is a number, and does not contain a dash
-      if (!terminologyId.matches(".[0-9].*") || terminologyId.contains("-")) {
-        return false;
-      }
-
       // verify concept exists in database
       final Concept concept = contentService.getConcept(terminologyId,
           mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
