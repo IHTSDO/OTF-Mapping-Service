@@ -23,7 +23,7 @@ import org.ihtsdo.otf.mapping.model.AdditionalMapEntryInfo;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * The Map Note Jpa object
+ * The Map Note Jpa object.
  */
 @Entity
 @Table(name = "additional_map_entry_info")
@@ -37,12 +37,14 @@ public class AdditionalMapEntryInfoJpa implements AdditionalMapEntryInfo {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  /** The name. 
-   * This is a combination of field + "|" + value 
-   * Although this is duplication of information, it is needed for proper sorting and filtering in the UI*/
+  /**
+   * The name. This is a combination of field + "|" + value Although this is
+   * duplication of information, it is needed for proper sorting and filtering
+   * in the UI
+   */
   @Column(nullable = false, length = 4000)
   private String name;
-  
+
   /** The field. */
   @Column(nullable = false, length = 4000)
   private String field;
@@ -51,12 +53,15 @@ public class AdditionalMapEntryInfoJpa implements AdditionalMapEntryInfo {
   @Column(nullable = false, length = 4000)
   private String value;
 
-  /** Default constructor */
+  /**
+   *  Default constructor.
+   */
   public AdditionalMapEntryInfoJpa() {
   }
 
   /**
-   * Constructor
+   * Constructor.
+   *
    * @param id the id
    * @param name the name
    * @param field the field
@@ -71,7 +76,22 @@ public class AdditionalMapEntryInfoJpa implements AdditionalMapEntryInfo {
   }
 
   /**
-   * Return the id
+   * Instantiates a {@link AdditionalMapEntryInfoJpa} from the specified
+   * parameters.
+   *
+   * @param additionalMapEntryInfo the additional map entry info
+   */
+  public AdditionalMapEntryInfoJpa(AdditionalMapEntryInfo additionalMapEntryInfo) {
+    super();
+    this.id = additionalMapEntryInfo.getId();
+    this.name = additionalMapEntryInfo.getName();
+    this.field = additionalMapEntryInfo.getField();
+    this.value = additionalMapEntryInfo.getValue();
+  }
+
+  /**
+   * Return the id.
+   *
    * @return the id
    */
   @Override
@@ -80,7 +100,8 @@ public class AdditionalMapEntryInfoJpa implements AdditionalMapEntryInfo {
   }
 
   /**
-   * Set the id
+   * Set the id.
+   *
    * @param id the id
    */
   @Override
@@ -99,7 +120,7 @@ public class AdditionalMapEntryInfoJpa implements AdditionalMapEntryInfo {
   public void setName(String name) {
     this.name = name;
   }
-  
+
   /* see superclass */
   @Override
   public String getField() {
@@ -124,6 +145,7 @@ public class AdditionalMapEntryInfoJpa implements AdditionalMapEntryInfo {
     this.value = value;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -131,10 +153,11 @@ public class AdditionalMapEntryInfoJpa implements AdditionalMapEntryInfo {
    */
   @Override
   public String toString() {
-    return "AdditionalMapEntryInfo [id=" + id + ", name=" + name + ", field=" + field + ", value=" + value
-        + "]";
+    return "AdditionalMapEntryInfo [id=" + id + ", name=" + name + ", field=" + field + ", value="
+        + value + "]";
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 
@@ -150,6 +173,7 @@ public class AdditionalMapEntryInfoJpa implements AdditionalMapEntryInfo {
     return result;
   }
 
+  /* see superclass */
   /*
    * (non-Javadoc)
    * 

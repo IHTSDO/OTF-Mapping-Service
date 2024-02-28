@@ -169,6 +169,11 @@ public class MapEntryJpa implements MapEntry {
     for (MapAdvice mapAdvice : mapEntry.getMapAdvices()) {
       addMapAdvice(new MapAdviceJpa(mapAdvice));
     }
+    
+    // copy additional map entry infos
+    for (AdditionalMapEntryInfo additionalMapEntryInfo : mapEntry.getAdditionalMapEntryInfos()) {
+      addAdditionalMapEntryInfo(new AdditionalMapEntryInfoJpa(additionalMapEntryInfo));
+    }
 
     // copy entries
     if (mapEntry.getMapRelation() != null) {
@@ -249,21 +254,7 @@ public class MapEntryJpa implements MapEntry {
     this.mapRelation = mapRelation;
   }
 
-  /* see superclass */
-  @XmlElement(type = MapAdviceJpa.class, name = "mapAdvice")
-  @Override
-  public Set<MapAdvice> getMapAdvices() {
-    if (mapAdvices == null)
-      mapAdvices = new HashSet<>();// ensures proper serialization
-    return mapAdvices;
-  }
 
-  /* see superclass */
-  @Override
-  public void setMapAdvices(Set<MapAdvice> mapAdvices) {
-    this.mapAdvices = mapAdvices;
-  }
-  
   /* see superclass */
   @XmlElement(type = AdditionalMapEntryInfoJpa.class, name = "additionalMapEntryInfo")
   @Override
@@ -277,6 +268,33 @@ public class MapEntryJpa implements MapEntry {
   @Override
   public void setAdditionalMapEntryInfos(Set<AdditionalMapEntryInfo> additionalMapEntryInfos) {
     this.additionalMapEntryInfos = additionalMapEntryInfos;
+  }
+  
+  /* see superclass */
+  @Override
+  public void addAdditionalMapEntryInfo(AdditionalMapEntryInfo additionalMapEntryInfo) {
+    additionalMapEntryInfos.add(additionalMapEntryInfo);
+  }
+
+  /* see superclass */
+  @Override
+  public void removeAdditionalMapEntryInfo(AdditionalMapEntryInfo additionalMapEntryInfo) {
+    additionalMapEntryInfos.remove(additionalMapEntryInfo);
+  }
+  
+  /* see superclass */
+  @XmlElement(type = MapAdviceJpa.class, name = "mapAdvice")
+  @Override
+  public Set<MapAdvice> getMapAdvices() {
+    if (mapAdvices == null)
+      mapAdvices = new HashSet<>();// ensures proper serialization
+    return mapAdvices;
+  }
+
+  /* see superclass */
+  @Override
+  public void setMapAdvices(Set<MapAdvice> mapAdvices) {
+    this.mapAdvices = mapAdvices;
   }
 
   /* see superclass */
