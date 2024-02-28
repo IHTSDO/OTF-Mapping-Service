@@ -14,17 +14,19 @@ angular.module('mapProjectApp.widgets.recordSummary', [ 'adf.provider' ]).config
 
     // record initially null
     $scope.record = null;
+    $scope.fullexpression = null;
     $scope.project = localStorageService.get('focusProject');
-	$scope.recordAsFullExpression = "TEST";
 
     // watch for updates from the map record widget
     $rootScope.$on('mapRecordWidget.notification.recordChanged', function(event, parameters) {
       $scope.record = parameters.record;
-	  //$scope.recordAsFullExpression = utilService.getFullExpression(parameters.record);
+		$scope.record.fullexpression = utilService.getFullExpression($scope.record);
+		$scope.fullexpression = utilService.getFullExpression($scope.record);
     });
     $rootScope.$on('mapRecordWidget.notification.changeSelectedEntry', function(event, parameters) {
       $scope.record = parameters.record;
-	  //$scope.recordAsFullExpression = utilService.getFullExpression(parameters.record);
+		$scope.record.fullexpression = utilService.getFullExpression($scope.record);
+		$scope.fullexpression = utilService.getFullExpression($scope.record);
     });
 
     

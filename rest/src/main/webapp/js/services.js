@@ -118,15 +118,29 @@ mapProjectApp
 		  var fullExpression = "";
 		  var currentGroup = "0";
 	
-		    for(var i=0; i<mapRecord.mapEntry.length; i++){
+		  var mapEntries = [];
+		  for(var i=0; i<mapRecord.mapEntry.length; i++){
+			mapEntries.push(mapRecord.mapEntry[i]);
+		  }
+		  
+		  var orderedEntries = mapEntries.sort(function(a, b) {
+		      if (a.mapGroup === b.mapGroup) {
+		         // Price is only important when cities are the same
+		         return a.mapPriority - b.mapPriority;
+		      }
+		      return a.mapGroup > b.mapGroup ? 1 : -1;
+		   });
+          
+	
+		    for(var i=0; i<orderedEntries.length; i++){
 			  // Every time we encounter a new group, start a new chunk
-		      if(mapRecord.mapEntry[i].mapGroup != currentGroup){
-		          fullExpression = fullExpression + "/" + mapRecord.mapEntry[i].targetId;
-				  currentGroup = mapRecord.mapEntry[i].mapGroup;
+		      if(orderedEntries[i].mapGroup != currentGroup){
+		          fullExpression = fullExpression + "/" + orderedEntries[i].targetId;
+				  currentGroup = orderedEntries[i].mapGroup;
 		      }
 			  // If it's not a new group, append the target
 			  else{
-				fullExpression = fullExpression + "&" + mapRecord.mapEntry[i].targetId;
+				fullExpression = fullExpression + "&" + orderedEntries[i].targetId;
 			  }
 		    }
 	
