@@ -28,6 +28,14 @@
               Reset
             </button>
             <button
+              title="Run Report"
+              ng-click="runReport(selectedDefinition)"
+              ng-show="showRunReport(selectedDefinition)"
+              class="btn btn-xs btn-primary"
+            >
+              Run Report
+            </button>            
+            <button
               ng-show="selectedDefinition != null"
               ng-disabled="selectedDefinition.query == '' || selectedDefinition.query == null"
               ng-click="generateNewReport(selectedDefinition)"
@@ -81,7 +89,6 @@
         <tr ng-repeat="report in reports">
           <td
             style="width: 70%; padding: 5px"
-            [ngStyle]="{'width:65%': showRunReport(report)}"
           >
             <a
               ng-show="report.id != reportDisplayed.id"
@@ -97,15 +104,7 @@
           </td>
           <td
             style="width: 5%"
-            [ngStyle]="{'width:10%': showRunReport(report)}"
           >
-            <a
-              title="Run Report"
-              ng-click="runReport(report);"
-              ng-show="showRunReport(report);"
-            >
-              <i class="glyphicon glyphicon-envelope"></i>
-            </a>
             <a
               title="Delete Report"
               ng-click="deleteReport(report, page, selectedDefinition, queryReport); reportDisplayed = null;"

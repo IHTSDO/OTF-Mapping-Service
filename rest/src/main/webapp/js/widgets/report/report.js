@@ -311,23 +311,22 @@ angular
         $scope.isAddingDefinition = true;
       };
 
-      $scope.showRunReport = function (report) {
+      $scope.showRunReport = function (reportDefinition) {
         var show = false;
         if (
-          report.id == "NorwayReplacementMapReport" ||
-          report.id == "NorwayReplacementTranslationReport" ||
-          report.name == "NorwayReplacementMapReport" ||
-          report.name == "NorwayReplacementTranslationReport"
+		  reportDefinition != null &&
+          (reportDefinition.name == "NorwayReplacementMapReport" ||
+          reportDefinition.name == "NorwayReplacementTranslationReport")
         ) {
           show = true;
         }
         return show;
       };
 
-      $scope.runReport = function (report) {
+      $scope.runReport = function (reportDefinition) {
         gpService.increment();
         $http({
-          url: root_reporting + "report/execute/" + report.id,
+          url: root_reporting + "report/execute/" + reportDefinition.name,
           method: "POST",
           dataType: "json",
           data: report,
