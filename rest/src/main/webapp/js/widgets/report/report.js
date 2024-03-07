@@ -326,10 +326,10 @@ angular
       $scope.runReport = function (reportDefinition) {
         gpService.increment();
         $http({
-          url: root_reporting + "report/execute/" + reportDefinition.name,
+          url: root_reporting + "report/execute",
           method: "POST",
           dataType: "json",
-          data: report,
+          data: reportDefinition.name,
           headers: {
             "Content-Type": "application/json",
           },
@@ -337,6 +337,8 @@ angular
           .success(function (data) {
             gpService.decrement();
             $scope.definitionMsg = "Successfully run report";
+			  window
+              .alert("Report has successfully started, and the output will be emailed when completed.");
           })
           .error(function (data, status, headers, config) {
             gpService.decrement();
