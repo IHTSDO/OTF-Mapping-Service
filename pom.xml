@@ -22,6 +22,7 @@
     <module>jpa-model</module>
     <module>services</module>
     <module>jpa-services</module>
+	<module>reports</module>
     <module>rest</module>
 	<module>rest-client</module>
     <module>admin</module>
