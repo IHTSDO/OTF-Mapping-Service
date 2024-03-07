@@ -197,10 +197,9 @@ public interface ReportServiceRest {
 	   *
 	   * @param authToken the auth token
 	   * @param reportName the report name
-	   * @return the string
 	   * @throws Exception the exception
 	   */
-	  String executeReport(final String authToken,
+	  void executeReport(final String authToken,
 	    final String reportName) throws Exception;
 
 }

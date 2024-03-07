@@ -743,7 +743,7 @@ public class ReportServiceRestImpl extends RootServiceRestImpl
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public String executeReport(@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") final String authToken,
+  public void executeReport(@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") final String authToken,
     @ApiParam(value = "Name of the report to execute", required = true) final String reportName)
     throws Exception {
 
@@ -788,12 +788,12 @@ public class ReportServiceRestImpl extends RootServiceRestImpl
 
       executor.shutdown();
 
-      return "Running report";
+      return;
 
     } catch (Exception e) {
       handleException(e, "Error trying to run the report", userName, reportName,
           "");
-      return "Error trying to run thr report";
+      return;
     } finally {
       securityService.close();
     }

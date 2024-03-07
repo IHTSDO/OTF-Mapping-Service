@@ -134,9 +134,9 @@ public class ReportClientRest extends RootClientRest implements ReportServiceRes
   }
 
   @Override
-  public String executeReport(final String authToken, final String reportName) throws Exception {
+  public void executeReport(final String authToken, final String reportName) throws Exception {
     // TODO Auto-generated method stub
-    return null;
+    return;
   }
 
 }
