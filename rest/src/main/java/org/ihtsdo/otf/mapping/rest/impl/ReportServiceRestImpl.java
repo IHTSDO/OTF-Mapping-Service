@@ -1,5 +1,5 @@
 /*
- *    Copyright 2015 West Coast Informatics, LLC
+ *    Copyright 2024 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.mapping.rest.impl;
 
@@ -10,6 +10,8 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -23,7 +25,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.ReportDefinitionList;
@@ -40,6 +42,8 @@ import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.rest.ReportServiceRest;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.report.NorwayReplacementMapReport;
+import org.ihtsdo.otf.mapping.report.NorwayReplacementTranslationReport;
 import org.ihtsdo.otf.mapping.reports.Report;
 import org.ihtsdo.otf.mapping.reports.ReportDefinition;
 import org.ihtsdo.otf.mapping.reports.ReportDefinitionJpa;
@@ -48,6 +52,8 @@ import org.ihtsdo.otf.mapping.reports.ReportResult;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.ReportService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -61,7 +67,12 @@ import io.swagger.annotations.ApiParam;
 @Produces({
     MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 })
-public class ReportServiceRestImpl extends RootServiceRestImpl implements ReportServiceRest {
+public class ReportServiceRestImpl extends RootServiceRestImpl
+    implements ReportServiceRest {
+
+  /** The Constant LOG. */
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(ReportServiceRestImpl.class);
 
   /** The security service. */
   private SecurityService securityService;
@@ -75,8 +86,13 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
     securityService = new SecurityServiceJpa();
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#getReportDefinitions(java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#getReportDefinitions(
+   * java.lang.String)
    */
   @Override
   @GET
@@ -88,8 +104,7 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
   public ReportDefinitionList getReportDefinitions(
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(MappingServiceRestImpl.class)
-        .info("RESTful call (Report):  /definition/definitions");
+    LOGGER.info("RESTful call (Report):  /definition/definitions");
     String user = null;
     final ReportService reportService = new ReportServiceJpa();
     try {
@@ -119,8 +134,13 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#getReportDefinition(java.lang.Long, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#getReportDefinition(java
+   * .lang.Long, java.lang.String)
    */
   @Override
   @GET
@@ -133,8 +153,7 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
     @ApiParam(value = "Report definition id", required = true) @PathParam("id") Long id,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(MappingServiceRestImpl.class)
-        .info("RESTful call (Report):  /definition/id/" + id);
+    LOGGER.info("RESTful call (Report):  /definition/id/" + id);
     String user = null;
     final ReportService reportService = new ReportServiceJpa();
     try {
@@ -153,8 +172,13 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#addReportDefinition(org.ihtsdo.otf.mapping.reports.ReportDefinitionJpa, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#addReportDefinition(org.
+   * ihtsdo.otf.mapping.reports.ReportDefinitionJpa, java.lang.String)
    */
   @Override
   @POST
@@ -167,8 +191,7 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
     @ApiParam(value = "The report definition to add, in JSON or XML format", required = true) ReportDefinitionJpa reportDefinition,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(MappingServiceRestImpl.class)
-        .info("RESTful call (Report):  /definition/add");
+    LOGGER.info("RESTful call (Report):  /definition/add");
     String user = null;
     final ReportService reportService = new ReportServiceJpa();
     try {
@@ -187,8 +210,13 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#updateReportDefinitions(org.ihtsdo.otf.mapping.reports.ReportDefinitionJpa, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#updateReportDefinitions(
+   * org.ihtsdo.otf.mapping.reports.ReportDefinitionJpa, java.lang.String)
    */
   @Override
   @POST
@@ -201,8 +229,7 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
     @ApiParam(value = "Report definition to update, in JSON or XML format", required = true) ReportDefinitionJpa definition,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(MappingServiceRestImpl.class)
-        .info("RESTful call (Report):  /definition/update");
+    LOGGER.info("RESTful call (Report):  /definition/update");
     String user = null;
     final ReportService reportService = new ReportServiceJpa();
 
@@ -222,8 +249,13 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
 
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#removeReportDefinitions(org.ihtsdo.otf.mapping.reports.ReportDefinitionJpa, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#removeReportDefinitions(
+   * org.ihtsdo.otf.mapping.reports.ReportDefinitionJpa, java.lang.String)
    */
   @Override
   @DELETE
@@ -236,8 +268,7 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
     @ApiParam(value = "The report definition to delete, in JSON or XML format", required = true) ReportDefinitionJpa reportDefinition,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(MappingServiceRestImpl.class)
-        .info("RESTful call (Report):  /definition/delete");
+    LOGGER.info("RESTful call (Report):  /definition/delete");
     String user = null;
     final ReportServiceJpa reportService = new ReportServiceJpa();
     final MappingService mappingService = new MappingServiceJpa();
@@ -286,8 +317,13 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
 
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#addReport(org.ihtsdo.otf.mapping.reports.ReportJpa, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#addReport(org.ihtsdo.otf
+   * .mapping.reports.ReportJpa, java.lang.String)
    */
   @Override
   @POST
@@ -300,8 +336,7 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
     @ApiParam(value = "Report report to update, in JSON or XML format", required = true) ReportJpa report,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(MappingServiceRestImpl.class)
-        .info("RESTful call (Report):  /report/add");
+    LOGGER.info("RESTful call (Report):  /report/add");
     String user = null;
     final ReportService reportService = new ReportServiceJpa();
     try {
@@ -320,8 +355,13 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
 
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#removeReport(org.ihtsdo.otf.mapping.reports.ReportJpa, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#removeReport(org.ihtsdo.
+   * otf.mapping.reports.ReportJpa, java.lang.String)
    */
   @Override
   @DELETE
@@ -334,8 +374,7 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
     @ApiParam(value = "The report to delete, in JSON or XML format", required = true) ReportJpa report,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(MappingServiceRestImpl.class)
-        .info("RESTful call (Report):  /report/delete");
+    LOGGER.info("RESTful call (Report):  /report/delete");
     String user = null;
 
     final ReportService reportService = new ReportServiceJpa();
@@ -356,8 +395,13 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
 
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#getReport(java.lang.Long, java.lang.Long, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#getReport(java.lang.
+   * Long, java.lang.Long, java.lang.String)
    */
   @Override
   @GET
@@ -372,7 +416,7 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRestImpl.class).info(
+    LOGGER.info(
         "RESTful call (Report):  /report/projectId/" + projectId + "/" + id);
     String user = null;
 
@@ -402,8 +446,14 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#getReportsForMapProject(java.lang.Long, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#getReportsForMapProject(
+   * java.lang.Long, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa,
+   * java.lang.String)
    */
   @Override
   @POST
@@ -418,8 +468,7 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRestImpl.class)
-        .info("RESTful call (Report):  /report/reports");
+    LOGGER.info("RESTful call (Report):  /report/reports");
     String user = null;
     String projectName = "";
 
@@ -466,8 +515,13 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
 
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#getReportsForMapProjectAndReportDefinition(java.lang.Long, java.lang.Long, org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#
+   * getReportsForMapProjectAndReportDefinition(java.lang.Long, java.lang.Long,
+   * org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
    */
   @Override
   @POST
@@ -483,10 +537,8 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRestImpl.class)
-        .info("RESTful call (Report):  /report/reports/project/id/"
-            + projectId.toString() + "/definition/id/"
-            + definitionId.toString());
+    LOGGER.info("RESTful call (Report):  /report/reports/project/id/"
+        + projectId.toString() + "/definition/id/" + definitionId.toString());
     String user = null;
     String projectName = "";
 
@@ -528,8 +580,13 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
 
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#getLatestReport(java.lang.Long, java.lang.Long, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#getLatestReport(java.
+   * lang.Long, java.lang.Long, java.lang.String)
    */
   @Override
   @GET
@@ -544,10 +601,9 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRestImpl.class)
-        .info("RESTful call (Report):  /report/reports/latest/project/id/"
-            + projectId.toString() + "/definition/id/" + definitionId.toString()
-            + "/items");
+    LOGGER.info("RESTful call (Report):  /report/reports/latest/project/id/"
+        + projectId.toString() + "/definition/id/" + definitionId.toString()
+        + "/items");
     String user = null;
     String projectName = null;
     final ReportService reportService = new ReportServiceJpa();
@@ -594,8 +650,13 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
 
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#generateReport(org.ihtsdo.otf.mapping.reports.ReportDefinitionJpa, java.lang.Long, java.lang.String, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#generateReport(org.
+   * ihtsdo.otf.mapping.reports.ReportDefinitionJpa, java.lang.Long,
+   * java.lang.String, java.lang.String)
    */
   @Override
   @POST
@@ -614,10 +675,9 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRestImpl.class)
-        .info("RESTful call (Report):  /report/generate/project/id/" + projectId
-            + "/user/id/" + userName + " with report definition "
-            + reportDefinition.getName());
+    LOGGER.info("RESTful call (Report):  /report/generate/project/id/"
+        + projectId + "/user/id/" + userName + " with report definition "
+        + reportDefinition.getName());
 
     String mapProjectName = "";
     final ReportService reportService = new ReportServiceJpa();
@@ -657,8 +717,96 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#testReport(org.ihtsdo.otf.mapping.reports.ReportDefinitionJpa, java.lang.Long, java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#generateReport(org.
+   * ihtsdo.otf.mapping.reports.ReportDefinitionJpa, java.lang.Long,
+   * java.lang.String, java.lang.String)
+   */
+  /**
+   * Execute report.
+   *
+   * @param userName the user name
+   * @param authToken the auth token
+   * @param reportName the report name
+   * @return the string
+   * @throws Exception the exception
+   */
+  @Override
+  @POST
+  @Path("/report/execute")
+  @ApiOperation(value = "Generate a report", notes = "Generates and returns a report for the specified report definition and project", response = ReportJpa.class)
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public void executeReport(@ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") final String authToken,
+    @ApiParam(value = "Name of the report to execute", required = true) final String reportName)
+    throws Exception {
+
+    LOGGER.info("RESTful call (Report):  /report/execute for " + reportName);
+
+    String userName = "";
+    
+    try {
+      // authorize call
+      userName = authorizeApp(authToken, MapUserRole.SPECIALIST, "run report",
+          securityService);
+
+      if (StringUtils.isBlank(reportName)) {
+        throw new Exception("Report name is blank.");
+      }
+
+      final List<String> allowedReports = List.of("NorwayReplacementMapReport",
+          "NorwayReplacementTranslationReport");
+      if (!allowedReports.contains(reportName)) {
+        throw new Exception("Report " + reportName + " does not exist.");
+      }
+
+      ExecutorService executor = Executors.newSingleThreadExecutor();
+
+      executor.submit(() -> {
+
+        try {
+          // run the report.
+          if ("NorwayReplacementMapReport".equals(reportName)) {
+            NorwayReplacementMapReport.runReport();
+
+          } else if ("NorwayReplacementTranslationReport".equals(reportName)) {
+
+            NorwayReplacementTranslationReport.runReport();
+
+          }
+        } catch (Exception e) {
+          LOGGER.error("ERROR running report {}", reportName, e);
+        }
+
+      });
+
+      executor.shutdown();
+
+      return;
+
+    } catch (Exception e) {
+      handleException(e, "Error trying to run the report", userName, reportName,
+          "");
+      return;
+    } finally {
+      securityService.close();
+    }
+  }
+
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#testReport(org.ihtsdo.
+   * otf.mapping.reports.ReportDefinitionJpa, java.lang.Long, java.lang.String,
+   * java.lang.String)
    */
   @Override
   @POST
@@ -677,10 +825,9 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRestImpl.class)
-        .info("RESTful call (Report):  /report/test/project/id/" + projectId
-            + "/user/id/" + userName + " with report definition "
-            + reportDefinition.getName());
+    LOGGER.info("RESTful call (Report):  /report/test/project/id/" + projectId
+        + "/user/id/" + userName + " with report definition "
+        + reportDefinition.getName());
 
     String mapProjectName = "";
     final ReportService reportService = new ReportServiceJpa();
@@ -716,8 +863,14 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#getReportResultItems(org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.Long, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#getReportResultItems(org
+   * .ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.Long,
+   * java.lang.String)
    */
   @Override
   @POST
@@ -735,9 +888,8 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRestImpl.class)
-        .info("RESTful call (Report):  /reportResult/id/" + reportResultId
-            + "/items/");
+    LOGGER.info("RESTful call (Report):  /reportResult/id/" + reportResultId
+        + "/items/");
 
     String user = null;
     final ReportService reportService = new ReportServiceJpa();
@@ -779,8 +931,13 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#getQACheckDefinitions(java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#getQACheckDefinitions(
+   * java.lang.String)
    */
   @Override
   @GET
@@ -792,7 +949,7 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
   public ReportDefinitionList getQACheckDefinitions(
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(MappingServiceRestImpl.class)
+    LOGGER
         .info("RESTful call (Report):  /qaCheckDefinition/qaCheckDefinitions");
     String user = null;
     final ReportService reportService = new ReportServiceJpa();
@@ -823,8 +980,13 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#getQALabels(java.lang.Long, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#getQALabels(java.lang.
+   * Long, java.lang.String)
    */
   @Override
   @GET
@@ -837,8 +999,7 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
     @ApiParam(value = "Report id", required = true) @PathParam("mapProjectId") Long mapProjectId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(MappingServiceRestImpl.class)
-        .info("RESTful call (Report):  /qaLabel/qaLabels");
+    LOGGER.info("RESTful call (Report):  /qaLabel/qaLabels");
     String user = null;
     final ReportService reportService = new ReportServiceJpa();
     try {
@@ -858,8 +1019,13 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#exportReport(java.lang.Long, java.lang.String)
+  /* see superclass */
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#exportReport(java.lang.
+   * Long, java.lang.String)
    */
   @Override
   @GET
@@ -871,8 +1037,7 @@ public class ReportServiceRestImpl extends RootServiceRestImpl implements Report
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRestImpl.class)
-        .info("RESTful call (Report):  /report/export/" + reportId);
+    LOGGER.info("RESTful call (Report):  /report/export/" + reportId);
 
     final ReportService reportService = new ReportServiceJpa();
     try {
