@@ -36,7 +36,7 @@ angular
   .controller(
     'projectRecordsCtrl',
     function($scope, $rootScope, $http, $routeParams, $location, $uibModal, $q,
-      localStorageService, $sce, appConfig, gpService) {
+      localStorageService, $sce, appConfig, gpService, utilService) {
       $scope.appConfig = appConfig;
       $scope.page = 'records';
 
@@ -177,6 +177,7 @@ angular
               if ($scope.records[i].mapNote.length > 1){
                 $scope.records[i].mapNote = $scope.records[i].mapNote.sort(function(a,b){return b.timestamp - a.timestamp});
               }            
+			  $scope.records[i].fullexpression = utilService.getFullExpression($scope.records[i]);
             }
             
             $scope.statusRecordLoad = '';

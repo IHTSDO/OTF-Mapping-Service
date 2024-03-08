@@ -21,12 +21,10 @@ angular.module('mapProjectApp.widgets.recordSummary', [ 'adf.provider' ]).config
     $rootScope.$on('mapRecordWidget.notification.recordChanged', function(event, parameters) {
       $scope.record = parameters.record;
 		$scope.record.fullexpression = utilService.getFullExpression($scope.record);
-		$scope.fullexpression = utilService.getFullExpression($scope.record);
     });
     $rootScope.$on('mapRecordWidget.notification.changeSelectedEntry', function(event, parameters) {
       $scope.record = parameters.record;
 		$scope.record.fullexpression = utilService.getFullExpression($scope.record);
-		$scope.fullexpression = utilService.getFullExpression($scope.record);
     });
 
     
