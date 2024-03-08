@@ -116,16 +116,20 @@ mapProjectApp
 		this.getFullExpression = function(mapRecord) {
 			
 		  var fullExpression = "";
-		  var currentGroup = "0";
 	
+	
+		  // Per CIHI's requirements, only create full expressions for the entries in Map Group 1.
+		  // If later clients/projects need this functionality as well, will need to rewrite.
 		  var mapEntries = [];
 		  for(var i=0; i<mapRecord.mapEntry.length; i++){
-			mapEntries.push(mapRecord.mapEntry[i]);
+			if(mapRecord.mapEntry[i].mapGroup === 1){
+				mapEntries.push(mapRecord.mapEntry[i]);				
+			}
 		  }
 		  
 		  var orderedEntries = mapEntries.sort(function(a, b) {
 		      if (a.mapGroup === b.mapGroup) {
-		         // Price is only important when cities are the same
+		         // Priority is only important when groups are the same
 		         return a.mapPriority - b.mapPriority;
 		      }
 		      return a.mapGroup > b.mapGroup ? 1 : -1;
@@ -133,18 +137,17 @@ mapProjectApp
           
 	
 		    for(var i=0; i<orderedEntries.length; i++){
-			  // Every time we encounter a new group, start a new chunk
-		      if(orderedEntries[i].mapGroup != currentGroup){
-		          fullExpression = fullExpression + "/" + orderedEntries[i].targetId;
-				  currentGroup = orderedEntries[i].mapGroup;
+			  // Connect extension codes with ampersands
+		      if(orderedEntries[i].targetId.startsWith("X")){
+		          fullExpression = fullExpression + "&" + orderedEntries[i].targetId;
 		      }
-			  // If it's not a new group, append the target
+			  // Connect new non-extension codes with forward-slah
 			  else{
-				fullExpression = fullExpression + "&" + orderedEntries[i].targetId;
+				fullExpression = fullExpression + "/" + orderedEntries[i].targetId;
 			  }
 		    }
 	
-		  // Remove the leading "/"
+		  // The above algorithm creates a leading "/" or "&" - remove it.
 		  fullExpression = fullExpression.substring(1);
 	
 		  return fullExpression;

@@ -26,6 +26,8 @@
 <div style="padding: 0px;">
   <div style="padding: 0px;"
     ng-repeat="entry in record.mapEntry | orderBy:['mapGroup', 'mapPriority']">
+  	<!-- For ICD10CA to ICD11 project only, show Full Expression right before 1/2 entry, if it exists -->
+  	<div ng-show="entry.mapGroup == 1 && entry.mapPriority == 2 && project.name == 'ICD10CA to ICD11'">Full Expression: {{record.fullexpression}}</div>
     <!-- Group/Priority, Target Id, Target Name -->
     <div style="display: inline-block; padding: 0px; width: 48%;">
       <div
