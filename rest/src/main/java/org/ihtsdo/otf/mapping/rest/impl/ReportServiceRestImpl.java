@@ -753,7 +753,7 @@ public class ReportServiceRestImpl extends RootServiceRestImpl
     
     try {
       // authorize call
-      userName = authorizeApp(authToken, MapUserRole.SPECIALIST, "run report",
+      userName = authorizeApp(authToken, MapUserRole.VIEWER, "run report",
           securityService);
 
       if (StringUtils.isBlank(reportName)) {
