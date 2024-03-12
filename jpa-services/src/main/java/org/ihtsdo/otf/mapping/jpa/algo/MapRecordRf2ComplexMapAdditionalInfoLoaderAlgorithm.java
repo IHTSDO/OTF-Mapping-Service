@@ -184,143 +184,6 @@ public class MapRecordRf2ComplexMapAdditionalInfoLoaderAlgorithm extends RootSer
 
       }
 
-//      // if refsetId is specified, remove all rows that don't have that refsetId
-//      if (refsetId != null) {
-//        log.info("  Filtering the file by refsetId into " + System.getProperty("java.io.tmpdir"));
-//
-//        // Open reader
-//        BufferedReader fileReader = new BufferedReader(new FileReader(inputFile));
-//
-//        // Open writer
-//        File outputFile =
-//            File.createTempFile("ttt", ".filter", new File(System.getProperty("java.io.tmpdir")));
-//        FileWriter fw = new FileWriter(outputFile);
-//        BufferedWriter bw = new BufferedWriter(fw);
-//
-//        String line = null;
-//
-//        // Write each line where the refsetId matches the specified one into the
-//        // output file
-//        while ((line = fileReader.readLine()) != null) {
-//          Boolean keepLine = true;
-//          line = line.replace("\r", "");
-//          String fields[] = line.split("\t");
-//
-//          if (!fields[4].equals(refsetId)) {
-//            keepLine = false;
-//          }
-//
-//          // also take into account any additional project-specific validation,
-//          // if any
-//          ProjectSpecificAlgorithmHandler handler =
-//              mappingService.getProjectSpecificAlgorithmHandler(mapProjectMap.get(refsetId));
-//
-//          if (!handler.isMapRecordLineValid(line)) {
-//            keepLine = false;
-//          }
-//
-//          if (keepLine) {
-//            bw.write(line);
-//            bw.newLine();
-//          }
-//        }
-//        fileReader.close();
-//        bw.close();
-//
-//        // overwrite the input file as this new temp file
-//        inputFile = outputFile.getAbsolutePath();
-//
-//      }
-
-//      // sort input file
-//      log.info("  Sorting the file into " + System.getProperty("java.io.tmpdir"));
-//      File outputFile =
-//          File.createTempFile("ttt", ".sort", new File(System.getProperty("java.io.tmpdir")));
-//      outputFile.delete();
-//      // Sort file according to unix sort
-//      // -k 5,5 -k 6,6n -k 7,7n -k 8,8n -k 1,4 -k 9,9 -k 10,10 -k 11,11
-//      // -k 12,12 -k 13,13
-//      FileSorter.sortFile(inputFile, outputFile.getPath(), new Comparator<String>() {
-//
-//        @Override
-//        public int compare(String o1, String o2) {
-//          String[] fields1 = o1.split("\t");
-//          String[] fields2 = o2.split("\t");
-//
-//          // keep headers at top
-//          if (o1.startsWith("id")) {
-//            return 1;
-//          }
-//
-//          long i = fields1[4].compareTo(fields2[4]);
-//          if (i != 0) {
-//            return (int) i;
-//          } else {
-//            i = fields1[5].compareTo(fields2[5]);
-//            // i = (Long.parseLong(fields1[5]) -
-//            // Long.parseLong(fields2[5]));
-//            if (i != 0) {
-//              return (int) i;
-//            } else {
-//              i = Long.parseLong(fields1[6]) - Long.parseLong(fields2[6]);
-//              if (i != 0) {
-//                return (int) i;
-//              } else {
-//                i = Long.parseLong(fields1[7]) - Long.parseLong(fields2[7]);
-//                if (i != 0) {
-//                  return (int) i;
-//                } else {
-//                  i = (fields1[0] + fields1[1] + fields1[2] + fields1[3])
-//                      .compareTo(fields1[0] + fields1[1] + fields1[2] + fields1[3]);
-//                  if (i != 0) {
-//                    return (int) i;
-//                  } else {
-//                    i = fields1[8].compareTo(fields2[8]);
-//                    if (i != 0) {
-//                      return (int) i;
-//                    } else {
-//                      i = fields1[9].compareTo(fields2[9]);
-//                      if (i != 0) {
-//                        return (int) i;
-//                      } else {
-//                        i = fields1[10].compareTo(fields2[10]);
-//                        if (i != 0) {
-//                          return (int) i;
-//                        } else {
-//                          i = fields1[11].compareTo(fields2[11]);
-//                          if (i != 0) {
-//                            return (int) i;
-//                          } else {
-//
-//                            // complex maps do not have mapCategory field
-//                            if (fields1.length == 12) {
-//                              return 0;
-//                            }
-//
-//                            // extended maps have extra mapCategory field
-//                            i = fields1[12].compareTo(fields2[12]);
-//                            if (i != 0) {
-//                              return (int) i;
-//                            } else {
-//                              return 0;
-//                            }
-//                          }
-//                        }
-//                      }
-//                    }
-//                  }
-//                }
-//              }
-//            }
-//          }
-//        }
-//      });
-//      log.info("  Done sorting the file ");
-//
-//      // load complexMapRefSetMembers from extendedMap file
-//      final List<ComplexMapRefSetMember> members = getComplexMaps(inputFile, mapProjectMap);
-//      log.info("  members = " + members.size());
-
       // If the member flag is set, insert all of these
       contentService.setTransactionPerOperation(false);
       contentService.beginTransaction();
@@ -333,6 +196,11 @@ public class MapRecordRf2ComplexMapAdditionalInfoLoaderAlgorithm extends RootSer
       contentService.commit();
 
       List<String> encounteredIssues = new ArrayList<>();
+      
+      mappingService.setTransactionPerOperation(false);
+      mappingService.beginTransaction();
+      
+      Map<String, MapRecord> conceptIdToMapRecordMap = new HashMap<>();
       
       if (recordFlag) {
 
@@ -368,6 +236,15 @@ public class MapRecordRf2ComplexMapAdditionalInfoLoaderAlgorithm extends RootSer
               final Integer mapGroup = Integer.parseInt(fields[6]);
               final Integer mapPriority = Integer.parseInt(fields[7]);
 
+              //Load all map records from the project (only do once)
+              if(conceptIdToMapRecordMap.isEmpty()) {
+                for(MapRecord mapRecord : mappingService.getMapRecordsForMapProject(mapProjectId).getMapRecords()) {
+                  String sourceConceptId = mapRecord.getConceptId();
+                  conceptIdToMapRecordMap.put(sourceConceptId, mapRecord);
+                }
+              }
+              
+              
               // Collect all additional map entry info fields attached to this
               // project, and determine their indexes in the file (only do once)
               if (additionalMapEntryInfoFields.isEmpty()) {
@@ -384,26 +261,17 @@ public class MapRecordRf2ComplexMapAdditionalInfoLoaderAlgorithm extends RootSer
               }
 
               // Lookup the map record and map entry to update
-              MapRecordList mapRecords =
-                  mappingService.getMapRecordsForProjectAndConcept(mapProjectId, conceptId);
               MapEntry mapEntryToUpdate = null;
               MapRecord mapRecordToUpdate = null;
 
-              // If there's more than one map record, something went wrong
-              if (mapRecords.getCount() > 1) {
-                encounteredIssues.add("Multiple map records found for file line: " + line);
-                continue;
-              }
-
               // Identify the correct map entry
-              for (MapRecord mapRecord : mapRecords.getMapRecords()) {
-                for (MapEntry mapEntry : mapRecord.getMapEntries()) {
-                  if (mapEntry.getMapGroup() == mapGroup
-                      && mapEntry.getMapPriority() == mapPriority) {
-                    mapRecordToUpdate = mapRecord;
-                    mapEntryToUpdate = mapEntry;
-                    break;
-                  }
+              MapRecord mapRecord = conceptIdToMapRecordMap.get(conceptId);
+              for (MapEntry mapEntry : mapRecord.getMapEntries()) {
+                if (mapEntry.getMapGroup() == mapGroup
+                    && mapEntry.getMapPriority() == mapPriority) {
+                  mapRecordToUpdate = mapRecord;
+                  mapEntryToUpdate = mapEntry;
+                  break;
                 }
               }
 
@@ -431,8 +299,7 @@ public class MapRecordRf2ComplexMapAdditionalInfoLoaderAlgorithm extends RootSer
       }
       
       // clean-up
-      mappingService.close();
-      // outputFile.delete();
+      mappingService.commit();
       log.info("Done loading complex map data");
 
     } catch (Exception e) {
