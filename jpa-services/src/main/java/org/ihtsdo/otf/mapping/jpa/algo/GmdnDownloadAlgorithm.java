@@ -11,6 +11,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPSClient;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.algo.Algorithm;
@@ -59,9 +60,9 @@ public class GmdnDownloadAlgorithm extends RootServiceJpa implements Algorithm {
     final String saveLocation =
         ConfigUtility.getConfigProperties().getProperty("gmdnsftp.dir");
     
-    FTPClient ftpClient;
+    FTPSClient ftpClient;
     
-    ftpClient = new FTPClient();
+    ftpClient = new FTPSClient();
     
     try {
     	ftpClient.connect(gmdnftpHost, gmdnftpPort);
