@@ -3,38 +3,29 @@
  */
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.mapping.helpers.ConceptList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
-import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
-import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
+import org.ihtsdo.otf.mapping.model.AdditionalMapEntryInfo;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.services.ContentService;
-import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
  * Implementation for ICD10CA to ICD11 mapping project.
  */
 public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
     extends DefaultProjectSpecificAlgorithmHandler {
-
 
   /* see superclass */
   @Override
@@ -53,22 +44,24 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
     for (final MapEntry mapEntry : mapRecord.getMapEntries()) {
 
       // "No target" targets are valid
-      if(mapEntry.getTargetId() != null && mapEntry.getTargetId().isBlank()) {
+      if (mapEntry.getTargetId() != null && mapEntry.getTargetId().isBlank()) {
         continue;
       }
-      
+
       // Target code must be an existing concept
       final Concept concept = contentService.getConcept(mapEntry.getTargetId(),
           mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
 
       // Concept must exist
       if (concept == null) {
-        validationResult.addError("Concept for target id " + mapEntry.getTargetId() + " does not exist.");
+        validationResult
+            .addError("Concept for target id " + mapEntry.getTargetId() + " does not exist.");
       }
-      
+
       // Concept must be active
       if (concept != null && !concept.isActive()) {
-        validationResult.addError("Concept for target id " + mapEntry.getTargetId() + " is not active.");
+        validationResult
+            .addError("Concept for target id " + mapEntry.getTargetId() + " is not active.");
       }
     }
 
@@ -114,7 +107,152 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
   public ValidationResult validateSemanticChecks(MapRecord mapRecord) throws Exception {
     final ValidationResult result = new ValidationResultJpa();
 
-    //TODO
+    // Bail immediately if map has no entries (other QA will catch this)
+    if (mapRecord.getMapEntries().size() == 0) {
+      return result;
+    }
+
+    final ContentService contentService = new ContentServiceJpa();
+    try {
+      final String terminology = mapProject.getDestinationTerminology();
+      final String version = mapProject.getDestinationTerminologyVersion();
+
+      // Collect concepts in entry order, null if it doesn't exist
+      // group by mapGroup
+      final Map<Integer, List<Concept>> concepts = new HashMap<>();
+      for (final MapEntry entry : mapRecord.getMapEntries()) {
+        if (!concepts.containsKey(entry.getMapGroup())) {
+          concepts.put(entry.getMapGroup(), new ArrayList<Concept>());
+        }
+        final Concept concept =
+            contentService.getConcept(entry.getTargetId(), terminology, version);
+        // Lazy initialize
+        if (concept != null) {
+          concept.getDescriptions().size();
+          concept.getRelationships().size();
+          concept.getInverseRelationships().size();
+          concept.getSimpleRefSetMembers().size();
+        }
+        concepts.get(entry.getMapGroup()).add(concept);
+      }
+
+      // Gather the target and cluster relations - these are used for multiple
+      // validation checks.
+      final List<String> relationTargets = new ArrayList<>();
+      final List<String> relationClusters = new ArrayList<>();
+      final List<String> unmappableReasons = new ArrayList<>();
+
+      for (final MapEntry entry : mapRecord.getMapEntries()) {
+        Set<AdditionalMapEntryInfo> additionalMapEntryInfos = entry.getAdditionalMapEntryInfos();
+        for (AdditionalMapEntryInfo additionalMapEntryInfo : additionalMapEntryInfos) {
+          if (additionalMapEntryInfo.getField().equals("Relation - Target")) {
+            relationTargets.add(additionalMapEntryInfo.getValue());
+          } else if (additionalMapEntryInfo.getField().equals("Relation - Cluster")) {
+            relationClusters.add(additionalMapEntryInfo.getValue());
+          } else if (additionalMapEntryInfo.getField().equals("Unmappable Reason")) {
+            unmappableReasons.add(additionalMapEntryInfo.getValue());
+          }
+        }
+      }
+
+      if (concepts.size() == 0 || concepts.get(1) == null) {
+        result.addError("Null concept in entry");
+        return result;
+      }
+
+      //
+      // PREDICATE: Each map cannot have more than one Target Relation,
+      // Cluster Relation, or Unmappable Reason
+      //
+      if (relationTargets.size() > 1) {
+        result.addError("Map cannot have more than one Relation - Target");
+      }
+      if (relationClusters.size() > 1) {
+        result.addError("Map cannot have more than one Relation - Cluster");
+      }
+      if (unmappableReasons.size() > 1) {
+        result.addError("Map cannot have more than one Unmappable Reason");
+      }
+
+      // Now that we've checked for multiples, save the first one (should be
+      // only one) and use it going forward.
+      String relationTarget =
+          relationTargets.size() != 0 && relationTargets.get(0) != "" ? relationTargets.get(0) : "";
+      String relationCluster = relationClusters.size() != 0 && relationClusters.get(0) != ""
+          ? relationClusters.get(0) : "";
+      String unmappableReason = unmappableReasons.size() != 0 && unmappableReasons.get(0) != ""
+          ? unmappableReasons.get(0) : "";
+
+      //
+      // PREDICATE: When Relation - target is E-Equivalent then Relation –
+      // Cluster cannot be E, B or N
+      //
+      if (relationTarget.startsWith("E") && (relationCluster.startsWith("E")
+          || relationCluster.startsWith("B") || relationCluster.startsWith("N"))) {
+        result.addError(
+            "When Relation - target is E-Equivalent then Relation – Cluster cannot be E, B or N");
+      }
+
+      //
+      // PREDICATE: When Relation – target is B-Broader then Relation –
+      // cluster cannot be blank
+      //
+      if (relationTarget.startsWith("B") && relationCluster.isBlank()) {
+        result.addError(
+            "When Relation – target is B-Broader then Relation – cluster cannot be blank");
+      }
+
+      //
+      // PREDICATE: When Relation – target is N-Narrower then Relation –
+      // cluster cannot be blank
+      //
+      if (relationTarget.startsWith("N") && relationCluster.isBlank()) {
+        result.addError(
+            "When Relation – target is N-Narrower then Relation – cluster cannot be blank");
+      }
+
+      //
+      // PREDICATE: When Target code is blank then Relation-Target and
+      // Relation-Cluster cannot be E, B, N or n/a (must be blank).
+      //
+      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+        final MapEntry entry = mapRecord.getMapEntries().get(i);
+        if (entry.getTargetId().isBlank()
+            && (!relationTarget.isBlank() || !relationCluster.isBlank())) {
+          result.addError(
+              "When Target code is blank then Relation-Target and Relation-Cluster cannot be E, B, N or n/a (must be blank).");
+        }
+      }
+
+      //
+      // PREDICATE: When Target code is blank “Unmappable reason” must have a
+      // value entered.
+      //
+      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+        final MapEntry entry = mapRecord.getMapEntries().get(i);
+        if (entry.getTargetId().isBlank() && unmappableReason.isBlank()) {
+          result
+              .addError("When Target code is blank “Unmappable reason” must have a value entered.");
+        }
+      }
+
+      //
+      // PREDICATE: When Target code is not blank, “Unmappable reason” cannot
+      // have a value filled in.
+      //
+      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+        final MapEntry entry = mapRecord.getMapEntries().get(i);
+        if (!entry.getTargetId().isBlank() && !unmappableReason.isBlank()) {
+          result.addError(
+              "When Target code is not blank, “Unmappable reason” cannot have a value filled in.");
+        }
+      }
+
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      contentService.close();
+    }
 
     return result;
   }
@@ -146,7 +284,7 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
       return validationResult;
     }
 
-    // For the this project project, we are allowing multiple entries without rules.
+    // For this project project, we are allowing multiple entries without rules.
     // This is acceptable because their desired final release format is not
     // intended to follow strict RF2 guidelines.
     // // FATAL ERROR: multiple entries in groups for non-rule based
@@ -173,7 +311,8 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
     // Validation Check: very higher map groups do not have only NC nodes
     validationResult.merge(checkMapRecordNcNodes(mapRecord, entryGroups));
 
-    // Validation Check: verify entries are not duplicated
+    // Validation Check: verify entries are not duplicated - only within Map
+    // Group 1
     validationResult.merge(checkMapRecordForDuplicateEntries(mapRecord));
 
     // Validation Check: verify advice values are valid for the project (this
@@ -189,7 +328,8 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
   }
 
   /**
-   * Verify no duplicate entries in the map.
+   * Verify no duplicate entries in the map. For this project, we are only
+   * looking within Group 1 (there will be duplicates with Group 2)
    * 
    * @param mapRecord the map record
    * @return a list of errors detected
@@ -207,49 +347,35 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
       // relations
       for (int j = i + 1; j < entries.size(); j++) {
 
-        // if first entry target null
-        if (entries.get(i).getTargetId() == null || entries.get(i).getTargetId().equals("")) {
+        // Only look within Map Group 1 (map group 2 is WHO target, which can be
+        // duplicated)
+        if (entries.get(i).getMapGroup() == 1 && entries.get(j).getMapGroup() == 1) {
 
-          // if both null, check relations
-          if (entries.get(j).getTargetId() == null || entries.get(j).getTargetId().equals("")) {
+          // if first entry target null
+          if (entries.get(i).getTargetId() == null || entries.get(i).getTargetId().equals("")) {
 
-            if (entries.get(i).getMapRelation() != null && entries.get(j).getMapRelation() != null
-                && entries.get(i).getMapRelation().equals(entries.get(j).getMapRelation())
-                && !entries.get(i).getMapRelation().getName()
-                    .equals("MAP SOURCE CONCEPT CANNOT BE CLASSIFIED WITH AVAILABLE DATA")) {
-              validationResult
-                  .addWarning("Duplicate entries (null target code, same map relation) found: "
-                      + "Group " + Integer.toString(entries.get(i).getMapGroup()) + ", priority "
-                      + Integer.toString(entries.get(i).getMapPriority()) + " and " + "Group "
-                      + Integer.toString(entries.get(j).getMapGroup()) + ", priority "
-                      + Integer.toString(entries.get(j).getMapPriority()));
+            // if second entry target null
+            if (entries.get(j).getTargetId() == null || entries.get(j).getTargetId().equals("")) {
+
+              validationResult.addError("Duplicate entries (null target code) found: " + "Group "
+                  + Integer.toString(entries.get(i).getMapGroup()) + ", priority "
+                  + Integer.toString(entries.get(i).getMapPriority()) + " and " + "Group "
+                  + Integer.toString(entries.get(j).getMapGroup()) + ", priority "
+                  + Integer.toString(entries.get(j).getMapPriority()));
+            }
+
+          } else {
+
+            // check if second entry's target identical to this one
+            if (entries.get(i).getTargetId().equals(entries.get(j).getTargetId())) {
+              validationResult.addError("Duplicate entries (same target code) found: " + "Group "
+                  + Integer.toString(entries.get(i).getMapGroup()) + ", priority "
+                  + Integer.toString(entries.get(i).getMapPriority()) + " and " + "Group "
+                  + Integer.toString(entries.get(j).getMapGroup()) + ", priority "
+                  + Integer.toString(entries.get(j).getMapPriority()));
             }
           }
-
-        } else if (entries.get(i).getRule() != null && entries.get(j).getRule() != null) {
-
-          // check if second entry's target identical to this one
-          if (entries.get(i).getTargetId().equals(entries.get(j).getTargetId())
-              && entries.get(i).getRule().equals(entries.get(j).getRule())) {
-            validationResult.addWarning("Duplicate entries (same target code and rule) found: "
-                + "Group " + Integer.toString(entries.get(i).getMapGroup()) + ", priority "
-                + Integer.toString(entries.get(i).getMapPriority()) + " and " + "Group "
-                + Integer.toString(entries.get(j).getMapGroup()) + ", priority "
-                + Integer.toString(entries.get(j).getMapPriority()));
-          }
-
-        } else {
-
-          // check if second entry's target identical to this one
-          if (entries.get(i).getTargetId().equals(entries.get(j).getTargetId())) {
-            validationResult.addError("Duplicate entries (same target code) found: " + "Group "
-                + Integer.toString(entries.get(i).getMapGroup()) + ", priority "
-                + Integer.toString(entries.get(i).getMapPriority()) + " and " + "Group "
-                + Integer.toString(entries.get(j).getMapGroup()) + ", priority "
-                + Integer.toString(entries.get(j).getMapPriority()));
-          }
         }
-
       }
     }
     return validationResult;
