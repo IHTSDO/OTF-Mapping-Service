@@ -159,6 +159,8 @@ angular
           // assign entries to the record
           $scope.record.mapEntry = entries;
 
+		  $scope.record.fullexpression = utilService.getFullExpression($scope.record);
+
           broadcastRecord();
 
         };
@@ -1005,6 +1007,16 @@ angular
             $scope.recordSuccess = '';
           });
         };
+
+		// Only show full expression is there are multiple entries in the first group
+        $scope.showFullExpression = function(group) {
+          for(var i=0; i<$scope.record.mapEntry.length; i++){
+            if(group.mapGroup === 1 && $scope.record.mapEntry[i].mapPriority > 1){
+                return true;
+            }
+          }    
+          return false;
+        }
 
         // discard changes
         $scope.cancelMapRecord = function() {
