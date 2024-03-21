@@ -22,9 +22,9 @@ import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.services.ContentService;
 
 /**
- * Implementation for ICD10CA to ICD11 mapping project.
+ * Implementation for ICD11 to ICD10CA mapping project.
  */
-public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
+public class ICD11toICD10CAProjectSpecificAlgorithmHandler
     extends DefaultProjectSpecificAlgorithmHandler {
 
   /* see superclass */
@@ -165,7 +165,7 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
 
       //
       // PREDICATE: Each map cannot have more than one Target Relation,
-      // Cluster Relation, or Unmappable Reason
+      // Cluster Relation, Unmappable Reason, or Mismatch Reason
       //
       if (relationTargets.size() > 1) {
         result.addError("Map cannot have more than one Relation - Target");
@@ -188,49 +188,6 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
           ? relationClusters.get(0) : "";
       String unmappableReason = unmappableReasons.size() != 0 && unmappableReasons.get(0) != ""
           ? unmappableReasons.get(0) : "";
-      String targetMismatchReason = targetMismatchReasons.size() != 0 && targetMismatchReasons.get(0) != ""
-          ? targetMismatchReasons.get(0) : "";
-
-      //
-      // PREDICATE: When Relation - target is E-Equivalent then Relation –
-      // Cluster cannot be E, B or N
-      //
-      if (relationTarget.startsWith("E") && (relationCluster.startsWith("E")
-          || relationCluster.startsWith("B") || relationCluster.startsWith("N"))) {
-        result.addError(
-            "When Relation - target is E-Equivalent then Relation – Cluster cannot be E, B or N");
-      }
-
-      //
-      // PREDICATE: When Relation – target is B-Broader then Relation –
-      // cluster cannot be blank
-      //
-      if (relationTarget.startsWith("B") && relationCluster.isBlank()) {
-        result.addError(
-            "When Relation – target is B-Broader then Relation – cluster cannot be blank");
-      }
-
-      //
-      // PREDICATE: When Relation – target is N-Narrower then Relation –
-      // cluster cannot be blank
-      //
-      if (relationTarget.startsWith("N") && relationCluster.isBlank()) {
-        result.addError(
-            "When Relation – target is N-Narrower then Relation – cluster cannot be blank");
-      }
-
-      //
-      // PREDICATE: When Target code is blank then Relation-Target and
-      // Relation-Cluster cannot be E, B, N or n/a (must be blank).
-      //
-      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
-        final MapEntry entry = mapRecord.getMapEntries().get(i);
-        if (entry.getTargetId().isBlank()
-            && (!relationTarget.isBlank() || !relationCluster.isBlank())) {
-          result.addError(
-              "When Target code is blank then Relation-Target and Relation-Cluster cannot be E, B, N or n/a (must be blank).");
-        }
-      }
 
       //
       // PREDICATE: When Target code is blank “Unmappable reason” must have a
@@ -255,7 +212,7 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
               "When Target code is not blank, “Unmappable reason” cannot have a value filled in.");
         }
       }
-
+      
       //
       // PREDICATE: 2nd Group (WHO target) must have a target mismatch reason
       //
@@ -290,8 +247,8 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
             result.addError("1st Group (CIHI target) cannot have a target mismatch reason");
           }
         }
-      }   
-      
+      }         
+
     } catch (Exception e) {
       throw e;
     } finally {
