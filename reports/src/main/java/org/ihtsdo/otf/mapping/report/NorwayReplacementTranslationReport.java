@@ -342,7 +342,7 @@ public class NorwayReplacementTranslationReport
       boolean reachedFinalConcept= false;
       Set<String> replacementConceptIds = new HashSet<>();
       
-      while (!reachedFinalConcept) {
+      while (!reachedFinalConcept && inactiveConceptsCount != 0) {
         
         targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/browser/MAIN%2FSNOMEDCT-NO/concepts?";
         for(int i=0; i < batchSize; i++ ) {
@@ -442,7 +442,7 @@ public class NorwayReplacementTranslationReport
       
       reachedFinalConcept= false;
       
-      while (!reachedFinalConcept) {
+      while (!reachedFinalConcept && inactiveAndReplacementConceptsCount != 0) {
         
         returnedConceptsCount = 0;
         
