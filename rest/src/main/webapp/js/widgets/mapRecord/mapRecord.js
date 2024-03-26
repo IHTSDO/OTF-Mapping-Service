@@ -1641,6 +1641,41 @@ angular
           }
         };
 
+        $scope.getMapGroupDisplay = function(project, group) {
+	
+		  // This is almost always "Map Group" followed by the map group number
+		  // But for a small number of projects, it is a special display
+		  if (project.destinationTerminology === "PHCVS"){
+			if(group.mapGroup === 1){
+				return "ICD-10-CA";
+			}
+			else if (group.mapGroup === 2){
+				return "ICD-9";
+			}
+			else if (group.mapGroup === 3){
+				return "CED-DxS";
+			}
+			else{
+				return "INVALID GROUP"
+			}
+		  }
+		  else if ((project.destinationTerminology === "ICD11" && project.sourceTerminology === "ICD10CA") || 
+					(project.destinationTerminology === "ICD10CA" && project.sourceTerminology === "ICD11")) {
+			if(group.mapGroup === 1){
+				return "CIHI Map";
+			}
+			else if (group.mapGroup === 2){
+				return "WHO Map";
+			}
+			else{
+				return "INVALID GROUP"
+			}
+		  }
+		  else{
+			return "Map Group " + group.mapGroup;
+		  }
+        };
+
         // /////////////////////
         // Utility Functions //
         // /////////////////////
