@@ -186,10 +186,6 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
           relationTargets.size() != 0 && relationTargets.get(0) != "" ? relationTargets.get(0) : "";
       String relationCluster = relationClusters.size() != 0 && relationClusters.get(0) != ""
           ? relationClusters.get(0) : "";
-      String unmappableReason = unmappableReasons.size() != 0 && unmappableReasons.get(0) != ""
-          ? unmappableReasons.get(0) : "";
-      String targetMismatchReason = targetMismatchReasons.size() != 0 && targetMismatchReasons.get(0) != ""
-          ? targetMismatchReasons.get(0) : "";
 
       //
       // PREDICATE: When Relation - target is E-Equivalent then Relation –
@@ -233,26 +229,42 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
       }
 
       //
-      // PREDICATE: When Target code is blank “Unmappable reason” must have a
-      // value entered.
+      // PREDICATE: 1st Group (CIHI target), when Target code is blank
+      // “Unmappable reason” must have a value entered.
       //
       for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
         final MapEntry entry = mapRecord.getMapEntries().get(i);
-        if (entry.getTargetId().isBlank() && unmappableReason.isBlank()) {
-          result
-              .addError("When Target code is blank “Unmappable reason” must have a value entered.");
+        if (entry.getMapGroup() == 1) {
+          Boolean unmappableReasonPresent = false;
+          for (AdditionalMapEntryInfo additionalMapEntryInfo : entry.getAdditionalMapEntryInfos()) {
+            if (additionalMapEntryInfo.getField().equals("Unmappable Reason")) {
+              unmappableReasonPresent = true;
+            }
+          }
+          if (entry.getTargetId().isBlank() && !unmappableReasonPresent) {
+            result.addError(
+                "1st Group (CIHI target), when Target code is blank “Unmappable reason” must have a value entered.");
+          }
         }
       }
 
       //
-      // PREDICATE: When Target code is not blank, “Unmappable reason” cannot
-      // have a value filled in.
+      // PREDICATE: 1st Group (CIHI target), when Target code is not blank,
+      // “Unmappable reason” cannot have a value filled in.
       //
       for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
         final MapEntry entry = mapRecord.getMapEntries().get(i);
-        if (!entry.getTargetId().isBlank() && !unmappableReason.isBlank()) {
-          result.addError(
-              "When Target code is not blank, “Unmappable reason” cannot have a value filled in.");
+        if (entry.getMapGroup() == 1) {
+          Boolean unmappableReasonPresent = false;
+          for (AdditionalMapEntryInfo additionalMapEntryInfo : entry.getAdditionalMapEntryInfos()) {
+            if (additionalMapEntryInfo.getField().equals("Unmappable Reason")) {
+              unmappableReasonPresent = true;
+            }
+          }
+          if (!entry.getTargetId().isBlank() && unmappableReasonPresent) {
+            result.addError(
+                "1st Group (CIHI target), when Target code is not blank, “Unmappable reason” cannot have a value filled in.");
+          }
         }
       }
 
@@ -261,14 +273,14 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
       //
       for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
         final MapEntry entry = mapRecord.getMapEntries().get(i);
-        if(entry.getMapGroup() == 2) {
+        if (entry.getMapGroup() == 2) {
           Boolean targetMismatchReasonPresent = false;
-          for(AdditionalMapEntryInfo additionalMapEntryInfo : entry.getAdditionalMapEntryInfos()) {
-            if(additionalMapEntryInfo.getField().equals("Target Mismatch Reason")) {
+          for (AdditionalMapEntryInfo additionalMapEntryInfo : entry.getAdditionalMapEntryInfos()) {
+            if (additionalMapEntryInfo.getField().equals("Target Mismatch Reason")) {
               targetMismatchReasonPresent = true;
             }
           }
-          if(!targetMismatchReasonPresent) {
+          if (!targetMismatchReasonPresent) {
             result.addError("2nd Group (WHO targe)t must have a target mismatch reason");
           }
         }
@@ -279,19 +291,19 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
       //
       for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
         final MapEntry entry = mapRecord.getMapEntries().get(i);
-        if(entry.getMapGroup() == 1) {
+        if (entry.getMapGroup() == 1) {
           Boolean targetMismatchReasonPresent = false;
-          for(AdditionalMapEntryInfo additionalMapEntryInfo : entry.getAdditionalMapEntryInfos()) {
-            if(additionalMapEntryInfo.getField().equals("Target Mismatch Reason")) {
+          for (AdditionalMapEntryInfo additionalMapEntryInfo : entry.getAdditionalMapEntryInfos()) {
+            if (additionalMapEntryInfo.getField().equals("Target Mismatch Reason")) {
               targetMismatchReasonPresent = true;
             }
           }
-          if(targetMismatchReasonPresent) {
+          if (targetMismatchReasonPresent) {
             result.addError("1st Group (CIHI target) cannot have a target mismatch reason");
           }
         }
-      }   
-      
+      }
+
     } catch (Exception e) {
       throw e;
     } finally {
@@ -412,7 +424,7 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
 
             // check if second entry's target identical to this one
             if (entries.get(i).getTargetId().equals(entries.get(j).getTargetId())) {
-              validationResult.addError("Duplicate entries (same target code) found: " + "Group "
+              validationResult.addWarning("Duplicate entries (same target code) found: " + "Group "
                   + Integer.toString(entries.get(i).getMapGroup()) + ", priority "
                   + Integer.toString(entries.get(i).getMapPriority()) + " and " + "Group "
                   + Integer.toString(entries.get(j).getMapGroup()) + ", priority "
