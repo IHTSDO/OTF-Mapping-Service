@@ -1,7 +1,7 @@
 /*
- *    Copyright 2019 West Coast Informatics, LLC
+ *    Copyright 2024 West Coast Informatics, LLC
  */
-package org.ihtsdo.otf.mapping.mojo;
+package org.ihtsdo.otf.mapping.report;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -19,57 +19,41 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import javax.persistence.EntityManager;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
-import org.apache.log4j.Logger;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.mapping.helpers.LocalException;
-import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
-import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
-import org.ihtsdo.otf.mapping.services.ContentService;
-import org.ihtsdo.otf.mapping.services.MappingService;
-import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Run the weekly SQLdump report and email
- * 
- * See admin/loader/pom.xml for a sample execution.
- * 
- * @goal run-norway-replacement-translation-report
+ * The Class NorwayReplacementTranslationReport.
  */
-public class NorwayReplacementTranslationReportMojo extends AbstractOtfMappingMojo {
+public class NorwayReplacementTranslationReport
+    extends AbstractOtfMappingReport {
 
-  /** The manager. */
-  EntityManager manager;
+  /** The Constant LOG. */
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(NorwayReplacementTranslationReport.class);
 
-  /* see superclass */
-  @Override
-  public void execute() throws MojoExecutionException, MojoFailureException {
+  /** The Constant COLUMN_DELIMITER. */
+  private static final String COLUMN_DELIMITER = "\t";
 
-    getLog().info("Start Norway Replacement Translation Report Mojo");
+  /**
+   * Instantiates an empty {@link NorwayReplacementTranslationReport}.
+   */
+  private NorwayReplacementTranslationReport() {
 
-    setupBindInfoPackage();
-    
-    try {
-        runReport();
-
-    } catch (Exception e) {
-      getLog().error("Error running Norway Replacement Translation Report Mojo.", e);
-    }
   }
 
   /**
@@ -77,13 +61,11 @@ public class NorwayReplacementTranslationReportMojo extends AbstractOtfMappingMo
    *
    * @throws Exception the exception
    */
-  private void runReport() throws Exception {
-    try (ContentService service = new ContentServiceJpa() {
-      {
-        NorwayReplacementTranslationReportMojo.this.manager = manager;
-      }
-    }; MappingService mappingService = new MappingServiceJpa();) {
+  public static void runReport() throws Exception {
 
+    LOGGER.info("Start Norway Replacement Translation Report");
+    
+    try {
 
       final Client client = ClientBuilder.newClient();
       final String accept = "application/json";
@@ -91,7 +73,7 @@ public class NorwayReplacementTranslationReportMojo extends AbstractOtfMappingMo
       String searchAfter = null;
       final ObjectMapper mapper = new ObjectMapper();
 
-    getLog().info("Identify full list of concepts Norway is interested in, as stored in the Bokmål and Nynorsk langauge refsets (both standard and 'for General Practitioners' versions)");
+    LOGGER.info("Identify full list of concepts Norway is interested in, as stored in the Bokmål and Nynorsk langauge refsets (both standard and 'for General Practitioners' versions)");
     //Sample JSON
     /*
 {
@@ -143,7 +125,7 @@ public class NorwayReplacementTranslationReportMojo extends AbstractOtfMappingMo
     nynorskGPRefsetsConceptIds.addAll(langRefsetLookup("188001000202106"));
     allLangRefsetsConceptIds.addAll(nynorskGPRefsetsConceptIds);
       
-      getLog().info("Identify current and dependent branch paths");
+    LOGGER.info("Identify current and dependent branch paths");
       //Sample JSON
       /*
 {
@@ -176,12 +158,10 @@ public class NorwayReplacementTranslationReportMojo extends AbstractOtfMappingMo
       String targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/codesystems?forBranch=MAIN%2FSNOMEDCT-NO%2FREFSETS";
       WebTarget target = client.target(targetUri);
       target = client.target(targetUri);
-      Logger.getLogger(getClass()).info(targetUri);
+      LOGGER.info(targetUri);
    
       Response response =
-          target.request(accept)
-          .header("Cookie", ConfigUtility.getGenericUserCookie())
-          .get();
+          target.request(accept).get();
       String resultString = response.readEntity(String.class);
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
@@ -203,7 +183,7 @@ public class NorwayReplacementTranslationReportMojo extends AbstractOtfMappingMo
       }
      
       
-      getLog().info("Identify all in-scope concepts that are active in the previousVersionBranch, and inactive in the currentBranch");
+      LOGGER.info("Identify all in-scope concepts that are active in the previousVersionBranch, and inactive in the currentBranch");
       //Sample JSON
       /*
 {
@@ -228,7 +208,7 @@ public class NorwayReplacementTranslationReportMojo extends AbstractOtfMappingMo
         
         targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/"+previousVersionBranch.replaceAll("/", "%2F")+"/concepts?activeFilter=true&returnIdOnly=true&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
         target = client.target(targetUri);
-        Logger.getLogger(getClass()).info(targetUri);
+        LOGGER.info(targetUri);
      
         response =
             target.request(accept)
@@ -273,7 +253,7 @@ public class NorwayReplacementTranslationReportMojo extends AbstractOtfMappingMo
         
         targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/"+currentBranch.replaceAll("/", "%2F")+"/concepts?activeFilter=false&returnIdOnly=true&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
         target = client.target(targetUri);
-        Logger.getLogger(getClass()).info(targetUri);
+        LOGGER.info(targetUri);
      
         response =
             target.request(accept)
@@ -324,7 +304,7 @@ public class NorwayReplacementTranslationReportMojo extends AbstractOtfMappingMo
         }
       }                
       
-      getLog().info("Grab all replacement concepts");
+      LOGGER.info("Grab all replacement concepts");
       //Sample JSON
       /*
 {
@@ -377,12 +357,10 @@ public class NorwayReplacementTranslationReportMojo extends AbstractOtfMappingMo
         
         target = client.target(targetUri);
         target = client.target(targetUri);
-        Logger.getLogger(getClass()).info(targetUri);
+        LOGGER.info(targetUri);
      
         response =
-            target.request(accept)
-            .header("Cookie", ConfigUtility.getGenericUserCookie())
-            .get();
+            target.request(accept).get();
         resultString = response.readEntity(String.class);
         if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
           // n/a
@@ -424,7 +402,7 @@ public class NorwayReplacementTranslationReportMojo extends AbstractOtfMappingMo
         }
       }            
       
-      getLog().info("Grab all inactive and replacement concept descriptions");
+      LOGGER.info("Grab all inactive and replacement concept descriptions");
       //Sample JSON
       /*
 {
@@ -481,12 +459,10 @@ public class NorwayReplacementTranslationReportMojo extends AbstractOtfMappingMo
         targetUri = targetUri + "limit=10000";
         
         target = client.target(targetUri);
-        Logger.getLogger(getClass()).info(targetUri);
+        LOGGER.info(targetUri);
      
         response =
-            target.request(accept)
-            .header("Cookie", ConfigUtility.getGenericUserCookie())
-            .get();
+            target.request(accept).get();
         resultString = response.readEntity(String.class);
         if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
           // n/a
@@ -549,14 +525,14 @@ public class NorwayReplacementTranslationReportMojo extends AbstractOtfMappingMo
         
         final String inactivationIndicator = conceptInactivationIndicators.get(conceptId);
         final String inactiveConceptInfo = 
-            conceptId + "\t" +
-            conceptIdToFSN.get(conceptId) + "\t" +
-            conceptIdToFSN.get(conceptId).substring(conceptIdToFSN.get(conceptId).indexOf("("), conceptIdToFSN.get(conceptId).indexOf(")") + 1) + "\t" +
-            (conceptIdToPTNO.get(conceptId)!=null ? conceptIdToPTNO.get(conceptId) : "") + "\t"+
-            (bokmalRefsetsConceptIds.contains(conceptId) ? "TRUE" : "FALSE") + "\t" +
-            (nynorskRefsetsConceptIds.contains(conceptId) ? "TRUE" : "FALSE") + "\t" +
-            (bokmalGPRefsetsConceptIds.contains(conceptId) ? "TRUE" : "FALSE") + "\t" +
-            (nynorskGPRefsetsConceptIds.contains(conceptId) ? "TRUE" : "FALSE") + "\t" +            
+            conceptId + COLUMN_DELIMITER +
+            conceptIdToFSN.get(conceptId) + COLUMN_DELIMITER +
+            conceptIdToFSN.get(conceptId).substring(conceptIdToFSN.get(conceptId).indexOf("("), conceptIdToFSN.get(conceptId).indexOf(")") + 1) + COLUMN_DELIMITER +
+            (conceptIdToPTNO.get(conceptId)!=null ? conceptIdToPTNO.get(conceptId) : "") + COLUMN_DELIMITER+
+            (bokmalRefsetsConceptIds.contains(conceptId) ? "TRUE" : "FALSE") + COLUMN_DELIMITER +
+            (nynorskRefsetsConceptIds.contains(conceptId) ? "TRUE" : "FALSE") + COLUMN_DELIMITER +
+            (bokmalGPRefsetsConceptIds.contains(conceptId) ? "TRUE" : "FALSE") + COLUMN_DELIMITER +
+            (nynorskGPRefsetsConceptIds.contains(conceptId) ? "TRUE" : "FALSE") + COLUMN_DELIMITER +            
             inactivationIndicator;
         if(conceptAssociationTargets.get(conceptId) == null) {
           results.add(inactiveConceptInfo);
@@ -568,12 +544,12 @@ public class NorwayReplacementTranslationReportMojo extends AbstractOtfMappingMo
             for(String targetId : targetIds) {
                             
               final String targetConceptInfo = 
-                  associationTerm + "\t" + 
-              targetId + "\t"+
-              conceptIdToFSN.get(targetId) + "\t" +
+                  associationTerm + COLUMN_DELIMITER + 
+              targetId + COLUMN_DELIMITER+
+              conceptIdToFSN.get(targetId) + COLUMN_DELIMITER +
               (conceptIdToPTNO.get(targetId)!=null ? conceptIdToPTNO.get(targetId) : "");
 
-              results.add(inactiveConceptInfo + "\t" + targetConceptInfo);
+              results.add(inactiveConceptInfo + COLUMN_DELIMITER + targetConceptInfo);
             }
           }
         }
@@ -587,7 +563,7 @@ public class NorwayReplacementTranslationReportMojo extends AbstractOtfMappingMo
 
       File resultFile =
           new File(System.getProperty("java.io.tmpdir") + filename + ".txt");
-      getLog().info("Created result file: " + resultFile.getAbsolutePath());
+      LOGGER.info("Created result file: " + resultFile.getAbsolutePath());
 
       try (FileWriter writer = new FileWriter(resultFile);) {
         for (String str : results) {
@@ -606,7 +582,7 @@ public class NorwayReplacementTranslationReportMojo extends AbstractOtfMappingMo
           FileInputStream fis = new FileInputStream(resultFile);) {
 
         ZipEntry ze = new ZipEntry(resultFile.getName());
-        getLog().info("Zipping the file: " + resultFile.getName());
+        LOGGER.info("Zipping the file: " + resultFile.getName());
         zipOut.putNextEntry(ze);
         byte[] tmp = new byte[4 * 1024];
         int size = 0;
@@ -615,65 +591,33 @@ public class NorwayReplacementTranslationReportMojo extends AbstractOtfMappingMo
         }
 
       } catch (Exception e) {
-        getLog().error(e);
+        LOGGER.error("ERROR", e);
       }
 
       // Send file to recipients
-      sendEmail(zipFile.getAbsolutePath());
+      emailReportFile("[OTF-Mapping-Tool] Norway Replacement Translation Report",
+          zipFile.getAbsolutePath(),
+          "report.send.notification.recipients.norway."
+              + NorwayReplacementTranslationReport.class.getSimpleName(),
+          "Hello,\n\nThe Norway replacement translation report has been generated.");
+
+      LOGGER.info("Norway Replacement Translation Report completed.");
 
     } catch (Exception e) {
-      getLog().error(e);
-      throw new MojoExecutionException(
+      LOGGER.error("ERROR", e);
+      
+      emailReportError("Error generating Norway Replacement Translation Report",
+          "report.send.notification.recipients.norway."
+              + NorwayReplacementTranslationReport.class.getSimpleName(),
+          "There was an error generating the Normay Replacement Translation Report.  Please contact support for assistance.");
+
+      
+      throw new Exception(
           "Norway Replacement Translation Report mojo failed to complete", e);
     }
   }
 
-  /**
-   * Send email.
-   *
-   * @param fileName the file name
-   * @throws Exception the exception
-   */
-  private void sendEmail(String fileName) throws Exception {
-
-    Properties config;
-    try {
-      config = ConfigUtility.getConfigProperties();
-    } catch (Exception e1) {
-      throw new MojoExecutionException("Failed to retrieve config properties");
-    }
-    String notificationRecipients =
-        config.getProperty("report.send.notification.recipients.norway."
-            + getClass().getSimpleName());
-    String notificationMessage = "";
-    getLog().info("Request to send notification email to recipients: "
-        + notificationRecipients);
-    notificationMessage +=
-        "Hello,\n\nThe Norway replacement translation report has been generated.";
-
-    String from;
-    if (config.containsKey("mail.smtp.from")) {
-      from = config.getProperty("mail.smtp.from");
-    } else {
-      from = config.getProperty("mail.smtp.user");
-    }
-
-    Properties props = new Properties();
-    props.put("mail.smtp.user", config.getProperty("mail.smtp.user"));
-    props.put("mail.smtp.password", config.getProperty("mail.smtp.password"));
-    props.put("mail.smtp.host", config.getProperty("mail.smtp.host"));
-    props.put("mail.smtp.port", config.getProperty("mail.smtp.port"));
-    props.put("mail.smtp.starttls.enable",
-        config.getProperty("mail.smtp.starttls.enable"));
-    props.put("mail.smtp.auth", config.getProperty("mail.smtp.auth"));
-
-    ConfigUtility.sendEmailWithAttachment(
-        "[OTF-Mapping-Tool] Norway Replacement Translation Report", from, notificationRecipients,
-        notificationMessage, props, fileName,
-        "true".equals(config.getProperty("mail.smtp.auth")));
-  }
-  
-  private Set<String> langRefsetLookup(String refsetId) throws Exception {
+  private static Set<String> langRefsetLookup(String refsetId) throws Exception {
 
     final Client client = ClientBuilder.newClient();
     final String accept = "application/json";
@@ -693,12 +637,10 @@ public class NorwayReplacementTranslationReportMojo extends AbstractOtfMappingMo
       String targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/MAIN%2FSNOMEDCT-NO%2FREFSETS/members?referenceSet="+refsetId+"&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
       WebTarget target = client.target(targetUri);
       target = client.target(targetUri);
-      Logger.getLogger(getClass()).info(targetUri);
+      LOGGER.info(targetUri);
    
       Response response =
-          target.request(accept)
-          .header("Cookie", ConfigUtility.getGenericUserCookie())
-          .get();
+          target.request(accept).get();
       String resultString = response.readEntity(String.class);
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
@@ -730,5 +672,6 @@ public class NorwayReplacementTranslationReportMojo extends AbstractOtfMappingMo
     
     return langRefsetsConceptIds;
   }
-
+  
+  
 }

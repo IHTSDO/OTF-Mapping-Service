@@ -191,5 +191,15 @@ public interface ReportServiceRest {
 	   * @throws Exception
 	   */
 	InputStream exportReport(Long reportId, String authToken) throws Exception;
+	
+	  /**
+	   * Execute report.
+	   *
+	   * @param authToken the auth token
+	   * @param reportName the report name
+	   * @throws Exception the exception
+	   */
+	  void executeReport(final String authToken,
+	    final String reportName) throws Exception;
 
 }
