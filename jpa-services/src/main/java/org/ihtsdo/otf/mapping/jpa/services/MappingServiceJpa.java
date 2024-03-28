@@ -2123,15 +2123,18 @@ public class MappingServiceJpa extends RootServiceJpa
             addMapRecord(mapRecord);
 
             if (++ct % commitCt == 0) {
+              //Save the map record id, so we can reload the map record after the commit/clear
+              final Long mapRecordId = mapRecord.getId();
               Logger.getLogger(MappingServiceJpa.class)
                   .info("    " + ct + " records created");
               commit();
               manager.clear();
               beginTransaction();
               // For memory management, avoid keeping cache of
-              // tree
-              // positions
+              // tree positions
               contentService = new ContentServiceJpa();
+              //Reload the map record
+              mapRecord = getMapRecord(mapRecordId);
             }
           }
 
