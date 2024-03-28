@@ -52,16 +52,22 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
       final Concept concept = contentService.getConcept(mapEntry.getTargetId(),
           mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
 
-      // Concept must exist
-      if (concept == null) {
+      // For CIHI Map entries, Concept must exist
+      if (mapEntry.getMapGroup() == 1 && concept == null) {
         validationResult
-            .addError("Concept for target id " + mapEntry.getTargetId() + " does not exist.");
+            .addError("Concept for CIHI target: " + mapEntry.getTargetId() + " does not exist.");
       }
 
-      // Concept must be active
-      if (concept != null && !concept.isActive()) {
+      // For CIHI Map entries, Concept must be active
+      if (mapEntry.getMapGroup() == 1 && concept != null && !concept.isActive()) {
         validationResult
-            .addError("Concept for target id " + mapEntry.getTargetId() + " is not active.");
+            .addError("Concept for CIHI target: " + mapEntry.getTargetId() + " is not active.");
+      }
+      
+      // For WHO Map entries, non-existent concepts are allowable
+      if (mapEntry.getMapGroup() == 2 && concept == null) {
+        validationResult
+            .addWarning("Concept for WHO target: " + mapEntry.getTargetId() + " does not exist.");
       }
     }
 
@@ -281,7 +287,7 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
             }
           }
           if (!targetMismatchReasonPresent) {
-            result.addError("2nd Group (WHO targe)t must have a target mismatch reason");
+            result.addError("2nd Group (WHO target) must have a target mismatch reason");
           }
         }
       }
