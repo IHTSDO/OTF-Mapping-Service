@@ -6,7 +6,7 @@
   <!-- Module Metadata - no parent -->
   <groupId>org.ihtsdo.otf.mapping</groupId>
   <artifactId>ihtsdo-mapping-service</artifactId>
-  <version>1.7.48-SNAPSHOT</version>
+  <version>1.7.49-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>IHTSDO RF2 Data Model</name>
   <description>Aggregator and parent for interfaces and default implementations of RF2 data model for OTF services</description>
@@ -22,6 +22,7 @@
     <module>jpa-model</module>
     <module>services</module>
     <module>jpa-services</module>
+	<module>reports</module>
     <module>rest</module>
 	<module>rest-client</module>
     <module>admin</module>
