@@ -112,6 +112,92 @@ mapProjectApp
           return notes[projectId];
         };
 
+		// Transform the entries into a post-coordinated expression
+		this.getFullExpression = function(mapRecord) {
+			
+		  var fullExpression = "";
+	
+	
+		  // Per CIHI's requirements, only create full expressions for the entries in Map Group 1.
+		  // If later clients/projects need this functionality as well, will need to rewrite.
+		  var mapEntries = [];
+		  for(var i=0; i<mapRecord.mapEntry.length; i++){
+			if(mapRecord.mapEntry[i].mapGroup === 1){
+				mapEntries.push(mapRecord.mapEntry[i]);				
+			}
+		  }
+		  
+		  var orderedEntries = mapEntries.sort(function(a, b) {
+		      if (a.mapGroup === b.mapGroup) {
+		         // Priority is only important when groups are the same
+		         return a.mapPriority - b.mapPriority;
+		      }
+		      return a.mapGroup > b.mapGroup ? 1 : -1;
+		   });
+          
+	
+		    for(var i=0; i<orderedEntries.length; i++){
+			  // Connect extension codes with ampersands
+		      if(orderedEntries[i].targetId.startsWith("X")){
+		          fullExpression = fullExpression + "&" + orderedEntries[i].targetId;
+		      }
+			  // Connect new non-extension codes with forward-slah
+			  else{
+				fullExpression = fullExpression + "/" + orderedEntries[i].targetId;
+			  }
+		    }
+	
+		  // The above algorithm creates a leading "/" or "&" - remove it.
+		  fullExpression = fullExpression.substring(1);
+	
+		  return fullExpression;
+			
+		}
+		
+		// Process additional map entry issue ordering information
+		// E.g. Relation - Target|1;Relation - Cluster|2;Unmappable Reason|3;Target Mismatch Reason|4
+		// Transform into a map:
+		// key='Relation - Target'
+		// value=1
+		this.processOrderingInfo = function(orderingInformation) {
+					
+		  var orderIdInfoMap = new Map();
+	
+		  if(orderingInformation == null ){
+			return orderIdInfoMap;
+		  }
+
+		  var mapEntryInfoAndOrders = orderingInformation.split(";");
+
+		 for(var i=0; i<mapEntryInfoAndOrders.length; i++){
+			var mapEntryInfoAndOrderName = mapEntryInfoAndOrders[i].split("|")[0];
+			var mapEntryInfoAndOrderOrderId = mapEntryInfoAndOrders[i].split("|")[1];
+			orderIdInfoMap.set(mapEntryInfoAndOrderName, mapEntryInfoAndOrderOrderId);
+		 }	  
+	
+		  return orderIdInfoMap;
+			
+		}	
+		
+		// Add additional map entry issue order info, if needed
+		this.addOrderIds = function(mapRecord, orderIdInfoMap) {
+			
+		  for(var i=0; i<mapRecord.mapEntry.length; i++){
+			for(var j=0; j<mapRecord.mapEntry[i]['additionalMapEntryInfo'].length; j++){
+				if (orderIdInfoMap.has(mapRecord.mapEntry[i]['additionalMapEntryInfo'][j].field)){
+					mapRecord.mapEntry[i]['additionalMapEntryInfo'][j].orderId = orderIdInfoMap.get(mapRecord.mapEntry[i]['additionalMapEntryInfo'][j].field);
+				}
+				else{
+					mapRecord.mapEntry[i]['additionalMapEntryInfo'][j].orderId = 0;
+				}
+			}			
+		  }
+		  
+	
+		  return mapRecord;
+			
+		}		
+
         // Prep query
         this.prepQuery = function(query) {
           if (!query) {
