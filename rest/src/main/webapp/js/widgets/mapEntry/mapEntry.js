@@ -24,14 +24,17 @@ angular
       '$location',
       '$anchorScroll',
       'localStorageService',
+      'utilService',
+      'appConfig',
       'gpService',
       function($scope, $window, $rootScope, $q, $http, $routeParams, $uibModal,
-        $location, $anchorScroll, localStorageService, gpService) {
+        $location, $anchorScroll, localStorageService, utilService, appConfig, gpService) {
 
         // for this widget, the only local storage service variable used is
         // user
         // token
         $scope.userToken = localStorageService.get('userToken');
+		$scope.additionalMapEntryInfoOrderingMap = utilService.processOrderingInfo(appConfig['deploy.additional.map.entry.info.ordering']);
 
         // watch for entry change
         $scope.$on('mapRecordWidget.notification.changeSelectedEntry',
@@ -61,9 +64,9 @@ angular
 			// determine which additional map entries are available for the current entry
 			$scope.allowableMapEntryInfos = {};
 			for(var i = 0; i < $scope.additionalMapEntryFields.length; i++){
-				$scope.allowableMapEntryInfos[$scope.additionalMapEntryFields[i]] = 
-				$scope.getAllowableMapEntryInfosForField($scope.entry, $scope.additionalMapEntryFields[i]);
-				sortByKey($scope.allowableMapEntryInfos[$scope.additionalMapEntryFields[i]],'value');
+				$scope.allowableMapEntryInfos[$scope.additionalMapEntryFields[i].name] = 
+				$scope.getAllowableMapEntryInfosForField($scope.entry, $scope.additionalMapEntryFields[i].name);
+				sortByKey($scope.allowableMapEntryInfos[$scope.additionalMapEntryFields[i].name],'value');
 			}
 
 
@@ -180,9 +183,9 @@ angular
                     $scope.project.mapRelation);
 
 				for(var i = 0; i < $scope.additionalMapEntryFields.length; i++){
-					$scope.allowableMapEntryInfos[$scope.additionalMapEntryFields[i]] = 
-					$scope.getAllowableMapEntryInfosForField($scope.entry, $scope.additionalMapEntryFields[i]);
-					sortByKey($scope.allowableMapEntryInfos[$scope.additionalMapEntryFields[i]],'value');
+					$scope.allowableMapEntryInfos[$scope.additionalMapEntryFields[i].name] = 
+					$scope.getAllowableMapEntryInfosForField($scope.entry, $scope.additionalMapEntryFields[i].name);
+					sortByKey($scope.allowableMapEntryInfos[$scope.additionalMapEntryFields[i].name],'value');
 				}
 
               } else {
@@ -249,9 +252,9 @@ angular
 
 			$scope.allowableMapEntryInfos = {};
 			for(var i = 0; i < $scope.additionalMapEntryFields.length; i++){
-				$scope.allowableMapEntryInfos[$scope.additionalMapEntryFields[i]] = 
-				$scope.getAllowableMapEntryInfosForField($scope.entry, $scope.additionalMapEntryFields[i]);
-				sortByKey($scope.allowableMapEntryInfos[$scope.additionalMapEntryFields[i]],'value');
+				$scope.allowableMapEntryInfos[$scope.additionalMapEntryFields[i].name] = 
+				$scope.getAllowableMapEntryInfosForField($scope.entry, $scope.additionalMapEntryFields[i].name);
+				sortByKey($scope.allowableMapEntryInfos[$scope.additionalMapEntryFields[i].name],'value');
 			}
 
           // if project rule based, reset rule to TRUE
@@ -1008,11 +1011,12 @@ angular
           if (additionalMapEntryInfo != null) {
 
             for (var i = 0; i < additionalMapEntryInfo.length; i++) {
-			  var field = additionalMapEntryInfo[i].field;
+			  var field = {};
+			  field.name = additionalMapEntryInfo[i].field;
 	
 			  var fieldAlreadyAdded = false;
 			  for(var j = 0; j < additionalMapEntryFields.length; j++){
-				if (additionalMapEntryFields[j] === field){
+				if (additionalMapEntryFields[j].name === field.name){
 					fieldAlreadyAdded = true;
 					break;
 				}
@@ -1023,6 +1027,8 @@ angular
 			  }
 			}
 		  }
+
+		 addOrderIds(additionalMapEntryFields, $scope.additionalMapEntryInfoOrderingMap);
 
 		  return additionalMapEntryFields;
 		}
@@ -1060,6 +1066,19 @@ angular
             var y = b[key];
             return ((x < y) ? -1 : ((x > y) ? 1 : 0));
           });
+        }
+
+        function addOrderIds(additionalMapEntryFields, orderIdInfoMap) {
+          for (var i = 0; i < additionalMapEntryFields.length; i++) {
+			if (orderIdInfoMap.has(additionalMapEntryFields[i].name)){
+				additionalMapEntryFields[i].orderId = orderIdInfoMap.get(additionalMapEntryFields[i].name);
+			}
+			else{
+				additionalMapEntryFields[i].orderId = 0;
+			}
+          }
+
+			return additionalMapEntryFields;
         }
 
         function removeJsonElement(array, elem) {

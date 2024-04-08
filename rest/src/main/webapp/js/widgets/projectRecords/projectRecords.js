@@ -62,6 +62,10 @@ angular
 
       $scope.conversation = null;
 
+	  // Additional map entry ordering information
+	  $scope.additionalMapEntryInfoOrderingMap = utilService.processOrderingInfo(appConfig['deploy.additional.map.entry.info.ordering']);
+  
+
       // watch for changes to focus project
       $scope.$on('localStorageModule.notification.setFocusProject', function(
         event, parameters) {
@@ -177,6 +181,7 @@ angular
               if ($scope.records[i].mapNote.length > 1){
                 $scope.records[i].mapNote = $scope.records[i].mapNote.sort(function(a,b){return b.timestamp - a.timestamp});
               }            
+	  	  	  $scope.records[i] = utilService.addOrderIds($scope.records[i], $scope.additionalMapEntryInfoOrderingMap);
             }
             
             $scope.statusRecordLoad = '';

@@ -55,6 +55,7 @@ angular
         $scope.conversation = null;
         $scope.mapLeads = $scope.project.mapLead;
         organizeUsers($scope.mapLeads);
+		$scope.additionalMapEntryInfoOrderingMap = utilService.processOrderingInfo(appConfig['deploy.additional.map.entry.info.ordering']);
         $scope.enableAuthoringHistoryButton = (appConfig["deploy.show.authoring.history.button"] === 'true') ? true : false;
 		// Override AuthoringHistoryButton value for non-SNOMED terminologies (since the functionality will never work)
 		if(!$scope.project.sourceTerminology.includes('SNOMED')){
@@ -158,6 +159,9 @@ angular
 
           // assign entries to the record
           $scope.record.mapEntry = entries;
+
+		  $scope.record.fullexpression = utilService.getFullExpression($scope.record);
+	  	  $scope.record = utilService.addOrderIds($scope.record, $scope.additionalMapEntryInfoOrderingMap);
 
           broadcastRecord();
 
