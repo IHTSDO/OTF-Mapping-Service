@@ -143,13 +143,13 @@
       </td>
     </tr>
     
-    <tr ng-repeat="field in additionalMapEntryFields">
+    <tr ng-repeat="field in additionalMapEntryFields | orderBy: ['orderId','name']">
 	  <td style="vertical-align: top; padding: 5px; width: 50px;">
-        <strong>{{field}}</strong>
+        <strong>{{field.name}}</strong>
       </td>
       <td style="vertical-align: top; padding: 5px;">
         <div ng-show="entry.additionalMapEntryInfo.length > 0">
-          <div ng-repeat="mapEntryInfo in getAssignedMapEntryInfosForField(entry, field)">
+          <div ng-repeat="mapEntryInfo in getAssignedMapEntryInfosForField(entry, field.name)">
             <div class="alert alert-warning">
               <div style="display: inline;">{{mapEntryInfo.value}}</div>
               <div style="display: inline; float: right; width: 3%;">
@@ -162,10 +162,10 @@
         </div>
         <span style="color: red">{{errorAddAdditionalMapEntryInfo}}</span>
         <form>
-          Add {{field}}: <select style="width: 60%;"
+          Add {{field.name}}: <select style="width: 60%;"
             ng-change="addEntryAdditionalMapEntryInfo(entry, additionalMapEntryInfoInput);additionalMapEntryInfoInput=null;"
             ng-model="additionalMapEntryInfoInput"
-            ng-options="mapEntryInfo as mapEntryInfo.value for mapEntryInfo in allowableMapEntryInfos[field]"></select>
+            ng-options="mapEntryInfo as mapEntryInfo.value for mapEntryInfo in allowableMapEntryInfos[field.name]"></select>
         </form>
       </td>      
 	</tr>
