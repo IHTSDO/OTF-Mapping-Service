@@ -153,6 +153,50 @@ mapProjectApp
 		  return fullExpression;
 			
 		}
+		
+		// Process additional map entry issue ordering information
+		// E.g. Relation - Target|1;Relation - Cluster|2;Unmappable Reason|3;Target Mismatch Reason|4
+		// Transform into a map:
+		// key='Relation - Target'
+		// value=1
+		this.processOrderingInfo = function(orderingInformation) {
+					
+		  var orderIdInfoMap = new Map();
+	
+		  if(orderingInformation == null ){
+			return orderIdInfoMap;
+		  }
+
+		  var mapEntryInfoAndOrders = orderingInformation.split(";");
+
+		 for(var i=0; i<mapEntryInfoAndOrders.length; i++){
+			var mapEntryInfoAndOrderName = mapEntryInfoAndOrders[i].split("|")[0];
+			var mapEntryInfoAndOrderOrderId = mapEntryInfoAndOrders[i].split("|")[1];
+			orderIdInfoMap.set(mapEntryInfoAndOrderName, mapEntryInfoAndOrderOrderId);
+		 }	  
+	
+		  return orderIdInfoMap;
+			
+		}	
+		
+		// Add additional map entry issue order info, if needed
+		this.addOrderIds = function(mapRecord, orderIdInfoMap) {
+			
+		  for(var i=0; i<mapRecord.mapEntry.length; i++){
+			for(var j=0; j<mapRecord.mapEntry[i]['additionalMapEntryInfo'].length; j++){
+				if (orderIdInfoMap.has(mapRecord.mapEntry[i]['additionalMapEntryInfo'][j].field)){
+					mapRecord.mapEntry[i]['additionalMapEntryInfo'][j].orderId = orderIdInfoMap.get(mapRecord.mapEntry[i]['additionalMapEntryInfo'][j].field);
+				}
+				else{
+					mapRecord.mapEntry[i]['additionalMapEntryInfo'][j].orderId = 0;
+				}
+			}			
+		  }
+		  
+	
+		  return mapRecord;
+			
+		}		
 
         // Prep query
         this.prepQuery = function(query) {
