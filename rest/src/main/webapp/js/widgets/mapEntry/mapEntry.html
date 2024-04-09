@@ -143,7 +143,7 @@
       </td>
     </tr>
     
-    <tr ng-repeat="field in additionalMapEntryFields | orderBy: ['orderId','name']">
+    <tr ng-repeat="field in additionalMapEntryFields | orderBy: ['orderId','name']" ng-show="showAdditionalMapEntryInfo(entry, field)">
 	  <td style="vertical-align: top; padding: 5px; width: 50px;">
         <strong>{{field.name}}</strong>
       </td>

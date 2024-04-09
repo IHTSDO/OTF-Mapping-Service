@@ -35,6 +35,7 @@ angular
         // token
         $scope.userToken = localStorageService.get('userToken');
 		$scope.additionalMapEntryInfoOrderingMap = utilService.processOrderingInfo(appConfig['deploy.additional.map.entry.info.ordering']);
+		$scope.additionalMapEntryInfoHidingMap = utilService.processHidingInfo(appConfig['deploy.additional.map.entry.info.hiding']);
 
         // watch for entry change
         $scope.$on('mapRecordWidget.notification.changeSelectedEntry',
@@ -963,6 +964,18 @@ angular
           updateEntry($scope.entry);
 
         };
+
+		$scope.showAdditionalMapEntryInfo = function(entry, field) {
+			if($scope.additionalMapEntryInfoHidingMap == null){
+				return true;
+			}
+			else if($scope.additionalMapEntryInfoHidingMap.get(field.name) == entry.mapGroup){
+				return false;
+			}
+			else{
+				return true;
+			}
+		}
 
         // Function for MapAdvice and MapRelations, returns allowable lists
         // based
