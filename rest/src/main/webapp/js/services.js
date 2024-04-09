@@ -153,7 +153,34 @@ mapProjectApp
 		  return fullExpression;
 			
 		}
+
+
+		// Process additional map entry issue hiding information
+		// E.g. Target Mismatch Reason|1;Relation - Target|2
+		// Transform into a map:
+		// key='Target Mismatch Reason'
+		// value=1
+		this.processHidingInfo = function(hidingInformation) {
+					
+		  var hidingInfoMap = new Map();
+	
+		  if(hidingInformation == null ){
+			return hidingInfoMap;
+		  }
+
+		  var mapEntryHidingInfos = hidingInformation.split(";");
+
+		 for(var i=0; i<mapEntryHidingInfos.length; i++){
+			var mapEntryHidingInfoName = mapEntryHidingInfos[i].split("|")[0];
+			var mapEntryHidingInfoGroupId = mapEntryHidingInfos[i].split("|")[1];
+			hidingInfoMap.set(mapEntryHidingInfoName, mapEntryHidingInfoGroupId);
+		 }	  
+	
+		  return hidingInfoMap;
+			
+		}
 		
+				
 		// Process additional map entry issue ordering information
 		// E.g. Relation - Target|1;Relation - Cluster|2;Unmappable Reason|3;Target Mismatch Reason|4
 		// Transform into a map:
