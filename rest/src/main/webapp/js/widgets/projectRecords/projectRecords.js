@@ -686,6 +686,7 @@ angular
           // result relevance)
           'sortField' : $scope.searchParameters
             && $scope.searchParameters.query ? null : 'conceptId',
+          'ascending' : true,
           'queryRestriction' : ''
         };
 
