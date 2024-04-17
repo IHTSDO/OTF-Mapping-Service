@@ -504,7 +504,7 @@ public class IndexUtility {
 
         // Reverse sort by default - for last modified
         Sort sort = new Sort(new SortField(sortField, SortField.Type.STRING,
-            (pfs.isAscending()) ? true : false));
+            (pfs.isAscending()) ? false : true));
         fullTextQuery.setSort(sort);
       }
     }
