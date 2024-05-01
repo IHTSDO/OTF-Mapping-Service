@@ -16,7 +16,7 @@ angular
 
   .controller(
     'workAvailableWidgetCtrl',
-    function($scope, $rootScope, $http, $routeParams, $uibModal, $location, localStorageService, gpService) {
+    function($scope, $rootScope, $http, $routeParams, $uibModal, $location, localStorageService, gpService, utilService) {
 
       // local variables
       $scope.batchSizes = [ 100, 50, 25, 10, 5 ];
@@ -53,6 +53,8 @@ angular
       $scope.queryAvailableConflict = null;
       $scope.queryAvailableQaWork = null;
       $scope.queryAvailableWorkForUser = null;
+      
+      $scope.notes = utilService.getNotes($scope.focusProject.id);
 
       // intiialize the user list
       $scope.mapUsers = {};
@@ -131,6 +133,19 @@ angular
       // on creation of qa work, refresh the available work widget
       $scope.$on('qaCheckWidget.notification.qaWorkCreated', function(event, parameters) {
         $scope.retrieveAvailableQAWork($scope.availableQAWorkPage);
+      });
+      
+      // on any change project, refsesh notes list
+      $scope.$watch([ 'focusProject'], function() {
+        if ($scope.focusProject != null && $scope.currentUser != null
+          && $scope.currentUserToken != null && $scope.currentRole != null) {
+          $http.defaults.headers.common.Authorization = $scope.currentUserToken;
+          
+          // Initialize terminology notes
+		  utilService.initializeTerminologyNotes($scope.focusProject.id).then(function() {
+			$scope.notes = utilService.getNotes($scope.focusProject.id);
+		  });
+        }
       });
 
       // watch for first retrieval of last tab for this session
@@ -310,6 +325,7 @@ angular
           gpService.decrement();
 
           $scope.availableConflicts = data.searchResult;
+          $scope.addTerminologyNote($scope.availableConflicts);
 
           // set pagination
           $scope.numAvailableConflictsPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
@@ -324,6 +340,15 @@ angular
           $rootScope.handleHttpError(data, status, headers, config);
         });
       };
+      
+	  $scope.addTerminologyNote = function(workItems) {
+		if (workItems == null || workItems.length == 0) {
+			return;
+		}
+		workItems.forEach(function(workItem) {
+		  workItem.terminologyNote = $scope.notes[workItem.terminologyId];
+		});
+	  };
 
       // get a page of available work
       $scope.retrieveAvailableWork = function(page, pquery, puser) {
@@ -396,6 +421,7 @@ angular
           }).success(function(data) {
           gpService.decrement();
           $scope.availableWork = data.searchResult;
+          $scope.addTerminologyNote($scope.availableWork);
 
           // set pagination
           $scope.numAvailableWorkPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
@@ -455,6 +481,7 @@ angular
           gpService.decrement();
 
           $scope.availableQAWork = data.searchResult;
+          $scope.addTerminologyNote($scope.availableQAWork);
 
           // set pagination
           $scope.numAvailableQAWorkPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
@@ -1157,7 +1184,7 @@ angular
           });
 
       };
-
+     
       // remove an element from an array by key
       Array.prototype.removeElement = function(elem) {
 

@@ -131,6 +131,8 @@ angular
             $scope.saveGroups();
           },
         };
+        
+        $scope.notes = utilService.getNotes($scope.project.id);
 
         // function with two purposes:
         // (1) update the group and priority of the group tree
@@ -262,10 +264,14 @@ angular
             retrieveRecord();
             
             // Initialize terminology notes
-            utilService.initializeTerminologyNotes($scope.project.id);
+            utilService.initializeTerminologyNotes($scope.project.id).then(() => {
+              $scope.notes = utilService.getNotes($scope.project.id);
+            }).catch(error => {
+              console.error('Error initializing terminology notes', error);
+            });
           }
         });
-
+        
         // any time the record changes, broadcast it to the record
         // summary widget
         // $scope.$watch('record', function() {
@@ -356,6 +362,7 @@ angular
                   console.debug('  concept = ', data);
                   $scope.concept = data;
                   $scope.conceptBrowserUrl = $scope.getBrowserUrl();
+                  $scope.concept.terminologyNote = getTerminologyNote($scope.concept.terminologyId);
                   // initialize the dynamic tooltip on the Save/Next button
                   // with the next concept to be mapped
                   $scope.resolveNextConcept(true);
@@ -1109,7 +1116,7 @@ angular
 
           broadcastRecord();
         };
-
+        
         $scope.removeRecordPrinciple = function(record, principle) {
           record['mapPrinciple'] = removeJsonElement(record['mapPrinciple'], principle);
           $scope.record = record;
@@ -2082,6 +2089,14 @@ angular
           console.debug("historyIndex:", historyIndex, "|size:", history.length, "|undoEnabled:",
             $scope.undoDisabled, "|redoEnabled:", $scope.redoDisabled);
         };
+        
+		function getTerminologyNote(conceptTerminologyId) {
+			if ($scope.notes == null || $scope.notes == undefined
+			|| conceptTerminologyId == null || conceptTerminologyId == '') {
+				return '';
+			}
+			return $scope.notes[conceptTerminologyId];
+		}
 
         // Open modal to display authoring history for concept
         $scope.openAuthoringHistory = function(concept) {
