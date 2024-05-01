@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
@@ -20,23 +19,28 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation for ICD11 to ICD10CA mapping project.
  */
 public class ICD11toICD10CAProjectSpecificAlgorithmHandler
-    extends DefaultProjectSpecificAlgorithmHandler {
+    extends DefaultICD10ProjectSpecificAlgorithmHandler {
+
+  final static Logger LOGGER =
+      LoggerFactory.getLogger(ICD11toICD10CAProjectSpecificAlgorithmHandler.class);
 
   /* see superclass */
   @Override
   public void initialize() throws Exception {
-    Logger.getLogger(getClass()).info("Running initialize for " + getClass().getSimpleName());
+    LOGGER.info("Running initialize for " + getClass().getSimpleName());
     // Populate any project-specific caches.
   }
 
   /* see superclass */
   @Override
-  public ValidationResult validateTargetCodes(MapRecord mapRecord) throws Exception {
+  public ValidationResult validateTargetCodes(final MapRecord mapRecord) throws Exception {
 
     final ValidationResult validationResult = new ValidationResultJpa();
     final ContentService contentService = new ContentServiceJpa();
@@ -63,7 +67,7 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
         validationResult
             .addError("Concept for CIHI target: " + mapEntry.getTargetId() + " is not active.");
       }
-      
+
       // For WHO Map entries, non-existent concepts are allowable
       if (mapEntry.getMapGroup() == 2 && concept == null) {
         validationResult
@@ -77,7 +81,7 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
 
   /* see superclass */
   @Override
-  public boolean isTargetCodeValid(String terminologyId) throws Exception {
+  public boolean isTargetCodeValid(final String terminologyId) throws Exception {
 
     final ContentService contentService = new ContentServiceJpa();
 
@@ -87,9 +91,9 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
           mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
 
       // Only leaf nodes (concepts with no descendants) are valid
-      TreePositionList list = contentService.getTreePositions(terminologyId,
+      final TreePositionList list = contentService.getTreePositions(terminologyId,
           mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
-      for (TreePosition tp : list.getTreePositions()) {
+      for (final TreePosition tp : list.getTreePositions()) {
         if (tp.getDescendantCount() > 0) {
           return false;
         }
@@ -101,7 +105,7 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
 
       // otherwise, return true
       return true;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw e;
     } finally {
       contentService.close();
@@ -110,7 +114,7 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
 
   /* see superclass */
   @Override
-  public ValidationResult validateSemanticChecks(MapRecord mapRecord) throws Exception {
+  public ValidationResult validateSemanticChecks(final MapRecord mapRecord) throws Exception {
     final ValidationResult result = new ValidationResultJpa();
 
     // Bail immediately if map has no entries (other QA will catch this)
@@ -150,8 +154,9 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
       final List<String> targetMismatchReasons = new ArrayList<>();
 
       for (final MapEntry entry : mapRecord.getMapEntries()) {
-        Set<AdditionalMapEntryInfo> additionalMapEntryInfos = entry.getAdditionalMapEntryInfos();
-        for (AdditionalMapEntryInfo additionalMapEntryInfo : additionalMapEntryInfos) {
+        final Set<AdditionalMapEntryInfo> additionalMapEntryInfos =
+            entry.getAdditionalMapEntryInfos();
+        for (final AdditionalMapEntryInfo additionalMapEntryInfo : additionalMapEntryInfos) {
           if (additionalMapEntryInfo.getField().equals("Relation - Target")) {
             relationTargets.add(additionalMapEntryInfo.getValue());
           } else if (additionalMapEntryInfo.getField().equals("Relation - Cluster")) {
@@ -194,7 +199,8 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
         final MapEntry entry = mapRecord.getMapEntries().get(i);
         if (entry.getMapGroup() == 1) {
           Boolean unmappableReasonPresent = false;
-          for (AdditionalMapEntryInfo additionalMapEntryInfo : entry.getAdditionalMapEntryInfos()) {
+          for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
+              .getAdditionalMapEntryInfos()) {
             if (additionalMapEntryInfo.getField().equals("Unmappable Reason")) {
               unmappableReasonPresent = true;
             }
@@ -214,7 +220,8 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
         final MapEntry entry = mapRecord.getMapEntries().get(i);
         if (entry.getMapGroup() == 1) {
           Boolean unmappableReasonPresent = false;
-          for (AdditionalMapEntryInfo additionalMapEntryInfo : entry.getAdditionalMapEntryInfos()) {
+          for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
+              .getAdditionalMapEntryInfos()) {
             if (additionalMapEntryInfo.getField().equals("Unmappable Reason")) {
               unmappableReasonPresent = true;
             }
@@ -233,7 +240,8 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
         final MapEntry entry = mapRecord.getMapEntries().get(i);
         if (entry.getMapGroup() == 2) {
           Boolean targetMismatchReasonPresent = false;
-          for (AdditionalMapEntryInfo additionalMapEntryInfo : entry.getAdditionalMapEntryInfos()) {
+          for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
+              .getAdditionalMapEntryInfos()) {
             if (additionalMapEntryInfo.getField().equals("Target Mismatch Reason")) {
               targetMismatchReasonPresent = true;
             }
@@ -251,7 +259,8 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
         final MapEntry entry = mapRecord.getMapEntries().get(i);
         if (entry.getMapGroup() == 1) {
           Boolean targetMismatchReasonPresent = false;
-          for (AdditionalMapEntryInfo additionalMapEntryInfo : entry.getAdditionalMapEntryInfos()) {
+          for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
+              .getAdditionalMapEntryInfos()) {
             if (additionalMapEntryInfo.getField().equals("Target Mismatch Reason")) {
               targetMismatchReasonPresent = true;
             }
@@ -262,7 +271,7 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
         }
       }
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw e;
     } finally {
       contentService.close();
@@ -272,15 +281,15 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
   }
 
   /**
-   * Overriding defaultChecks, because there are some project-specific settings
-   * that don't conform to the standard map requirements.
-   * 
+   * Overriding defaultChecks, because there are some project-specific settings that don't conform
+   * to the standard map requirements.
+   *
    * @param mapRecord the map record
    * @return the validation result
    */
   @Override
-  public ValidationResult performDefaultChecks(MapRecord mapRecord) {
-    Map<Integer, List<MapEntry>> entryGroups = getEntryGroups(mapRecord);
+  public ValidationResult performDefaultChecks(final MapRecord mapRecord) {
+    final Map<Integer, List<MapEntry>> entryGroups = getEntryGroups(mapRecord);
 
     final ValidationResult validationResult = new ValidationResultJpa();
 
@@ -342,15 +351,16 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
   }
 
   /**
-   * Verify no duplicate entries in the map. For this project, we are only
-   * looking within Group 1 (there will be duplicates with Group 2)
-   * 
+   * Verify no duplicate entries in the map. For this project, we are only looking within Group 1
+   * (there will be duplicates with Group 2)
+   *
    * @param mapRecord the map record
    * @return a list of errors detected
    */
+  @Override
   @SuppressWarnings("static-method")
-  public ValidationResult checkMapRecordForDuplicateEntries(MapRecord mapRecord) {
-    ValidationResult validationResult = new ValidationResultJpa();
+  public ValidationResult checkMapRecordForDuplicateEntries(final MapRecord mapRecord) {
+    final ValidationResult validationResult = new ValidationResultJpa();
     final List<MapEntry> entries = mapRecord.getMapEntries();
 
     // cycle over all entries but last
@@ -394,4 +404,5 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
     }
     return validationResult;
   }
+
 }
