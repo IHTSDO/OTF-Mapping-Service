@@ -124,7 +124,7 @@
           </a>
         </td>
         <td style="width: 14%; padding: 5px;">
-          {{result.terminologyId}}
+          {{result.terminologyId}}{{result.terminologyNote}}
         </td>
         <td style="width: 3%; padding: 5px;">
           <!-- Display a checkmark if this record has previously been edited -->
@@ -277,7 +277,7 @@
 
 
         <td style="width: 14%; padding: 5px;">
-          <a href="#/record/conceptId/{{result.terminologyId}}">{{result.terminologyId}}</a>
+          <a href="#/record/conceptId/{{result.terminologyId}}">{{result.terminologyId}}</a> {{result.terminologyNote}}
         </td>
         <td style="width: 3%; padding: 5px;">
           <!-- Display a checkmark to finish if in progress -->
@@ -435,7 +435,7 @@
         </td>
 
         <td style="width: 14%; padding: 5px;">
-          <a href="#/record/conceptId/{{result.terminologyId}}">{{result.terminologyId}}</a>
+          <a href="#/record/conceptId/{{result.terminologyId}}">{{result.terminologyId}}</a> {{result.terminologyNote}}
         </td>
 
         <td style="width: 3%; padding: 5px;">
@@ -549,7 +549,7 @@
   <tbody>
     <tr ng-repeat="result in assignedRecordsForUser">
       <td style="width: 12%; padding: 5px;">
-        {{result.terminologyId}}
+        {{result.terminologyId}}{{result.terminologyNote}}
       </td>
       <td style="width: 60%; padding: 5px;">{{result.value}}</td>
       <td style="width: 25%; padding: 5px;">{{result.terminology |
@@ -666,7 +666,7 @@
         </td>
 
         <td style="width: 14%; padding: 5px;">
-          <a href="#/record/conceptId/{{result.terminologyId}}">{{result.terminologyId}}</a>
+          <a href="#/record/conceptId/{{result.terminologyId}}">{{result.terminologyId}}{{result.terminologyNote}}</a>
         </td>
 
         <td style="width: 3%; padding: 5px;">

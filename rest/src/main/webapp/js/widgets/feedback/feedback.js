@@ -12,7 +12,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
   })
   .controller(
     'feedbackCtrl',
-    function($scope, $rootScope, $http, $location, $uibModal, $sce, localStorageService, gpService) {
+    function($scope, $rootScope, $http, $location, $uibModal, $sce, localStorageService, gpService, utilService) {
       $scope.currentUser = null;
       $scope.currentRole = null;
       $scope.focusProject = null;
@@ -29,6 +29,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
       $scope.currentUserToken = localStorageService.get('userToken');
       $scope.currentRole = localStorageService.get('currentRole');
       $scope.focusProject = localStorageService.get('focusProject');
+      $scope.notes = utilService.getNotes($scope.focusProject.id);
 
       // table sort fields
       $scope.tableFields = [ {
@@ -100,7 +101,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
 
       $scope.retrieveFeedback = function(ppage, feedbackType, reviewedType, resolvedType, ownedByMe, pquery) {
 
-      console.log("ppage", ppage, 
+        console.log("ppage", ppage, 
           "feedbackType", feedbackType,
           "reviewedType", reviewedType, 
           "resolvedType", resolvedType, 
@@ -172,6 +173,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
           $scope.numRecordPages = Math.ceil(data.totalCount / $scope.recordsPerPage);
 
           $scope.feedbackConversations = data.feedbackConversation;
+          addTerminologyNote($scope.feedbackConversations);
 
         }).error(function(data, status, headers, config) {
           gpService.decrement();
@@ -179,6 +181,15 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
         });
 
       };
+      
+	  function addTerminologyNote(feedbackConversations) {
+		if (feedbackConversations == null || feedbackConversations.length == 0 || $scope.notes == undefined || $scope.notes.length == 0) {
+			return;
+		}
+		feedbackConversations.forEach(function(feedbackConversation) {
+		  feedbackConversation.terminologyNote = $scope.notes[feedbackConversation.terminologyId];
+		});
+	  }
 
       // if any of the feedbacks are not yet viewed, return false indicating
       // that conversation is not yet viewed

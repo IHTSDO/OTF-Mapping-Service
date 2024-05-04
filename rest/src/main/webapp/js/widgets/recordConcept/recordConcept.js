@@ -24,13 +24,8 @@ angular
       $scope.recordsInProject = [];
       $scope.recordsNotInProject = [];
       $scope.historicalRecords = [];
-      $scope.recordsInProjectNotFound = false; // set
-      // to
-      // true
-      // after
-      // record
-      // retrieval returns no records
-      // for focus project
+      // set to true after record retrieval returns no records for focus project
+      $scope.recordsInProjectNotFound = false;
 
       $scope.focusProject = null;
       $scope.mapProjects = null;
@@ -42,6 +37,7 @@ angular
       $scope.currentRole = localStorageService.get('currentRole');
       $scope.preferences = localStorageService.get('preferences');
       $scope.userToken = localStorageService.get('userToken');
+      $scope.notes = utilService.getNotes($scope.focusProject.id);
 
       var deployBrowserLabel = appConfig['deploy.terminology.browser.label']; 
       
@@ -583,8 +579,7 @@ angular
       };
 
       function setTitle(terminology, conceptId, defaultPreferredName) {
-        $scope.model.title = terminology + ' Concept ' + conceptId + ': ' + defaultPreferredName;
-
+        $scope.model.title = terminology + ' Concept ' + conceptId +  getTerminologyNote(conceptId) + ': ' + defaultPreferredName;
       }
 
       // opens SNOMED CT browser
@@ -630,6 +625,10 @@ angular
         var myWindow = window.open(newUrl, 'indexViewerWindow');
         myWindow.focus();
       };
+      
+      function getTerminologyNote(id) {
+		return $scope.notes[id];
+	  }
 
       function setIndexViewerStatus() {
         $http(

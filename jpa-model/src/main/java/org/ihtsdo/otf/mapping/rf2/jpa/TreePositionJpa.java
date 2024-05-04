@@ -29,6 +29,7 @@ import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.mapping.helpers.CollectionToCSVBridge;
 import org.ihtsdo.otf.mapping.helpers.TreePositionDescriptionGroup;
@@ -36,7 +37,7 @@ import org.ihtsdo.otf.mapping.rf2.TreePosition;
 
 /**
  * Concrete implementation of {@link TreePosition} for use with JPA.
- * 
+ *
  */
 @Entity
 @Indexed
@@ -113,10 +114,10 @@ public class TreePositionJpa implements TreePosition {
 
   /**
    * Instantiates a {@link TreePositionJpa} from the specified parameters.
-   * 
+   *
    * @param ancestorPath the ancestor path
    */
-  public TreePositionJpa(String ancestorPath) {
+  public TreePositionJpa(final String ancestorPath) {
     this.ancestorPath = ancestorPath;
   }
 
@@ -133,20 +134,21 @@ public class TreePositionJpa implements TreePosition {
    * {@inheritDoc}
    */
   @Override
-  public void setId(Long id) {
+  public void setId(final Long id) {
     this.id = id;
   }
 
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @SortableField
   public String getAncestorPath() {
     return ancestorPath;
   }
 
   /* see superclass */
   @Override
-  public void setAncestorPath(String ancestorPath) {
+  public void setAncestorPath(final String ancestorPath) {
     this.ancestorPath = ancestorPath;
   }
 
@@ -159,7 +161,7 @@ public class TreePositionJpa implements TreePosition {
 
   /* see superclass */
   @Override
-  public void setTerminology(String terminology) {
+  public void setTerminology(final String terminology) {
     this.terminology = terminology;
   }
 
@@ -172,7 +174,7 @@ public class TreePositionJpa implements TreePosition {
 
   /* see superclass */
   @Override
-  public void setTerminologyVersion(String terminologyVersion) {
+  public void setTerminologyVersion(final String terminologyVersion) {
     this.terminologyVersion = terminologyVersion;
   }
 
@@ -188,7 +190,7 @@ public class TreePositionJpa implements TreePosition {
 
   /* see superclass */
   @Override
-  public void setTerminologyId(String terminologyId) {
+  public void setTerminologyId(final String terminologyId) {
     this.terminologyId = terminologyId;
   }
 
@@ -202,7 +204,7 @@ public class TreePositionJpa implements TreePosition {
 
   /* see superclass */
   @Override
-  public void setDefaultPreferredName(String defaultPreferredName) {
+  public void setDefaultPreferredName(final String defaultPreferredName) {
     this.defaultPreferredName = defaultPreferredName;
   }
 
@@ -214,7 +216,7 @@ public class TreePositionJpa implements TreePosition {
 
   /* see superclass */
   @Override
-  public void setChildrenCount(int childrenCount) {
+  public void setChildrenCount(final int childrenCount) {
     this.childrenCount = childrenCount;
   }
 
@@ -226,7 +228,7 @@ public class TreePositionJpa implements TreePosition {
 
   /* see superclass */
   @Override
-  public void setDescendantCount(int descendantCount) {
+  public void setDescendantCount(final int descendantCount) {
     this.descendantCount = descendantCount;
   }
 
@@ -243,7 +245,7 @@ public class TreePositionJpa implements TreePosition {
 
   /* see superclass */
   @Override
-  public void setTerminologyNote(String terminologyNote) {
+  public void setTerminologyNote(final String terminologyNote) {
     this.terminologyNote = terminologyNote;
   }
 
@@ -259,7 +261,7 @@ public class TreePositionJpa implements TreePosition {
 
     Collections.sort(this.children, new Comparator<TreePosition>() {
       @Override
-      public int compare(TreePosition tp1, TreePosition tp2) {
+      public int compare(final TreePosition tp1, final TreePosition tp2) {
         return tp1.getTerminologyId().compareTo(tp2.getTerminologyId());
       }
     });
@@ -268,16 +270,16 @@ public class TreePositionJpa implements TreePosition {
 
   /* see superclass */
   @Override
-  public void setChildren(List<TreePosition> children) {
+  public void setChildren(final List<TreePosition> children) {
     this.children = children;
   }
 
   /* see superclass */
   @Override
-  public void addChild(TreePosition treePosition) {
+  public void addChild(final TreePosition treePosition) {
 
     // check if this child is already present
-    int index = this.children.indexOf(treePosition);
+    final int index = this.children.indexOf(treePosition);
 
     // if present, add children of this tree position to the existing object
     if (index != -1) {
@@ -292,10 +294,10 @@ public class TreePositionJpa implements TreePosition {
 
   /* see superclass */
   @Override
-  public void addChildren(List<TreePosition> treePositions) {
+  public void addChildren(final List<TreePosition> treePositions) {
 
     // for each child, call the addChild function
-    for (TreePosition tp : treePositions) {
+    for (final TreePosition tp : treePositions) {
       this.addChild(tp);
     }
   }
@@ -310,7 +312,7 @@ public class TreePositionJpa implements TreePosition {
 
   /* see superclass */
   @Override
-  public void setValid(boolean valid) {
+  public void setValid(final boolean valid) {
     this.valid = valid;
   }
 
@@ -322,7 +324,7 @@ public class TreePositionJpa implements TreePosition {
 
   /* see superclass */
   @Override
-  public void setDescGroups(List<TreePositionDescriptionGroup> descGroups) {
+  public void setDescGroups(final List<TreePositionDescriptionGroup> descGroups) {
     this.descGroups = descGroups;
   }
 
@@ -337,7 +339,7 @@ public class TreePositionJpa implements TreePosition {
 
   /* see superclass */
   @Override
-  public void setIndexEntries(Set<String> indexEntries) {
+  public void setIndexEntries(final Set<String> indexEntries) {
     this.indexEntries = indexEntries;
   }
 
@@ -357,39 +359,52 @@ public class TreePositionJpa implements TreePosition {
 
   /* see superclass */
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
+  public boolean equals(final Object obj) {
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
-    TreePositionJpa other = (TreePositionJpa) obj;
+    }
+    final TreePositionJpa other = (TreePositionJpa) obj;
     if (ancestorPath == null) {
-      if (other.ancestorPath != null)
+      if (other.ancestorPath != null) {
         return false;
-    } else if (!ancestorPath.equals(other.ancestorPath))
+      }
+    } else if (!ancestorPath.equals(other.ancestorPath)) {
       return false;
+    }
     if (defaultPreferredName == null) {
-      if (other.defaultPreferredName != null)
+      if (other.defaultPreferredName != null) {
         return false;
-    } else if (!defaultPreferredName.equals(other.defaultPreferredName))
+      }
+    } else if (!defaultPreferredName.equals(other.defaultPreferredName)) {
       return false;
+    }
     if (terminology == null) {
-      if (other.terminology != null)
+      if (other.terminology != null) {
         return false;
-    } else if (!terminology.equals(other.terminology))
+      }
+    } else if (!terminology.equals(other.terminology)) {
       return false;
+    }
     if (terminologyId == null) {
-      if (other.terminologyId != null)
+      if (other.terminologyId != null) {
         return false;
-    } else if (!terminologyId.equals(other.terminologyId))
+      }
+    } else if (!terminologyId.equals(other.terminologyId)) {
       return false;
+    }
     if (terminologyVersion == null) {
-      if (other.terminologyVersion != null)
+      if (other.terminologyVersion != null) {
         return false;
-    } else if (!terminologyVersion.equals(other.terminologyVersion))
+      }
+    } else if (!terminologyVersion.equals(other.terminologyVersion)) {
       return false;
+    }
     return true;
   }
 
@@ -397,7 +412,7 @@ public class TreePositionJpa implements TreePosition {
   @Override
   public String toString() {
     String childrenStr = "";
-    for (TreePosition child : this.getChildren()) {
+    for (final TreePosition child : this.getChildren()) {
       childrenStr += child.getTerminologyId() + "-";
     }
     return "TreePositionJpa [ancestorPath=" + ancestorPath + ", terminology=" + terminology
