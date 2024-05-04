@@ -8,13 +8,30 @@
 		Details</button>
 	<button class="btn btn-xs btn-primary" ng-click="goMapRecords()">Map
 		Records</button>
-	<button
-		ng-show="project.sourceTerminology === 'SNOMEDCT' || project.sourceTerminology.startsWith('SNOMEDCT_') || project.destinationTerminology === 'SNOMEDCT' || project.destinationTerminology.startsWith('SNOMEDCT_')"
-		class="btn btn-xs btn-primary" ng-click="openConceptBrowser()">SNOMEDCT
-		Browser</button>
-	<button class="btn btn-xs btn-primary"
-		ng-click="openTerminologyBrowser()">{{project.terminologyButtonText}} Browser</button>
-	<button class="btn btn-xs btn-primary"
+	
+    <!--  source browsers -->
+    <button ng-show="project.sourceTerminology.includes('SNOMED')"
+        class="btn btn-xs btn-primary"
+        ng-click="openConceptBrowser()">SNOMEDCT Browser
+    </button>
+	
+    <button ng-show="!project.sourceTerminology.includes('SNOMED')"
+        class="btn btn-xs btn-primary"
+	    ng-click="openTerminologyBrowser('source')">{{project.sourceTerminology}} Browser
+    </button>
+	
+    <!--  destination browsers -->
+    <button ng-show="project.desintationTerminology.includes('SNOMED')"
+        class="btn btn-xs btn-primary"
+        ng-click="openConceptBrowser()">SNOMEDCT Browser
+    </button>
+    
+    <button ng-show="!project.desintationTerminology.includes('SNOMED')"
+        class="btn btn-xs btn-primary"		
+		ng-click="openTerminologyBrowser('destination')">{{project.destinationTerminology}} Browser
+    </button>
+	
+    <button class="btn btn-xs btn-primary"
 		ng-show="indexViewerExists == true" ng-click="openIndexViewer()">Index
 		Viewer</button>
 	<span 
