@@ -18,7 +18,7 @@ angular
   .controller(
     'compareRecordsCtrl',
     function($scope, $rootScope, $http, $routeParams, $location, $timeout,
-      localStorageService, $sce, $window, gpService, appConfig) {
+      localStorageService, $sce, $window, gpService, appConfig, utilService) {
 
       // ///////////////////////////////////
       // Map Record Controller Functions //
@@ -44,6 +44,7 @@ angular
       $scope.entries2 = null;
       $scope.conversation2 = null;
       $scope.newFeedbackMessages2 = new Array();
+      $scope.notes = utilService.getNotes($scope.project.id);
 
       $scope.leadRecord = null;
       $scope.leadConversation = null;
@@ -96,6 +97,17 @@ angular
         $scope.errorMessages = $scope.project.errorMessages;
         $scope.errorMessages.unshift('None');
       });
+
+      $scope.$watch(['focusProject'], function(){
+		if ($scope.focusProject != null) {
+		  // Initialize terminology notes
+          utilService.initializeTerminologyNotes($scope.focusProject.id).then(() => {
+            $scope.notes = utilService.getNotes($scope.focusProject.id);            
+          }).catch(error => {
+            console.error('Error initializing terminology notes', error);
+          });
+		}
+	  });
 
       // watch for change in focus project
       $scope.userToken = localStorageService.get('userToken');
@@ -267,8 +279,6 @@ angular
         }
       };
 
-      
-
       $scope.getRecordsInConflict = function() {
         // initialize local variables
         var leadRecordId = $routeParams.recordId;
@@ -307,6 +317,7 @@ angular
               function(data) {
                 gpService.decrement();
                 $scope.concept = data;
+               
                 setAccordianTitle($scope.concept.terminologyId,
                   $scope.concept.defaultPreferredName);
               }).error(function(data, status, headers, config) {
@@ -533,6 +544,10 @@ angular
 
         });
       };
+      
+      function getTerminologyNote(id) {
+		return $scope.notes[id];
+	  }
 
       // /////////////////////////////
       // Initialization Functions ///
@@ -721,11 +736,11 @@ angular
       function setAccordianTitle(id, term) {
         if ($scope.record2 == null && $scope.record1 != null
           && $scope.record1.owner.userName == 'qa') {
-          $scope.model.title = 'QA Record: ' + id + ' ' + term;
+          $scope.model.title = 'QA Record: ' + id + getTerminologyNote(id) +' ' + term;
         } else if ($scope.record2 == null) {
-          $scope.model.title = 'Review Record: ' + id + ' ' + term;
+          $scope.model.title = 'Review Record: ' + id + getTerminologyNote(id) +' ' + term;
         } else {
-          $scope.model.title = 'Compare Records: ' + id + '  ' + term;
+          $scope.model.title = 'Compare Records: ' + id + getTerminologyNote(id) +' ' + term;
         }
       }
 

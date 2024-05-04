@@ -97,7 +97,7 @@
           </span>
         </td>
         <td>
-          <a href="#/conversation/recordId/{{feedbackConversation.mapRecordId}}">{{feedbackConversation.terminologyId}}</a>
+          <a href="#/conversation/recordId/{{feedbackConversation.mapRecordId}}">{{feedbackConversation.terminologyId}}{{feedbackConversation.terminologyNote}}</a>
         </td>
         <td>{{feedbackConversation.defaultPreferredName}}</td>
         <td ng-bind-html="to_trusted(feedbackConversation.title)"></td>

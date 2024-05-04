@@ -24,7 +24,6 @@ import java.util.Set;
 
 import javax.persistence.EntityManager;
 
-import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.ConceptList;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.MapAdviceListJpa;
@@ -52,11 +51,16 @@ import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.FileSorter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The {@link ProjectSpecificAlgorithmHandler} for ICDCA10 project.
  */
 public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAlgorithmHandler {
+
+  final static Logger LOGGER =
+      LoggerFactory.getLogger(ICD10CAProjectSpecificAlgorithmHandler.class);
 
   // These state variables are maintained by sequential calls to
   // validate complex map refset records during a release
@@ -112,7 +116,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
   /* see superclass */
   @Override
   public void initialize() throws Exception {
-    Logger.getLogger(getClass()).info("Running initialize for " + getClass().getSimpleName());
+    LOGGER.info("Running initialize for " + getClass().getSimpleName());
     // Populate any project-specific caches.
     cacheExistingMaps();
     cacheCodes();
@@ -120,16 +124,16 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
   }
 
   /**
-   * For ICD10, a target code is valid if: - Concept exists - Concept has at
-   * least 3 characters - The second character is a number (e.g. XVII is
-   * invalid, but B10 is) - Concept does not contain a dash (-) character
+   * For ICD10, a target code is valid if: - Concept exists - Concept has at least 3 characters -
+   * The second character is a number (e.g. XVII is invalid, but B10 is) - Concept does not contain
+   * a dash (-) character
    *
    * @param mapRecord the map record
    * @return the validation result
    * @throws Exception the exception
    */
   @Override
-  public ValidationResult validateTargetCodes(MapRecord mapRecord) throws Exception {
+  public ValidationResult validateTargetCodes(final MapRecord mapRecord) throws Exception {
 
     final ValidationResult validationResult = new ValidationResultJpa();
     final ContentService contentService = new ContentServiceJpa();
@@ -186,7 +190,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
 
   /* see superclass */
   @Override
-  public ValidationResult validateSemanticChecks(MapRecord mapRecord) throws Exception {
+  public ValidationResult validateSemanticChecks(final MapRecord mapRecord) throws Exception {
     cacheCodes();
     cacheCodeToAdvices();
     final ValidationResult result = new ValidationResultJpa();
@@ -223,8 +227,8 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
       if (concepts.size() == 0 || concepts.get(1) == null) {
         result.addError("Null concept in entry");
         return result;
-      }      
-      
+      }
+
       // get the primary code (if not NC)
       final String primaryCode =
           concepts.size() == 0 || concepts.get(1) == null || concepts.get(1).get(0) == null ? null
@@ -336,7 +340,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
             || primaryCode.startsWith("T98.0") || primaryCode.startsWith("T98.1")
             || primaryCode.startsWith("T98.2") || primaryCode.startsWith("T98.3"))) {
 
-          boolean hasAdvice = TerminologyUtility.hasAdvice(mapRecord.getMapEntries().get(0),
+          final boolean hasAdvice = TerminologyUtility.hasAdvice(mapRecord.getMapEntries().get(0),
               "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE");
           boolean hasExternalCauseCode = false;
           boolean hasOtherExternalCauseCode = false;
@@ -362,7 +366,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
         //
         if (primaryCode != null && primaryCode.equals("K52.1")) {
 
-          boolean hasAdvice = TerminologyUtility.hasAdvice(mapRecord.getMapEntries().get(0),
+          final boolean hasAdvice = TerminologyUtility.hasAdvice(mapRecord.getMapEntries().get(0),
               "POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE");
           boolean hasExternalCauseCode = false;
           for (final MapEntry entry : mapRecord.getMapEntries()) {
@@ -385,7 +389,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
         // (as derived from columns 2,3, and 5 from TEIL3.ASC index file).
         // GUIDANCE: Remap to include the (required) external cause code.
         //
-        boolean isPoisoning = mapRecord.getConceptId().equals("75478009")
+        final boolean isPoisoning = mapRecord.getConceptId().equals("75478009")
             || mapRecord.getConceptId().equals("62014003")
             || contentService.isDescendantOf(mapRecord.getConceptId(),
                 mapProject.getSourceTerminology(), mapProject.getSourceTerminologyVersion(),
@@ -498,7 +502,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
         // n/a
       }
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw e;
     } finally {
       contentService.close();
@@ -507,9 +511,8 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
   }
 
   /**
-   * Computes the map relation for the SNOMEDCT to ICD10 map project. Based
-   * solely on whether an entry has a TRUE rule or not. No advices are computed
-   * for this project.
+   * Computes the map relation for the SNOMEDCT to ICD10 map project. Based solely on whether an
+   * entry has a TRUE rule or not. No advices are computed for this project.
    *
    * @param mapRecord the map record
    * @param mapEntry the map entry
@@ -517,7 +520,8 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
    * @throws Exception the exception
    */
   @Override
-  public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry) throws Exception {
+  public MapRelation computeMapRelation(final MapRecord mapRecord, final MapEntry mapEntry)
+    throws Exception {
 
     if (mapEntry == null) {
       return null;
@@ -527,15 +531,17 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
 
       // if a relation is already set, and is allowable for null target,
       // keep it
-      if (mapEntry.getMapRelation() != null && mapEntry.getMapRelation().isAllowableForNullTarget())
+      if (mapEntry.getMapRelation() != null
+          && mapEntry.getMapRelation().isAllowableForNullTarget()) {
         return mapEntry.getMapRelation();
-      else {
+      } else {
         // retrieve the not classifiable relation
         // 447638001 - Map source concept cannot be classified with available
         // data
         for (final MapRelation relation : mapProject.getMapRelations()) {
-          if (relation.getTerminologyId().equals("447638001"))
+          if (relation.getTerminologyId().equals("447638001")) {
             return relation;
+          }
         }
 
         // if cannot find, return null
@@ -605,7 +611,8 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
 
   /* see superclass */
   @Override
-  public MapAdviceList computeMapAdvice(MapRecord mapRecord, MapEntry mapEntry) throws Exception {
+  public MapAdviceList computeMapAdvice(final MapRecord mapRecord, final MapEntry mapEntry)
+    throws Exception {
     cacheCodes();
     cacheCodeToAdvices();
     final List<MapAdvice> advices = new ArrayList<>(mapEntry.getMapAdvices());
@@ -641,7 +648,6 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
       // Define advices and boolean flags
       //
 
-
       //
       // PREDICATE: single asterisk code without dagger code
       // ACTION: add advice: THIS MAP REQUIRES A DAGGER CODE AS WELL AS AN
@@ -660,8 +666,6 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
         advices.remove(TerminologyUtility.getAdvice(mapProject, daggerAlsoAdvice));
       }
 
-
-
       //
       // PREDICATE: Primary target is a poisoning code and there is a secondary
       // code indicating accidental intent and the SNOMED concept does not
@@ -671,7 +675,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
       //
       // final String adviceP21a = "MAPPED FOLLOWING CIHI GUIDANCE";
       final String advice = "CONSIDER AVAILABILITY OF A MORE SPECIFIC CODE";
-      boolean isPoisoning = mapRecord.getConceptId().equals("75478009") || contentService
+      final boolean isPoisoning = mapRecord.getConceptId().equals("75478009") || contentService
           .isDescendantOf(mapRecord.getConceptId(), mapProject.getSourceTerminology(),
               mapProject.getSourceTerminologyVersion(), "75478009");
       if (isPoisoning && !mapRecord.getConceptName().toLowerCase().matches("adverse")
@@ -680,14 +684,12 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
           && !mapRecord.getConceptName().toLowerCase().matches("intentional")
           && !mapRecord.getConceptName().toLowerCase().matches("undetermined")
           && mapEntry.getMapGroup() > 1 && mapEntry.getMapPriority() == 1
-          && getIcd10AccidentalPoisoningCodes().contains(mapEntry.getTargetId())
-          && (
-              // !TerminologyUtility.hasAdvice(mapEntry, adviceP21a) || 
-              !TerminologyUtility.hasAdvice(mapEntry, advice))) {
+          && getIcd10AccidentalPoisoningCodes().contains(mapEntry.getTargetId()) && (
+          // !TerminologyUtility.hasAdvice(mapEntry, adviceP21a) ||
+          !TerminologyUtility.hasAdvice(mapEntry, advice))) {
         // advices.add(TerminologyUtility.getAdvice(mapProject, adviceP21a));
         advices.add(TerminologyUtility.getAdvice(mapProject, advice));
       }
-
 
       //
       // PREDICATE: Code range I20.0 through I25.9 and I60.0 through I69.8
@@ -703,8 +705,6 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
                 + "TO FULLY DESCRIBE THE DISEASE OR CONDITION"));
       }
 
- 
-
       //
       // PREDICATE: code is listed in CODE_TO_ADVICES.txt
       // ACTION: add the listed advice(s)
@@ -719,15 +719,15 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
 
       // Deduplicate advices
 
-      MapAdviceList mapAdviceList = new MapAdviceListJpa();
-      for (MapAdvice mapAdvice : advices) {
+      final MapAdviceList mapAdviceList = new MapAdviceListJpa();
+      for (final MapAdvice mapAdvice : advices) {
         if (!mapAdviceList.contains(mapAdvice)) {
           mapAdviceList.addMapAdvice(mapAdvice);
         }
       }
 
       return mapAdviceList;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw e;
     } finally {
       contentService.close();
@@ -736,7 +736,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
 
   /* see superclass */
   @Override
-  public MapRecord computeInitialMapRecord(MapRecord mapRecord) throws Exception {
+  public MapRecord computeInitialMapRecord(final MapRecord mapRecord) throws Exception {
 
     try {
 
@@ -744,16 +744,16 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
         cacheExistingMaps();
       }
 
-      MapRecord existingMapRecord = existingIcd10Maps.get(mapRecord.getConceptId());
+      final MapRecord existingMapRecord = existingIcd10Maps.get(mapRecord.getConceptId());
 
       // Run existing map record through standard map advice and relation
       // calculation
       if (existingMapRecord != null) {
-        List<MapEntry> updatedMapEntries = new ArrayList<>();
+        final List<MapEntry> updatedMapEntries = new ArrayList<>();
 
-        for (MapEntry mapEntry : existingMapRecord.getMapEntries()) {
-          MapRelation mapRelation = computeMapRelation(existingMapRecord, mapEntry);
-          MapAdviceList mapAdvices = computeMapAdvice(existingMapRecord, mapEntry);
+        for (final MapEntry mapEntry : existingMapRecord.getMapEntries()) {
+          final MapRelation mapRelation = computeMapRelation(existingMapRecord, mapEntry);
+          final MapAdviceList mapAdvices = computeMapAdvice(existingMapRecord, mapEntry);
           mapEntry.setMapRelation(mapRelation);
           mapEntry.getMapAdvices().addAll(mapAdvices.getMapAdvices());
           updatedMapEntries.add(mapEntry);
@@ -763,7 +763,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
       }
 
       return existingMapRecord;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw e;
     } finally {
       // n/a
@@ -772,7 +772,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
 
   /* see superclass */
   @Override
-  public boolean isTargetCodeValid(String terminologyId) throws Exception {
+  public boolean isTargetCodeValid(final String terminologyId) throws Exception {
 
     final ContentService contentService = new ContentServiceJpa();
 
@@ -789,9 +789,9 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
           mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
 
       // Only leaf nodes (concepts with no descendants) are valid
-      TreePositionList list = contentService.getTreePositions(terminologyId,
+      final TreePositionList list = contentService.getTreePositions(terminologyId,
           mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
-      for (TreePosition tp : list.getTreePositions()) {
+      for (final TreePosition tp : list.getTreePositions()) {
         if (tp.getDescendantCount() > 0) {
           return false;
         }
@@ -803,7 +803,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
 
       // otherwise, return true
       return true;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw e;
     } finally {
       contentService.close();
@@ -812,10 +812,10 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
 
   /* see superclass */
   @Override
-  public void computeTargetTerminologyNotes(List<TreePosition> treePositionList) throws Exception {
+  public void computeTargetTerminologyNotes(final List<TreePosition> treePositionList)
+    throws Exception {
 
-    Logger.getLogger(ICD10CAProjectSpecificAlgorithmHandler.class)
-        .info("Computing target terminology notes.");
+    LOGGER.info("Computing target terminology notes.");
     cacheCodes();
 
     // for each tree position initially passed in, call the recursive helper
@@ -827,17 +827,16 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
 
   /**
    * Compute target terminology notes helper.
-   * 
+   *
    * @param treePosition the tree position
    * @param asteriskRefSetId the asterisk ref set id
    * @param daggerRefSetId the dagger ref set id
    * @throws Exception the exception
    */
-  private void computeTargetTerminologyNotesHelper(TreePosition treePosition,
-    String asteriskRefSetId, String daggerRefSetId) throws Exception {
+  private void computeTargetTerminologyNotesHelper(final TreePosition treePosition,
+    final String asteriskRefSetId, final String daggerRefSetId) throws Exception {
 
-    Logger.getLogger(ICD10CAProjectSpecificAlgorithmHandler.class)
-        .info("Computing target terminology note for " + treePosition.getTerminologyId());
+    LOGGER.info("Computing target terminology note for " + treePosition.getTerminologyId());
 
     // initially set the note to an empty string
     treePosition.setTerminologyNote("");
@@ -861,7 +860,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
   @Override
   public Set<String> getDependentModules() {
 
-    Set<String> moduleDependencies = new HashSet<>();
+    final Set<String> moduleDependencies = new HashSet<>();
     moduleDependencies.add("900000000000012004");
     moduleDependencies.add("900000000000207008");
     return moduleDependencies;
@@ -876,8 +875,8 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
 
   /* see superclass */
   @Override
-  public ValidationResult validateForRelease(ComplexMapRefSetMember member) throws Exception {
-    ValidationResult result = super.validateForRelease(member);
+  public ValidationResult validateForRelease(final ComplexMapRefSetMember member) throws Exception {
+    final ValidationResult result = super.validateForRelease(member);
 
     // Verify mapTarget is not null when mapCategory is 447637006 or 447639009
     // 447637006|Map source concept is properly classified
@@ -1063,7 +1062,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
   /* see superclass */
   @Override
   public MapRelation getDefaultUpPropagatedMapRelation() throws Exception {
-    MappingService mappingService = new MappingServiceJpa();
+    final MappingService mappingService = new MappingServiceJpa();
     for (final MapRelation rel : mappingService.getMapRelations().getMapRelations()) {
       if (rel.getTerminologyId().equals("447639009")) {
         mappingService.close();
@@ -1076,7 +1075,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
 
   /* see superclass */
   @Override
-  public void computeIdentifyAlgorithms(MapRecord mapRecord) throws Exception {
+  public void computeIdentifyAlgorithms(final MapRecord mapRecord) throws Exception {
     // do nothing
   }
 
@@ -1099,8 +1098,8 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
   }
 
   /**
-   * Returns the icd10 accidental poisoning codes. For descendants of 72431002
-   * (accidental poisoning)
+   * Returns the icd10 accidental poisoning codes. For descendants of 72431002 (accidental
+   * poisoning)
    * @return the icd10 accidental poisoning codes
    */
   private static Set<String> getIcd10AccidentalPoisoningCodes() {
@@ -1117,8 +1116,8 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
   }
 
   /**
-   * Returns the icd10 intentional poisoning codes. For descendants of 410061008
-   * (intensional poisoining)
+   * Returns the icd10 intentional poisoning codes. For descendants of 410061008 (intensional
+   * poisoining)
    * @return the icd10 intentional poisoning codes
    */
   private static Set<String> getIcd10IntentionalPoisoningCodes() {
@@ -1135,8 +1134,8 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
   }
 
   /**
-   * Returns the icd10 undetermined poisoning codes. For descendants of
-   * 269736006 (poisoning of undetermined intent)
+   * Returns the icd10 undetermined poisoning codes. For descendants of 269736006 (poisoning of
+   * undetermined intent)
    * @return the icd10 undetermined poisoning codes
    */
   private static Set<String> getIcd10UndeterminedPoisoningCodes() {
@@ -1153,8 +1152,8 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
   }
 
   /**
-   * Returns the icd10 adverse effect poisoning codes. For descendants of
-   * 281647001 (adverse reaction)
+   * Returns the icd10 adverse effect poisoning codes. For descendants of 281647001 (adverse
+   * reaction)
    * @return the icd10 adverse effect poisoning codes
    */
   private static Set<String> getIcd10AdverseEffectPoisoningCodes() {
@@ -1204,7 +1203,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
    * @throws Exception the exception
    */
   @SuppressWarnings("unused")
-  private boolean hasUseAdditional(Concept concept) throws Exception {
+  private boolean hasUseAdditional(final Concept concept) throws Exception {
     for (final Description desc : concept.getDescriptions()) {
       if (desc.getTerm().matches("Use additional code.*infectious agent.*")) {
         return true;
@@ -1236,32 +1235,33 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
       return;
     }
 
-    Logger.getLogger(ICD10CAProjectSpecificAlgorithmHandler.class)
-        .info("Caching the asterisk and dagger codes");
+    LOGGER.info("Caching the asterisk and dagger codes");
 
     final ContentServiceJpa contentService = new ContentServiceJpa();
     final MetadataService metadataService = new MetadataServiceJpa();
     final EntityManager manager = contentService.getEntityManager();
     try {
       // open the metadata service and get the relationship types
-      Map<String, String> simpleRefSets = metadataService.getSimpleRefSets(
+      final Map<String, String> simpleRefSets = metadataService.getSimpleRefSets(
           mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
 
       // find the dagger/asterisk types
       for (final String key : simpleRefSets.keySet()) {
-        if (simpleRefSets.get(key).equals("Asterisk refset"))
+        if (simpleRefSets.get(key).equals("Asterisk refset")) {
           asteriskRefSetId = key;
-        if (simpleRefSets.get(key).equals("Dagger refset"))
+        }
+        if (simpleRefSets.get(key).equals("Dagger refset")) {
           daggerRefSetId = key;
+        }
       }
 
-      if (asteriskRefSetId == null)
-        Logger.getLogger(ICD10CAProjectSpecificAlgorithmHandler.class)
-            .warn("Could not find Asterisk refset");
+      if (asteriskRefSetId == null) {
+        LOGGER.warn("Could not find Asterisk refset");
+      }
 
-      if (daggerRefSetId == null)
-        Logger.getLogger(ICD10CAProjectSpecificAlgorithmHandler.class)
-            .warn("Could not find Dagger refset");
+      if (daggerRefSetId == null) {
+        LOGGER.warn("Could not find Dagger refset");
+      }
 
       // Look up asterisk codes
       final javax.persistence.Query asteriskQuery = manager.createQuery(
@@ -1289,9 +1289,11 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
       }
 
       // Report to log
-      Logger.getLogger(getClass()).info(" asterisk codes = " + asteriskCodes);
-      Logger.getLogger(getClass()).info(" dagger codes = " + daggerCodes);
-    } catch (Exception e) {
+      LOGGER.info(" asterisk codes = {} for terminology:{} version:{}", asteriskCodes,
+          mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
+      LOGGER.info(" dagger codes = {} for terminology:{} version:{}", daggerCodes,
+          mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
+    } catch (final Exception e) {
       throw e;
     } finally {
       contentService.close();
@@ -1311,8 +1313,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
       return;
     }
 
-    Logger.getLogger(ICD10CAProjectSpecificAlgorithmHandler.class)
-        .info("Caching the code to advices map");
+    LOGGER.info("Caching the code to advices map");
 
     codeToAdvicesMap = new HashMap<>();
 
@@ -1329,13 +1330,13 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
     }
 
     // Open reader and service
-    BufferedReader codeListReader =
+    final BufferedReader codeListReader =
         new BufferedReader(new FileReader(new File(dataDir + "/ICD10CA/CODES_TO_ADVICES.txt")));
 
     String line = null;
 
     while ((line = codeListReader.readLine()) != null) {
-      String tokens[] = line.split("\t");
+      final String tokens[] = line.split("\t");
       final String code = tokens[0].trim();
       final String advice = tokens[1].trim();
       if (codeToAdvicesMap.get(code) == null) {
@@ -1361,8 +1362,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
 
     final ContentService contentService = new ContentServiceJpa();
 
-    Logger.getLogger(ICD10CAProjectSpecificAlgorithmHandler.class)
-        .info("Caching the existing ICD10 maps");
+    LOGGER.info("Caching the existing ICD10 maps");
 
     final String dataDir = ConfigUtility.getConfigProperties().getProperty("data.dir");
     if (dataDir == null) {
@@ -1370,7 +1370,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
     }
 
     // Check preconditions
-    String inputFile =
+    final String inputFile =
         dataDir + "/doc/" + mapProject.getId() + "/preloadMaps/ExtendedMapSnapshot.txt";
 
     if (!new File(inputFile).exists()) {
@@ -1379,13 +1379,13 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
 
     // Preload all concepts and create terminologyId->name maps, to avoid having
     // to do individual lookups later
-    ConceptList sourceConcepts = contentService.getAllConcepts(mapProject.getSourceTerminology(),
-        mapProject.getSourceTerminologyVersion());
-    ConceptList destinationConcepts = contentService.getAllConcepts(
+    final ConceptList sourceConcepts = contentService.getAllConcepts(
+        mapProject.getSourceTerminology(), mapProject.getSourceTerminologyVersion());
+    final ConceptList destinationConcepts = contentService.getAllConcepts(
         mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
 
-    Map<String, String> sourceIdToName = new HashMap<>();
-    Map<String, String> destinationIdToName = new HashMap<>();
+    final Map<String, String> sourceIdToName = new HashMap<>();
+    final Map<String, String> destinationIdToName = new HashMap<>();
 
     for (final Concept concept : sourceConcepts.getConcepts()) {
       sourceIdToName.put(concept.getTerminologyId(), concept.getDefaultPreferredName());
@@ -1395,9 +1395,8 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
     }
 
     // sort input file
-    Logger.getLogger(ICD10CAProjectSpecificAlgorithmHandler.class)
-        .info("  Sorting the file into " + System.getProperty("java.io.tmpdir"));
-    File sortedFile =
+    LOGGER.info("  Sorting the file into " + System.getProperty("java.io.tmpdir"));
+    final File sortedFile =
         File.createTempFile("ttt", ".sort", new File(System.getProperty("java.io.tmpdir")));
     sortedFile.delete();
     // Sort file according to unix sort
@@ -1406,9 +1405,9 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
     FileSorter.sortFile(inputFile, sortedFile.getPath(), new Comparator<String>() {
 
       @Override
-      public int compare(String o1, String o2) {
-        String[] fields1 = o1.split("\t");
-        String[] fields2 = o2.split("\t");
+      public int compare(final String o1, final String o2) {
+        final String[] fields1 = o1.split("\t");
+        final String[] fields2 = o2.split("\t");
 
         // keep headers at top
         if (o1.startsWith("id")) {
@@ -1478,10 +1477,10 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
         }
       }
     });
-    Logger.getLogger(ICD10CAProjectSpecificAlgorithmHandler.class).info("  Done sorting the file ");
+    LOGGER.info("  Done sorting the file ");
 
     // Open reader and service
-    BufferedReader preloadMapReader = new BufferedReader(new FileReader(sortedFile));
+    final BufferedReader preloadMapReader = new BufferedReader(new FileReader(sortedFile));
 
     // These advices are not being used by ICD10CA, and need to be removed
     final Set<String> deletedAdvices = new HashSet<>();
@@ -1495,17 +1494,18 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
     deletedAdvices.add("POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE");
     // removed WMT-66 01/31/2022
     deletedAdvices.add("POSSIBLE REQUIREMENT FOR PLACE OF OCCURRENCE");
-    deletedAdvices.add("THIS CODE MAY BE USED IN THE PRIMARY POSITION WHEN THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE");
+    deletedAdvices.add(
+        "THIS CODE MAY BE USED IN THE PRIMARY POSITION WHEN THE MANIFESTATION IS THE PRIMARY FOCUS OF CARE");
     deletedAdvices.add("MANDATORY REQUIREMENT FOR PLACE OF OCCURRENCE");
-    deletedAdvices.add("USE AS PRIMARY CODE ONLY IF SITE OF BURN UNSPECIFIED, OTHERWISE USE AS A SUPPLEMENTARY CODE WITH CATEGORIES T20-T29 (Burns)");
+    deletedAdvices.add(
+        "USE AS PRIMARY CODE ONLY IF SITE OF BURN UNSPECIFIED, OTHERWISE USE AS A SUPPLEMENTARY CODE WITH CATEGORIES T20-T29 (Burns)");
     deletedAdvices.add("USE ADDITIONAL CODE TO IDENTIFY THE PRESENCE OF HYPERTENSION");
     deletedAdvices.add("MANDATORY REQUIREMENT FOR AN EXTERNAL CAUSE CODE");
-    deletedAdvices.add("USE ADDITIONAL CODE TO IDENTIFY PRIMARY MALIGNANT NEOPLASM OR HISTORY OF MALIGNANT NEOPLASM");
+    deletedAdvices.add(
+        "USE ADDITIONAL CODE TO IDENTIFY PRIMARY MALIGNANT NEOPLASM OR HISTORY OF MALIGNANT NEOPLASM");
     // removed WMT-75 07/13/2023
     deletedAdvices.add("MAPPED FOLLOWING CIHI GUIDANCE");
     deletedAdvices.add("MAPPED FOLLOWING WHO GUIDANCE");
-    
-    
 
     // These advices have different wording in ICD10CA, and need to be
     // replaced
@@ -1513,8 +1513,8 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
     // changedAdvices.put("POSSIBLE REQUIREMENT FOR AN EXTERNAL CAUSE CODE",
     // "MANDATORY REQUIREMENT FOR AN EXTERNAL CAUSE CODE");
     // changedAdvices.put("MAPPED FOLLOWING WHO GUIDANCE", "MAPPED FOLLOWING CIHI GUIDANCE");
-    //changedAdvices.put("POSSIBLE REQUIREMENT FOR PLACE OF OCCURRENCE",
-    //    "MANDATORY REQUIREMENT FOR PLACE OF OCCURRENCE");
+    // changedAdvices.put("POSSIBLE REQUIREMENT FOR PLACE OF OCCURRENCE",
+    // "MANDATORY REQUIREMENT FOR PLACE OF OCCURRENCE");
     changedAdvices.put("MAP OF SOURCE CONCEPT IS CONTEXT DEPENDENT",
         "MAP IS CONTEXT DEPENDENT FOR AGE");
     changedAdvices.put("POSSIBLE REQUIREMENT FOR CAUSATIVE AGENT CODE",
@@ -1529,7 +1529,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
     String line = null;
 
     while ((line = preloadMapReader.readLine()) != null) {
-      String fields[] = line.split("\t");
+      final String fields[] = line.split("\t");
 
       // Only keep ICD10 maps (refset=447562003)
       if (!fields[4].equals("447562003")) {
@@ -1553,9 +1553,9 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
       // The first time a conceptId is encountered, set up the map (only need
       // very limited information for the purpose of this function
       if (existingIcd10Maps.get(conceptId) == null) {
-        MapRecord icd10MapRecord = new MapRecordJpa();
+        final MapRecord icd10MapRecord = new MapRecordJpa();
         icd10MapRecord.setConceptId(conceptId);
-        String sourceConceptName = sourceIdToName.get(conceptId);
+        final String sourceConceptName = sourceIdToName.get(conceptId);
         if (sourceConceptName != null) {
           icd10MapRecord.setConceptName(sourceConceptName);
         } else {
@@ -1565,14 +1565,14 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
 
         existingIcd10Maps.put(conceptId, icd10MapRecord);
       }
-      MapRecord icd10MapRecord = existingIcd10Maps.get(conceptId);
+      final MapRecord icd10MapRecord = existingIcd10Maps.get(conceptId);
 
       // For each line, create a map entry, and attach it to the record
-      MapEntry mapEntry = new MapEntryJpa();
+      final MapEntry mapEntry = new MapEntryJpa();
       mapEntry.setMapGroup(Integer.parseInt(mapGroup));
       mapEntry.setMapPriority(Integer.parseInt(mapPriority));
       mapEntry.setTargetId(mapTarget);
-      String targetConceptName = destinationIdToName.get(mapTarget);
+      final String targetConceptName = destinationIdToName.get(mapTarget);
 
       if (targetConceptName != null) {
         mapEntry.setTargetName(targetConceptName);
@@ -1602,8 +1602,8 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
 
       final Set<MapAdvice> advices = new HashSet<>();
 
-      String splitAdvices[] = mapAdviceStr.split("\\|");
-      for (String advice : splitAdvices) {
+      final String splitAdvices[] = mapAdviceStr.split("\\|");
+      for (final String advice : splitAdvices) {
         // skip IF/ALWAYS
         if (advice.trim().startsWith("ALWAYS ") || advice.trim().startsWith("IF ")) {
           continue;
@@ -1625,14 +1625,12 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
           MapAdvice adviceToAdd = null;
           try {
             adviceToAdd = TerminologyUtility.getAdvice(mapProject, advice.trim());
-          } catch (Exception e) {
-            Logger.getLogger(ICD10CAProjectSpecificAlgorithmHandler.class)
-                .warn("Advice not found: " + advice.trim());
+          } catch (final Exception e) {
+            LOGGER.warn("Advice not found: " + advice.trim());
           }
           advices.add(adviceToAdd);
         }
       }
-
 
       mapEntry.setMapAdvices(advices);
 
@@ -1642,9 +1640,7 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
 
     }
 
-
-
-    Logger.getLogger(getClass()).info("Done caching maps");
+    LOGGER.info("Done caching maps");
 
     preloadMapReader.close();
     contentService.close();

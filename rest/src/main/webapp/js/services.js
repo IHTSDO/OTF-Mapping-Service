@@ -23,7 +23,8 @@ mapProjectApp
       '$anchorScroll',
       '$http',
       'gpService',
-      function($rootScope, $window, $location, $anchorScroll, $http, gpService) {
+      'localStorageService',
+      function($rootScope, $window, $location, $anchorScroll, $http, gpService, localStorageService) {
         console.debug('configure utilService');
         // declare the error
         this.error = {
@@ -83,35 +84,56 @@ mapProjectApp
 
         // look up the 'terminology notes' for the map project
         // Mechanism for asterisk/dagger in ICD10
-        this.initializeTerminologyNotes = function(projectId) {
-          // Skip if no auth header yet
-          if ($http.defaults.headers.common.Authorization) {
-            gpService.increment();
-            $http.get(root_mapping + 'mapProject/' + projectId + '/notes').then(
-            // Success
-            function(response) {
-              var list = {};
-              for (var i = 0; i < response.data.keyValuePair.length; i++) {
-                var entry = response.data.keyValuePair[i];
-                list[entry.key] = entry.value;
-              }
-              notes[projectId] = list;
-              gpService.decrement();
-            },
-            // Error
-            function(response) {
-              gpService.decrement();
-              handleError(response.data);
-            });
-          }
-        };
+		this.initializeTerminologyNotes = function(projectId) {
+		  return new Promise(function(resolve, reject) {
+			
+			var notes = localStorageService.get('notes');
+			if (notes != null && notes[projectId] != null) {
+		      resolve();
+		      return;
+		    }
+	        
+	        // Skip if no auth header yet
+		    if ($http.defaults.headers.common.Authorization) {
+		      gpService.increment();
+		      $http.get(root_mapping + 'mapProject/' + projectId + '/notes').then(
+		        // Success
+		        function(response) {
+		          var list = {};
+		          var projectNotes = {};
+		          for (var i = 0; i < response.data.keyValuePair.length; i++) {
+		            var entry = response.data.keyValuePair[i];
+		            list[entry.key] = entry.value;
+		          }
+		          		          
+		          projectNotes[projectId] = list;
+		          localStorageService.set('notes', projectNotes);
+		          gpService.decrement();
+		          resolve();
+		        },
+		        // Error
+		        function(response) {
+		          gpService.decrement();
+		          handleError(response.data);
+		          reject();
+		        }
+		      );
+		    } else {
+		      reject();
+		    }
+		  });
+		};
 
         // Get notes for this project id
         // Mechanism for asterisk/dagger in ICD10
         this.getNotes = function(projectId) {
+          var notes = localStorageService.get('notes');
+		  if (notes == null || notes.length == 0) {
+			return [];
+		  }
           return notes[projectId];
         };
-
+        
 		// Transform the entries into a post-coordinated expression
 		this.getFullExpression = function(mapRecord) {
 			

@@ -46,8 +46,8 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
   /** The map project. */
   protected MapProject mapProject = null;
-  
-  
+
+
   /* see superclass */
   @Override
   public MapProject getMapProject() {
@@ -56,24 +56,24 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
   /* see superclass */
   @Override
-  public void setMapProject(MapProject mapProject) {
+  public void setMapProject(final MapProject mapProject) {
     this.mapProject = mapProject;
   }
 
   /* see superclass */
   @Override
   public void initialize() throws Exception {
-    Runnable lookup = new CacheScopeConceptsThread(mapProject.getId());
-    Thread t = new Thread(lookup);
+    final Runnable lookup = new CacheScopeConceptsThread(mapProject.getId());
+    final Thread t = new Thread(lookup);
     t.start();
   }
 
   /* see superclass */
   @Override
-  public MapAdviceList computeMapAdvice(MapRecord mapRecord, MapEntry mapEntry) throws Exception {
+  public MapAdviceList computeMapAdvice(final MapRecord mapRecord, final MapEntry mapEntry) throws Exception {
     if (mapEntry != null && mapEntry.getMapAdvices() != null) {
       final List<MapAdvice> advices = new ArrayList<>(mapEntry.getMapAdvices());
-      MapAdviceList mapAdviceList = new MapAdviceListJpa();
+      final MapAdviceList mapAdviceList = new MapAdviceListJpa();
       mapAdviceList.setMapAdvices(advices);
     }
     return null;
@@ -81,7 +81,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
   /* see superclass */
   @Override
-  public MapRelation computeMapRelation(MapRecord mapRecord, MapEntry mapEntry) throws Exception {
+  public MapRelation computeMapRelation(final MapRecord mapRecord, final MapEntry mapEntry) throws Exception {
     if (mapEntry != null && mapEntry.getMapRelation() != null) {
       return mapEntry.getMapRelation();
     }
@@ -90,33 +90,33 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
   /* see superclass */
   @Override
-  public MapRecord computeInitialMapRecord(MapRecord mapRecord) throws Exception {
-    // Only specific projects require this - by default, do nothing
-    return null;
-  }
-  
-  /* see superclass */
-  @Override
-  public void preReleaseProcessing() throws Exception {
-    // Only specific projects require this - by default, do nothing
-  }
-  
-  /* see superclass */
-  @Override
-  public void postReleaseProcessing(String effectiveTime) throws Exception {
-    // Only specific projects require this - by default, do nothing
-  }  
-  
-  /* see superclass */
-  @Override
-  public Set<String> loadTags(String conceptId) throws Exception {
+  public MapRecord computeInitialMapRecord(final MapRecord mapRecord) throws Exception {
     // Only specific projects require this - by default, do nothing
     return null;
   }
 
   /* see superclass */
   @Override
-  public ValidationResult validateRecord(MapRecord mapRecord) throws Exception {
+  public void preReleaseProcessing() throws Exception {
+    // Only specific projects require this - by default, do nothing
+  }
+
+  /* see superclass */
+  @Override
+  public void postReleaseProcessing(final String effectiveTime) throws Exception {
+    // Only specific projects require this - by default, do nothing
+  }
+
+  /* see superclass */
+  @Override
+  public Set<String> loadTags(final String conceptId) throws Exception {
+    // Only specific projects require this - by default, do nothing
+    return null;
+  }
+
+  /* see superclass */
+  @Override
+  public ValidationResult validateRecord(final MapRecord mapRecord) throws Exception {
 
     // Universal checks
     final ValidationResult validationResult = new ValidationResultJpa();
@@ -132,12 +132,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
   /**
    * Perform validation checks that likely apply to all mappings. This is mostly
    * structural stuff and not semantically tied to any particular map.
-   * 
+   *
    * @param mapRecord the map record
    * @return the validation result
    */
-  public ValidationResult performDefaultChecks(MapRecord mapRecord) {
-    Map<Integer, List<MapEntry>> entryGroups = getEntryGroups(mapRecord);
+  public ValidationResult performDefaultChecks(final MapRecord mapRecord) {
+    final Map<Integer, List<MapEntry>> entryGroups = getEntryGroups(mapRecord);
 
     final ValidationResult validationResult = new ValidationResultJpa();
 
@@ -157,7 +157,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
     // FATAL ERROR: multiple entries in groups for non-rule based
     if (!mapProject.isRuleBased()) {
-      for (Integer key : entryGroups.keySet()) {
+      for (final Integer key : entryGroups.keySet()) {
         if (entryGroups.get(key).size() > 1) {
           validationResult.addError(
               "Project has no rule structure but multiple map entries found in group " + key);
@@ -194,12 +194,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
   /* see superclass */
   @Override
-  public ValidationResult validateTargetCodes(MapRecord mapRecord) throws Exception {
+  public ValidationResult validateTargetCodes(final MapRecord mapRecord) throws Exception {
     return new ValidationResultJpa();
   }
 
   @Override
-  public ValidationResult validateSemanticChecks(MapRecord mapRecord) throws Exception {
+  public ValidationResult validateSemanticChecks(final MapRecord mapRecord) throws Exception {
     return new ValidationResultJpa();
   }
 
@@ -212,7 +212,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
    */
   /* see superclass */
   @Override
-  public ValidationResult compareMapRecords(MapRecord record1, MapRecord record2) {
+  public ValidationResult compareMapRecords(final MapRecord record1, final MapRecord record2) {
     final ValidationResult validationResult = new ValidationResultJpa();
 
     if (record1 == null) {
@@ -340,12 +340,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
       for (int d = 0; d < Math.min(stringEntries1.size(), stringEntries2.size()); d++) {
 
-        if (stringEntries1.get(d).equals(stringEntries2.get(d)))
+        if (stringEntries1.get(d).equals(stringEntries2.get(d))) {
           continue;
-        else if (stringEntries2.contains(stringEntries1.get(d)))
+        } else if (stringEntries2.contains(stringEntries1.get(d))) {
           outOfOrderFlag = true;
-        else
+        } else {
           missingEntry = true;
+        }
       }
       if (!outOfOrderFlag && !missingEntry) {
         continue; // to next group for comparison
@@ -377,20 +378,20 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
         for (int f = 0; f < entries2.size(); f++) {
           if (isRulesEqual(entries1.get(d), entries2.get(f))
               && isTargetIdsEqual(entries1.get(d), entries2.get(f))
-              && !entries1.get(d).getMapAdvices().equals(entries2.get(f).getMapAdvices()))
-
+              && !entries1.get(d).getMapAdvices().equals(entries2.get(f).getMapAdvices())) {
             validationResult.merge(checkAdviceDifferences(entries1.get(d), entries2.get(f)));
+          }
         }
       }
       for (int d = 0; d < entries1.size(); d++) {
         for (int f = 0; f < entries2.size(); f++) {
           if (isRulesEqual(entries1.get(d), entries2.get(f))
               && isTargetIdsEqual(entries1.get(d), entries2.get(f))
-              && !entries1.get(d).getAdditionalMapEntryInfos().equals(entries2.get(f).getAdditionalMapEntryInfos()))
-
+              && !entries1.get(d).getAdditionalMapEntryInfos().equals(entries2.get(f).getAdditionalMapEntryInfos())) {
             validationResult.merge(checkAdditionalMapEntryInfoDifferences(entries1.get(d), entries2.get(f)));
+          }
         }
-      }      
+      }
 
       // check that any rule/target pairs are not different
       // for non-rule based projects, this will compare a single entry in each
@@ -435,7 +436,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
   /* see superclass */
   @Override
-  public boolean isTargetCodeValid(String terminologyId) throws Exception {
+  public boolean isTargetCodeValid(final String terminologyId) throws Exception {
+    return true;
+  }
+
+  /* see superclass */
+  @Override
+  public boolean isSourceCodeValid(final String terminologyId) throws Exception {
     return true;
   }
 
@@ -445,18 +452,19 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
   /**
    * Verify map records do not have null target ids
-   * 
+   *
    * @param mapRecord the map record
    * @return the validation result
    */
   @SuppressWarnings("static-method")
-  public ValidationResult checkMapRecordForNullTargetIds(MapRecord mapRecord) {
+  public ValidationResult checkMapRecordForNullTargetIds(final MapRecord mapRecord) {
     final ValidationResult validationResult = new ValidationResultJpa();
 
     for (final MapEntry me : mapRecord.getMapEntries()) {
-      if (me.getTargetId() == null)
+      if (me.getTargetId() == null) {
         validationResult.addError("Map entry at group " + me.getMapGroup() + ", priority "
             + me.getMapPriority() + " has no target (valid or empty) selected.");
+      }
     }
 
     return validationResult;
@@ -464,14 +472,14 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
   /**
    * Verify there are no empty map groups
-   * 
+   *
    * @param mapRecord the map record
    * @param entryGroups the entry groups
    * @return the validation result
    */
   @SuppressWarnings("static-method")
-  public ValidationResult checkMapRecordGroupStructure(MapRecord mapRecord,
-    Map<Integer, List<MapEntry>> entryGroups) {
+  public ValidationResult checkMapRecordGroupStructure(final MapRecord mapRecord,
+    final Map<Integer, List<MapEntry>> entryGroups) {
 
     final ValidationResult validationResult = new ValidationResultJpa();
 
@@ -489,13 +497,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
   /**
    * Verify no duplicate entries in the map.
-   * 
+   *
    * @param mapRecord the map record
    * @return a list of errors detected
    */
   @SuppressWarnings("static-method")
-  public ValidationResult checkMapRecordForDuplicateEntries(MapRecord mapRecord) {
-    ValidationResult validationResult = new ValidationResultJpa();
+  public ValidationResult checkMapRecordForDuplicateEntries(final MapRecord mapRecord) {
+    final ValidationResult validationResult = new ValidationResultJpa();
     final List<MapEntry> entries = mapRecord.getMapEntries();
 
     // cycle over all entries but last
@@ -557,13 +565,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
   /**
    * Verify proper use of TRUE rules (for rule based project). Verify no rules
    * on non-rule based projects.
-   * 
+   *
    * @param mapRecord the map record
    * @param entryGroups the binned entry lists by group
    * @return a list of errors detected
    */
-  public ValidationResult checkMapRecordRules(MapRecord mapRecord,
-    Map<Integer, List<MapEntry>> entryGroups) {
+  public ValidationResult checkMapRecordRules(final MapRecord mapRecord,
+    final Map<Integer, List<MapEntry>> entryGroups) {
 
     final ValidationResult validationResult = new ValidationResultJpa();
 
@@ -590,7 +598,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
         int femaleEntry = 0;
 
         for (int i = 1; i < entryGroups.get(key).size() + 1; i++) {
-          MapEntry entry = entryGroups.get(key).get(i - 1);
+          final MapEntry entry = entryGroups.get(key).get(i - 1);
           if (entry.getRule().contains("Male")) {
             maleEntry = i;
           }
@@ -601,8 +609,9 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
         // ensure female entry is before male entry
         if (femaleEntry != 0 && maleEntry != 0) {
-          if (femaleEntry > maleEntry)
+          if (femaleEntry > maleEntry) {
             validationResult.addError("Female rule must be ordered before the male rule.");
+          }
         }
       }
 
@@ -639,32 +648,34 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
   /**
    * Verify higher level map groups do not have only NC target codes.
-   * 
+   *
    * @param mapRecord the map record
    * @param entryGroups the binned entry lists by group
    * @return a list of errors detected
    */
   @SuppressWarnings("static-method")
-  public ValidationResult checkMapRecordNcNodes(MapRecord mapRecord,
-    Map<Integer, List<MapEntry>> entryGroups) {
+  public ValidationResult checkMapRecordNcNodes(final MapRecord mapRecord,
+    final Map<Integer, List<MapEntry>> entryGroups) {
 
     final ValidationResult validationResult = new ValidationResultJpa();
 
     // if only one group, return empty validation result (also covers
     // non-group-structure projects)
-    if (entryGroups.keySet().size() == 1)
+    if (entryGroups.keySet().size() == 1) {
       return validationResult;
+    }
 
     // otherwise cycle over the high-level groups (i.e. all but first group)
-    for (int group : entryGroups.keySet()) {
+    for (final int group : entryGroups.keySet()) {
 
       if (group != 1) {
-        List<MapEntry> entries = entryGroups.get(group);
+        final List<MapEntry> entries = entryGroups.get(group);
 
         boolean isValidGroup = false;
         for (final MapEntry entry : entries) {
-          if (entry.getTargetId() != null && !entry.getTargetId().equals(""))
+          if (entry.getTargetId() != null && !entry.getTargetId().equals("")) {
             isValidGroup = true;
+          }
         }
 
         if (!isValidGroup) {
@@ -681,13 +692,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
   /**
    * Verify advices are valid for the project
-   * 
+   *
    * @param mapRecord the map record
    * @param entryGroups the binned entry lists by group
    * @return a list of errors detected
    */
-  public ValidationResult checkMapRecordAdvices(MapRecord mapRecord,
-    Map<Integer, List<MapEntry>> entryGroups) {
+  public ValidationResult checkMapRecordAdvices(final MapRecord mapRecord,
+    final Map<Integer, List<MapEntry>> entryGroups) {
 
     final ValidationResult validationResult = new ValidationResultJpa();
     for (final MapEntry mapEntry : mapRecord.getMapEntries()) {
@@ -706,13 +717,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
   /**
    * Helper function to sort a records entries into entry lists binned by group.
-   * 
+   *
    * @param mapRecord the map record
    * @return a map of group to entry list
    */
   @SuppressWarnings("static-method")
-  public Map<Integer, List<MapEntry>> getEntryGroups(MapRecord mapRecord) {
-    Map<Integer, List<MapEntry>> entryGroups = new HashMap<>();
+  public Map<Integer, List<MapEntry>> getEntryGroups(final MapRecord mapRecord) {
+    final Map<Integer, List<MapEntry>> entryGroups = new HashMap<>();
     for (final MapEntry entry : mapRecord.getMapEntries()) {
       // if no existing set for this group, create a blank set
       List<MapEntry> entryGroup = entryGroups.get(entry.getMapGroup());
@@ -728,62 +739,72 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
   /**
    * Indicates whether or not rules are equal.
-   * 
+   *
    * @param entry1 the entry1
    * @param entry2 the entry2
    * @return <code>true</code> if so, <code>false</code> otherwise
    */
-  public boolean isRulesEqual(MapEntry entry1, MapEntry entry2) {
+  public boolean isRulesEqual(final MapEntry entry1, final MapEntry entry2) {
 
     // if not rule based, automatically return true
-    if (!mapProject.isRuleBased())
+    if (!mapProject.isRuleBased()) {
       return true;
+    }
 
     // check null comparisons first
-    if (entry1.getRule() == null && entry2.getRule() != null)
+    if (entry1.getRule() == null && entry2.getRule() != null) {
       return false;
-    if (entry1.getRule() != null && entry2.getRule() == null)
+    }
+    if (entry1.getRule() != null && entry2.getRule() == null) {
       return false;
-    if (entry1.getRule() == null && entry2.getRule() == null)
+    }
+    if (entry1.getRule() == null && entry2.getRule() == null) {
       return true;
+    }
     return entry1.getRule().equals(entry2.getRule());
   }
 
   /**
    * Indicates whether or not target ids are equal.
-   * 
+   *
    * @param entry1 the entry1
    * @param entry2 the entry2
    * @return <code>true</code> if so, <code>false</code> otherwise
    */
   @SuppressWarnings("static-method")
-  public boolean isTargetIdsEqual(MapEntry entry1, MapEntry entry2) {
+  public boolean isTargetIdsEqual(final MapEntry entry1, final MapEntry entry2) {
     // check null comparisons first
-    if (entry1.getTargetId() == null && entry2.getTargetId() != null)
+    if (entry1.getTargetId() == null && entry2.getTargetId() != null) {
       return false;
-    if (entry1.getTargetId() != null && entry2.getTargetId() == null)
+    }
+    if (entry1.getTargetId() != null && entry2.getTargetId() == null) {
       return false;
-    if (entry1.getTargetId() == null && entry2.getTargetId() == null)
+    }
+    if (entry1.getTargetId() == null && entry2.getTargetId() == null) {
       return true;
+    }
     return entry1.getTargetId().equals(entry2.getTargetId());
   }
 
   /**
    * Indicates whether or not map relations are equal.
-   * 
+   *
    * @param entry1 the entry1
    * @param entry2 the entry2
    * @return <code>true</code> if so, <code>false</code> otherwise
    */
   @SuppressWarnings("static-method")
-  public boolean isMapRelationsEqual(MapEntry entry1, MapEntry entry2) {
+  public boolean isMapRelationsEqual(final MapEntry entry1, final MapEntry entry2) {
     // check null comparisons first
-    if (entry1.getMapRelation() == null && entry2.getMapRelation() != null)
+    if (entry1.getMapRelation() == null && entry2.getMapRelation() != null) {
       return false;
-    if (entry1.getMapRelation() != null && entry2.getMapRelation() == null)
+    }
+    if (entry1.getMapRelation() != null && entry2.getMapRelation() == null) {
       return false;
-    if (entry1.getMapRelation() == null && entry2.getMapRelation() == null)
+    }
+    if (entry1.getMapRelation() == null && entry2.getMapRelation() == null) {
       return true;
+    }
     return entry1.getMapRelation().getId().equals(entry2.getMapRelation().getId());
   }
 
@@ -795,14 +816,14 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
    * @return the advice differences
    */
   @SuppressWarnings("static-method")
-  private ValidationResult checkAdviceDifferences(MapEntry entry1, MapEntry entry2) {
+  private ValidationResult checkAdviceDifferences(final MapEntry entry1, final MapEntry entry2) {
 
     final ValidationResult result = new ValidationResultJpa();
     final Comparator<Object> advicesComparator = new Comparator<Object>() {
       @Override
-      public int compare(Object o1, Object o2) {
-        String x1 = ((MapAdvice) o1).getName();
-        String x2 = ((MapAdvice) o2).getName();
+      public int compare(final Object o1, final Object o2) {
+        final String x1 = ((MapAdvice) o1).getName();
+        final String x2 = ((MapAdvice) o2).getName();
         if (!x1.equals(x2)) {
           return x1.compareTo(x2);
         }
@@ -817,15 +838,17 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
     for (int i = 0; i < Math.max(advices1.size(), advices2.size()); i++) {
       try {
-        if (advices1.get(i) == null && advices2.get(i) != null)
+        if (advices1.get(i) == null && advices2.get(i) != null) {
           continue;
-        if (advices1.get(i) != null && advices2.get(i) == null)
+        }
+        if (advices1.get(i) != null && advices2.get(i) == null) {
           continue;
+        }
         if (!advices1.get(i).equals(advices2.get(i))) {
           result.addError("Map Advice is Different: "
               + (advices1.get(i).getName() + " vs. " + advices2.get(i).getName()));
         }
-      } catch (IndexOutOfBoundsException e) {
+      } catch (final IndexOutOfBoundsException e) {
         result.addError("Map Advice is Different: "
             + (advices1.size() > i ? advices1.get(i).getName() : "No advice") + " vs. "
             + (advices2.size() > i ? advices2.get(i).getName() : "No advice"));
@@ -844,14 +867,14 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
    * @return the additional map entry info differences
    */
   @SuppressWarnings("static-method")
-  private ValidationResult checkAdditionalMapEntryInfoDifferences(MapEntry entry1, MapEntry entry2) {
+  private ValidationResult checkAdditionalMapEntryInfoDifferences(final MapEntry entry1, final MapEntry entry2) {
 
     final ValidationResult result = new ValidationResultJpa();
     final Comparator<Object> additionalMapEntryInfosComparator = new Comparator<Object>() {
       @Override
-      public int compare(Object o1, Object o2) {
-        String x1 = ((AdditionalMapEntryInfo) o1).getName();
-        String x2 = ((AdditionalMapEntryInfo) o2).getName();
+      public int compare(final Object o1, final Object o2) {
+        final String x1 = ((AdditionalMapEntryInfo) o1).getName();
+        final String x2 = ((AdditionalMapEntryInfo) o2).getName();
         if (!x1.equals(x2)) {
           return x1.compareTo(x2);
         }
@@ -866,15 +889,17 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
     for (int i = 0; i < Math.max(additionalMapEntryInfo1.size(), additionalMapEntryInfo2.size()); i++) {
       try {
-        if (additionalMapEntryInfo1.get(i) == null && additionalMapEntryInfo2.get(i) != null)
+        if (additionalMapEntryInfo1.get(i) == null && additionalMapEntryInfo2.get(i) != null) {
           continue;
-        if (additionalMapEntryInfo1.get(i) != null && additionalMapEntryInfo2.get(i) == null)
+        }
+        if (additionalMapEntryInfo1.get(i) != null && additionalMapEntryInfo2.get(i) == null) {
           continue;
+        }
         if (!additionalMapEntryInfo1.get(i).equals(additionalMapEntryInfo2.get(i))) {
           result.addError("Additional Map Entry Info is Different: "
               + (additionalMapEntryInfo1.get(i).getName() + " vs. " + additionalMapEntryInfo2.get(i).getName()));
         }
-      } catch (IndexOutOfBoundsException e) {
+      } catch (final IndexOutOfBoundsException e) {
         result.addError("Additional Map Entry Info is Different: "
             + (additionalMapEntryInfo1.size() > i ? additionalMapEntryInfo1.get(i).getName() : "No additional map entry info") + " vs. "
             + (additionalMapEntryInfo2.size() > i ? additionalMapEntryInfo2.get(i).getName() : "No additional map entry info"));
@@ -882,22 +907,22 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
     }
 
     return result;
-  }  
-  
+  }
+
   /**
    * Convert to string.
-   * 
+   *
    * @param mapEntry the map entry
    * @return the string
    */
   @SuppressWarnings("static-method")
-  private String convertToString(MapEntry mapEntry) {
+  private String convertToString(final MapEntry mapEntry) {
 
     final Comparator<Object> advicesComparator = new Comparator<Object>() {
       @Override
-      public int compare(Object o1, Object o2) {
-        String x1 = ((MapAdvice) o1).getName();
-        String x2 = ((MapAdvice) o2).getName();
+      public int compare(final Object o1, final Object o2) {
+        final String x1 = ((MapAdvice) o1).getName();
+        final String x2 = ((MapAdvice) o2).getName();
         if (!x1.equals(x2)) {
           return x1.compareTo(x2);
         }
@@ -911,19 +936,19 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
     final Comparator<Object> additionalMapEntryInfosComparator = new Comparator<Object>() {
       @Override
-      public int compare(Object o1, Object o2) {
-        String x1 = ((AdditionalMapEntryInfo) o1).getName();
-        String x2 = ((AdditionalMapEntryInfo) o2).getName();
+      public int compare(final Object o1, final Object o2) {
+        final String x1 = ((AdditionalMapEntryInfo) o1).getName();
+        final String x2 = ((AdditionalMapEntryInfo) o2).getName();
         if (!x1.equals(x2)) {
           return x1.compareTo(x2);
         }
         return 0;
       }
     };
-    
+
     final List<AdditionalMapEntryInfo> additionalMapEntryInfos = new ArrayList<>(mapEntry.getAdditionalMapEntryInfos());
     Collections.sort(additionalMapEntryInfos, additionalMapEntryInfosComparator);
-    
+
     final StringBuffer sb = new StringBuffer();
     sb.append(mapEntry.getTargetId() + " " + mapEntry.getRule() + " "
         + (mapEntry.getMapRelation() != null ? mapEntry.getMapRelation().getId() : ""));
@@ -939,28 +964,29 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
   /**
    * Returns the lowest workflow status.
-   * 
+   *
    * @param mapRecords the map records
    * @return the lowest workflow status
    */
   @SuppressWarnings("static-method")
-  public WorkflowStatus getLowestWorkflowStatus(Set<MapRecord> mapRecords) {
+  public WorkflowStatus getLowestWorkflowStatus(final Set<MapRecord> mapRecords) {
     WorkflowStatus workflowStatus = WorkflowStatus.REVISION;
     for (final MapRecord mr : mapRecords) {
-      if (mr.getWorkflowStatus().compareTo(workflowStatus) < 0)
+      if (mr.getWorkflowStatus().compareTo(workflowStatus) < 0) {
         workflowStatus = mr.getWorkflowStatus();
+      }
     }
     return workflowStatus;
   }
 
   @Override
-  public void computeIdentifyAlgorithms(MapRecord mapRecord) throws Exception {
+  public void computeIdentifyAlgorithms(final MapRecord mapRecord) throws Exception {
     // Default behavior is to do nothing
   }
 
   /* see superclass */
   @Override
-  public void computeTargetTerminologyNotes(List<TreePosition> treePositions) throws Exception {
+  public void computeTargetTerminologyNotes(final List<TreePosition> treePositions) throws Exception {
 
     // DO NOTHING -- Override in project specific handlers if necessary
   }
@@ -979,7 +1005,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
   /* see superclass */
   @Override
-  public ValidationResult validateForRelease(ComplexMapRefSetMember member) throws Exception {
+  public ValidationResult validateForRelease(final ComplexMapRefSetMember member) throws Exception {
     // do nothing
     return new ValidationResultJpa();
   }
@@ -990,13 +1016,13 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
     // does not apply
     return null;
   }
-  
+
   /* see superclass */
   @Override
   public MapRelation getDefaultNullTargetUpPropagatedMapRelation() throws Exception {
     // does not apply
     return null;
-  }  
+  }
 
   /* see superclass */
   @Override
@@ -1012,14 +1038,14 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
   /* see superclass */
   @Override
-  public List<TreePosition> limitTreePositions(List<TreePosition> treePositions) {
+  public List<TreePosition> limitTreePositions(final List<TreePosition> treePositions) {
     // default is no limiting
     return treePositions;
   }
 
   /* see superclass */
   @Override
-  public void setProperties(Properties properties) {
+  public void setProperties(final Properties properties) {
     // n/a
   }
 
@@ -1031,7 +1057,7 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
   /* see superclass */
   @Override
-  public boolean recordViolatesOneToOneConstraint(MapRecord record) throws Exception {
+  public boolean recordViolatesOneToOneConstraint(final MapRecord record) throws Exception {
     return false;
   }
 
@@ -1042,17 +1068,17 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
   }
 
   @Override
-  public boolean isMapRecordLineValid(String line) throws Exception {
+  public boolean isMapRecordLineValid(final String line) throws Exception {
     // Default is to say line is valid
     return true;
   }
 
 
-  
+
   public class CacheScopeConceptsThread implements Runnable {
 
     /** The translation id. */
-    private Long mapProjectId;
+    private final Long mapProjectId;
 
     /**
      * Instantiates a {@link CacheScopeConceptsThread} from the specified
@@ -1061,28 +1087,28 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
      * @param id the id
      * @throws Exception the exception
      */
-    public CacheScopeConceptsThread(Long id) throws Exception {
+    public CacheScopeConceptsThread(final Long id) throws Exception {
       mapProjectId = id;
     }
 
     /* see superclass */
     @Override
     public void run() {
-      try {
+      try (final MappingService mappingService = new MappingServiceJpa()) {
         Logger.getLogger(this.getClass())
             .info("Starting CacheScopeConceptsThread - " + mapProjectId);
-        MappingService mappingService = new MappingServiceJpa();
+        // MappingService mappingService = new MappingServiceJpa();
         final Set<String> scopeConceptTerminologyIds = new HashSet<>();
         for (final SearchResult sr : mappingService.findConceptsInScope(mapProjectId, null)
             .getSearchResults()) {
           scopeConceptTerminologyIds.add(sr.getTerminologyId());
         }
         ConfigUtility.setScopeConceptsForMapProject(mapProjectId, scopeConceptTerminologyIds);
-        
+
         Logger.getLogger(this.getClass())
             .info("Finished CacheScopeConceptsThread - " + mapProjectId);
-      } catch (Exception e) {
-        
+      } catch (final Exception e) {
+
         //lookupProgressMap.put(translationId, LOOKUP_ERROR_CODE);
       }
     }

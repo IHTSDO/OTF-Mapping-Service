@@ -31,14 +31,14 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
 
   /**
    * Gets the map project.
-   * 
+   *
    * @return the map project
    */
   public MapProject getMapProject();
 
   /**
    * Sets the map project.
-   * 
+   *
    * @param mapProject the new map project
    */
   public void setMapProject(MapProject mapProject);
@@ -48,7 +48,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * entries - multiple groups in project with no group structure - higher level
    * groups without any targets - invalid TRUE rules - advices are valid for the
    * project.
-   * 
+   *
    * @param mapRecord the map record
    * @return the validation result
    * @throws Exception the exception
@@ -57,7 +57,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
 
   /**
    * Validate target codes. Must be overwritten for each project handler.
-   * 
+   *
    * @param mapRecord the map record
    * @return the validation result
    * @throws Exception the exception
@@ -66,12 +66,21 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
 
   /**
    * Checks if is target code valid for this project.
-   * 
+   *
    * @param terminologyId the terminology id
    * @return true, if is target code valid
    * @throws Exception the exception
    */
   public boolean isTargetCodeValid(String terminologyId) throws Exception;
+
+  /**
+   * Checks if is source code valid for this project.
+   *
+   * @param terminologyId the terminology id
+   * @return true, if is target code valid
+   * @throws Exception the exception
+   */
+  public boolean isSourceCodeValid(final String terminologyId) throws Exception;
 
   /**
    * Indicates whether or not a map record line is valid to load.
@@ -94,7 +103,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
   /**
    * Compute map advice and map relations. Must be overwritten for each project
    * handler.
-   * 
+   *
    * @param mapRecord the map record
    * @param mapEntry the map entry
    * @return the list
@@ -114,7 +123,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
 
   /**
    * Compute map record conflicts.
-   * 
+   *
    * @param record1 the record1
    * @param record2 the record2
    * @return the validation result
@@ -125,7 +134,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * Compute target terminology notes. These notes are passed back when looking
    * through a destination terminology hierarchy. It's a way of providing extra
    * information/context.
-   * 
+   *
    * @param treePositions the tree positions
    * @throws Exception the exception
    */
@@ -149,7 +158,7 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @throws Exception the exception
    */
   public void preReleaseProcessing() throws Exception;
-  
+
   /**
    * Runs any project-specific post-release processing that may be required
    * Only select projects need this, so it is blank by default.
@@ -157,8 +166,8 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @param effectiveTime the effective time
    * @throws Exception the exception
    */
-  public void postReleaseProcessing(String effectiveTime) throws Exception;  
-  
+  public void postReleaseProcessing(String effectiveTime) throws Exception;
+
   /**
    * Load tags associated with the concept. Read in tags from a pipe-delimited file,
    * and if the concept id is associated with tags, return them so they can be
@@ -167,9 +176,9 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @param conceptId the concept id
    * @return the sets the
    * @throws Exception the exception
-   */ 
+   */
   public Set<String> loadTags(String conceptId) throws Exception;
-  
+
   /**
    * Called after "assign from scratch" to give handlers the opportunity to
    * attach notes or map principles to the.
@@ -216,8 +225,8 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @return the default up propagated map relation for null target entries
    * @throws Exception the exception
    */
-  public MapRelation getDefaultNullTargetUpPropagatedMapRelation() throws Exception;  
-  
+  public MapRelation getDefaultNullTargetUpPropagatedMapRelation() throws Exception;
+
   /**
    * Returns the default target name for blank target.
    *
