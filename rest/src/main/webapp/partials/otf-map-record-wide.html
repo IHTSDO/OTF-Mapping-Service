@@ -1,6 +1,6 @@
 <h4 ng-show="showTitle == true">
   {{record.conceptName}}<br>{{project.sourceTerminology}}
-  concept {{record.conceptId}}{{notes[record.conceptId]}}
+  concept {{record.conceptId}}{{record.terminologyNote}}
 </h4>
 <div ng-show="record.flagForLeadReview == true" style="color: red">Flagged
   For Lead Review</div>

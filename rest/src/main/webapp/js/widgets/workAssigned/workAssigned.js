@@ -414,7 +414,7 @@ angular
 
           $scope.assignedConflictsPage = page;
           $scope.assignedConflicts = data.searchResult;
-          addTerminologyNote($scope.assignedConflicts);
+          $scope.addTerminologyNote($scope.assignedConflicts);
 
           // set pagination
           $scope.numAssignedConflictsPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
@@ -609,7 +609,7 @@ angular
 
           $scope.assignedQAWorkPage = page;
           $scope.assignedQAWork = data.searchResult;
-          addTerminologyNote($scope.assignedQAWork);
+          $scope.addTerminologyNote($scope.assignedQAWork);
 
           // set pagination
           $scope.numAssignedQAWorkPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
@@ -633,7 +633,7 @@ angular
         });
       };
 
-	  function addTerminologyNote(workItems) {
+	  $scope.addTerminologyNote = function(workItems) {
 		if (workItems == null || workItems.length == 0 || $scope.notes == undefined || $scope.notes.length == 0) {
 			return;
 		}
@@ -710,7 +710,7 @@ angular
 
           $scope.assignedReviewWorkPage = page;
           $scope.assignedReviewWork = data.searchResult;
-          addTerminologyNote($scope.assignedReviewWork);
+          $scope.addTerminologyNote($scope.assignedReviewWork);
 
           // set pagination
           $scope.numAssignedReviewWorkPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
@@ -786,7 +786,7 @@ angular
 
           $scope.assignedWorkForUserPage = page;
           $scope.assignedRecordsForUser = data.searchResult;
-          addTerminologyNote($scope.assignedRecordsForUser);
+          $scope.addTerminologyNote($scope.assignedRecordsForUser);
 
           // set pagination
           $scope.numAssignedRecordPagesForUser = Math.ceil(data.totalCount / $scope.itemsPerPage);
