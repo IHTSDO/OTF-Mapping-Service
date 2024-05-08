@@ -342,7 +342,7 @@ angular
       };
       
 	  $scope.addTerminologyNote = function(workItems) {
-		if (workItems == null || workItems.length == 0) {
+		if (workItems == null || workItems.length == 0 || $scope.notes == undefined || $scope.notes.length == 0) {
 			return;
 		}
 		workItems.forEach(function(workItem) {
@@ -682,7 +682,8 @@ angular
           gpService.decrement();
 
           $scope.availableReviewWork = data.searchResult;
-
+          $scope.addTerminologyNote($scope.availableReviewWork);
+          
           // set pagination
           $scope.numAvailableReviewWorkPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
           $scope.nAvailableReviewWork = data.totalCount;

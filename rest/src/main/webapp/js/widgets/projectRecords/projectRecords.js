@@ -64,7 +64,8 @@ angular
 
 	  // Additional map entry ordering information
 	  $scope.additionalMapEntryInfoOrderingMap = utilService.processOrderingInfo(appConfig['deploy.additional.map.entry.info.ordering']);
-  
+      
+      $scope.notes = utilService.getNotes($scope.projectId);
 
       // watch for changes to focus project
       $scope.$on('localStorageModule.notification.setFocusProject', function(
@@ -95,6 +96,13 @@ angular
           $scope.getRecordsForProject();
           $scope.initializeSearchParameters();
           $scope.setIndexViewerStatus();
+          
+          // Initialize terminology notes
+          utilService.initializeTerminologyNotes($scope.focusProject.id).then(() => {
+            $scope.notes = utilService.getNotes($scope.focusProject.id);            
+          }).catch(error => {
+            console.error('Error initializing terminology notes', error);
+          });
         }
       });
 
@@ -183,6 +191,8 @@ angular
               }            
 			  $scope.records[i].fullexpression = utilService.getFullExpression($scope.records[i]);
 	  	  	  $scope.records[i] = utilService.addOrderIds($scope.records[i], $scope.additionalMapEntryInfoOrderingMap);
+	  	  	  
+	  	  	  $scope.records[i].terminologyNote = $scope.notes[$scope.records[i].conceptId];
             }
             
             $scope.statusRecordLoad = '';
