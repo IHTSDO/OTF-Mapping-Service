@@ -500,6 +500,7 @@ angular
 
           $scope.assignedWorkPage = page;
           $scope.assignedRecords = data.searchResult;
+          $scope.addTerminologyNote($scope.assignedRecords);
 
           // set pagination
           $scope.numAssignedRecordPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
