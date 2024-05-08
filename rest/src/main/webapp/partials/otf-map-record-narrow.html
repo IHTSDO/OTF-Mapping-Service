@@ -1,6 +1,6 @@
 <h4 ng-show="showTitle == true">
   {{record.conceptName}}<br>{{project.sourceTerminology}} concept
-  {{record.conceptId}}{{notes[record.conceptId]}}
+  {{record.conceptId}}{{record.terminologyNote}}
 </h4>
 <!-- Labels -->
 <div ng-repeat="label in record.labels" style="width: 100%; margin-bottom: 5px;">

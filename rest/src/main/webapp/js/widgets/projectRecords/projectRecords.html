@@ -278,7 +278,7 @@
 <div ng-repeat="record in records" ng-class-odd="'odd'" ng-class-even="'even'">
   <h4>
     {{record.conceptName}},
-    <a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}</a>
+    <a href="#/record/conceptId/{{record.conceptId}}">{{record.conceptId}}{{record.terminologyNote}}</a>
   </h4>
   
     <div ng-show="searchParameters.showNonPublished">
