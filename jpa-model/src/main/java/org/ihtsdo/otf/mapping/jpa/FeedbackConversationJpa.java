@@ -96,6 +96,10 @@ public class FeedbackConversationJpa implements FeedbackConversation {
   @Column(nullable = false)
   private String terminologyVersion;
 
+  /** The terminology Note. */
+  @Transient
+  private String terminologyNote;
+
   /** The title. */
   @Column(nullable = true, length = 4000)
   private String title;
@@ -111,14 +115,14 @@ public class FeedbackConversationJpa implements FeedbackConversation {
   /** The associated record owner's userName */
   @Column(nullable = true)
   private String userName;
-  
+
   /** Flag for whether this feed conversation is viewed by specific user */
   @Transient
   private boolean isViewed;
 
   /**
    * Returns the id.
-   * 
+   *
    * @return the id
    */
   @Override
@@ -128,11 +132,11 @@ public class FeedbackConversationJpa implements FeedbackConversation {
 
   /**
    * Sets the id.
-   * 
+   *
    * @param id the id
    */
   @Override
-  public void setId(Long id) {
+  public void setId(final Long id) {
     this.id = id;
   }
 
@@ -144,8 +148,9 @@ public class FeedbackConversationJpa implements FeedbackConversation {
   @Override
   @XmlElement(type = FeedbackJpa.class, name = "feedback")
   public List<Feedback> getFeedbacks() {
-    if (feedbacks == null)
+    if (feedbacks == null) {
       feedbacks = new ArrayList<>(); // ensures proper deserialization
+    }
     return feedbacks;
   }
 
@@ -155,7 +160,7 @@ public class FeedbackConversationJpa implements FeedbackConversation {
    * @param feedbacks the feedbacks
    */
   @Override
-  public void setFeedbacks(List<Feedback> feedbacks) {
+  public void setFeedbacks(final List<Feedback> feedbacks) {
     this.feedbacks = feedbacks;
   }
 
@@ -166,12 +171,12 @@ public class FeedbackConversationJpa implements FeedbackConversation {
    */
 
   @Override
-  public void setResolved(boolean resolved) {
+  public void setResolved(final boolean resolved) {
     this.isResolved = resolved;
   }
 
   @Override
-  public void removeFeedback(Feedback feedbackMessage) {
+  public void removeFeedback(final Feedback feedbackMessage) {
     feedbacks.remove(feedbackMessage);
   }
 
@@ -202,7 +207,7 @@ public class FeedbackConversationJpa implements FeedbackConversation {
    * @param mapRecordId the map record id
    */
   @Override
-  public void setMapRecordId(Long mapRecordId) {
+  public void setMapRecordId(final Long mapRecordId) {
     this.mapRecordId = mapRecordId;
   }
 
@@ -212,7 +217,7 @@ public class FeedbackConversationJpa implements FeedbackConversation {
    * @param discrepancyReview the discrepancy review
    */
   @Override
-  public void setDiscrepancyReview(boolean discrepancyReview) {
+  public void setDiscrepancyReview(final boolean discrepancyReview) {
     this.isDiscrepancyReview = discrepancyReview;
   }
 
@@ -238,11 +243,12 @@ public class FeedbackConversationJpa implements FeedbackConversation {
   @SortableField
   public Date getLastModified() {
     Date localLastModified = null;
-    for (Feedback feedback : getFeedbacks()) {
-      if (localLastModified == null)
+    for (final Feedback feedback : getFeedbacks()) {
+      if (localLastModified == null) {
         localLastModified = feedback.getTimestamp();
-      else if (feedback.getTimestamp().after(localLastModified))
+      } else if (feedback.getTimestamp().after(localLastModified)) {
         localLastModified = feedback.getTimestamp();
+      }
     }
     this.setLastModified(localLastModified);
     return lastModified;
@@ -254,7 +260,7 @@ public class FeedbackConversationJpa implements FeedbackConversation {
    * @param lastModified the last modified
    */
   @Override
-  public void setLastModified(Date lastModified) {
+  public void setLastModified(final Date lastModified) {
     this.lastModified = lastModified;
   }
 
@@ -264,7 +270,7 @@ public class FeedbackConversationJpa implements FeedbackConversation {
    * @param terminologyId the terminology id
    */
   @Override
-  public void setTerminologyId(String terminologyId) {
+  public void setTerminologyId(final String terminologyId) {
     this.terminologyId = terminologyId;
   }
 
@@ -286,7 +292,7 @@ public class FeedbackConversationJpa implements FeedbackConversation {
    * @param terminologyVersion the terminology version
    */
   @Override
-  public void setTerminologyVersion(String terminologyVersion) {
+  public void setTerminologyVersion(final String terminologyVersion) {
     this.terminologyVersion = terminologyVersion;
   }
 
@@ -307,7 +313,7 @@ public class FeedbackConversationJpa implements FeedbackConversation {
    * @param terminology the terminology
    */
   @Override
-  public void setTerminology(String terminology) {
+  public void setTerminology(final String terminology) {
     this.terminology = terminology;
   }
 
@@ -321,17 +327,38 @@ public class FeedbackConversationJpa implements FeedbackConversation {
   public String getTerminology() {
     return terminology;
   }
-  
+
+  /**
+   * Sets the terminology note.
+   *
+   * @param terminologyNote the terminology note
+   */
+  @Override
+  public void setTerminologyNote(final String terminologyNote) {
+    this.terminologyNote = terminologyNote;
+  }
+
+  /**
+   * Returns the terminology note.
+   *
+   * @return the terminology note
+   */
+  @Override
+  @XmlElement(name = "terminologyNote")
+  public String getTerminologyNote() {
+    return terminologyNote;
+  }
+
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.ihtsdo.otf.mapping.model.FeedbackConversation#assignToChildren()
    */
   @Override
   public void assignToChildren() {
 
     // assign to entries
-    for (Feedback feedback : feedbacks) {
+    for (final Feedback feedback : feedbacks) {
       feedback.setFeedbackConversation(this);
     }
 
@@ -339,21 +366,19 @@ public class FeedbackConversationJpa implements FeedbackConversation {
 
   /*
    * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.FeedbackConversation#setDefaultPreferredName
+   *
+   * @see org.ihtsdo.otf.mapping.model.FeedbackConversation#setDefaultPreferredName
    * (java.lang.String)
    */
   @Override
-  public void setDefaultPreferredName(String defaultPreferredName) {
+  public void setDefaultPreferredName(final String defaultPreferredName) {
     this.defaultPreferredName = defaultPreferredName;
   }
 
   /*
    * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.FeedbackConversation#getDefaultPreferredName()
+   *
+   * @see org.ihtsdo.otf.mapping.model.FeedbackConversation#getDefaultPreferredName()
    */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
@@ -363,7 +388,7 @@ public class FeedbackConversationJpa implements FeedbackConversation {
   }
 
   @Override
-  public void setUserName(String userName) {
+  public void setUserName(final String userName) {
     this.userName = userName;
   }
 
@@ -376,19 +401,17 @@ public class FeedbackConversationJpa implements FeedbackConversation {
 
   /*
    * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.FeedbackConversation#setTitle(java.lang.String
-   * )
+   *
+   * @see org.ihtsdo.otf.mapping.model.FeedbackConversation#setTitle(java.lang.String )
    */
   @Override
-  public void setTitle(String title) {
+  public void setTitle(final String title) {
     this.title = title;
   }
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.ihtsdo.otf.mapping.model.FeedbackConversation#getTitle()
    */
   @Override
@@ -400,19 +423,18 @@ public class FeedbackConversationJpa implements FeedbackConversation {
 
   /*
    * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.FeedbackConversation#addFeedback(org.ihtsdo
+   *
+   * @see org.ihtsdo.otf.mapping.model.FeedbackConversation#addFeedback(org.ihtsdo
    * .otf.mapping.model.Feedback)
    */
   @Override
-  public void addFeedback(Feedback feedback) {
+  public void addFeedback(final Feedback feedback) {
     this.feedbacks.add(feedback);
   }
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.ihtsdo.otf.mapping.model.MapRecord#getMapProjectId()
    */
   @Override
@@ -424,20 +446,18 @@ public class FeedbackConversationJpa implements FeedbackConversation {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.ihtsdo.otf.mapping.model.MapRecord#setMapProjectId(java.lang.Long)
    */
   @Override
-  public void setMapProjectId(Long mapProjectId) {
+  public void setMapProjectId(final Long mapProjectId) {
     this.mapProjectId = mapProjectId;
   }
-  
 
   /*
    * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.FeedbackConversation#isViewed()
+   *
+   * @see org.ihtsdo.otf.mapping.model.FeedbackConversation#isViewed()
    */
   @Override
   public boolean isViewed() {
@@ -446,18 +466,17 @@ public class FeedbackConversationJpa implements FeedbackConversation {
 
   /*
    * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.model.FeedbackConversation#setIsViewed(boolean)
+   *
+   * @see org.ihtsdo.otf.mapping.model.FeedbackConversation#setIsViewed(boolean)
    */
   @Override
-  public void setIsViewed(boolean isViewed) {
+  public void setIsViewed(final boolean isViewed) {
     this.isViewed = isViewed;
   }
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#hashCode()
    */
   @Override
@@ -467,16 +486,12 @@ public class FeedbackConversationJpa implements FeedbackConversation {
     result = prime * result + ((feedbacks == null) ? 0 : feedbacks.hashCode());
     result = prime * result + (isDiscrepancyReview ? 1231 : 1237);
     result = prime * result + (isResolved ? 1231 : 1237);
-    result =
-        prime * result + ((mapProjectId == null) ? 0 : mapProjectId.hashCode());
-    result =
-        prime * result + ((mapRecordId == null) ? 0 : mapRecordId.hashCode());
-    result =
-        prime * result + ((terminology == null) ? 0 : terminology.hashCode());
-    result = prime * result
-        + ((terminologyId == null) ? 0 : terminologyId.hashCode());
-    result = prime * result
-        + ((terminologyVersion == null) ? 0 : terminologyVersion.hashCode());
+    result = prime * result + ((mapProjectId == null) ? 0 : mapProjectId.hashCode());
+    result = prime * result + ((mapRecordId == null) ? 0 : mapRecordId.hashCode());
+    result = prime * result + ((terminology == null) ? 0 : terminology.hashCode());
+    result = prime * result + ((terminologyId == null) ? 0 : terminologyId.hashCode());
+    result = prime * result + ((terminologyVersion == null) ? 0 : terminologyVersion.hashCode());
+    result = prime * result + ((terminologyNote == null) ? 0 : terminologyNote.hashCode());
     result = prime * result + ((title == null) ? 0 : title.hashCode());
     result = prime * result + ((userName == null) ? 0 : userName.hashCode());
     return result;
@@ -484,75 +499,102 @@ public class FeedbackConversationJpa implements FeedbackConversation {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
+  public boolean equals(final Object obj) {
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
-    FeedbackConversationJpa other = (FeedbackConversationJpa) obj;
+    }
+    final FeedbackConversationJpa other = (FeedbackConversationJpa) obj;
     if (feedbacks == null) {
-      if (other.feedbacks != null)
+      if (other.feedbacks != null) {
         return false;
-    } else if (!feedbacks.equals(other.feedbacks))
+      }
+    } else if (!feedbacks.equals(other.feedbacks)) {
       return false;
-    if (isDiscrepancyReview != other.isDiscrepancyReview)
+    }
+    if (isDiscrepancyReview != other.isDiscrepancyReview) {
       return false;
-    if (isResolved != other.isResolved)
+    }
+    if (isResolved != other.isResolved) {
       return false;
+    }
     if (mapProjectId == null) {
-      if (other.mapProjectId != null)
+      if (other.mapProjectId != null) {
         return false;
-    } else if (!mapProjectId.equals(other.mapProjectId))
+      }
+    } else if (!mapProjectId.equals(other.mapProjectId)) {
       return false;
+    }
     if (mapRecordId == null) {
-      if (other.mapRecordId != null)
+      if (other.mapRecordId != null) {
         return false;
-    } else if (!mapRecordId.equals(other.mapRecordId))
+      }
+    } else if (!mapRecordId.equals(other.mapRecordId)) {
       return false;
+    }
     if (terminology == null) {
-      if (other.terminology != null)
+      if (other.terminology != null) {
         return false;
-    } else if (!terminology.equals(other.terminology))
+      }
+    } else if (!terminology.equals(other.terminology)) {
       return false;
+    }
     if (terminologyId == null) {
-      if (other.terminologyId != null)
+      if (other.terminologyId != null) {
         return false;
-    } else if (!terminologyId.equals(other.terminologyId))
+      }
+    } else if (!terminologyId.equals(other.terminologyId)) {
       return false;
+    }
     if (terminologyVersion == null) {
-      if (other.terminologyVersion != null)
+      if (other.terminologyVersion != null) {
         return false;
-    } else if (!terminologyVersion.equals(other.terminologyVersion))
+      }
+    } else if (!terminologyVersion.equals(other.terminologyVersion)) {
       return false;
+    }
+    if (terminologyNote == null) {
+      if (other.terminologyNote != null) {
+        return false;
+      }
+    } else if (!terminologyNote.equals(other.terminologyNote)) {
+      return false;
+    }
     if (title == null) {
-      if (other.title != null)
+      if (other.title != null) {
         return false;
-    } else if (!title.equals(other.title))
+      }
+    } else if (!title.equals(other.title)) {
       return false;
+    }
     if (userName == null) {
-      if (other.userName != null)
+      if (other.userName != null) {
         return false;
-    } else if (!userName.equals(other.userName))
+      }
+    } else if (!userName.equals(other.userName)) {
       return false;
+    }
     return true;
   }
 
   @Override
   public String toString() {
-    return "FeedbackConversationJpa [id=" + id + ", feedbacks=" + feedbacks
-        + ", isResolved=" + isResolved + ", isDiscrepancyReview="
-        + isDiscrepancyReview + ", lastModified=" + lastModified
-        + ", mapRecordId=" + mapRecordId + ", terminology=" + terminology
-        + ", terminologyId=" + terminologyId + ", terminologyVersion="
-        + terminologyVersion + ", title=" + title + ", defaultPreferredName="
-        + defaultPreferredName + ", mapProjectId=" + mapProjectId
-        + ", userName=" + userName + ", isViewed=" + isViewed + "]";
+    return "FeedbackConversationJpa [id=" + id + ", feedbacks=" + feedbacks + ", isResolved="
+        + isResolved + ", isDiscrepancyReview=" + isDiscrepancyReview + ", lastModified="
+        + lastModified + ", mapRecordId=" + mapRecordId + ", terminology=" + terminology
+        + ", terminologyId=" + terminologyId + ", terminologyVersion=" + terminologyVersion
+        + ", terminologyNote=" + terminologyNote + ", title=" + title + ", defaultPreferredName="
+        + defaultPreferredName + ", mapProjectId=" + mapProjectId + ", userName=" + userName
+        + ", isViewed=" + isViewed + "]";
   }
 
 }

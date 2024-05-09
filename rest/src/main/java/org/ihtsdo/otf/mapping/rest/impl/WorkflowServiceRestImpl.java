@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ws.rs.Consumes;
@@ -31,6 +32,7 @@ import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
+import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
@@ -47,6 +49,7 @@ import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowFixErrorPathHandler;
 import org.ihtsdo.otf.mapping.jpa.handlers.WorkflowQaPathHandler;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ReportServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
@@ -59,6 +62,7 @@ import org.ihtsdo.otf.mapping.model.MapUser;
 import org.ihtsdo.otf.mapping.reports.Report;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.ReportService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.WorkflowService;
@@ -85,7 +89,7 @@ import io.swagger.annotations.ApiParam;
 public class WorkflowServiceRestImpl extends RootServiceRestImpl implements WorkflowServiceRest {
 
   /** The security service. */
-  private SecurityService securityService;
+  private final SecurityService securityService;
 
   /** The Constant lock. */
   private final static String lock = "LOCK";
@@ -106,9 +110,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   @ApiOperation(value = "Compute workflow for a map project.",
       notes = "Recomputes workflow for the specified map project.")
   public void computeWorkflow(
-    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") final Long mapProjectId,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     Logger.getLogger(WorkflowServiceRestImpl.class)
@@ -127,7 +131,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       project = mapProject.getName();
       workflowService.computeWorkflow(mapProject);
       return;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "trying to compute workflow", user, project, "");
     } finally {
       workflowService.close();
@@ -149,14 +153,14 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public SearchResultList findAvailableConcepts(
-    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
-    @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") String userName,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") final Long mapProjectId,
+    @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") final String userName,
     @ApiParam(value = "Query, e.g. 'heart attack'",
-        required = true) @QueryParam("query") String query,
+        required = true) @QueryParam("query") final String query,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data",
-        required = true) PfsParameterJpa pfsParameter,
+        required = true) final PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     Logger.getLogger(WorkflowServiceRestImpl.class).info("RESTful call (Workflow): /project/id/"
@@ -165,9 +169,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     String project = "";
     String user = null;
 
-    final WorkflowService workflowService = new WorkflowServiceJpa();
-    final ContentService contentService = new ContentServiceJpa();
-    try {
+    try (final WorkflowService workflowService = new WorkflowServiceJpa();
+        final ContentService contentService = new ContentServiceJpa();
+        final MappingService mappingService = new MappingServiceJpa();) {
       // authorize call
       user = authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
           "find available concepts", securityService);
@@ -188,6 +192,11 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       // solution to scope concepts is found
       // SEE MAP-862
       final SearchResultList revisedResults = new SearchResultListJpa();
+
+      final ProjectSpecificAlgorithmHandler handler =
+          mappingService.getProjectSpecificAlgorithmHandler(mapProject);
+      final Map<String, String> termNotes = handler.getAllTerminologyNotes();
+
       for (final SearchResult result : results.getIterable()) {
 
         final Concept c = contentService.getConcept(result.getTerminologyId(),
@@ -198,6 +207,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
                   + mapProject.getSourceTerminology() + ", "
                   + mapProject.getSourceTerminologyVersion());
         } else if (c.isActive()) {
+          if (termNotes != null && termNotes.containsKey(result.getTerminologyId())) {
+            result.setTerminologyNote(termNotes.get(result.getTerminologyId()));
+          }
           revisedResults.addSearchResult(result);
         } else {
           Logger.getLogger(WorkflowServiceJpa.class)
@@ -209,12 +221,10 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       results = revisedResults;
 
       return results;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "trying to find available work", user, project, "");
       return null;
     } finally {
-      contentService.close();
-      workflowService.close();
       securityService.close();
     }
   }
@@ -233,14 +243,14 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public SearchResultList findAssignedConcepts(
-    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
-    @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") String userName,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") final Long mapProjectId,
+    @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") final String userName,
     @ApiParam(value = "Query, e.g. 'heart attack'",
-        required = true) @QueryParam("query") String query,
+        required = true) @QueryParam("query") final String query,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data",
-        required = true) PfsParameterJpa pfsParameter,
+        required = true) final PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     Logger.getLogger(WorkflowServiceRestImpl.class).info("RESTful call (Workflow): /project/id/"
@@ -249,8 +259,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     String project = "";
     String user = null;
 
-    final WorkflowService workflowService = new WorkflowServiceJpa();
-    try {
+    try (final WorkflowService workflowService = new WorkflowServiceJpa();
+        final MappingService mappingService = new MappingServiceJpa();) {
+
       // authorize call
       user = authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
           "find assigned concepts", securityService);
@@ -268,19 +279,19 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       localPfs.setAscending(pfsParameter.isAscending());
 
       // get ALL FixErrorPath work at specialist level for the project
-      WorkflowPathHandler fixErrorHandler = new WorkflowFixErrorPathHandler();
-      SearchResultList fixErrorWork = fixErrorHandler.findAssignedWork(mapProject, mapUser,
+      final WorkflowPathHandler fixErrorHandler = new WorkflowFixErrorPathHandler();
+      final SearchResultList fixErrorWork = fixErrorHandler.findAssignedWork(mapProject, mapUser,
           MapUserRole.SPECIALIST, query, localPfs, workflowService);
 
       // get ALL assigned work at specialist level for project
-      SearchResultList assignedWork = workflowService.findAssignedWork(mapProject, mapUser,
+      final SearchResultList assignedWork = workflowService.findAssignedWork(mapProject, mapUser,
           MapUserRole.SPECIALIST, query, localPfs);
 
       // concatenate the results
       assignedWork.addSearchResults(fixErrorWork);
 
       // apply paging
-      int[] totalCt = new int[1];
+      final int[] totalCt = new int[1];
       localPfs = new PfsParameterJpa(pfsParameter);
       localPfs.setQueryRestriction("");
       localPfs.setSortField("");
@@ -290,26 +301,32 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       // currently cannot convert List<SearchResultJpa> to
       // List<SearchResult>
       List<SearchResultJpa> results = new ArrayList<>();
-      for (SearchResult sr : assignedWork.getSearchResults()) {
+      for (final SearchResult sr : assignedWork.getSearchResults()) {
         results.add((SearchResultJpa) sr);
       }
 
       // apply paging to the list
       results = workflowService.applyPfsToList(results, SearchResultJpa.class, totalCt, localPfs);
 
+      final ProjectSpecificAlgorithmHandler handler =
+          mappingService.getProjectSpecificAlgorithmHandler(mapProject);
+      final Map<String, String> termNotes = handler.getAllTerminologyNotes();
+
       // reconstruct the assignedWork search result list
       assignedWork.setSearchResults(new ArrayList<SearchResult>());
-      for (SearchResult sr : results) {
+      for (final SearchResult sr : results) {
+        if (termNotes != null && termNotes.containsKey(sr.getTerminologyId())) {
+          sr.setTerminologyNote(termNotes.get(sr.getTerminologyId()));
+        }
         assignedWork.addSearchResult(sr);
       }
 
       return assignedWork;
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "trying to find assigned concepts", user, project, "");
       return null;
     } finally {
-      workflowService.close();
       securityService.close();
     }
   }
@@ -325,14 +342,14 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public SearchResultList findAvailableConflicts(
-    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
-    @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") String userName,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") final Long mapProjectId,
+    @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") final String userName,
     @ApiParam(value = "Query, e.g. 'heart attack'",
-        required = true) @QueryParam("query") String query,
+        required = true) @QueryParam("query") final String query,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data",
-        required = true) PfsParameterJpa pfsParameter,
+        required = true) final PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     Logger.getLogger(WorkflowServiceRestImpl.class).info("RESTful call (Workflow): /project/id/"
@@ -341,8 +358,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     String project = "";
     String user = null;
 
-    final WorkflowService workflowService = new WorkflowServiceJpa();
-    try {
+    try (final WorkflowService workflowService = new WorkflowServiceJpa();
+        final MappingService mappingService = new MappingServiceJpa();) {
+
       // authorize call
       user = authorizeProject(mapProjectId, authToken, MapUserRole.LEAD, "find available conflicts",
           securityService);
@@ -352,6 +370,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       project = mapProject.getName();
       final MapUser mapUser = workflowService.getMapUser(userName);
       user = mapUser.getUserName();
+
+      final SearchResultList results = new SearchResultListJpa();
 
       // if conflict and review path, get only conflict work
       if (mapProject.getWorkflowType().equals(WorkflowType.CONFLICT_AND_REVIEW_PATH)) {
@@ -368,19 +388,33 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
             " NOT (userAndWorkflowStatusPairs:REVIEW_* OR userAndWorkflowStatusPairs:CONFLICT_FINISHED_*)");
 
         // get ALL normal workflow work at lead level
-        return workflowService.findAvailableWork(mapProject, mapUser, MapUserRole.LEAD,
-            sb.toString(), pfsParameter);
+        results.addSearchResults(workflowService.findAvailableWork(mapProject, mapUser,
+            MapUserRole.LEAD, sb.toString(), pfsParameter));
       } else {
 
         // get the workflow tracking records
-        return workflowService.findAvailableWork(mapProject, mapUser, MapUserRole.LEAD, query,
-            pfsParameter);
+        results.addSearchResults(workflowService.findAvailableWork(mapProject, mapUser,
+            MapUserRole.LEAD, query, pfsParameter));
       }
-    } catch (Exception e) {
+
+      if (!results.getSearchResults().isEmpty()) {
+        final ProjectSpecificAlgorithmHandler handler =
+            mappingService.getProjectSpecificAlgorithmHandler(mapProject);
+        final Map<String, String> termNotes = handler.getAllTerminologyNotes();
+
+        for (final SearchResult sr : results.getSearchResults()) {
+          if (termNotes != null && termNotes.containsKey(sr.getTerminologyId())) {
+            sr.setTerminologyNote(termNotes.get(sr.getTerminologyId()));
+          }
+        }
+      }
+
+      return results;
+
+    } catch (final Exception e) {
       handleException(e, "trying to find available conflicts", user, project, "");
       return null;
     } finally {
-      workflowService.close();
       securityService.close();
     }
   }
@@ -394,9 +428,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       response = FeedbackConversationJpa.class)
   public void removeFeedbackConversation(
     @ApiParam(value = "Feedback conversation, in JSON or XML POST data",
-        required = true) FeedbackConversationJpa feedbackConversation,
+        required = true) final FeedbackConversationJpa feedbackConversation,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     // log call
@@ -416,8 +450,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
        * workflowService.removeFeedback(feedback.getId()); }
        */
       workflowService.removeFeedbackConversation(feedbackConversation.getId());
-    } catch (Exception e) {
-      LocalException le = new LocalException(
+    } catch (final Exception e) {
+      final LocalException le = new LocalException(
           "Unable to delete feedback conversation. This is likely because the conversation is being used by a map project or map entry");
       handleException(le, "", user, "", "");
     } finally {
@@ -429,7 +463,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#removeFeedback(org.
    * ihtsdo.otf.mapping.jpa.FeedbackJpa, java.lang.String)
@@ -440,9 +474,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   @ApiOperation(value = "Remove a feedback", notes = "Removes the specified feedback.",
       response = FeedbackJpa.class)
   public void removeFeedback(
-    @ApiParam(value = "Feedback, in JSON or XML POST data", required = true) FeedbackJpa feedback,
+    @ApiParam(value = "Feedback, in JSON or XML POST data", required = true) final FeedbackJpa feedback,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     // log call
@@ -460,10 +494,10 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       // of
       // the feedback conversation to normal Feedback.
       if (feedback.getIsError()) {
-        FeedbackConversation conversation =
+        final FeedbackConversation conversation =
             workflowService.getFeedback(feedback.getId()).getFeedbackConversation();
         int errorCt = 0;
-        for (Feedback f : conversation.getFeedbacks()) {
+        for (final Feedback f : conversation.getFeedbacks()) {
           if (f.getIsError()) {
             errorCt++;
           }
@@ -477,8 +511,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       // remove the feedback
       workflowService.removeFeedback(feedback.getId());
 
-    } catch (Exception e) {
-      LocalException le = new LocalException("Unable to delete feedback");
+    } catch (final Exception e) {
+      final LocalException le = new LocalException("Unable to delete feedback");
       handleException(le, "", user, "", "");
     } finally {
       workflowService.close();
@@ -497,9 +531,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public TrackingRecordList getTrackingRecordsForMapProject(
-    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") final Long mapProjectId,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     Logger.getLogger(WorkflowServiceRestImpl.class).info(
@@ -523,7 +557,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
 
       return trackingRecordList;
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "trying to get the tracking records");
       return null;
     } finally {
@@ -535,7 +569,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#findAssignedConflicts(
    * java.lang.Long, java.lang.String, java.lang.String,
@@ -551,14 +585,14 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public SearchResultList findAssignedConflicts(
-    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
-    @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") String userName,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") final Long mapProjectId,
+    @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") final String userName,
     @ApiParam(value = "Query, e.g. 'heart attack'",
-        required = true) @QueryParam("query") String query,
+        required = true) @QueryParam("query") final String query,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data",
-        required = true) PfsParameterJpa pfsParameter,
+        required = true) final PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     Logger.getLogger(WorkflowServiceRestImpl.class).info("RESTful call (Workflow): /project/id/"
@@ -566,8 +600,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     String project = "";
     String user = null;
 
-    final WorkflowService workflowService = new WorkflowServiceJpa();
-    try {
+
+    try (final WorkflowService workflowService = new WorkflowServiceJpa();
+        final MappingService mappingService = new MappingServiceJpa();) {
       // authorize call
       user = authorizeProject(mapProjectId, authToken, MapUserRole.LEAD, "find assigned conflicts",
           securityService);
@@ -577,6 +612,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       project = mapProject.getName();
       final MapUser mapUser = workflowService.getMapUser(userName);
       user = mapUser.getUserName();
+      final SearchResultList results = new SearchResultListJpa();
 
       // if conflict and review path, get only conflict work
       if (mapProject.getWorkflowType().equals(WorkflowType.CONFLICT_AND_REVIEW_PATH)) {
@@ -592,22 +628,35 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
         sb.append(" NOT (userAndWorkflowStatusPairs:REVIEW_*)");
 
         // get ALL normal workflow work at lead level
-        return workflowService.findAssignedWork(mapProject, mapUser, MapUserRole.LEAD,
-            sb.toString(), pfsParameter);
+        results.addSearchResults( workflowService.findAssignedWork(mapProject, mapUser, MapUserRole.LEAD,
+            sb.toString(), pfsParameter));
       }
       // Otherwise get all assigned work for the workflow type
       else {
 
         // get the map records
-        return workflowService.findAssignedWork(mapProject, mapUser, MapUserRole.LEAD, query,
-            pfsParameter);
+        results.addSearchResults( workflowService.findAssignedWork(mapProject, mapUser, MapUserRole.LEAD, query,
+            pfsParameter));
       }
 
-    } catch (Exception e) {
+      if (!results.getSearchResults().isEmpty()) {
+        final ProjectSpecificAlgorithmHandler handler =
+            mappingService.getProjectSpecificAlgorithmHandler(mapProject);
+        final Map<String, String> termNotes = handler.getAllTerminologyNotes();
+
+        for (final SearchResult sr : results.getSearchResults()) {
+          if (termNotes != null && termNotes.containsKey(sr.getTerminologyId())) {
+            sr.setTerminologyNote(termNotes.get(sr.getTerminologyId()));
+          }
+        }
+      }
+
+      return results;
+
+    } catch (final Exception e) {
       handleException(e, "trying to find assigned conflicts", user, project, "");
       return null;
     } finally {
-      workflowService.close();
       securityService.close();
     }
   }
@@ -615,7 +664,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#
    * findAvailableReviewWork(java.lang.Long, java.lang.String, java.lang.String,
    * org.ihtsdo.otf.mapping.helpers.PfsParameterJpa, java.lang.String)
@@ -630,14 +679,14 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public SearchResultList findAvailableReviewWork(
-    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
-    @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") String userName,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") final Long mapProjectId,
+    @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") final String userName,
     @ApiParam(value = "Query, e.g. 'heart attack'",
-        required = true) @QueryParam("query") String query,
+        required = true) @QueryParam("query") final String query,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data",
-        required = true) PfsParameterJpa pfsParameter,
+        required = true) final PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     Logger.getLogger(WorkflowServiceRestImpl.class).info("RESTful call (Workflow): /project/id/"
@@ -646,8 +695,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     String project = "";
     String user = null;
 
-    final WorkflowService workflowService = new WorkflowServiceJpa();
-    try {
+    try (final WorkflowService workflowService = new WorkflowServiceJpa();
+        final MappingService mappingService = new MappingServiceJpa();) {
       // authorize call
       user = authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
           "find available review work ", securityService);
@@ -666,8 +715,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       SearchResultList availableWork = new SearchResultListJpa();
 
       // get ALL FixErrorPath work at specialist level for the project
-      WorkflowPathHandler fixErrorHandler = new WorkflowFixErrorPathHandler();
-      SearchResultList fixErrorWork = fixErrorHandler.findAvailableWork(mapProject, mapUser,
+      final WorkflowPathHandler fixErrorHandler = new WorkflowFixErrorPathHandler();
+      final SearchResultList fixErrorWork = fixErrorHandler.findAvailableWork(mapProject, mapUser,
           MapUserRole.LEAD, query, localPfs, workflowService);
 
       // if review project path, get normal work
@@ -701,7 +750,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       availableWork.addSearchResults(fixErrorWork);
 
       // apply paging
-      int[] totalCt = new int[1];
+      final int[] totalCt = new int[1];
       localPfs = new PfsParameterJpa(pfsParameter);
       localPfs.setQueryRestriction(null);
       localPfs.setSortField(null);
@@ -711,25 +760,31 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       // currently cannot convert List<SearchResultJpa> to
       // List<SearchResult>
       List<SearchResultJpa> results = new ArrayList<>();
-      for (SearchResult sr : availableWork.getSearchResults()) {
+      for (final SearchResult sr : availableWork.getSearchResults()) {
         results.add((SearchResultJpa) sr);
       }
 
       // apply paging to the list
       results = workflowService.applyPfsToList(results, SearchResultJpa.class, totalCt, localPfs);
 
+      final ProjectSpecificAlgorithmHandler handler =
+          mappingService.getProjectSpecificAlgorithmHandler(mapProject);
+      final Map<String, String> termNotes = handler.getAllTerminologyNotes();
+
       // reconstruct the assignedWork search result list
       availableWork.setSearchResults(new ArrayList<SearchResult>());
-      for (SearchResult sr : results) {
+      for (final SearchResult sr : results) {
+        if (termNotes != null && termNotes.containsKey(sr.getTerminologyId())) {
+          sr.setTerminologyNote(termNotes.get(sr.getTerminologyId()));
+        }
         availableWork.addSearchResult(sr);
       }
 
       return availableWork;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "trying to find available review work", user, project, "");
       return null;
     } finally {
-      workflowService.close();
       securityService.close();
     }
   }
@@ -737,7 +792,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#findAvailableQAWork(
    * java.lang.Long, java.lang.String,
@@ -753,13 +808,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public SearchResultList findAvailableQAWork(
-    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") final Long mapProjectId,
     @ApiParam(value = "Query, e.g. 'heart attack'",
-        required = true) @QueryParam("query") String query,
+        required = true) @QueryParam("query") final String query,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data",
-        required = true) PfsParameterJpa pfsParameter,
+        required = true) final PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     Logger.getLogger(WorkflowServiceRestImpl.class).info("RESTful call (Workflow): /project/id/"
@@ -768,8 +823,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     String project = "";
     String user = "qa"; // always the qa user for specialist level work
 
-    final WorkflowService workflowService = new WorkflowServiceJpa();
-    try {
+    try (final WorkflowService workflowService = new WorkflowServiceJpa();
+        final MappingService mappingService = new MappingServiceJpa();) {
+
       // authorize call
       authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST, "find available qa work ",
           securityService);
@@ -780,18 +836,29 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       final MapUser mapUser = workflowService.getMapUser(user);
       user = mapUser.getUserName();
 
-      WorkflowPathHandler handler = new WorkflowQaPathHandler();
-      SearchResultList results = handler.findAvailableWork(mapProject, mapUser,
+      final WorkflowPathHandler handler = new WorkflowQaPathHandler();
+      final SearchResultList results = handler.findAvailableWork(mapProject, mapUser,
           MapUserRole.SPECIALIST, query, pfsParameter, workflowService);
+
+      if (!results.getSearchResults().isEmpty()) {
+        final ProjectSpecificAlgorithmHandler projectHandler =
+            mappingService.getProjectSpecificAlgorithmHandler(mapProject);
+        final Map<String, String> termNotes = projectHandler.getAllTerminologyNotes();
+
+        for (final SearchResult sr : results.getSearchResults()) {
+          if (termNotes != null && termNotes.containsKey(sr.getTerminologyId())) {
+            sr.setTerminologyNote(termNotes.get(sr.getTerminologyId()));
+          }
+        }
+      }
 
       return results;
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       e.printStackTrace();
       handleException(e, "trying to find available qa work", user, project, "");
       return null;
     } finally {
-      workflowService.close();
       securityService.close();
     }
   }
@@ -799,7 +866,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#findAssignedReviewWork
    * (java.lang.Long, java.lang.String, java.lang.String,
@@ -815,14 +882,14 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public SearchResultList findAssignedReviewWork(
-    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
-    @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") String userName,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") final Long mapProjectId,
+    @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") final String userName,
     @ApiParam(value = "Query, e.g. 'heart attack'",
-        required = true) @QueryParam("query") String query,
+        required = true) @QueryParam("query") final String query,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data",
-        required = true) PfsParameterJpa pfsParameter,
+        required = true) final PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     Logger.getLogger(WorkflowServiceRestImpl.class).info("RESTful call (Workflow): /project/id/"
@@ -831,8 +898,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     String project = "";
     String user = null;
 
-    final WorkflowService workflowService = new WorkflowServiceJpa();
-    try {
+    try (final WorkflowService workflowService = new WorkflowServiceJpa();
+        final MappingService mappingService = new MappingServiceJpa();) {
+
       // authorize call
       user = authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
           "find assigned review work ", securityService);
@@ -849,14 +917,14 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       localPfs.setAscending(pfsParameter.isAscending());
 
       // get ALL FixErrorPath work at specialist level for the project
-      WorkflowPathHandler fixErrorHandler = new WorkflowFixErrorPathHandler();
-      SearchResultList assignedWork = fixErrorHandler.findAssignedWork(mapProject, mapUser,
+      final WorkflowPathHandler fixErrorHandler = new WorkflowFixErrorPathHandler();
+      final SearchResultList assignedWork = fixErrorHandler.findAssignedWork(mapProject, mapUser,
           MapUserRole.LEAD, query, localPfs, workflowService);
 
       // if a review project, get all normal workflow work and combine
       if (mapProject.getWorkflowType().equals(WorkflowType.REVIEW_PROJECT)
           || mapProject.getWorkflowType().equals(WorkflowType.CONDITIONAL_REVIEW_PATH)) {
-        SearchResultList reviewProjectWork = workflowService.findAssignedWork(mapProject, mapUser,
+        final SearchResultList reviewProjectWork = workflowService.findAssignedWork(mapProject, mapUser,
             MapUserRole.LEAD, query, localPfs);
         assignedWork.addSearchResults(reviewProjectWork);
       }
@@ -880,7 +948,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       }
 
       // apply paging
-      int[] totalCt = new int[1];
+      final int[] totalCt = new int[1];
       localPfs = new PfsParameterJpa(pfsParameter);
       localPfs.setQueryRestriction("");
       localPfs.setSortField("");
@@ -890,7 +958,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       // currently cannot convert List<SearchResultJpa> to
       // List<SearchResult>
       List<SearchResultJpa> results = new ArrayList<>();
-      for (SearchResult sr : assignedWork.getSearchResults()) {
+      for (final SearchResult sr : assignedWork.getSearchResults()) {
         results.add((SearchResultJpa) sr);
       }
 
@@ -899,17 +967,24 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
 
       // reconstruct the assignedWork search result list
       assignedWork.setSearchResults(new ArrayList<SearchResult>());
-      for (SearchResult sr : results) {
+
+      final ProjectSpecificAlgorithmHandler handler =
+          mappingService.getProjectSpecificAlgorithmHandler(mapProject);
+      final Map<String, String> termNotes = handler.getAllTerminologyNotes();
+
+      for (final SearchResult sr : results) {
+        if (termNotes != null && termNotes.containsKey(sr.getTerminologyId())) {
+          sr.setTerminologyNote(termNotes.get(sr.getTerminologyId()));
+        }
         assignedWork.addSearchResult(sr);
       }
 
       return assignedWork;
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "trying to find assigned review work", user, project, "");
       return null;
     } finally {
-      workflowService.close();
       securityService.close();
     }
   }
@@ -917,7 +992,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#findAssignedQAWork(
    * java.lang.Long, java.lang.String, java.lang.String,
@@ -933,14 +1008,14 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public SearchResultList findAssignedQAWork(
-    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
-    @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") String userName,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") final Long mapProjectId,
+    @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("userName") final String userName,
     @ApiParam(value = "Query, e.g. 'heart attack'",
-        required = true) @QueryParam("query") String query,
+        required = true) @QueryParam("query") final String query,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data",
-        required = true) PfsParameterJpa pfsParameter,
+        required = true) final PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     Logger.getLogger(WorkflowServiceRestImpl.class).info("RESTful call (Workflow): /project/id/"
@@ -949,8 +1024,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
     String project = "";
     String user = null;
 
-    final WorkflowService workflowService = new WorkflowServiceJpa();
-    try {
+    try (final WorkflowService workflowService = new WorkflowServiceJpa();
+        final MappingService mappingService = new MappingServiceJpa();) {
+
       // authorize call
       user = authorizeProject(mapProjectId, authToken, MapUserRole.SPECIALIST,
           "find assigned qa work ", securityService);
@@ -962,16 +1038,34 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       user = mapUser.getUserName();
 
       // SPECIAL CASE: Access QA Workflow Path directly
-      WorkflowPathHandler handler = new WorkflowQaPathHandler();
-      SearchResultList results = handler.findAssignedWork(mapProject, mapUser,
+      final WorkflowPathHandler handler = new WorkflowQaPathHandler();
+      final SearchResultList results = handler.findAssignedWork(mapProject, mapUser,
           MapUserRole.SPECIALIST, query, pfsParameter, workflowService);
+
+      if (results.getSearchResults().isEmpty()) {
+        return results;
+      }
+
+      final ProjectSpecificAlgorithmHandler projectHandler =
+          mappingService.getProjectSpecificAlgorithmHandler(mapProject);
+      final Map<String, String> termNotes = projectHandler.getAllTerminologyNotes();
+
+      if (termNotes == null || termNotes.isEmpty()) {
+        return results;
+      }
+
+      for (final SearchResult sr : results.getSearchResults()) {
+        if (termNotes != null && termNotes.containsKey(sr.getTerminologyId())) {
+          sr.setTerminologyNote(termNotes.get(sr.getTerminologyId()));
+        }
+      }
+
       return results;
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "trying to find assigned qa work", user, project, "");
       return null;
     } finally {
-      workflowService.close();
       securityService.close();
     }
   }
@@ -979,7 +1073,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#
    * assignConceptFromMapRecord(java.lang.String,
    * org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
@@ -990,11 +1084,11 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   @ApiOperation(value = "Assign user to concept",
       notes = "Assigns a user (specialist or lead) to a previously mapped concept.")
   public void assignConceptFromMapRecord(
-    @ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
+    @ApiParam(value = "Username", required = true) @PathParam("userName") final String userName,
     @ApiParam(value = "Initial map record to copy, in JSON or XML POST data",
-        required = true) MapRecordJpa mapRecord,
+        required = true) final MapRecordJpa mapRecord,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     Logger.getLogger(WorkflowServiceRestImpl.class)
@@ -1020,7 +1114,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       workflowService.processWorkflowAction(mapProject, concept, mapUser, mapRecord,
           WorkflowAction.ASSIGN_FROM_INITIAL_RECORD);
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "trying to assign concept from a map record", userName, project,
           mapRecord.getId().toString());
     } finally {
@@ -1033,7 +1127,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#assignConcept(java.
    * lang.Long, java.lang.String, java.lang.String, java.lang.String)
@@ -1044,12 +1138,12 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   @ApiOperation(value = "Assign user to concept",
       notes = "Assigns specified user to map the specified concept for the specified project.")
   public void assignConcept(
-    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") final Long mapProjectId,
     @ApiParam(value = "Concept id, e.g. 22298006",
-        required = true) @PathParam("terminologyId") String terminologyId,
-    @ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
+        required = true) @PathParam("terminologyId") final String terminologyId,
+    @ApiParam(value = "Username", required = true) @PathParam("userName") final String userName,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     Logger.getLogger(WorkflowServiceRestImpl.class)
@@ -1067,8 +1161,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
 
       final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       project = mapProject.getName();
-      MapUser mapUser = workflowService.getMapUser(userName);
-      Concept concept = contentService.getConcept(terminologyId, mapProject.getSourceTerminology(),
+      final MapUser mapUser = workflowService.getMapUser(userName);
+      final Concept concept = contentService.getConcept(terminologyId, mapProject.getSourceTerminology(),
           mapProject.getSourceTerminologyVersion());
 
       workflowService.processWorkflowAction(mapProject, concept, mapUser, null,
@@ -1095,7 +1189,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#assignBatch(java.lang.
    * Long, java.lang.String, java.util.List, java.lang.String)
@@ -1109,12 +1203,12 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   @ApiOperation(value = "Assign user to batch of concepts.",
       notes = "Assigns specified user to map the specified list of concept ids for the specified project.")
   public void assignBatch(
-    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
-    @ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") final Long mapProjectId,
+    @ApiParam(value = "Username", required = true) @PathParam("userName") final String userName,
     @ApiParam(value = "List of terminology ids to be assigned, in JSON or XML POST data",
-        required = true) List<String> terminologyIds,
+        required = true) final List<String> terminologyIds,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     Logger.getLogger(WorkflowServiceRestImpl.class)
@@ -1154,7 +1248,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
         }
       }
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "trying to assign a batch", userName, project, terminologyIds.toString());
     } finally {
       workflowService.close();
@@ -1166,7 +1260,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#unassignConcept(java.
    * lang.Long, java.lang.String, java.lang.String, java.lang.String)
@@ -1180,12 +1274,12 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public Response unassignConcept(
-    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") final Long mapProjectId,
     @ApiParam(value = "Concept id, e.g. 22298006",
-        required = true) @PathParam("terminologyId") String terminologyId,
-    @ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
+        required = true) @PathParam("terminologyId") final String terminologyId,
+    @ApiParam(value = "Username", required = true) @PathParam("userName") final String userName,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     Logger.getLogger(WorkflowServiceRestImpl.class)
@@ -1211,7 +1305,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
           WorkflowAction.UNASSIGN);
 
       return null;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "trying to unassign work", userName, project, terminologyId);
       return null;
     } finally {
@@ -1224,7 +1318,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#unassignWorkBatch(java
    * .lang.Long, java.lang.String, java.util.List, java.lang.String)
@@ -1238,12 +1332,12 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   @ApiOperation(value = "Unassign user from a batch of concepts.",
       notes = "Unassigns specified user from the specified list of concept ids for the specified project.")
   public void unassignWorkBatch(
-    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
-    @ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") final Long mapProjectId,
+    @ApiParam(value = "Username", required = true) @PathParam("userName") final String userName,
     @ApiParam(value = "List of terminology ids to be assigned, in JSON or XML POST data",
-        required = true) List<String> terminologyIds,
+        required = true) final List<String> terminologyIds,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     Logger.getLogger(WorkflowServiceRestImpl.class)
@@ -1272,7 +1366,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
             WorkflowAction.UNASSIGN);
       }
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "trying to unassign work batch", userName, project,
           terminologyIds.toString());
     } finally {
@@ -1285,7 +1379,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#finishWork(org.ihtsdo.
    * otf.mapping.jpa.MapRecordJpa, java.lang.String)
@@ -1300,9 +1394,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       notes = "Finished work on the specified map record if it passes validation, then moves it forward in the worfklow.")
   public void finishWork(
     @ApiParam(value = "Completed map record, in JSON or XML POST data",
-        required = true) MapRecordJpa mapRecord,
+        required = true) final MapRecordJpa mapRecord,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     Logger.getLogger(WorkflowServiceRestImpl.class).info("RESTful call (Workflow): /finish"
@@ -1331,7 +1425,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       workflowService.processWorkflowAction(mapProject, concept, mapUser, mapRecord,
           WorkflowAction.FINISH_EDITING);
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "trying to finish work", user, project, mapRecord.getId().toString());
     } finally {
       workflowService.close();
@@ -1344,7 +1438,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#publishWork(org.ihtsdo
    * .otf.mapping.jpa.MapRecordJpa, java.lang.String)
@@ -1359,9 +1453,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       notes = "Moves a previously resolved conflict or review record owned by a lead out of the workflow and into publication-ready status")
   public void publishWork(
     @ApiParam(value = "Completed map record, in JSON or XML POST data",
-        required = true) MapRecordJpa mapRecord,
+        required = true) final MapRecordJpa mapRecord,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     Logger.getLogger(WorkflowServiceRestImpl.class).info("RESTful call (Workflow): /publish"
@@ -1390,10 +1484,10 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       workflowService.processWorkflowAction(mapProject, concept, mapUser, mapRecord,
           WorkflowAction.PUBLISH);
 
-      
-      
+
+
       // mark all related feedback conversations resolved
-      for (FeedbackConversation conv : workflowService
+      for (final FeedbackConversation conv : workflowService
           .getFeedbackConversationsForConcept(mapProject.getId(), concept.getTerminologyId())
           .getFeedbackConversations()) {
         conv.setResolved(true);
@@ -1401,7 +1495,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
         workflowService.updateFeedbackConversation(conv);
       }
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "trying to publish work", user, project, mapRecord.getId().toString());
     } finally {
       workflowService.close();
@@ -1414,7 +1508,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#saveWork(org.ihtsdo.
    * otf.mapping.jpa.MapRecordJpa, java.lang.String)
@@ -1429,9 +1523,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       notes = "Updates the map record and sets workflow accordingly.")
   public void saveWork(
     @ApiParam(value = "Map record to save, in JSON or XML POST data",
-        required = true) MapRecordJpa mapRecord,
+        required = true) final MapRecordJpa mapRecord,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     Logger.getLogger(WorkflowServiceRestImpl.class).info("RESTful call (Workflow): /save"
@@ -1448,9 +1542,10 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
           securityService);
       final MapUserRole role =
           securityService.getMapProjectRoleForToken(authToken, mapRecord.getMapProjectId());
-      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST))
+      if (!role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
         throw new WebApplicationException(Response.status(401)
             .entity("User does not have permissions to save a map record.").build());
+      }
 
       // get the map project and map user
       final MapProject mapProject = workflowService.getMapProject(mapRecord.getMapProjectId());
@@ -1466,7 +1561,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       workflowService.processWorkflowAction(mapProject, concept, mapUser, mapRecord,
           WorkflowAction.SAVE_FOR_LATER);
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "trying to save work", user, project, mapRecord.getId().toString());
     } finally {
       workflowService.close();
@@ -1479,7 +1574,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#cancelWorkForMapRecord
    * (org.ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
@@ -1494,15 +1589,15 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       notes = "Cancels editing of a map record.  Performs necessary workflow actions for current workflow path and status.")
   public void cancelWorkForMapRecord(
     @ApiParam(
-        value = "Map record to cancel work for , in JSON or XML POST data") MapRecordJpa mapRecord,
+        value = "Map record to cancel work for , in JSON or XML POST data") final MapRecordJpa mapRecord,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /cancel for map record with id = " + mapRecord.getId());
 
-    String userName = null;
+    final String userName = null;
     String project = "";
     // open the services
     final ContentService contentService = new ContentServiceJpa();
@@ -1521,7 +1616,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       // process the workflow action
       workflowService.processWorkflowAction(mapProject, concept, mapRecord.getOwner(), mapRecord,
           WorkflowAction.CANCEL);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "trying to cancel editing a map record", userName, project,
           mapRecord.getId().toString());
     } finally {
@@ -1535,7 +1630,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#createQARecord(org.
    * ihtsdo.otf.mapping.jpa.MapRecordJpa, java.lang.String)
@@ -1548,15 +1643,15 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   })
   @ApiOperation(value = "Creates a qa record.", notes = "Creates a qa record given a map record.")
   public void createQARecord(@ApiParam(
-      value = "Map record to create qa record for , in JSON or XML POST data") MapRecordJpa mapRecord,
+      value = "Map record to create qa record for , in JSON or XML POST data") final MapRecordJpa mapRecord,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     Logger.getLogger(WorkflowServiceRestImpl.class).info(
         "RESTful call (Workflow): /createQARecord for map record with id = " + mapRecord.getId());
 
-    String userName = null;
+    final String userName = null;
     String project = "";
     // open the services
     final ContentService contentService = new ContentServiceJpa();
@@ -1575,15 +1670,16 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       // find the qa user
       MapUser mapUser = null;
       for (final MapUser user : workflowService.getMapUsers().getMapUsers()) {
-        if (user.getUserName().equals("qa"))
+        if (user.getUserName().equals("qa")) {
           mapUser = user;
+        }
       }
 
       // process the workflow action
       workflowService.processWorkflowAction(mapProject, concept, mapUser, mapRecord,
           WorkflowAction.CREATE_QA_RECORD);
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "trying to create a qa map record", userName, project,
           mapRecord.getId().toString());
     } finally {
@@ -1597,7 +1693,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#createQAWork(java.lang
    * .Long, java.lang.String)
@@ -1610,16 +1706,16 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   })
   @ApiOperation(value = "Creates qa work.", notes = "Creates qa work given a report of concepts.")
   public void createQAWork(@ApiParam(
-      value = "Report of concepts to create qa records for , in JSON or XML POST data") Long reportId,
+      value = "Report of concepts to create qa records for , in JSON or XML POST data") final Long reportId,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     Logger.getLogger(WorkflowServiceRestImpl.class)
         .info("RESTful call (Workflow): /createQAWork for report with id = " + reportId);
 
-    String userName = null;
-    String project = "";
+    final String userName = null;
+    final String project = "";
     Report report = null;
 
     final ReportService reportService = new ReportServiceJpa();
@@ -1634,7 +1730,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
           "create QA work", securityService);
 
       workflowService.createQAWork(report);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "trying to create qa work", userName, project,
           report == null ? "" : report.getId().toString());
     } finally {
@@ -1648,7 +1744,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#
    * getAssignedMapRecordForConceptAndMapUser(java.lang.Long, java.lang.String,
    * java.lang.String, java.lang.String)
@@ -1662,12 +1758,12 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public MapRecord getAssignedMapRecordForConceptAndMapUser(
-    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") final Long mapProjectId,
     @ApiParam(value = "Concept id, e.g. 22298006",
-        required = true) @PathParam("terminologyId") String terminologyId,
-    @ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
+        required = true) @PathParam("terminologyId") final String terminologyId,
+    @ApiParam(value = "Username", required = true) @PathParam("userName") final String userName,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     Logger.getLogger(WorkflowServiceRestImpl.class)
@@ -1697,7 +1793,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       /**
        * Logger.getLogger(WorkflowServiceRestImpl.class).info("trackingRecord: "
        * + trackingRecord);
-       * 
+       *
        * for (final MapRecord mr : workflowService
        * .getMapRecordsForTrackingRecord(trackingRecord)) {
        * Logger.getLogger(WorkflowServiceRestImpl.class) .info("mr : " +
@@ -1715,7 +1811,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       }
 
       return mapRecordToReturn;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "trying to get an assigned map record", user, project, terminologyId);
       return null;
     } finally {
@@ -1729,7 +1825,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#
    * isMapRecordFalseConflict(java.lang.Long, java.lang.String)
    */
@@ -1743,9 +1839,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public Boolean isMapRecordFalseConflict(
-    @ApiParam(value = "Map record id, e.g. 28123", required = true) @PathParam("id") Long recordId,
+    @ApiParam(value = "Map record id, e.g. 28123", required = true) @PathParam("id") final Long recordId,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     Logger.getLogger(WorkflowServiceRestImpl.class)
@@ -1763,19 +1859,21 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
 
       // if not a conflict resolution record, return null
       if (!mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_NEW)
-          && !mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED))
+          && !mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_DETECTED)) {
         return false;
+      }
 
       final WorkflowException workflowException =
           workflowService.getWorkflowException(mapProject, mapRecord.getConceptId());
 
       if (workflowException != null) {
-        if (workflowException.getFalseConflictMapRecordIds().contains(recordId))
+        if (workflowException.getFalseConflictMapRecordIds().contains(recordId)) {
           return true;
-        else
+        } else {
           return false;
+        }
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "trying to get flag for false conflict");
     } finally {
       workflowService.close();
@@ -1794,7 +1892,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#
    * addFeedbackConversation(org.ihtsdo.otf.mapping.jpa.FeedbackConversationJpa,
    * java.lang.String)
@@ -1809,9 +1907,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       notes = "Adds the specified feedback conversation.", response = FeedbackConversationJpa.class)
   public FeedbackConversation addFeedbackConversation(
     @ApiParam(value = "Feedback conversation, in JSON or XML POST data",
-        required = true) FeedbackConversationJpa conversation,
+        required = true) final FeedbackConversationJpa conversation,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     // log call
@@ -1832,7 +1930,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
 
       return conversation;
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "add a feedback conversation", userName, "",
           conversation.getMapRecordId().toString());
       return null;
@@ -1845,7 +1943,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#
    * setMapRecordFalseConflict(java.lang.Long, boolean, java.lang.String)
    */
@@ -1856,11 +1954,11 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       notes = "Sets a flag indicating a false conflict for the specified parameters.",
       response = Response.class)
   public void setMapRecordFalseConflict(
-    @ApiParam(value = "Map record id, e.g. 7", required = true) @PathParam("id") Long recordId,
+    @ApiParam(value = "Map record id, e.g. 7", required = true) @PathParam("id") final Long recordId,
     @ApiParam(value = "Whether is false conflict, e.g. true",
-        required = true) @PathParam("isFalseConflict") boolean isFalseConflict,
+        required = true) @PathParam("isFalseConflict") final boolean isFalseConflict,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     Logger.getLogger(WorkflowServiceRestImpl.class).info(
@@ -1879,9 +1977,10 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       // if not a conflict resolution record, throw an error
       if (!mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_NEW)
           && !mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_IN_PROGRESS)
-          && !mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_RESOLVED))
+          && !mapRecord.getWorkflowStatus().equals(WorkflowStatus.CONFLICT_RESOLVED)) {
         throw new WebApplicationException(Response.status(401)
             .entity("Cannot set false conflict flag on a non-conflict record").build());
+      }
 
       WorkflowException workflowException =
           workflowService.getWorkflowException(mapProject, mapRecord.getConceptId());
@@ -1895,16 +1994,16 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
         workflowException.setTerminologyId(mapRecord.getConceptId());
       }
 
-      Set<Long> recordIds = new HashSet<>();
+      final Set<Long> recordIds = new HashSet<>();
 
       // if setting to true, add the record ids
       if (isFalseConflict) {
         // find the tracking record for this map record
-        TrackingRecord trackingRecord = workflowService
+        final TrackingRecord trackingRecord = workflowService
             .getTrackingRecordForMapProjectAndConcept(mapProject, mapRecord.getConceptId());
 
         // instantiate workflow handler for this tracking record
-        WorkflowPathHandler handler =
+        final WorkflowPathHandler handler =
             workflowService.getWorkflowPathHandler(trackingRecord.getWorkflowPath().toString());
 
         // add the specialist records for this conflict
@@ -1921,15 +2020,16 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       if (workflowException.isEmpty()) {
 
         // if id is set, remove the record
-        if (workflowException.getId() != null)
+        if (workflowException.getId() != null) {
           workflowService.removeWorkflowException(workflowException.getId());
+        }
       } else if (workflowException.getId() != null) {
         workflowService.updateWorkflowException(workflowException);
       } else {
         workflowService.addWorkflowException(workflowException);
       }
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "trying to set flag for false conflict");
     } finally {
       workflowService.close();
@@ -1940,7 +2040,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#
    * updateFeedbackConversation(org.ihtsdo.otf.mapping.jpa.
    * FeedbackConversationJpa, java.lang.String)
@@ -1955,9 +2055,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       notes = "Updates specified feedback conversation.", response = Response.class)
   public void updateFeedbackConversation(
     @ApiParam(value = "Feedback conversation, in JSON or XML POST data",
-        required = true) FeedbackConversationJpa conversation,
+        required = true) final FeedbackConversationJpa conversation,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     // log call
@@ -1976,8 +2076,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
         final FeedbackConversation oldConvo =
             workflowService.getFeedbackConversation(conversation.getId());
         // hack to prevent duplicate feedback msgs from being added
-        Set<String> oldFeedbackMsgs = new HashSet<>();
-        for (Feedback f : oldConvo.getFeedbacks()) {
+        final Set<String> oldFeedbackMsgs = new HashSet<>();
+        for (final Feedback f : oldConvo.getFeedbacks()) {
           oldFeedbackMsgs.add(f.getMessage());
         }
         // Find the "new" messages from this conversation and add them
@@ -2017,7 +2117,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
           .info("RESTful call (Workflow): /conversation/update feedback msg: "
               + conversation.getFeedbacks().get(ct - 1));
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "update the feedback conversation");
     } finally {
       workflowService.close();
@@ -2028,7 +2128,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#
    * getFeedbackConversation(java.lang.Long, java.lang.String)
    */
@@ -2043,9 +2143,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   })
   public FeedbackConversation getFeedbackConversation(
     @ApiParam(value = "Map record id, e.g. 28123",
-        required = true) @PathParam("id") Long mapRecordId,
+        required = true) @PathParam("id") final Long mapRecordId,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     Logger.getLogger(WorkflowServiceRestImpl.class)
@@ -2063,10 +2163,12 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
         // lazy initialize
         for (final Feedback feedback : conversations.get(0).getFeedbacks()) {
           feedback.getSender().getName();
-          for (final MapUser recipient : feedback.getRecipients())
+          for (final MapUser recipient : feedback.getRecipients()) {
             recipient.getName();
-          for (final MapUser viewedBy : feedback.getViewedBy())
+          }
+          for (final MapUser viewedBy : feedback.getViewedBy()) {
             viewedBy.getName();
+          }
         }
       } else {
         return null;
@@ -2074,7 +2176,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
 
       return conversations.get(0);
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "trying to get the feedback conversation");
       return null;
     } finally {
@@ -2086,7 +2188,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#
    * findFeedbackConversationsForMapProjectAndUser(java.lang.Long,
    * java.lang.String, java.lang.String,
@@ -2105,37 +2207,60 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public FeedbackConversationList findFeedbackConversationsForMapProjectAndUser(
-    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
-    @ApiParam(value = "Username", required = true) @PathParam("userName") String userName,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") final Long mapProjectId,
+    @ApiParam(value = "Username", required = true) @PathParam("userName") final String userName,
     @ApiParam(value = "Query, e.g. 'heart attack'",
-        required = true) @QueryParam("query") String query,
+        required = true) @QueryParam("query") final String query,
     @ApiParam(value = "Paging/filtering/sorting parameter, in JSON or XML POST data",
-        required = true) PfsParameterJpa pfsParameter,
+        required = true) final PfsParameterJpa pfsParameter,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     // log call
     Logger.getLogger(getClass()).info("RESTful call (Workflow): /conversation/project/id/"
         + mapProjectId.toString() + " userName: " + userName + " query: " + query);
 
-    String user = null;
-    final WorkflowService workflowService = new WorkflowServiceJpa();
+    final String user = null;
+
     // execute the service call
-    try {
+    try (final WorkflowService workflowService = new WorkflowServiceJpa();
+        final MappingService mappingService = new MappingServiceJpa();) {
+
       // authorize call
       authorizeProject(mapProjectId, authToken, MapUserRole.VIEWER,
           "find feedback conversations for project and user", securityService);
 
       final FeedbackConversationList feedbackConversationList = workflowService
           .findFeedbackConversationsForProject(mapProjectId, userName, query, pfsParameter);
+
+      if (feedbackConversationList == null
+          || feedbackConversationList.getFeedbackConversations().isEmpty()) {
+        return feedbackConversationList;
+      }
+
+      final MapProject mapProject = mappingService.getMapProject(mapProjectId);
+      final ProjectSpecificAlgorithmHandler handler =
+          mappingService.getProjectSpecificAlgorithmHandler(mapProject);
+      final Map<String, String> termNotes = handler.getAllTerminologyNotes();
+
+      if (termNotes == null || termNotes.isEmpty()) {
+        return feedbackConversationList;
+      }
+
+      for (final FeedbackConversation conversation : feedbackConversationList
+          .getFeedbackConversations()) {
+        if (termNotes.containsKey(conversation.getTerminologyId())) {
+          conversation.setTerminologyNote(termNotes.get(conversation.getTerminologyId()));
+        }
+      }
+
       return feedbackConversationList;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "trying to get the feedback conversations for a map project", user,
           mapProjectId.toString(), "");
       return null;
     } finally {
-      workflowService.close();
       securityService.close();
     }
 
@@ -2144,7 +2269,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#
    * getFeedbackConversationsForTerminologyId(java.lang.Long, java.lang.String,
    * java.lang.String)
@@ -2159,16 +2284,16 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public FeedbackConversationListJpa getFeedbackConversationsForTerminologyId(
-    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") Long mapProjectId,
+    @ApiParam(value = "Map project id, e.g. 7", required = true) @PathParam("id") final Long mapProjectId,
     @ApiParam(value = "Concept id, e.g. 22298006",
-        required = true) @PathParam("terminologyId") String conceptId,
+        required = true) @PathParam("terminologyId") final String conceptId,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info("RESTful call (Workflow): /record/concept/id/" + conceptId);
 
-    String user = null;
+    final String user = null;
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       // authorize call
@@ -2178,7 +2303,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       return (FeedbackConversationListJpa) workflowService
           .getFeedbackConversationsForConcept(mapProjectId, conceptId);
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "trying to find feedback conversations by the given concept id", user, "",
           conceptId);
       return null;
@@ -2191,7 +2316,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#
    * assignBatchToFixErrorPath(java.lang.Long, java.util.List, java.lang.String,
    * java.lang.String)
@@ -2211,20 +2336,20 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   // @CookieParam(value = "userInfo")
   public ValidationResult assignBatchToFixErrorPath(
     @ApiParam(value = "Map project id, e.g. 7",
-        required = true) @PathParam("projectId") Long mapProjectId,
+        required = true) @PathParam("projectId") final Long mapProjectId,
     @ApiParam(value = "List of terminology ids to assign",
-        required = true) List<String> terminologyIds,
+        required = true) final List<String> terminologyIds,
     @ApiParam(value = "Map user to assign to",
-        required = true) @PathParam("userName") String userName,
+        required = true) @PathParam("userName") final String userName,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     // log call
     Logger.getLogger(getClass()).info("RESTful call (Workflow): /assign/project/id/" + mapProjectId
         + "/fixErrorPath with ids: " + terminologyIds.toString());
 
-    String user = null;
+    final String user = null;
     // open workflow and content services
     final WorkflowService workflowService = new WorkflowServiceJpa();
     final ContentService contentService = new ContentServiceJpa();
@@ -2237,8 +2362,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       final MapProject mapProject = workflowService.getMapProject(mapProjectId);
       final MapUser mapUser = workflowService.getMapUser(userName);
 
-      if (mapUser == null)
+      if (mapUser == null) {
         throw new LocalException("The user could not be found");
+      }
 
       final ValidationResult result = new ValidationResultJpa();
 
@@ -2297,7 +2423,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
           // add success message if no errors thrown
           result.addMessage("Successfully assigned concept " + mapRecord.getConceptId() + ", "
               + concept.getDefaultPreferredName());
-        } catch (LocalException e) {
+        } catch (final LocalException e) {
           result.addError("Concept already in workflow, could not assign concept "
               + mapRecord.getConceptId() + ", " + concept.getDefaultPreferredName());
         }
@@ -2305,7 +2431,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
 
       return result;
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "trying to assign concepts along the fix error path.", user,
           mapProjectId.toString(), "");
       return null;
@@ -2320,7 +2446,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#sendFeedbackEmail(java
    * .util.List, java.lang.String)
@@ -2337,24 +2463,25 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public Response sendFeedbackEmail(
-    @ApiParam(value = "message", required = true) List<String> messageInfo,
+    @ApiParam(value = "message", required = true) final List<String> messageInfo,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     // log call
     Logger.getLogger(WorkflowServiceRestImpl.class).info("RESTful call (Workflow): /message");
 
     String userName = "";
-    WorkflowService workflowService = new WorkflowServiceJpa();
+    final WorkflowService workflowService = new WorkflowServiceJpa();
 
     try {
       // authorize call
       userName = securityService.getUsernameForToken(authToken);
-      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
-      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+      final MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER)) {
         throw new WebApplicationException(Response.status(401)
             .entity("User does not have permissions to add a feedback conversation.").build());
+      }
 
       Logger.getLogger(WorkflowServiceRestImpl.class)
           .info("RESTful call (Workflow): /message msg: " + messageInfo);
@@ -2365,7 +2492,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
 
       return null;
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "send a message email", userName, "", messageInfo.get(0));
       return null;
     } finally {
@@ -2373,11 +2500,11 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       securityService.close();
     }
   }
-  
+
   /* see superclass */
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.ihtsdo.otf.mapping.rest.impl.WorkflowServiceRest#sendTranslationRequestEmail(java
    * .util.List, java.lang.String)
@@ -2394,24 +2521,25 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public Response sendTranslationRequestEmail(
-    @ApiParam(value = "message", required = true) List<String> messageInfo,
+    @ApiParam(value = "message", required = true) final List<String> messageInfo,
     @ApiParam(value = "Authorization token",
-        required = true) @HeaderParam("Authorization") String authToken)
+        required = true) @HeaderParam("Authorization") final String authToken)
     throws Exception {
 
     // log call
     Logger.getLogger(WorkflowServiceRestImpl.class).info("RESTful call (Workflow): /translationRequest");
 
     String userName = "";
-    WorkflowService workflowService = new WorkflowServiceJpa();
+    final WorkflowService workflowService = new WorkflowServiceJpa();
 
     try {
       // authorize call
       userName = securityService.getUsernameForToken(authToken);
-      MapUserRole role = securityService.getApplicationRoleForToken(authToken);
-      if (!role.hasPrivilegesOf(MapUserRole.VIEWER))
+      final MapUserRole role = securityService.getApplicationRoleForToken(authToken);
+      if (!role.hasPrivilegesOf(MapUserRole.VIEWER)) {
         throw new WebApplicationException(Response.status(401)
             .entity("User does not have permissions to send a translation request email.").build());
+      }
 
       Logger.getLogger(WorkflowServiceRestImpl.class)
           .info("RESTful call (Workflow): /translationRequest msg: " + messageInfo);
@@ -2422,12 +2550,12 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements Work
 
       return null;
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       handleException(e, "send a translation request email", userName, "", messageInfo.get(0));
       return null;
     } finally {
       workflowService.close();
       securityService.close();
     }
-  }  
+  }
 }
