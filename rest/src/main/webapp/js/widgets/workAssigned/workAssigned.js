@@ -13,7 +13,7 @@ angular
   })
   .controller(
     'workAssignedCtrl',
-    function($scope, $rootScope, $http, $location, $uibModal, $timeout, localStorageService, gpService, appConfig, utilService) {
+    function($scope, $rootScope, $http, $location, $uibModal, $timeout, localStorageService, gpService, appConfig) {
 
       // on initialization, explicitly assign to null and/or empty array
       $scope.currentUser = null;
@@ -31,9 +31,8 @@ angular
       $scope.focusProject = localStorageService.get('focusProject');
       $scope.currentUserToken = localStorageService.get('userToken');
       $scope.preferences = localStorageService.get('preferences');
-      $scope.assignedTab = localStorageService.get('assignedTab');
+      $scope.assignedTab = localStorageService.get('assignedTab');      
       $scope.tabs = localStorageService.get('assignedWorkTabs');
-      $scope.notes = utilService.getNotes($scope.focusProject.id);
 
 	  // MIMS Condition project wants default sort by preferred name
 	  if ($scope.focusProject.projectSpecificAlgorithmHandlerClass == 'org.ihtsdo.otf.mapping.jpa.handlers.MIMSConditionToSnomedProjectSpecificAlgorithmHandler' ||
@@ -42,7 +41,7 @@ angular
 	  } else {
 		$scope.defaultSortField = 'terminologyId';
 	  }
-
+      
       $scope.selectedTags = new Array();
       $scope.allTags = new Array();
 
@@ -86,7 +85,7 @@ angular
           selection : null
         } ];
       }
-
+      
       // labels for QA filtering
       $scope.labelNames = [];
 
@@ -124,13 +123,13 @@ angular
         else
           $scope.ownTab = true;
 
-        // add the tab to the local storage service for the next visit
+        // add the tab to the local storage service for the next visit       
         $scope.preferences.lastAssignedTab = tabNumber;
         localStorageService.add('assignedTab', tabNumber);
-
+        
         $scope.getRadio();
       };
-
+            
       $scope.getRadio = function() {
     	// retrieve the user preferences
         $http({
@@ -142,35 +141,35 @@ angular
             }
         }).success(function(data) {
           $scope.preferences.lastAssignedRadio = localStorageService.get('assignedRadio');
-
+                    
           $scope.assignedTypes.work = $scope.tabs[0].selection || 'ALL';
           $scope.assignedTypes.conflict = $scope.tabs[1].selection || 'ALL';
           $scope.assignedTypes.review = $scope.tabs[2].selection || 'ALL';
           $scope.assignedTypes.forUser = $scope.tabs[3].selection || 'ALL';
           $scope.assignedTypes.qa = $scope.tabs[4].selection || 'ALL';
-
+          
           // update lists based on radio button selected when tab changes
           $scope.retrieveAssignedWork($scope.assignedWorkPage, null);
           $scope.retrieveAssignedQAWork(1, null);
 
           $scope.retrieveLabels();
 		  $scope.retrieveTags();
-          if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') {
+          if ($scope.currentRole === 'Lead' || $scope.currentRole === 'Administrator') { 
             $scope.retrieveAssignedReviewWork(1, null);
             $scope.retrieveAssignedConflicts(1, null);
             $scope.retrieveAssignedWorkForUser(1, $scope.selected?.mapUserViewed?.userName, null);
           }
-        });
+        }); 
       }
-
+      
       $scope.setRadio = function(tab, type) {
-          // add the radio button to the local storage service for the next visit
+          // add the radio button to the local storage service for the next visit       
           $scope.preferences.lastAssignedRadio = type;
           localStorageService.add('assignedRadio', type);
-
+          
           $scope.tabs[tab].selection = type;
           localStorageService.add('assignedWorkTabs', $scope.tabs);
-
+          
           // update the user preferences
           $http({
             url : root_mapping + 'userPreferences/update',
@@ -190,8 +189,8 @@ angular
             }
           });
       }
-
-
+      
+      
       // pagination variables
       $scope.itemsPerPage = 10;
       $scope.assignedWorkPage = 1;
@@ -209,17 +208,17 @@ angular
 
       // work type filter variables
       $scope.assignedTypes = {};
-
+     
       //sort direction
       var sortAscending = [];
       var sortField = [];
-
+      
       $scope.getSortIndicator = function(table, field){
 		if (sortField[table] !== field) return '';
 		if (sortField[table] === field && sortAscending[table]) return '▴';
 		if (sortField[table] === field && !sortAscending[table]) return '▾';
       };
-
+      
     //sort field and get data
       $scope.setSortField = function(table, field) {
     	  sortAscending[table] = !sortAscending[table];
@@ -231,13 +230,13 @@ angular
     	  } else if (table === 'review') {
     		  $scope.retrieveAssignedReviewWork(1, $scope.queryReviewWork);
     	  } else if (table === 'user') {
-    		  $scope.retrieveAssignedWorkForUser(1, $scope.selected.mapUserViewed.userName,
+    		  $scope.retrieveAssignedWorkForUser(1, $scope.selected.mapUserViewed.userName, 
     				  $scope.queryAssignedForUser);
     	  } else if (table === 'qa') {
     		  $scope.retrieveAssignedQAWork(1, $scope.queryQAWork);
     	  }
       };
-
+      
       // watch for project change
       $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
         $scope.focusProject = parameters.focusProject;
@@ -357,16 +356,9 @@ angular
         if ($scope.focusProject != null && $scope.currentUser != null
           && $scope.currentUserToken != null && $scope.currentRole != null) {
           $http.defaults.headers.common.Authorization = $scope.currentUserToken;
-
+          
           $scope.getRadio();
           $scope.mapUsers = $scope.focusProject.mapSpecialist.concat($scope.focusProject.mapLead);
-
-          // Initialize terminology notes
-          utilService.initializeTerminologyNotes($scope.focusProject.id).then(() => {
-            $scope.notes = utilService.getNotes($scope.focusProject.id);            
-          }).catch(error => {
-            console.error('Error initializing terminology notes', error);
-          });
         }
       });
 
@@ -414,7 +406,6 @@ angular
 
           $scope.assignedConflictsPage = page;
           $scope.assignedConflicts = data.searchResult;
-          $scope.addTerminologyNote($scope.assignedConflicts);
 
           // set pagination
           $scope.numAssignedConflictsPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
@@ -500,7 +491,6 @@ angular
 
           $scope.assignedWorkPage = page;
           $scope.assignedRecords = data.searchResult;
-          $scope.addTerminologyNote($scope.assignedRecords);
 
           // set pagination
           $scope.numAssignedRecordPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
@@ -514,7 +504,7 @@ angular
           gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
         });
-
+       
 
       };
 
@@ -610,7 +600,6 @@ angular
 
           $scope.assignedQAWorkPage = page;
           $scope.assignedQAWork = data.searchResult;
-          $scope.addTerminologyNote($scope.assignedQAWork);
 
           // set pagination
           $scope.numAssignedQAWorkPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
@@ -634,15 +623,6 @@ angular
         });
       };
 
-	  $scope.addTerminologyNote = function(workItems) {
-		if (workItems == null || workItems.length == 0 || $scope.notes == undefined || $scope.notes.length == 0) {
-			return;
-		}
-		workItems.forEach(function(workItem) {
-		  workItem.terminologyNote = $scope.notes[workItem.terminologyId];
-		});
-	  }
-
       $scope.retrieveAssignedReviewWork = function(page, pquery) {
         var query = pquery;
 
@@ -661,7 +641,7 @@ angular
           $scope.searchPerformed = true;
 
         }
-
+        
 		// copy tag filter and add to query
 		var pselectedTags = "";
 		  for (var i = 0; i < $scope.selectedTags.length; i++) {
@@ -711,7 +691,6 @@ angular
 
           $scope.assignedReviewWorkPage = page;
           $scope.assignedReviewWork = data.searchResult;
-          $scope.addTerminologyNote($scope.assignedReviewWork);
 
           // set pagination
           $scope.numAssignedReviewWorkPages = Math.ceil(data.totalCount / $scope.itemsPerPage);
@@ -787,7 +766,6 @@ angular
 
           $scope.assignedWorkForUserPage = page;
           $scope.assignedRecordsForUser = data.searchResult;
-          $scope.addTerminologyNote($scope.assignedRecordsForUser);
 
           // set pagination
           $scope.numAssignedRecordPagesForUser = Math.ceil(data.totalCount / $scope.itemsPerPage);
@@ -1056,7 +1034,7 @@ angular
             $rootScope.handleHttpError(data, status, headers, config);
           });
       };
-
+      
 
       $scope.openCreateJiraTicketModal = function(record) {
 
@@ -1091,7 +1069,7 @@ angular
         })
 
       };
-
+        
 
       var CreateJiraTicketModalCtrl = function($scope, $uibModalInstance, $q, user, project,
         record, authors) {
@@ -1128,7 +1106,7 @@ angular
             $rootScope.handleHttpError(data, status, headers, config);
           });
         }
-
+        
         // Load the current record
         $scope.loadRecord = function() {
 
@@ -1419,7 +1397,7 @@ angular
 
 				// Handle conflict and review case
 				else if ($scope.project.workflowType === 'CONFLICT_AND_REVIEW_PATH'){
-					if(!($scope.currentRecord.workflowStatus === 'REVIEW_FINISHED'
+					if(!($scope.currentRecord.workflowStatus === 'REVIEW_FINISHED' 
 						|| $scope.currentRecord.workflowStatus === 'CONFLICT_FINISHED')){
 							$scope.currentRecord.isFinished = false;
 						}
@@ -1538,7 +1516,7 @@ angular
                 if ($scope.action == 'publish') {
                 	  $rootScope.$broadcast('feedbackWidget.notification.retrieveFeedback', {});
                 }
-
+                	
                 // call the helper again if more records
                 if ($scope.index < $scope.records.length)
                   finishAllRecordsHelper();
@@ -1577,7 +1555,7 @@ angular
 
           // call the sequential finishAllRecords helper function
           finishAllRecordsHelper();
-
+          
         };
 
         $scope.done = function() {
