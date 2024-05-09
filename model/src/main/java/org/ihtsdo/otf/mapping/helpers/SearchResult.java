@@ -46,6 +46,16 @@ public interface SearchResult {
   public void setTerminologyVersion(String terminologyVersion);
 
   /**
+   * @return the terminologyNote
+   */
+  public String getTerminologyNote();
+
+  /**
+   * @param terminologyVersion the terminologyNote to set
+   */
+  public void setTerminologyNote(String terminologyNote);
+
+  /**
    * @return the value
    */
   public String getValue();

@@ -129,7 +129,11 @@ mapProjectApp
         this.getNotes = function(projectId) {
           var notes = localStorageService.get('notes');
 		  if (notes == null || notes.length == 0) {
-			return [];
+			this.initializeTerminologyNotes(projectId).then(() => {
+		      
+		    }).catch(error => {
+		     console.error('Error initializing terminology notes', error);
+		    });
 		  }
           return notes[projectId];
         };
