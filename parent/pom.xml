@@ -49,7 +49,7 @@
     <jersey.core.version>2.29</jersey.core.version>
     <jersey.media.version>2.29</jersey.media.version>
     <jersey.version>2.29</jersey.version>
-    <jettison.version>1.4.0</jettison.version>
+    <jettison.version>1.5.4</jettison.version>
     <junit.version>4.13.1</junit.version>
     <lucene.version>5.5.5</lucene.version>
     
@@ -68,7 +68,7 @@
     <mysql.connector.java.version>8.0.33</mysql.connector.java.version>
     
     <org.apache.commons.lang3.version>3.9</org.apache.commons.lang3.version>
-    <org.json.version>20190722</org.json.version>
+    <org.json.version>20231013</org.json.version>
     <org.reflections.version>0.9.10</org.reflections.version>
     <sax.version>2.0.1</sax.version>
     <slf4j.log4j12.version>1.7.28</slf4j.log4j12.version>
@@ -411,7 +411,7 @@
 	<dependency>
 		<groupId>org.jsoup</groupId>
 		<artifactId>jsoup</artifactId>
-		<version>1.14.2</version>
+		<version>1.15.3</version>
 	</dependency>
     
     </dependencies>
