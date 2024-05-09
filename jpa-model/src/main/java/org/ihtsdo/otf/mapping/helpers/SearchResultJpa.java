@@ -21,6 +21,9 @@ public class SearchResultJpa implements SearchResult {
   /** The terminology version. */
   private String terminologyVersion;
 
+  /** The terminology version. */
+  private String terminologyNote;
+
   /** The value. */
   private String value;
 
@@ -42,8 +45,8 @@ public class SearchResultJpa implements SearchResult {
    * @param value the value
    * @param value2 the value2
    */
-  public SearchResultJpa(Long id, String terminologyId, String value,
-      String value2) {
+  public SearchResultJpa(final Long id, final String terminologyId, final String value,
+      final String value2) {
     this.id = id;
     this.terminologyId = terminologyId;
     this.value = value;
@@ -67,7 +70,7 @@ public class SearchResultJpa implements SearchResult {
    * @param id the id
    */
   @Override
-  public void setId(Long id) {
+  public void setId(final Long id) {
     this.id = id;
 
   }
@@ -89,14 +92,14 @@ public class SearchResultJpa implements SearchResult {
    * @param terminologyId the id
    */
   @Override
-  public void setTerminologyId(String terminologyId) {
+  public void setTerminologyId(final String terminologyId) {
     this.terminologyId = terminologyId;
 
   }
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.ihtsdo.otf.mapping.helpers.SearchResult#getTerminology()
    */
   @Override
@@ -106,19 +109,17 @@ public class SearchResultJpa implements SearchResult {
 
   /*
    * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.helpers.SearchResult#setTerminology(java.lang.String
-   * )
+   *
+   * @see org.ihtsdo.otf.mapping.helpers.SearchResult#setTerminology(java.lang.String )
    */
   @Override
-  public void setTerminology(String terminology) {
+  public void setTerminology(final String terminology) {
     this.terminology = terminology;
   }
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.ihtsdo.otf.mapping.helpers.SearchResult#getTerminologyVersion()
    */
   @Override
@@ -128,14 +129,33 @@ public class SearchResultJpa implements SearchResult {
 
   /*
    * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.helpers.SearchResult#setTerminologyVersion(java.
-   * lang.String)
+   *
+   * @see org.ihtsdo.otf.mapping.helpers.SearchResult#setTerminologyVersion(java. lang.String)
    */
   @Override
-  public void setTerminologyVersion(String terminologyVersion) {
+  public void setTerminologyVersion(final String terminologyVersion) {
     this.terminologyVersion = terminologyVersion;
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.ihtsdo.otf.mapping.helpers.SearchResult#getTerminologyNote()
+   */
+  @Override
+  @XmlElement(name = "terminologyNote")
+  public String getTerminologyNote() {
+    return this.terminologyNote;
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.ihtsdo.otf.mapping.helpers.SearchResult#setTerminologyNote(java. lang.String)
+   */
+  @Override
+  public void setTerminologyNote(final String terminologyNote) {
+    this.terminologyNote = terminologyNote;
   }
 
   /**
@@ -155,14 +175,14 @@ public class SearchResultJpa implements SearchResult {
    * @param value the value
    */
   @Override
-  public void setValue(String value) {
+  public void setValue(final String value) {
     this.value = value;
 
   }
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.ihtsdo.otf.mapping.helpers.SearchResult#getValue2()
    */
   @Override
@@ -173,34 +193,28 @@ public class SearchResultJpa implements SearchResult {
 
   /*
    * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.mapping.helpers.SearchResult#setValue2(java.lang.String)
+   *
+   * @see org.ihtsdo.otf.mapping.helpers.SearchResult#setValue2(java.lang.String)
    */
   @Override
-  public void setValue2(String value2) {
+  public void setValue2(final String value2) {
     this.value2 = value2;
 
   }
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#hashCode()
    */
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result =
-        prime * result + ((terminology == null) ? 0 : terminology.hashCode());
-    result =
-        prime * result
-            + ((terminologyId == null) ? 0 : terminologyId.hashCode());
-    result =
-        prime
-            * result
-            + ((terminologyVersion == null) ? 0 : terminologyVersion.hashCode());
+    result = prime * result + ((terminology == null) ? 0 : terminology.hashCode());
+    result = prime * result + ((terminologyId == null) ? 0 : terminologyId.hashCode());
+    result = prime * result + ((terminologyVersion == null) ? 0 : terminologyVersion.hashCode());
+    result = prime * result + ((terminologyNote == null) ? 0 : terminologyNote.hashCode());
     result = prime * result + ((value == null) ? 0 : value.hashCode());
     result = prime * result + ((value2 == null) ? 0 : value2.hashCode());
     return result;
@@ -208,56 +222,76 @@ public class SearchResultJpa implements SearchResult {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
+  public boolean equals(final Object obj) {
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
-    SearchResultJpa other = (SearchResultJpa) obj;
+    }
+    final SearchResultJpa other = (SearchResultJpa) obj;
     if (terminology == null) {
-      if (other.terminology != null)
+      if (other.terminology != null) {
         return false;
-    } else if (!terminology.equals(other.terminology))
+      }
+    } else if (!terminology.equals(other.terminology)) {
       return false;
+    }
     if (terminologyId == null) {
-      if (other.terminologyId != null)
+      if (other.terminologyId != null) {
         return false;
-    } else if (!terminologyId.equals(other.terminologyId))
+      }
+    } else if (!terminologyId.equals(other.terminologyId)) {
       return false;
+    }
     if (terminologyVersion == null) {
-      if (other.terminologyVersion != null)
+      if (other.terminologyVersion != null) {
         return false;
-    } else if (!terminologyVersion.equals(other.terminologyVersion))
+      }
+    } else if (!terminologyVersion.equals(other.terminologyVersion)) {
       return false;
+    }
+    if (terminologyNote == null) {
+      if (other.terminologyNote != null) {
+        return false;
+      }
+    } else if (!terminologyNote.equals(other.terminologyNote)) {
+      return false;
+    }
     if (value == null) {
-      if (other.value != null)
+      if (other.value != null) {
         return false;
-    } else if (!value.equals(other.value))
+      }
+    } else if (!value.equals(other.value)) {
       return false;
+    }
     if (value2 == null) {
-      if (other.value2 != null)
+      if (other.value2 != null) {
         return false;
-    } else if (!value2.equals(other.value2))
+      }
+    } else if (!value2.equals(other.value2)) {
       return false;
+    }
     return true;
   }
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "SearchResultJpa [id=" + id + ", terminologyId=" + terminologyId
-        + ", terminology=" + terminology + ", terminologyVersion="
-        + terminologyVersion + ", value=" + value + ", value2=" + value2 + "]";
+    return "SearchResultJpa [id=" + id + ", terminologyId=" + terminologyId + ", terminology="
+        + terminology + ", terminologyVersion=" + terminologyVersion + ", value=" + value
+        + ", value2=" + value2 + "]";
   }
 
 }
