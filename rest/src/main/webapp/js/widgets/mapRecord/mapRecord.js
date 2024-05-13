@@ -2027,6 +2027,17 @@ angular
           return historyRecord;
         }
 
+
+		//UI Labels
+		$scope.getUILabel = function(label){
+		  if (utilService.checkIfProjectRelabels($scope.project.refSetId, appConfig['deploy.ui.relabel.refsetids'])){
+			return utilService.getUILabel(label, appConfig['deploy.ui.relabel.' + $scope.project.refSetId]);
+		  }
+		  else {
+			return label;
+		  }
+		}
+
         //one $watch for each variable, $watchGroup was not working for all
         //groupsTree
         $scope.$watch('groupsTree', function(newVal, oldVal) {

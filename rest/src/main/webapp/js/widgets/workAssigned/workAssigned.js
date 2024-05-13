@@ -13,7 +13,7 @@ angular
   })
   .controller(
     'workAssignedCtrl',
-    function($scope, $rootScope, $http, $location, $uibModal, $timeout, localStorageService, gpService, appConfig) {
+    function($scope, $rootScope, $http, $location, $uibModal, $timeout, localStorageService, utilService, appConfig, gpService) {
 
       // on initialization, explicitly assign to null and/or empty array
       $scope.currentUser = null;
@@ -236,7 +236,17 @@ angular
     		  $scope.retrieveAssignedQAWork(1, $scope.queryQAWork);
     	  }
       };
-      
+      		
+	  //UI Labels
+	  $scope.getUILabel = function(label){
+		if (utilService.checkIfProjectRelabels($scope.focusProject.refSetId, appConfig['deploy.ui.relabel.refsetids'])){
+		  return utilService.getUILabel(label, appConfig['deploy.ui.relabel.' + $scope.focusProject.refSetId]);
+		}
+		else {
+		  return label;
+		}
+	  }
+		
       // watch for project change
       $scope.$on('localStorageModule.notification.setFocusProject', function(event, parameters) {
         $scope.focusProject = parameters.focusProject;
@@ -1564,5 +1574,6 @@ angular
 
         // get the first record
         $scope.loadRecord($scope.index);
+
       };
     });
