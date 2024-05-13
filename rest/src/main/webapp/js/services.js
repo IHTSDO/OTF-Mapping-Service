@@ -251,6 +251,36 @@ mapProjectApp
 			
 		}		
 
+		//
+		// UI relabling
+		// 
+		this.checkIfProjectRelabels = function(refsetId, relabelRefsetIds) {
+		  var relabelRefsetIdsArray = null;
+		  if (relabelRefsetIds != null) {
+			relabelRefsetIdsArray = relabelRefsetIds.split(',');
+		  }
+
+		  return (relabelRefsetIdsArray != null && Array.isArray(relabelRefsetIdsArray) && relabelRefsetIdsArray.includes(refsetId));
+		}
+		
+		
+		this.getUILabel = function(label, relabelInformation) {
+
+		const relabelInfoJson = JSON.parse(relabelInformation);
+
+		let labelReplacement = null;
+
+		for (let i = 0; i < relabelInfoJson.length; i++) {
+		  const obj = relabelInfoJson[i];
+		  if (obj.defaultLabel === label) {
+		    labelReplacement = obj.replaceLabel;
+		    break; // Exit loop once the condition is met
+		  }
+		}
+		
+		return labelReplacement != null ? labelReplacement : label;
+		}
+
         // Prep query
         this.prepQuery = function(query) {
           if (!query) {

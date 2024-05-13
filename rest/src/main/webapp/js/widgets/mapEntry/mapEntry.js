@@ -1072,6 +1072,16 @@ angular
           return allowableRelations;
         }
 
+		//UI Labels
+		$scope.getUILabel = function(label){
+		  if (utilService.checkIfProjectRelabels($scope.project.refSetId, appConfig['deploy.ui.relabel.refsetids'])){
+			return utilService.getUILabel(label, appConfig['deploy.ui.relabel.' + $scope.project.refSetId]);
+		  }
+		  else {
+			return label;
+		  }
+		}
+
         // sort and return an array by string key
         function sortByKey(array, key) {
           return array.sort(function(a, b) {

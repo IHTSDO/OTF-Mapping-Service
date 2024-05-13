@@ -16,7 +16,7 @@ angular
 
   .controller(
     'workAvailableWidgetCtrl',
-    function($scope, $rootScope, $http, $routeParams, $uibModal, $location, localStorageService, gpService) {
+    function($scope, $rootScope, $http, $routeParams, $uibModal, $location, localStorageService, utilService, appConfig, gpService) {
 
       // local variables
       $scope.batchSizes = [ 100, 50, 25, 10, 5 ];
@@ -101,6 +101,16 @@ angular
 
       // labels for QA filtering
       $scope.labelNames = [];
+      		
+	  //UI Labels
+	  $scope.getUILabel = function(label){
+		if (utilService.checkIfProjectRelabels($scope.focusProject.refSetId, appConfig['deploy.ui.relabel.refsetids'])){
+		  return utilService.getUILabel(label, appConfig['deploy.ui.relabel.' + $scope.focusProject.refSetId]);
+		}
+		else {
+		  return label;
+		}
+	  }
 
       // watch for project change and modify the local variable if necessary
       // coupled with $watch below, this avoids premature work fetching
@@ -1183,5 +1193,4 @@ angular
           return ((x < y) ? -1 : ((x > y) ? 1 : 0));
         });
       }
-
     });

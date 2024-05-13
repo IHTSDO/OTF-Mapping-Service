@@ -50,7 +50,7 @@
       <tr>
         <th style="width: 3%; padding: 5px;"></th>
         <th class="pointer" style="width: 14%; padding: 5px;" ng-click="setSortField('concepts','terminologyId')">
-        	Id<span ng-bind="getSortIndicator('concepts','terminologyId')"></span></th>
+        	{{getUILabel("Id")}}<span ng-bind="getSortIndicator('concepts','terminologyId')"></span></th>
         <!--  Extra column if on editing in progress page for dashboard finish commands -->
         <th style="width: 3%; padding: 5px;"><a
             ng-show="assignedTypes.work === 'EDITING_IN_PROGRESS'"
@@ -69,7 +69,7 @@
             <i class="glyphicon glyphicon-check"></i>
           </a></th>
         <th class="pointer" style="width: 52%; padding: 5px;" ng-click="setSortField('concepts','defaultPreferredName')">
-        	Preferred Name<span ng-bind="getSortIndicator('concepts','defaultPreferredName')"></span></th>
+        	{{getUILabel("Preferred Name")}}<span ng-bind="getSortIndicator('concepts','defaultPreferredName')"></span></th>
         <th ng-show="focusProject.useTags" class="pointer" style="width: 20%; padding: 5px;">
         	Tags
         </th>
@@ -223,7 +223,7 @@
       <tr">
         <th style="width: 3%; padding: 5px;"></th>
         <th class="pointer" style="width: 14%; padding: 5px;" ng-click="setSortField('conflicts','terminologyId')">
-			Id<span ng-bind="getSortIndicator('conflicts','terminologyId')"></span></th>
+			{{getUILabel("Id")}}<span ng-bind="getSortIndicator('conflicts','terminologyId')"></span></th>
         <!--  Extra column if on editing in progress page for dashboard finish commands -->
         <th style="width: 3%; padding: 5px;"><a
             ng-show="assignedTypes.conflict === 'CONFLICT_IN_PROGRESS'"
@@ -236,7 +236,7 @@
             <i class="glyphicon glyphicon-check"></i>
           </a></th>
         <th class="pointer" style="width: 52%; padding: 5px;" ng-click="setSortField('conflicts','defaultPreferredName')">
-    		Preferred Name<span ng-bind="getSortIndicator('conflicts','defaultPreferredName')"></span></th> 	
+    		{{getUILabel("Preferred Name")}}<span ng-bind="getSortIndicator('conflicts','defaultPreferredName')"></span></th> 	
         <th ng-show="focusProject.useTags" class="pointer" style="width: 20%; padding: 5px;">
         	Tags
         </th>       			
@@ -383,7 +383,7 @@
       <tr>
         <th style="width: 3%; padding: 5px;"></th>
         <th class="pointer" style="width: 14%;" padding: 5px; ng-click="setSortField('review','terminologyId')">
-			Id<span ng-bind="getSortIndicator('review','terminologyId')"></span></th>
+			{{getUILabel("Id")}}<span ng-bind="getSortIndicator('review','terminologyId')"></span></th>
         <!--  Extra column if on editing in progress page for dashboard finish commands -->
         <th style="width: 3%; padding: 5px;"><a
             ng-show="assignedTypes.review === 'REVIEW_IN_PROGRESS'"
@@ -396,7 +396,7 @@
             <i class="glyphicon glyphicon-check"></i>
           </a></th>
         <th class="pointer" style="width: 57%; padding: 5px;" ng-click="setSortField('review','defaultPreferredName')">
-    		Preferred Name<span ng-bind="getSortIndicator('review','defaultPreferredName')"></span></th>
+    		{{getUILabel("Preferred Name")}}<span ng-bind="getSortIndicator('review','defaultPreferredName')"></span></th>
         <th ng-show="focusProject.useTags" class="pointer" style="width: 20%; padding: 5px;">
         	Tags
         </th>       		
@@ -534,9 +534,9 @@
   <thead>
     <tr>
       <th class="pointer" style="width: 12%; padding: 5px;" ng-click="setSortField('user','terminologyId')">
-		Id<span ng-bind="getSortIndicator('user','terminologyId')"></span></th>
+		{{getUILabel("Id")}}<span ng-bind="getSortIndicator('user','terminologyId')"></span></th>
       <th class="pointer" style="width: 60%; padding: 5px;" ng-click="setSortField('user','defaultPreferredName')">
-    	Preferred Name<span ng-bind="getSortIndicator('user','defaultPreferredName')"></span></th>
+    	{{getUILabel("Preferred Name")}}<span ng-bind="getSortIndicator('user','defaultPreferredName')"></span></th>
       <th class="pointer" style="width: 25%; padding: 5px;" ng-click="setSortField('user','terminology')">
     	Last Modified<span ng-bind="getSortIndicator('user','terminology')"></span></th>
       <th style="width: 3%; padding: 5px;"><a title="Return All Work"
@@ -616,7 +616,7 @@
       <tr>
         <th style="width: 3%; padding: 5px;"></th>
         <th class="pointer" style="width: 14%; padding: 5px;" ng-click="setSortField('qa','terminologyId')">
-			Id<span ng-bind="getSortIndicator('qa','terminologyId')"></span></th>
+			{{getUILabel("Id")}}<span ng-bind="getSortIndicator('qa','terminologyId')"></span></th>
 
         <!--  Extra column if on editing in progress page for dashboard finish commands -->
         <th style="width: 3%; padding: 5px;"><a
@@ -630,7 +630,7 @@
             <i class="glyphicon glyphicon-check"></i>
           </a></th>
         <th class="pointer" style="width: 74%; padding: 5px;" ng-click="setSortField('qa','defaultPreferredName')">
-    		Preferred Name<span ng-bind="getSortIndicator('qa','defaultPreferredName')"></span></th>
+    		{{getUILabel("Preferred Name")}}<span ng-bind="getSortIndicator('qa','defaultPreferredName')"></span></th>
         <th style="width: 3%; padding: 5px;"></th>
         <th style="width: 3%; padding: 5px;"></th>
         <th style="width: 3%; padding: 5px;"><a title="Return All Work"
