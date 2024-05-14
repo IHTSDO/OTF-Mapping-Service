@@ -471,7 +471,7 @@ angular
             'queryRestriction' : ''
           };
 
-          //gpService.increment();
+          gpService.increment();
 
           $http({
             url : root_mapping + 'project/id/' + $scope.focusProject.id + '/scopeConcepts',
@@ -491,7 +491,7 @@ angular
               $scope.pagedScopeConcept = $scope.pagedScopeConcept.slice((page - 1)
                 * $scope.pageSize, page * $scope.pageSize);
             }).error(function(data, status, headers, config) {
-            //gpService.decrement();
+            gpService.decrement();
 
             $rootScope.handleHttpError(data, status, headers, config);
           });
@@ -509,7 +509,7 @@ angular
             'queryRestriction' : ''
           };
 
-          //gpService.increment();
+          gpService.increment();
           $http({
             url : root_mapping + 'project/id/' + $scope.focusProject.id + '/scopeExcludedConcepts',
             dataType : 'json',
@@ -528,7 +528,7 @@ angular
               $scope.pagedScopeExcludedConcept = $scope.pagedScopeExcludedConcept.slice((page - 1)
                 * $scope.pageSize, page * $scope.pageSize);
             }).error(function(data, status, headers, config) {
-            //gpService.decrement();
+            gpService.decrement();
             $rootScope.handleHttpError(data, status, headers, config);
           });
         };
