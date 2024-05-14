@@ -175,6 +175,7 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
       // validation checks.
       final List<String> relationTargets = new ArrayList<>();
       final List<String> relationClusters = new ArrayList<>();
+      final List<String> relationWHOs = new ArrayList<>();
       final List<String> unmappableReasons = new ArrayList<>();
       final List<String> targetMismatchReasons = new ArrayList<>();
 
@@ -185,7 +186,9 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
           if (additionalMapEntryInfo.getField().equals("Relation - Target")) {
             relationTargets.add(additionalMapEntryInfo.getValue());
           } else if (additionalMapEntryInfo.getField().equals("Relation - Cluster")) {
-            relationClusters.add(additionalMapEntryInfo.getValue());
+            relationTargets.add(additionalMapEntryInfo.getValue());
+          } else if (additionalMapEntryInfo.getField().equals("Relation - WHO")) {
+            relationWHOs.add(additionalMapEntryInfo.getValue());
           } else if (additionalMapEntryInfo.getField().equals("Unmappable Reason")) {
             unmappableReasons.add(additionalMapEntryInfo.getValue());
           } else if (additionalMapEntryInfo.getField().equals("Target Mismatch Reason")) {
@@ -209,6 +212,9 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
       if (relationClusters.size() > 1) {
         result.addError("Map cannot have more than one Relation - Cluster");
       }
+      if (relationWHOs.size() > 1) {
+        result.addError("Map cannot have more than one Relation - WHO");
+      }
       if (unmappableReasons.size() > 1) {
         result.addError("Map cannot have more than one Unmappable Reason");
       }
@@ -222,6 +228,8 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
           relationTargets.size() != 0 && relationTargets.get(0) != "" ? relationTargets.get(0) : "";
       final String relationCluster = relationClusters.size() != 0 && relationClusters.get(0) != ""
           ? relationClusters.get(0) : "";
+      final String relationWHO = relationWHOs.size() != 0 && relationWHOs.get(0) != ""
+          ? relationWHOs.get(0) : "";
 
       //
       // PREDICATE: When Relation - target is E-Equivalent then Relation –
@@ -343,6 +351,45 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
           }
         }
       }
+      
+
+      //
+      // PREDICATE: 2nd Group (WHO target) must have a relation - WHO
+      //
+      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+        final MapEntry entry = mapRecord.getMapEntries().get(i);
+        if (entry.getMapGroup() == 2) {
+          Boolean relationWHOPresent = false;
+          for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
+              .getAdditionalMapEntryInfos()) {
+            if (additionalMapEntryInfo.getField().equals("Relation - WHO")) {
+              relationWHOPresent = true;
+            }
+          }
+          if (!relationWHOPresent) {
+            result.addError("2nd Group (WHO target) must have a Relation - WHO");
+          }
+        }
+      }
+
+      //
+      // PREDICATE: 1st Group (CIHI target) cannot have a target mismatch reason
+      //
+      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+        final MapEntry entry = mapRecord.getMapEntries().get(i);
+        if (entry.getMapGroup() == 1) {
+          Boolean relationWHOPresent = false;
+          for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
+              .getAdditionalMapEntryInfos()) {
+            if (additionalMapEntryInfo.getField().equals("Relation - WHO")) {
+              relationWHOPresent = true;
+            }
+          }
+          if (relationWHOPresent) {
+            result.addError("1st Group (CIHI target) cannot have a Relation - WHO");
+          }
+        }
+      }      
 
     } catch (final Exception e) {
       throw e;
