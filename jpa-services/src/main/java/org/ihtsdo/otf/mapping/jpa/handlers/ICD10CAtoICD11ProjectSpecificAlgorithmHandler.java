@@ -186,7 +186,7 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
           if (additionalMapEntryInfo.getField().equals("Relation - Target")) {
             relationTargets.add(additionalMapEntryInfo.getValue());
           } else if (additionalMapEntryInfo.getField().equals("Relation - Cluster")) {
-            relationTargets.add(additionalMapEntryInfo.getValue());
+            relationClusters.add(additionalMapEntryInfo.getValue());
           } else if (additionalMapEntryInfo.getField().equals("Relation - WHO")) {
             relationWHOs.add(additionalMapEntryInfo.getValue());
           } else if (additionalMapEntryInfo.getField().equals("Unmappable Reason")) {
