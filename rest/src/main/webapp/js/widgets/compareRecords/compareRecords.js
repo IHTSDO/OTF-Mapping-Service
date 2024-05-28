@@ -546,7 +546,8 @@ angular
       };
       
       function getTerminologyNote(id) {
-		return $scope.notes[id];
+		var note = $scope.notes[id];
+		return (note == null || note == undefined) ? "" : note;
 	  }
 
       // /////////////////////////////
