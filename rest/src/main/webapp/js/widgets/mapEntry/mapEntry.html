@@ -74,17 +74,10 @@
       </td>
       <td style="vertical-align: top; padding: 5px;">
       	<span ng-switch on="project.destinationTerminology">
-    		<!-- 
-    		<span ng-switch-when="CCI">
-        		<span style="color: lightgray;"
-          			ng-show="allowableMapRelations.length == 0 && !entry.mapRelation">No
-          			map relationships available to select.</span>
-    		</span>
-    		 -->
     		<span ng-switch-default>
         		<span style="color: lightgray;"
-          			ng-show="allowableMapRelations.length == 0 && !entry.mapRelation">No
-          			relations available to select.</span>
+          			ng-show="allowableMapRelations.length == 0 && !entry.mapRelation">
+          			{{getUILabel("No relations available to select.")}}</span>
     		</span>
 		</span>
         <span ng-show="allowableMapRelations.length > 0 || entry.mapRelation">
@@ -162,7 +155,7 @@
         </div>
         <span style="color: red">{{errorAddAdditionalMapEntryInfo}}</span>
         <form>
-          Add {{field.name}}: <select style="width: 60%;"
+          {{getUILabel("Add ")}}{{field.name}}: <select style="width: 60%;"
             ng-change="addEntryAdditionalMapEntryInfo(entry, additionalMapEntryInfoInput);additionalMapEntryInfoInput=null;"
             ng-model="additionalMapEntryInfoInput"
             ng-options="mapEntryInfo as mapEntryInfo.value for mapEntryInfo in allowableMapEntryInfos[field.name]"></select>
