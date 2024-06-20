@@ -163,6 +163,10 @@ mapProjectApp
           
 	
 		    for(var i=0; i<orderedEntries.length; i++){
+			  if(orderedEntries[i].targetId === undefined || orderedEntries[i].targetId === null || orderedEntries[i].targetId === ""){
+				continue;
+			  }
+			
 			  // Connect extension codes with ampersands
 		      if(orderedEntries[i].targetId.startsWith("X")){
 		          fullExpression = fullExpression + "&" + orderedEntries[i].targetId;
@@ -236,6 +240,9 @@ mapProjectApp
 		this.addOrderIds = function(mapRecord, orderIdInfoMap) {
 			
 		  for(var i=0; i<mapRecord.mapEntry.length; i++){
+			if(mapRecord.mapEntry[i]['additionalMapEntryInfo'] === undefined || mapRecord.mapEntry[i]['additionalMapEntryInfo'] === null){
+				continue;
+			}
 			for(var j=0; j<mapRecord.mapEntry[i]['additionalMapEntryInfo'].length; j++){
 				if (orderIdInfoMap.has(mapRecord.mapEntry[i]['additionalMapEntryInfo'][j].field)){
 					mapRecord.mapEntry[i]['additionalMapEntryInfo'][j].orderId = orderIdInfoMap.get(mapRecord.mapEntry[i]['additionalMapEntryInfo'][j].field);
