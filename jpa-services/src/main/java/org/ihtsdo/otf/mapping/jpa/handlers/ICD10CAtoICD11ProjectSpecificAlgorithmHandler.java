@@ -93,10 +93,12 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
       }
 
       // Only leaf nodes (concepts with no descendants) are valid
+      // UNLESS they are Extension codes (start with an X) - all are valid
+      // regardless of location in the hierarchy
       final TreePositionList list = contentService.getTreePositions(terminologyId,
           mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
       for (final TreePosition tp : list.getTreePositions()) {
-        if (tp.getDescendantCount() > 0) {
+        if (tp.getDescendantCount() > 0 && !concept.getTerminologyId().startsWith("X")) {
           return false;
         }
       }
@@ -228,8 +230,8 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
           relationTargets.size() != 0 && relationTargets.get(0) != "" ? relationTargets.get(0) : "";
       final String relationCluster = relationClusters.size() != 0 && relationClusters.get(0) != ""
           ? relationClusters.get(0) : "";
-      final String relationWHO = relationWHOs.size() != 0 && relationWHOs.get(0) != ""
-          ? relationWHOs.get(0) : "";
+      final String relationWHO =
+          relationWHOs.size() != 0 && relationWHOs.get(0) != "" ? relationWHOs.get(0) : "";
 
       //
       // PREDICATE: When Relation - target is E-Equivalent then Relation –
@@ -351,7 +353,6 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
           }
         }
       }
-      
 
       //
       // PREDICATE: 2nd Group (WHO target) must have a relation - WHO
@@ -389,7 +390,7 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
             result.addError("1st Group (CIHI target) cannot have a Relation - WHO");
           }
         }
-      }      
+      }
 
     } catch (final Exception e) {
       throw e;
@@ -401,8 +402,8 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
   }
 
   /**
-   * Overriding defaultChecks, because there are some project-specific settings that don't conform
-   * to the standard map requirements.
+   * Overriding defaultChecks, because there are some project-specific settings
+   * that don't conform to the standard map requirements.
    *
    * @param mapRecord the map record
    * @return the validation result
@@ -471,8 +472,8 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
   }
 
   /**
-   * Verify no duplicate entries in the map. For this project, we are only looking within Group 1
-   * (there will be duplicates with Group 2)
+   * Verify no duplicate entries in the map. For this project, we are only
+   * looking within Group 1 (there will be duplicates with Group 2)
    *
    * @param mapRecord the map record
    * @return a list of errors detected
