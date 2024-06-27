@@ -13,39 +13,19 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import java.util.Map.Entry;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import java.util.Set;
 
 import javax.persistence.EntityManager;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status.Family;
 
-import org.apache.maven.plugin.MojoExecutionException;
-import org.ihtsdo.otf.mapping.helpers.LocalException;
-import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
-import org.ihtsdo.otf.mapping.mojo.AbstractOtfMappingMojo;
-import org.ihtsdo.otf.mapping.mojo.ICD10CMSQLReportMojo;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * The Class NorwayReplacementMapReport.
@@ -187,7 +167,7 @@ public class MeddraToSnomedExclusionReport extends AbstractOtfMappingReport {
     	}
     	catch (Exception e) {
 	      e.printStackTrace();
-	      throw new MojoExecutionException(
+	      throw new Exception(
 	          "ICD10CM SQLReport mojo failed to complete", e);
 	    }
     }
@@ -199,7 +179,7 @@ public class MeddraToSnomedExclusionReport extends AbstractOtfMappingReport {
 	    try {
 	      config = ConfigUtility.getConfigProperties();
 	    } catch (Exception e1) {
-	      throw new MojoExecutionException("Failed to retrieve config properties");
+	      throw new Exception("Failed to retrieve config properties");
 	    }
 	    String notificationRecipients =
 	            config.getProperty("sqlreport.send.notification.recipients");
