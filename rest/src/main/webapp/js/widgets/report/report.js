@@ -21,10 +21,12 @@ angular
       $uibModal,
       $sce,
       localStorageService,
-      gpService
+      gpService,
+      appConfig
     ) {
       // initialize as empty to indicate still initializing
       // database connection
+      $scope.appConfig = appConfig;
       $scope.currentUser = localStorageService.get("currentUser");
       $scope.currentRole = localStorageService.get("currentRole");
       $scope.focusProject = localStorageService.get("focusProject");
@@ -314,9 +316,7 @@ angular
       $scope.showRunReport = function (reportDefinition) {
         var show = false;
         if (
-		  reportDefinition != null &&
-          (reportDefinition.name == "NorwayReplacementMapReport" ||
-          reportDefinition.name == "NorwayReplacementTranslationReport")
+		  reportDefinition != null && appConfig["deploy.reports.allowed"].split(",").includes(reportDefinition.name)
         ) {
           show = true;
         }
