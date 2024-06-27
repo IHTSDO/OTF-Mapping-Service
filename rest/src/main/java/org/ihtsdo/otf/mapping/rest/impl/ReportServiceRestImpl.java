@@ -5,10 +5,12 @@ package org.ihtsdo.otf.mapping.rest.impl;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -26,6 +28,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.mapping.helpers.ReportDefinitionList;
@@ -42,6 +45,7 @@ import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.rest.ReportServiceRest;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapUser;
+import org.ihtsdo.otf.mapping.report.MeddraToSnomedExclusionReport;
 import org.ihtsdo.otf.mapping.report.NorwayReplacementMapReport;
 import org.ihtsdo.otf.mapping.report.NorwayReplacementTranslationReport;
 import org.ihtsdo.otf.mapping.reports.Report;
@@ -52,6 +56,7 @@ import org.ihtsdo.otf.mapping.reports.ReportResult;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.ReportService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -751,6 +756,13 @@ public class ReportServiceRestImpl extends RootServiceRestImpl
 
     String userName = "";
     
+    Properties config;
+    try {
+      config = ConfigUtility.getConfigProperties();
+    } catch (Exception e1) {
+      throw new MojoExecutionException("Failed to retrieve config properties");
+    }
+    
     try {
       // authorize call
       userName = authorizeApp(authToken, MapUserRole.VIEWER, "run report",
@@ -760,8 +772,7 @@ public class ReportServiceRestImpl extends RootServiceRestImpl
         throw new Exception("Report name is blank.");
       }
 
-      final List<String> allowedReports = List.of("NorwayReplacementMapReport",
-          "NorwayReplacementTranslationReport");
+      final List<String> allowedReports = Arrays.asList(config.getProperty("deploy.reports.allowable").split(","));
       if (!allowedReports.contains(reportName)) {
         throw new Exception("Report " + reportName + " does not exist.");
       }
@@ -779,7 +790,11 @@ public class ReportServiceRestImpl extends RootServiceRestImpl
 
             NorwayReplacementTranslationReport.runReport();
 
-          }
+          } else if ("MeddraToSnomedExclusionReport".equals(reportName)) {
+
+        	  MeddraToSnomedExclusionReport.runReport();
+
+            }
         } catch (Exception e) {
           LOGGER.error("ERROR running report {}", reportName, e);
         }
