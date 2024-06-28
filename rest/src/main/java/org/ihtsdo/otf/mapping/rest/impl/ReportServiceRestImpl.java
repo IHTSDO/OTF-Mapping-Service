@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.mapping.rest.impl;
 
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -772,7 +773,7 @@ public class ReportServiceRestImpl extends RootServiceRestImpl
         throw new Exception("Report name is blank.");
       }
 
-      final List<String> allowedReports = Arrays.asList(config.getProperty("deploy.reports.allowable").split(","));
+      final List<String> allowedReports = Arrays.asList(config.getProperty("deploy.reports.allowed").split(","));
       if (!allowedReports.contains(reportName)) {
         throw new Exception("Report " + reportName + " does not exist.");
       }
@@ -781,23 +782,15 @@ public class ReportServiceRestImpl extends RootServiceRestImpl
 
       executor.submit(() -> {
 
-        try {
-          // run the report.
-          if ("NorwayReplacementMapReport".equals(reportName)) {
-            NorwayReplacementMapReport.runReport();
-
-          } else if ("NorwayReplacementTranslationReport".equals(reportName)) {
-
-            NorwayReplacementTranslationReport.runReport();
-
-          } else if ("MeddraToSnomedExclusionReport".equals(reportName)) {
-
-        	  MeddraToSnomedExclusionReport.runReport();
-
-            }
-        } catch (Exception e) {
-          LOGGER.error("ERROR running report {}", reportName, e);
-        }
+    	  try {
+    		    Class<?> reportClass = Class.forName(config.getProperty("deploy.reports.package") + reportName);
+    		    Method runReportMethod = reportClass.getMethod("runReport");
+    		    runReportMethod.invoke(null);
+    		} catch (ClassNotFoundException e) {
+    		    LOGGER.error("ERROR: Report class not found for {}", reportName, e);
+    		} catch (Exception e) {
+    		    LOGGER.error("ERROR running report {}", reportName, e);
+    		}
 
       });
 
