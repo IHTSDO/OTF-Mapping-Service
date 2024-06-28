@@ -46,9 +46,6 @@ import org.ihtsdo.otf.mapping.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.rest.ReportServiceRest;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapUser;
-import org.ihtsdo.otf.mapping.report.MeddraToSnomedExclusionReport;
-import org.ihtsdo.otf.mapping.report.NorwayReplacementMapReport;
-import org.ihtsdo.otf.mapping.report.NorwayReplacementTranslationReport;
 import org.ihtsdo.otf.mapping.reports.Report;
 import org.ihtsdo.otf.mapping.reports.ReportDefinition;
 import org.ihtsdo.otf.mapping.reports.ReportDefinitionJpa;
@@ -783,7 +780,7 @@ public class ReportServiceRestImpl extends RootServiceRestImpl
       executor.submit(() -> {
 
     	  try {
-    		    Class<?> reportClass = Class.forName(config.getProperty("deploy.reports.package") + reportName);
+    		    Class<?> reportClass = Class.forName("org.ihtsdo.otf.mapping.report." + reportName);
     		    Method runReportMethod = reportClass.getMethod("runReport");
     		    runReportMethod.invoke(null);
     		} catch (ClassNotFoundException e) {
@@ -791,7 +788,6 @@ public class ReportServiceRestImpl extends RootServiceRestImpl
     		} catch (Exception e) {
     		    LOGGER.error("ERROR running report {}", reportName, e);
     		}
-
       });
 
       executor.shutdown();

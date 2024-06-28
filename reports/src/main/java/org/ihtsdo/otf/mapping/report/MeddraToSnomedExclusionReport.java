@@ -3,26 +3,17 @@
  */
 package org.ihtsdo.otf.mapping.report;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import javax.persistence.EntityManager;
 
-import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
+import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,96 +110,34 @@ public class MeddraToSnomedExclusionReport extends AbstractOtfMappingReport {
           results.add(sb.toString());
         }
 
-        // Add results to file
         final DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
         final String dateStamp = dateFormat.format(new Date());
+        final String filename = "/meddraToSnomed_ExclusionReport_" + dateStamp;
+        final File resultFile = ConfigUtility.createFile(filename, results);
 
-        File resultFile = new File(System.getProperty("java.io.tmpdir")
-            + "/sqlReport_" + dateStamp + ".txt");
-        System.out
-            .println("Created result file: " + resultFile.getAbsolutePath());
-
-        FileWriter writer = new FileWriter(resultFile);
-        for (String str : results) {
-          writer.write(str);
-          writer.write(System.getProperty("line.separator"));
-        }
-        writer.close();
-        
         // Zip results file
-        File zipFile = new File(System.getProperty("java.io.tmpdir")
-            + "/sqlReport_" + dateStamp + ".zip");
-
-        try (FileOutputStream fos = new FileOutputStream(zipFile);
-            ZipOutputStream zipOut =
-                new ZipOutputStream(new BufferedOutputStream(fos));
-            FileInputStream fis = new FileInputStream(resultFile);) {
-
-          ZipEntry ze = new ZipEntry(resultFile.getName());
-          System.out.println("Zipping the file: " + resultFile.getName());
-          zipOut.putNextEntry(ze);
-          byte[] tmp = new byte[4 * 1024];
-          int size = 0;
-          while ((size = fis.read(tmp)) != -1) {
-            zipOut.write(tmp, 0, size);
-          }
-          zipOut.flush();
-        } catch (FileNotFoundException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
-        } catch (IOException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
-        }
+        final File zipFile = ConfigUtility.zipFile(filename, resultFile);
 
         // Send file to recipients
-        sendEmail(zipFile.getAbsolutePath());
-    	
-    	}
-    	catch (Exception e) {
-	      e.printStackTrace();
-	      throw new Exception(
-	          "ICD10CM SQLReport mojo failed to complete", e);
-	    }
-    }
+        emailReportFile("[OTF-Mapping-Tool] MedDRA to SNOMED Exclusion Report",
+            zipFile.getAbsolutePath(),
+            "report.send.notification.recipients.meddra."
+                + MeddraToSnomedExclusionReport.class.getSimpleName(),
+            "Hello,\n\nThe MedDRA to SNOMED Exclusion report has been generated.");
 
-  
-  private static void sendEmail(String fileName) throws Exception {
+        LOGGER.info("MedDRA to SNOMED Exclusion Report completed.");
 
-	    Properties config;
-	    try {
-	      config = ConfigUtility.getConfigProperties();
-	    } catch (Exception e1) {
-	      throw new Exception("Failed to retrieve config properties");
-	    }
-	    String notificationRecipients =
-	            config.getProperty("sqlreport.send.notification.recipients");
-	        String notificationMessage = "";
-	        LOGGER.info("Request to send notification email to recipients: "
-	            + notificationRecipients);
-	        notificationMessage +=
-	            "Hello,\n\nThe weekly SQL report has been generated.";
+      } catch (Exception e) {
 
-	        String from;
-	        if (config.containsKey("mail.smtp.from")) {
-	          from = config.getProperty("mail.smtp.from");
-	        } else {
-	          from = config.getProperty("mail.smtp.user");
-	        }
+        LOGGER.error("ERROR", e);
 
-	        Properties props = new Properties();
-	        props.put("mail.smtp.user", config.getProperty("mail.smtp.user"));
-	        props.put("mail.smtp.password", config.getProperty("mail.smtp.password"));
-	        props.put("mail.smtp.host", config.getProperty("mail.smtp.host"));
-	        props.put("mail.smtp.port", config.getProperty("mail.smtp.port"));
-	        props.put("mail.smtp.starttls.enable",
-	            config.getProperty("mail.smtp.starttls.enable"));
-	        props.put("mail.smtp.auth", config.getProperty("mail.smtp.auth"));
+        emailReportError("Error generating MedDRA to SNOMED Exclusion Report",
+            "report.send.notification.recipients.meddra."
+                + MeddraToSnomedExclusionReport.class.getSimpleName(),
+            "There was an error generating the MedDRA to SNOMED Exclusion Report.  Please contact support for assistance.");
 
-	        ConfigUtility.sendEmailWithAttachment(
-	            "[OTF-Mapping-Tool] Weekly SQL report", from, notificationRecipients,
-	            notificationMessage, props, fileName,
-	            "true".equals(config.getProperty("mail.smtp.auth")));
-	    }
-  
+        throw new Exception("MedDRA to SNOMED Exclusion Report failed to complete",
+            e);
+      }
+  } 
 }
