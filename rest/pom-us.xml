@@ -27,7 +27,7 @@
     <config.version>${releaseVersion}</config.version>
     
 
-		<tomcat7-maven-plugin-version>2.1</tomcat7-maven-plugin-version>
+		<tomcat9-maven-plugin-version>2.2</tomcat9-maven-plugin-version>
 		<jdeb.version>1.1.1</jdeb.version>  
 		<webapp-runner.version>8.5.11.3</webapp-runner.version>
 		
