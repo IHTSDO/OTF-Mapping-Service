@@ -12,10 +12,9 @@ import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.services.ContentService;
 
 /**
- * GMDN project specific algorithm handler.
+ * ICDO project specific algorithm handler.
  */
-public class IcdoProjectSpecificAlgorithmHandler
-    extends DefaultProjectSpecificAlgorithmHandler {
+public class IcdoProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAlgorithmHandler {
 
   /* see superclass */
   @Override
@@ -29,9 +28,9 @@ public class IcdoProjectSpecificAlgorithmHandler
     try {
       // behavior code may be different and not in the source
       // so we just check that the base code is in the source
-      SearchResultList list =
-          contentService.findConceptsForQuery("terminologyId:"
-              + terminologyId.substring(0, 4) + "* AND terminology:ICDO", null);
+      SearchResultList list = contentService.findConceptsForQuery("terminologyId:"
+          + terminologyId.substring(0, 4) + "* AND terminology:ICDO AND terminologyVersion:"
+          + mapProject.getDestinationTerminologyVersion(), null);
 
       return list.getSearchResults().size() > 0;
 
@@ -56,8 +55,7 @@ public class IcdoProjectSpecificAlgorithmHandler
 
   /* see superclass */
   @Override
-  public List<TreePosition> limitTreePositions(
-    List<TreePosition> treePositions) {
+  public List<TreePosition> limitTreePositions(List<TreePosition> treePositions) {
     // If the tree structure has more than say 100 positions, just return the
     // top one from each root
     List<TreePosition> result = new ArrayList<TreePosition>();

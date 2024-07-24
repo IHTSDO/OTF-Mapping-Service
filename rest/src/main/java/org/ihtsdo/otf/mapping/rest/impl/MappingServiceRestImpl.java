@@ -167,7 +167,6 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
   /** The security service. */
   private SecurityService securityService;
-  
 
   /**
    * Instantiates an empty {@link MappingServiceRestImpl}.
@@ -406,12 +405,11 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
             "Updating map project failed -- could not find project specific algorithm handler for class name: "
                 + mapProject.getProjectSpecificAlgorithmHandlerClass());
       }
-      
+
       // recompute the scope concepts for this map project
       final ProjectSpecificAlgorithmHandler handler =
           mappingService.getProjectSpecificAlgorithmHandler(mapProject);
       handler.initialize();
-      
 
       // scope includes and excludes are transient, and must be added to
       // project
@@ -1566,7 +1564,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       securityService.close();
     }
   }
-  
+
   // ///////////////////////////////////////////////////
   // SCRUD functions: Additional Map Entry Info
   // ///////////////////////////////////////////////////
@@ -1574,31 +1572,35 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#getAdditionalMapEntryInfos(java.lang
-   * .String)
+   * @see org.ihtsdo.otf.mapping.rest.impl.MappingServiceRest#
+   * getAdditionalMapEntryInfos(java.lang .String)
    */
   @Override
   @GET
   @Path("/additionalMapEntryInfo/additionalMapEntryInfos")
-  @ApiOperation(value = "Get all additional map entry info", notes = "Gets a list of all additional map entry infos.",
+  @ApiOperation(value = "Get all additional map entry info",
+      notes = "Gets a list of all additional map entry infos.",
       response = AdditionalMapEntryInfoListJpa.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
-  public AdditionalMapEntryInfoListJpa getAdditionalMapEntryInfos(@ApiParam(value = "Authorization token",
-      required = true) @HeaderParam("Authorization") String authToken)
+  public AdditionalMapEntryInfoListJpa getAdditionalMapEntryInfos(
+    @ApiParam(value = "Authorization token",
+        required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(MappingServiceRestImpl.class).info("RESTful call (Mapping): /additionalMapEntryInfo/additionalMapEntryInfos");
+    Logger.getLogger(MappingServiceRestImpl.class)
+        .info("RESTful call (Mapping): /additionalMapEntryInfo/additionalMapEntryInfos");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.VIEWER, "get additional map entry infos", securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "get additional map entry infos",
+          securityService);
 
-      final AdditionalMapEntryInfoListJpa additionalMapEntryInfos = (AdditionalMapEntryInfoListJpa) mappingService.getAdditionalMapEntryInfos();
+      final AdditionalMapEntryInfoListJpa additionalMapEntryInfos =
+          (AdditionalMapEntryInfoListJpa) mappingService.getAdditionalMapEntryInfos();
       additionalMapEntryInfos.sortBy(new Comparator<AdditionalMapEntryInfo>() {
         @Override
         public int compare(AdditionalMapEntryInfo o1, AdditionalMapEntryInfo o2) {
@@ -1629,7 +1631,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   @Path("/additionalMapEntryInfo/add")
-  @ApiOperation(value = "Add an additional Map Entry Info", notes = "Adds the specified additional Map Entry Info.",
+  @ApiOperation(value = "Add an additional Map Entry Info",
+      notes = "Adds the specified additional Map Entry Info.",
       response = AdditionalMapEntryInfoJpa.class)
   public AdditionalMapEntryInfo addAdditionalMapEntryInfo(
     @ApiParam(value = "Additional Map Entry Info, in JSON or XML POST data",
@@ -1639,7 +1642,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRestImpl.class).info("RESTful call (Mapping): /additionalMapEntryInfo/add");
+    Logger.getLogger(MappingServiceRestImpl.class)
+        .info("RESTful call (Mapping): /additionalMapEntryInfo/add");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
@@ -1648,9 +1652,11 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       user = authorizeApp(authToken, MapUserRole.LEAD, "add map advice", securityService);
 
       // Check if advice already exists and send better message
-      for (final AdditionalMapEntryInfo anAdditionalMapEntryInfo : mappingService.getAdditionalMapEntryInfos().getAdditionalMapEntryInfos()) {
+      for (final AdditionalMapEntryInfo anAdditionalMapEntryInfo : mappingService
+          .getAdditionalMapEntryInfos().getAdditionalMapEntryInfos()) {
         if (anAdditionalMapEntryInfo.getName().equals(additionalMapEntryInfo.getName())) {
-          throw new LocalException("This additional map entry info already exists: " + anAdditionalMapEntryInfo.getName());
+          throw new LocalException("This additional map entry info already exists: "
+              + anAdditionalMapEntryInfo.getName());
         }
       }
 
@@ -1679,7 +1685,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   @Path("/additionalMapEntryInfo/update")
-  @ApiOperation(value = "Update an additional map entry info", notes = "Updates the specified additional map entry info.",
+  @ApiOperation(value = "Update an additional map entry info",
+      notes = "Updates the specified additional map entry info.",
       response = AdditionalMapEntryInfoJpa.class)
   public void updateAdditionalMapEntryInfo(
     @ApiParam(value = "Map advice, in JSON or XML POST data",
@@ -1689,7 +1696,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     throws Exception {
 
     // log call
-    Logger.getLogger(MappingServiceRestImpl.class).info("RESTful call (Mapping): /additionalMapEntryInfo/update");
+    Logger.getLogger(MappingServiceRestImpl.class)
+        .info("RESTful call (Mapping): /additionalMapEntryInfo/update");
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
@@ -1733,7 +1741,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.LEAD, "remove additional map entry info", securityService);
+      user = authorizeApp(authToken, MapUserRole.LEAD, "remove additional map entry info",
+          securityService);
 
       mappingService.removeAdditionalMapEntryInfo(additionalMapEntryInfo.getId());
     } catch (Exception e) {
@@ -1744,7 +1753,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       mappingService.close();
       securityService.close();
     }
-  }  
+  }
 
   // ///////////////////////////////////////////////////
   // SCRUD functions: Map AgeRange
@@ -3100,7 +3109,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     @ApiParam(value = "Excludes descendants of ancestor id ",
         required = false) @QueryParam("excludeDescendants") boolean excludeDescendants,
     @ApiParam(value = "Include non-published maps ",
-    required = false) @QueryParam("includeNonPublished") boolean includeNonPublished,
+        required = false) @QueryParam("includeNonPublished") boolean includeNonPublished,
     @ApiParam(value = "Search query string", required = false) @QueryParam("query") String query,
     @ApiParam(value = "Authorization token",
         required = true) @HeaderParam("Authorization") String authToken)
@@ -3156,12 +3165,11 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       // add the role-specific workflow restrictions
       final MapUserRole role = securityService.getMapProjectRoleForToken(authToken, mapProjectId);
       if (role.hasPrivilegesOf(MapUserRole.SPECIALIST)) {
-        if(!includeNonPublished) {
+        if (!includeNonPublished) {
           queryRestriction +=
               " AND (workflowStatus:PUBLISHED OR workflowStatus:READY_FOR_PUBLICATION)";
-          }
-        else {
-          //Do nothing - return all map records, regardless of workflow status.
+        } else {
+          // Do nothing - return all map records, regardless of workflow status.
         }
       } else {
         queryRestriction += " AND workflowStatus:PUBLISHED";
@@ -3268,7 +3276,6 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
           mr.setMapNotes(null);
         }
       }
-      
 
       Set<String> scopeConcepts = ConfigUtility.getScopeConceptsForMapProject(mapProject.getId());
       for (final MapRecord mr : mapRecordList.getMapRecords()) {
@@ -3276,7 +3283,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
           mr.addLabel("Out of Scope");
         }
       }
-      
+
       return mapRecordList;
     } catch (Exception e) {
       handleException(e, "trying to get the map records for a map project and query", user,
@@ -3389,8 +3396,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     // execute the service call
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.VIEWER, "get published and ready for publication records for project",
-          securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER,
+          "get published and ready for publication records for project", securityService);
 
       final MapRecordListJpa mapRecordList = (MapRecordListJpa) mappingService
           .getPublishedAndReadyForPublicationMapRecordsForMapProject(mapProjectId, pfsParameter);
@@ -3414,7 +3421,6 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
   }
 
-  
   /*
    * (non-Javadoc)
    * 
@@ -3687,33 +3693,36 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
-
-  /* (non-Javadoc)
-   * @see org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#getQALabels(java.lang.Long, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#getQALabels(java.lang.
+   * Long, java.lang.String)
    */
   @Override
   @GET
   @Path("/tags/{mapProjectId}")
-  @ApiOperation(value = "Gets all  tags", notes = "Gets all unique tags for map project", response = SearchResultList.class)
+  @ApiOperation(value = "Gets all  tags", notes = "Gets all unique tags for map project",
+      response = SearchResultList.class)
   @Produces({
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public SearchResultList getTagsForMapProject(
-    @ApiParam(value = "Map Project id", required = true) @PathParam("mapProjectId") Long mapProjectId,
-    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Map Project id",
+        required = true) @PathParam("mapProjectId") Long mapProjectId,
+    @ApiParam(value = "Authorization token",
+        required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(MappingServiceRestImpl.class)
-        .info("RESTful call:  /tags/" + mapProjectId);
+    Logger.getLogger(MappingServiceRestImpl.class).info("RESTful call:  /tags/" + mapProjectId);
 
     String user = null;
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeApp(authToken, MapUserRole.VIEWER, "get tags",
-          securityService);
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "get tags", securityService);
 
-      final SearchResultList results =
-          mappingService.getTagsForMapProject(mapProjectId);
+      final SearchResultList results = mappingService.getTagsForMapProject(mapProjectId);
 
       return results;
 
@@ -3724,9 +3733,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       mappingService.close();
       securityService.close();
     }
-  }  
-  
-  
+  }
+
   // ///////////////////////////////////////////////
   // Role Management Services
   // ///////////////////////////////////////////////
@@ -4772,8 +4780,9 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         // concept returned with the updated terminologyId '9270/6'. See
         // MAP-1467.
         if (c == null && mapProject.getDestinationTerminology().equals("ICDO")) {
-          SearchResultList list = contentService.findConceptsForQuery(
-              "terminologyId:" + terminologyId.substring(0, 4) + "* AND terminology:ICDO", null);
+          SearchResultList list = contentService.findConceptsForQuery("terminologyId:"
+              + terminologyId.substring(0, 4) + "* AND terminology:ICDO AND terminologyVersion:"
+              + mapProject.getDestinationTerminologyVersion(), null);
           SearchResult result = list.getSearchResults().get(0);
           c = new ConceptJpa();
           c.setTerminologyId(terminologyId);
@@ -5262,7 +5271,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       securityService.close();
     }
   }
-  
+
   @Override
   @POST
   @Path("/project/id/{id:[0-9][0-9]*}/version/{version}")
@@ -5278,8 +5287,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     @ApiParam(value = "Authorization token",
         required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(WorkflowServiceRestImpl.class).info("RESTful call (Mapping): /project/id/"
-        + mapProjectId.toString() + "/version/" + version );
+    Logger.getLogger(WorkflowServiceRestImpl.class).info(
+        "RESTful call (Mapping): /project/id/" + mapProjectId.toString() + "/version/" + version);
 
     String user = null;
     String project = "";
@@ -5287,14 +5296,14 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     final MappingService mappingService = new MappingServiceJpa();
     try {
       // authorize call
-      user = authorizeProject(mapProjectId, authToken, MapUserRole.LEAD, "update project destination version",
-          securityService);
+      user = authorizeProject(mapProjectId, authToken, MapUserRole.LEAD,
+          "update project destination version", securityService);
 
       final MapProject mapProject = mappingService.getMapProject(mapProjectId);
 
       mapProject.setDestinationTerminologyVersion(version);
       mappingService.updateMapProject(mapProject);
-      
+
       return version;
     } catch (Exception e) {
       RootServiceJpa.unlockProcess();
@@ -6119,7 +6128,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       final Response response = target.request(MediaType.APPLICATION_JSON_TYPE)
           .header("Cookie", ConfigUtility.getGenericUserCookie())
           .accept(MediaType.APPLICATION_JSON_TYPE).get();
-      
+
       int statusCode = response.getStatus();
 
       if (statusCode == 401) {
@@ -6197,9 +6206,6 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
   }
 
-  
-
-  
   @POST
   @Path("/compare/files/{id:[0-9][0-9]*}")
   @ApiOperation(value = "Compares two map files",
