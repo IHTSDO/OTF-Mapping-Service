@@ -493,76 +493,78 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
 
       MapRecord existingMapRecord = null;
 
-      // Get all finished map records for the project
-      MapRecordList finishedMapRecords =
-          mappingService.getPublishedAndReadyForPublicationMapRecordsForMapProject(
-              mapProject.getId(), new PfsParameterJpa());
-      Map<String, MapRecord> conceptIdsToMap = new HashMap<>();
-      if (finishedMapRecords != null) {
-        for (MapRecord finishedMapRecord : finishedMapRecords.getMapRecords()) {
-          conceptIdsToMap.put(finishedMapRecord.getConceptId(), finishedMapRecord);
-        }
-      }
-
-      // Check if any parent has already been mapped
-      Concept mapRecordConcept =
-          contentService.getConcept(mapRecord.getConceptId(), terminology, version);
-      Set<MapRecord> parentMaps = new HashSet<>();
-
-      List<Concept> activeParents = TerminologyUtility.getActiveParents(mapRecordConcept);
-      for (final Concept activeParent : activeParents) {
-        if (conceptIdsToMap.get(activeParent.getTerminologyId()) != null) {
-          parentMaps.add(conceptIdsToMap.get(activeParent.getTerminologyId()));
-        }
-      }
-
-      // If exactly 1 mapped parent identified, pre-assign CCI rubric level
-      // codes (5 digit) to child map record
-      if (parentMaps.size() == 1) {
-        existingMapRecord = new MapRecordJpa(parentMaps.iterator().next(), false);
-        for (MapEntry mapEntry : existingMapRecord.getMapEntries()) {
-          String mapTargetId = mapEntry.getTargetId();
-          // If parent is mapped to No Target, don't do pre-assigning
-          if(mapTargetId == null || mapTargetId.equals("")) {
-            existingMapRecord = null;
-          }
-          // Otherwise, modify targetId to the 5 digit rubric level, and lookup the updated concept name
-          if (mapTargetId.length() >= 7) {
-            final String modifiedTargetId = mapTargetId.substring(0, 7).concat(".^^");
-            final Concept modifiedTargetConcept =
-                contentService.getConcept(modifiedTargetId, mapProject.getDestinationTerminology(),
-                    mapProject.getDestinationTerminologyVersion());
-            String modifiedTargetName = modifiedTargetConcept == null ? "CONCEPT NOT FOUND"
-                : modifiedTargetConcept.getDefaultPreferredName();
-            mapEntry.setTargetId(modifiedTargetId);
-            mapEntry.setTargetName(modifiedTargetName);
-          }
-        }
-      }
-
-      // If more than 1 mapped parent identified, create a note with map details
-      else if (parentMaps.size() > 1) {
-        existingMapRecord = new MapRecordJpa();
-        MapNote parentMapsAsNote = new MapNoteJpa();
-        parentMapsAsNote.setUser(mappingService.getMapUser("loader"));
-
-        StringBuilder noteStringBuilder = new StringBuilder();
-        for (MapRecord parentMapRecord : parentMaps) {
-
-          noteStringBuilder.append("<br>Parent Map for " + parentMapRecord.getConceptId() + " - "
-              + parentMapRecord.getConceptName() + " :<br>");
-          noteStringBuilder.append("&nbsp;&nbsp;&nbsp;&nbsp;Map Entries<br>");
-          for (MapEntry mapEntry : parentMapRecord.getMapEntries()) {
-            noteStringBuilder.append("&nbsp;&nbsp;&nbsp;&nbsp;" + mapEntry.getMapGroup() + "/"
-                + mapEntry.getMapPriority() + "   " + mapEntry.getTargetId() + " - "
-                + mapEntry.getTargetName() + "<br>");
-          }
-          parentMapsAsNote.setNote(noteStringBuilder.toString());
-
-          existingMapRecord.addMapNote(parentMapsAsNote);
-
-        }
-      }
+      //Looking up parent records removed per CIHI request, 7/29/2024
+      
+//      // Get all finished map records for the project
+//      MapRecordList finishedMapRecords =
+//          mappingService.getPublishedAndReadyForPublicationMapRecordsForMapProject(
+//              mapProject.getId(), new PfsParameterJpa());
+//      Map<String, MapRecord> conceptIdsToMap = new HashMap<>();
+//      if (finishedMapRecords != null) {
+//        for (MapRecord finishedMapRecord : finishedMapRecords.getMapRecords()) {
+//          conceptIdsToMap.put(finishedMapRecord.getConceptId(), finishedMapRecord);
+//        }
+//      }
+//
+//      // Check if any parent has already been mapped
+//      Concept mapRecordConcept =
+//          contentService.getConcept(mapRecord.getConceptId(), terminology, version);
+//      Set<MapRecord> parentMaps = new HashSet<>();
+//
+//      List<Concept> activeParents = TerminologyUtility.getActiveParents(mapRecordConcept);
+//      for (final Concept activeParent : activeParents) {
+//        if (conceptIdsToMap.get(activeParent.getTerminologyId()) != null) {
+//          parentMaps.add(conceptIdsToMap.get(activeParent.getTerminologyId()));
+//        }
+//      }
+//
+//      // If exactly 1 mapped parent identified, pre-assign CCI rubric level
+//      // codes (5 digit) to child map record
+//      if (parentMaps.size() == 1) {
+//        existingMapRecord = new MapRecordJpa(parentMaps.iterator().next(), false);
+//        for (MapEntry mapEntry : existingMapRecord.getMapEntries()) {
+//          String mapTargetId = mapEntry.getTargetId();
+//          // If parent is mapped to No Target, don't do pre-assigning
+//          if(mapTargetId == null || mapTargetId.equals("")) {
+//            existingMapRecord = null;
+//          }
+//          // Otherwise, modify targetId to the 5 digit rubric level, and lookup the updated concept name
+//          if (mapTargetId.length() >= 7) {
+//            final String modifiedTargetId = mapTargetId.substring(0, 7).concat(".^^");
+//            final Concept modifiedTargetConcept =
+//                contentService.getConcept(modifiedTargetId, mapProject.getDestinationTerminology(),
+//                    mapProject.getDestinationTerminologyVersion());
+//            String modifiedTargetName = modifiedTargetConcept == null ? "CONCEPT NOT FOUND"
+//                : modifiedTargetConcept.getDefaultPreferredName();
+//            mapEntry.setTargetId(modifiedTargetId);
+//            mapEntry.setTargetName(modifiedTargetName);
+//          }
+//        }
+//      }
+//
+//      // If more than 1 mapped parent identified, create a note with map details
+//      else if (parentMaps.size() > 1) {
+//        existingMapRecord = new MapRecordJpa();
+//        MapNote parentMapsAsNote = new MapNoteJpa();
+//        parentMapsAsNote.setUser(mappingService.getMapUser("loader"));
+//
+//        StringBuilder noteStringBuilder = new StringBuilder();
+//        for (MapRecord parentMapRecord : parentMaps) {
+//
+//          noteStringBuilder.append("<br>Parent Map for " + parentMapRecord.getConceptId() + " - "
+//              + parentMapRecord.getConceptName() + " :<br>");
+//          noteStringBuilder.append("&nbsp;&nbsp;&nbsp;&nbsp;Map Entries<br>");
+//          for (MapEntry mapEntry : parentMapRecord.getMapEntries()) {
+//            noteStringBuilder.append("&nbsp;&nbsp;&nbsp;&nbsp;" + mapEntry.getMapGroup() + "/"
+//                + mapEntry.getMapPriority() + "   " + mapEntry.getTargetId() + " - "
+//                + mapEntry.getTargetName() + "<br>");
+//          }
+//          parentMapsAsNote.setNote(noteStringBuilder.toString());
+//
+//          existingMapRecord.addMapNote(parentMapsAsNote);
+//
+//        }
+//      }
 
       return existingMapRecord;
     } catch (Exception e) {
