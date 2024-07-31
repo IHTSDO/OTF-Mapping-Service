@@ -194,6 +194,24 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
                 + " has no target, and cannot be assigned a grade.");
           }
         }
+        
+        //
+        // PREDICATE: Map entries with target must have a grade
+        //
+        for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+          final MapEntry entry = mapRecord.getMapEntries().get(i);
+          Boolean gradePresent = false;
+          for (AdditionalMapEntryInfo additionalMapEntryInfo : entry.getAdditionalMapEntryInfos()) {
+            if (additionalMapEntryInfo.getField().equals("Grade")) {
+              gradePresent = true;
+              break;
+            }
+          }
+          if (!entry.getTargetId().equals("") && !gradePresent) {
+            result.addError("Entry " + entry.getMapGroup() + "/" + entry.getMapPriority()
+                + " has a target, and must be assigned a grade.");
+          }
+        }        
 
         //
         // PREDICATE: Map entries cannot have more than one grade
