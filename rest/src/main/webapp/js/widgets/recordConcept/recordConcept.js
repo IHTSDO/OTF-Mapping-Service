@@ -627,7 +627,11 @@ angular
       };
       
       function getTerminologyNote(id) {
-		return $scope.notes[id];
+		if ($scope.notes == null || $scope.notes == undefined
+			|| id == null || id == '') {
+				return '';
+			}
+		return $scope.notes[id] !== undefined ? $scope.notes[id] : '';
 	  }
 
       function setIndexViewerStatus() {
