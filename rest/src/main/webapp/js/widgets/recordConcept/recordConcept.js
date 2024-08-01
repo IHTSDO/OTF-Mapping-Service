@@ -223,6 +223,7 @@ angular
           // project
           // section
           for (var i = $scope.historicalRecords.length; i--;) {
+			$scope.historicalRecords[i].fullexpression = utilService.getFullExpression($scope.historicalRecords[i]);
             var found = false;
             for (var j = 0; j < $scope.recordsInProject.length; j++) {
               if ($scope.historicalRecords[i].id == $scope.recordsInProject[j].id)
@@ -252,6 +253,7 @@ angular
 
         for (var i = 0; i < $scope.records.length; i++) {
           if ($scope.records[i].mapProjectId === $scope.focusProject.id) {
+			$scope.records[i].fullexpression = utilService.getFullExpression($scope.records[i]);
             $scope.recordsInProject.push($scope.records[i]);
           } else if ($scope.getProject($scope.records[i])) {
             var project = $scope.getProject($scope.records[i]);
