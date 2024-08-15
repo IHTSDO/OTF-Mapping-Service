@@ -207,7 +207,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements Secu
       // &redirect_uri=http%3A%2F%2Flocalhost%2Fmyapp%2F
       // &grant_type=authorization_code
       // &code_verifier=ThisIsntRandomButItNeedsToBe43CharactersLong
-      // &client_secret=JqQX2PNo9bpM0uEihUPzyrh // NOTE: Only required for web
+      // &client_secret=***REMOVED*** // NOTE: Only required for web
       // apps. This secret needs to be URL-Encoded.
 
       final StringBuilder accessTokenParams = new StringBuilder();
@@ -234,8 +234,8 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements Secu
       //    "token_type": "Bearer",
       //    "scope": "user.read%20Fmail.read",
       //    "expires_in": 3600,
-      //    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6...",
-      //    "refresh_token": "AwABAAAAvPM1KaPlrEqdFSBzjqfTGAMxZGUTdM0t4B4..."
+      //    "access_token": "***REMOVED***",
+      //    "refresh_token": "***REMOVED***"
       // }
 
       final String accessToken = tokenResponse.getString("access_token");     
