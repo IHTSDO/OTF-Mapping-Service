@@ -842,6 +842,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         } else if (contentService.getConcept(terminologyId, mapProject.getSourceTerminology(),
             mapProject.getSourceTerminologyVersion()) != null) {
           mapProject.addScopeConcept(terminologyId);
+          // empty the scope concepts cache to force scope recalculation
+          ConfigUtility.setScopeConceptsForMapProject(mapProject.getId(), new HashSet<>());
           mappingService.updateMapProject(mapProject);
           result.addMessage("Concept " + terminologyId + " added to scope.");
         } else {
@@ -886,7 +888,6 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     String user = "";
     final MappingService mappingService = new MappingServiceJpa();
     final ContentService contentService = new ContentServiceJpa();
-
     try {
       // authorize call
       user = authorizeProject(projectId, authToken, MapUserRole.LEAD,
@@ -897,6 +898,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
       if (mapProject.getScopeConcepts().contains(terminologyId)) {
         mapProject.removeScopeConcept(terminologyId);
+        // empty the scope concepts cache to force scope recalculation
+        ConfigUtility.setScopeConceptsForMapProject(mapProject.getId(), new HashSet<>());
         mappingService.updateMapProject(mapProject);
         result.addMessage("Concept " + terminologyId + " has been removed from scope.");
       } else if (contentService.getConcept(terminologyId, mapProject.getSourceTerminology(),
@@ -963,6 +966,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       for (final String terminologyId : terminologyIds) {
         if (mapProject.getScopeConcepts().contains(terminologyId)) {
           mapProject.removeScopeConcept(terminologyId);
+       // empty the scope concepts cache to force scope recalculation
+          ConfigUtility.setScopeConceptsForMapProject(mapProject.getId(), new HashSet<>());
           mappingService.updateMapProject(mapProject);
           result.addMessage("Concept " + terminologyId + " has been removed from scope.");
         } else if (contentService.getConcept(terminologyId, mapProject.getSourceTerminology(),
@@ -1077,6 +1082,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
         } else if (contentService.getConcept(terminologyId, mapProject.getSourceTerminology(),
             mapProject.getSourceTerminologyVersion()) != null) {
           mapProject.addScopeExcludedConcept(terminologyId);
+          // empty the scope concepts cache to force scope recalculation
+          ConfigUtility.setScopeConceptsForMapProject(mapProject.getId(), new HashSet<>());
           mappingService.updateMapProject(mapProject);
           result.addMessage("Concept " + terminologyId + " added to scope excluded list.");
         } else {
@@ -1133,6 +1140,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
       if (mapProject.getScopeExcludedConcepts().contains(terminologyId)) {
         mapProject.removeScopeExcludedConcept(terminologyId);
+     // empty the scope concepts cache to force scope recalculation
+        ConfigUtility.setScopeConceptsForMapProject(mapProject.getId(), new HashSet<>());
         mappingService.updateMapProject(mapProject);
         result
             .addMessage("Concept " + terminologyId + " has been removed from scope excluded list.");
@@ -1197,6 +1206,8 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
         if (mapProject.getScopeExcludedConcepts().contains(terminologyId)) {
           mapProject.removeScopeExcludedConcept(terminologyId);
+          // empty the scope concepts cache to force scope recalculation
+          ConfigUtility.setScopeConceptsForMapProject(mapProject.getId(), new HashSet<>());
           mappingService.updateMapProject(mapProject);
           result.addMessage(
               "Concept " + terminologyId + " has been removed from scope excluded list.");

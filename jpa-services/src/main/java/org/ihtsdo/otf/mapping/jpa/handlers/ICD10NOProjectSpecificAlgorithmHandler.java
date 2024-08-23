@@ -54,6 +54,7 @@ public class ICD10NOProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
   @Override
   public void initialize() throws Exception {
     Logger.getLogger(getClass()).info("Running initialize for " + getClass().getSimpleName());
+    super.initialize();
     // Populate any project-specific caches.
     cacheExistingMaps();
     cacheConceptTags();
@@ -252,6 +253,10 @@ public class ICD10NOProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
     // Up to date UK map release file must be saved here:
     // {data.dir}/doc/{projectNumber}/preloadMaps/ExtendedMapUKCLSnapshot.txt
 
+    if (!existingIcd10Maps.isEmpty()) {
+      return;
+    }
+    
     final ContentService contentService = new ContentServiceJpa();
     final MappingService mappingService = new MappingServiceJpa();
 
@@ -678,6 +683,10 @@ public class ICD10NOProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
    * @throws Exception the exception
    */
   private void cacheConceptTags() throws Exception {
+    if (!conceptTags.isEmpty()) {
+      return;
+    }
+    
     // Lookup if this concept has client-provided tags associated with it.
     // Tag document must be saved here:
     // {data.dir}/doc/{projectNumber}/ConceptTags.txt
