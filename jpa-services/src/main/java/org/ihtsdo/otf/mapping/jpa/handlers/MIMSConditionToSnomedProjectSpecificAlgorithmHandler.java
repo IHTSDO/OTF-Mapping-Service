@@ -40,6 +40,7 @@ public class MIMSConditionToSnomedProjectSpecificAlgorithmHandler
   @Override
   public void initialize() throws Exception {
     Logger.getLogger(getClass()).info("Running initialize for " + getClass().getSimpleName());
+    super.initialize();
     // Populate any project-specific caches.
     cacheAutomaps();
   }
@@ -191,6 +192,11 @@ public class MIMSConditionToSnomedProjectSpecificAlgorithmHandler
    * @throws Exception the exception
    */
   private void cacheAutomaps() throws Exception {
+    
+    if (!automaps.isEmpty()) {
+      return;
+    }
+    
     // Use the reverse maps from international SNOMED to ICD10 to auto-populate
     // suggestions.
     // Map is mims code -> map containing all SNOMED concepts that map to the

@@ -46,6 +46,7 @@ public class PHCVSProjectSpecificAlgorithmHandler extends DefaultProjectSpecific
   @Override
   public void initialize() throws Exception {
     Logger.getLogger(getClass()).info("Running initialize for " + getClass().getSimpleName());
+    super.initialize();
     cacheCodes();
     cacheExistingMaps();
   }
@@ -377,6 +378,10 @@ public class PHCVSProjectSpecificAlgorithmHandler extends DefaultProjectSpecific
     // A059 Bacterial foodborne intoxication, unspecified Bacterial foodborne
     // intox
 
+    if (!existingPHCVSMaps.isEmpty()) {
+      return;
+    }
+    
     final ContentService contentService = new ContentServiceJpa();
 
     Logger.getLogger(ICD10CAProjectSpecificAlgorithmHandler.class)

@@ -40,6 +40,7 @@ public class MIMSIndicationToSnomedProjectSpecificAlgorithmHandler
   @Override
   public void initialize() throws Exception {
     Logger.getLogger(getClass()).info("Running initialize for " + getClass().getSimpleName());
+    super.initialize();
     // Populate any project-specific caches.
     cacheAutomaps();
   }
@@ -218,6 +219,10 @@ public class MIMSIndicationToSnomedProjectSpecificAlgorithmHandler
    */
   private void cacheAutomaps() throws Exception {
     // {data.dir}/MIMS-Indication/automap/mims-snomed-map.txt
+    
+    if (!automaps.isEmpty()) {
+      return;
+    }
 
     final ContentService contentService = new ContentServiceJpa();
 

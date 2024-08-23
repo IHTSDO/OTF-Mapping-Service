@@ -35,6 +35,8 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
   @Override
   public void initialize() throws Exception {
     LOGGER.info("Running initialize for " + getClass().getSimpleName());
+    super.initialize();
+    
     // Populate any project-specific caches.
   }
 
