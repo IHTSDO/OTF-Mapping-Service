@@ -43,7 +43,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  * mvn package -P CihiPhcvsReleaseToExcel "-DreleaseFile=<full path to
  * tls_PhcvsHumanReadableMap_INT_YYYYMMDD.tsv file> "
  * 
- * @goal run-cihi-phcvs-release-to-excel
+ * @goal cihi-icd10ca-to-icd11-release-to-excel
  */
 public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
 
@@ -67,7 +67,7 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
 
-    getLog().info("Start ICD11 to ICD10CA Release To Excel Mojo");
+    getLog().info("Start ICD10CA to ICD11 Release To Excel Mojo");
 
     if (StringUtils.isEmpty(releaseFile)) {
       getLog().error("Parameter releaseFile is empty.");
@@ -83,7 +83,7 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
       runConvert(rf);
 
     } catch (Exception e) {
-      getLog().error("Error running ICD11 to ICD10CA Release To Excel Mojo.", e);
+      getLog().error("Error running ICD10CA to ICD11 Release To Excel Mojo.", e);
     }
   }
 
