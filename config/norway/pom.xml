@@ -24,8 +24,8 @@
 
   <build>
     <plugins>
-
-      <!-- Unpack index viewer data -->
+		<!-- 
+      <!- - Unpack index viewer data - ->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
@@ -39,8 +39,8 @@
             <configuration>
               <artifactItems>
                 <artifactItem>
-                  <!-- These are set by the properties in the read-project-properties 
-                    call. They can be manually overridden with -D as desired. -->
+                  <!- - These are set by the properties in the read-project-properties 
+                    call. They can be manually overridden with -D as desired. - ->
                   <groupId>${index.viewer.groupId}</groupId>
                   <artifactId>${index.viewer.artifactId}</artifactId>
                   <version>${index.viewer.version}</version>
@@ -51,7 +51,7 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
+      </plugin> -->
 
       <!-- Assemble resources into mapping-config*.zip -->
       <plugin>

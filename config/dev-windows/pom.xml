@@ -24,10 +24,10 @@
 
   <dependencies>
     <!-- Model interfaces. -->
-    <dependency>
+    <!--<dependency>
       <groupId>org.ihtsdo.otf.mapping</groupId>
       <artifactId>index-viewer-data-empty</artifactId>
-    </dependency>
+    </dependency>-->
   </dependencies>
   <build>
     <plugins>

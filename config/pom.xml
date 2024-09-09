@@ -17,7 +17,7 @@
 
   <!-- Specific config modules -->
   <modules>
-    <module>empty</module>
+    <!--<module>empty</module> -->
     <module>dev-windows</module>
     <module>prod</module>
     <module>wci</module>
