@@ -1066,6 +1066,31 @@
           </plugin>
         </plugins>
       </build>
+    </profile>  
+    
+    <profile>
+      <id>CihiICD11ToICD10CAReleaseToExcel</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>cihi-icd11-to-icd10ca-release-to-excel</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>cihi-icd11-to-icd10ca-release-to-excel</goal>
+                </goals>
+                <configuration>
+                  <releaseFile>${releaseFile}</releaseFile>
+                  <outputFile>ICD111toICD10CA_{DATE}.xlsx</outputFile>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>    
     
     
