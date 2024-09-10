@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -37,11 +36,11 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
- * Create the CIHI PHVCS release file from *
- * tls_PhcvsHumanReadableMap_INT_YYYYMMDD.tsv
+ * Create the CIHI ICD10CA to ICD11 release file from *
+ * tls_Icd11HumanReadableMap_INT_YYYYMMDD.tsv
  * 
- * mvn package -P CihiPhcvsReleaseToExcel "-DreleaseFile=<full path to
- * tls_PhcvsHumanReadableMap_INT_YYYYMMDD.tsv file> "
+ * mvn package -P CihiICD10CAToICD11ReleaseToExcel "-DreleaseFile=<full path to
+ * tls_Icd11HumanReadableMap_INT_YYYYMMDD.tsv file> "
  * 
  * @goal cihi-icd10ca-to-icd11-release-to-excel
  */
@@ -240,14 +239,14 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
       cell.setCellStyle(styleHeader);
       cell.setCellValue("Notes");
       
-      sheet.addMergedRegion(new CellRangeAddress(0,1,0,0));
-      sheet.addMergedRegion(new CellRangeAddress(2,3,0,0));
-      sheet.addMergedRegion(new CellRangeAddress(4,5,0,0));
-      sheet.addMergedRegion(new CellRangeAddress(6,23,0,0));
-      sheet.addMergedRegion(new CellRangeAddress(24,26,0,0));
-      sheet.addMergedRegion(new CellRangeAddress(27,28,0,0));
-      sheet.addMergedRegion(new CellRangeAddress(29,30,0,0));
-      sheet.addMergedRegion(new CellRangeAddress(31,33,0,0));
+      sheet.addMergedRegion(new CellRangeAddress(0,0,0,1));
+      sheet.addMergedRegion(new CellRangeAddress(0,0,2,3));
+      sheet.addMergedRegion(new CellRangeAddress(0,0,4,5));
+      sheet.addMergedRegion(new CellRangeAddress(0,0,6,23));
+      sheet.addMergedRegion(new CellRangeAddress(0,0,24,26));
+      sheet.addMergedRegion(new CellRangeAddress(0,0,27,28));
+      sheet.addMergedRegion(new CellRangeAddress(0,0,29,30));
+      sheet.addMergedRegion(new CellRangeAddress(0,0,31,33));
       
 
       // Create styles for alternating rows
