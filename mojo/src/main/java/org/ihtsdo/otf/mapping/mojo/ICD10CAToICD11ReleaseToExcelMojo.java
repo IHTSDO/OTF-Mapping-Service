@@ -132,9 +132,8 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
             recordList.add(record);
           }
           record = new Record(groupRecord.getCode(), groupRecord.getTermName());
-          previousId = groupRecord.getCode();
-          previousMapPriority = Integer.toString(groupRecord.getMapPriority());
         }
+        
         // ICD-10-CA
         if (groupRecord.getMapGroup() == 1 && groupRecord.getMapPriority() == 1) {
           record.setIcd11Code(groupRecord.getTargetTermCode());
@@ -172,7 +171,8 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
 	        record.setWHOMapName(groupRecord.getTargetTermName());
 		}
         
-        
+		previousId = groupRecord.getCode();
+        previousMapPriority = Integer.toString(groupRecord.getMapPriority());
 
       }
 
@@ -188,55 +188,29 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
 
       Row row = sheet.createRow(rownum++);
       Cell cell = null;
-
-      // Create header CellStyle
-      final CellStyle styleHeader = sheet.getWorkbook().createCellStyle();
-      styleHeader.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-      styleHeader.setBorderBottom(BorderStyle.THIN);
-      styleHeader.setBorderTop(BorderStyle.THIN);
-      Font font = wb.createFont();
-      font.setColor(IndexedColors.BLACK.index);
-      font.setBold(true);
-      styleHeader.setFont(font);
       
       cell = row.createCell(0);
-      styleHeader.setFillBackgroundColor(IndexedColors.PALE_BLUE.index);
-      cell.setCellStyle(styleHeader);
       cell.setCellValue("Source Concept");
       
       cell = row.createCell(2);
-      styleHeader.setFillBackgroundColor(IndexedColors.BLUE.index);
-      cell.setCellStyle(styleHeader);
       cell.setCellValue("CIHI Map - 1st Entry (Map Group 1)	");
       
       cell = row.createCell(4);
-      styleHeader.setFillBackgroundColor(IndexedColors.LIGHT_BLUE.index);
-      cell.setCellStyle(styleHeader);
       cell.setCellValue("CIHI Map - Full Expression");
       
       cell = row.createCell(6);
-      styleHeader.setFillBackgroundColor(IndexedColors.LIGHT_ORANGE.index);
-      cell.setCellStyle(styleHeader);
       cell.setCellValue("CIHI Map - Additional Entries");
       
       cell = row.createCell(24);
-      styleHeader.setFillBackgroundColor(IndexedColors.ORANGE.index);
-      cell.setCellStyle(styleHeader);
       cell.setCellValue("CIHI map - Mapping Parameters");
       
       cell = row.createCell(27);
-      styleHeader.setFillBackgroundColor(IndexedColors.GREEN.index);
-      cell.setCellStyle(styleHeader);
       cell.setCellValue("WHO map (Map Group 2)");
       
       cell = row.createCell(29);
-      styleHeader.setFillBackgroundColor(IndexedColors.LIGHT_GREEN.index);
-      cell.setCellStyle(styleHeader);
       cell.setCellValue("WHO map - Mapping Parameters");
       
       cell = row.createCell(31);
-      styleHeader.setFillBackgroundColor(IndexedColors.PLUM.index);
-      cell.setCellStyle(styleHeader);
       cell.setCellValue("Notes");
       
       sheet.addMergedRegion(new CellRangeAddress(0,0,0,1));
@@ -248,95 +222,59 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
       sheet.addMergedRegion(new CellRangeAddress(0,0,29,30));
       sheet.addMergedRegion(new CellRangeAddress(0,0,31,33));
       
-
-      // Create styles for alternating rows
-      final CellStyle styleA = sheet.getWorkbook().createCellStyle();
-      styleA.setFillForegroundColor(IndexedColors.TAN.index);
-      styleA.setBorderBottom(BorderStyle.THIN);
-      styleA.setBottomBorderColor(IndexedColors.TAN.getIndex());
-      styleA.setBorderTop(BorderStyle.THIN);
-      styleA.setTopBorderColor(IndexedColors.TAN.getIndex());
-
-      styleA.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-      final CellStyle styleB = sheet.getWorkbook().createCellStyle();
-      styleB.setFillPattern(FillPatternType.NO_FILL);
+      row = sheet.createRow(rownum++);
+      
 
       // ICD 10 CA
       cell = row.createCell(cellnum++);
-      styleHeader.setFillBackgroundColor(IndexedColors.PALE_BLUE.index);
-      cell.setCellStyle(styleHeader);
       cell.setCellValue("ICD-10-CA Code");
       cell = row.createCell(cellnum++);
-      cell.setCellStyle(styleHeader);
       cell.setCellValue("ICD-10-CA Code Title");
       // ICD 11
-      styleHeader.setFillBackgroundColor(IndexedColors.DARK_BLUE.index);
       cell = row.createCell(cellnum++);
-      cell.setCellStyle(styleHeader);
       cell.setCellValue("ICD-11 Code");
       cell = row.createCell(cellnum++);
-      cell.setCellStyle(styleHeader);
       cell.setCellValue("ICD-11 Code Title");
       // CIHI Cluster/Cardinality
-      styleHeader.setFillBackgroundColor(IndexedColors.LIGHT_BLUE.index);
       cell = row.createCell(cellnum++);
-      cell.setCellStyle(styleHeader);
       cell.setCellValue("ICD-11 Cluster");
       cell = row.createCell(cellnum++);
-      cell.setCellStyle(styleHeader);
       cell.setCellValue("Cardinality");
       
       for(int start = 2; start <= 10; start++) {
     	  // other clusters
-    	  styleHeader.setFillBackgroundColor(IndexedColors.LIGHT_ORANGE.index);
           cell = row.createCell(cellnum++);
-          cell.setCellStyle(styleHeader);
           cell.setCellValue("ICD-11 code in cluster " + start);
           cell = row.createCell(cellnum++);
-          cell.setCellStyle(styleHeader);
           cell.setCellValue("ICD-11 code title in cluster " + start);
       }
       
       // CIHI Mapping Parameters
-      styleHeader.setFillBackgroundColor(IndexedColors.ORANGE.index);
       cell = row.createCell(cellnum++);
-      cell.setCellStyle(styleHeader);
       cell.setCellValue("Relation -  Target");
       cell = row.createCell(cellnum++);
-      cell.setCellStyle(styleHeader);
       cell.setCellValue("Relation - Cluster");
       cell = row.createCell(cellnum++);
-      cell.setCellStyle(styleHeader);
       cell.setCellValue("Unmappable Reason");
       
       // WHO map (Map Group 2)	
-	  styleHeader.setFillBackgroundColor(IndexedColors.GREEN.index);
       cell = row.createCell(cellnum++);
-      cell.setCellStyle(styleHeader);
       cell.setCellValue("ICD-11 code");
       cell = row.createCell(cellnum++);
-      cell.setCellStyle(styleHeader);
       cell.setCellValue("ICD-11 title");
       
       // WHO map - Mapping Parameters	
-	  styleHeader.setFillBackgroundColor(IndexedColors.LIGHT_GREEN.index);
       cell = row.createCell(cellnum++);
-      cell.setCellStyle(styleHeader);
       cell.setCellValue("Relation - WHO");
       cell = row.createCell(cellnum++);
-      cell.setCellStyle(styleHeader);
       cell.setCellValue("Target Mismatch Reason");
       
       // Notes		
-	  styleHeader.setFillBackgroundColor(IndexedColors.PLUM.index);
       cell = row.createCell(cellnum++);
-      cell.setCellStyle(styleHeader);
       cell.setCellValue("Foundation entity name/title");
       cell = row.createCell(cellnum++);
-      cell.setCellStyle(styleHeader);
       cell.setCellValue("Uniform Resource Identified (URI)");
       cell = row.createCell(cellnum++);
-      cell.setCellStyle(styleHeader);
       cell.setCellValue("Relation (Foundation entity)");
       
       Set<String> codeSet = new HashSet<>();
@@ -349,35 +287,22 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
 
         // ICD 10 CA
         cell = row.createCell(cellnum++);
-        cell.setCellStyle((codeSet.size() % 2 == 0 ? styleA : styleB));
         cell.setCellValue(outRecord.getIcd10CACode());
         cell = row.createCell(cellnum++);
-        cell.setCellStyle((codeSet.size() % 2 == 0 ? styleA : styleB));
         cell.setCellValue(outRecord.getIcd10CATerm());
 
         // ICD 11
         cell = row.createCell(cellnum++);
-        cell.setCellStyle((codeSet.size() % 2 == 0 ? styleA : styleB));
         cell.setCellValue(outRecord.getIcd11Code());
         cell = row.createCell(cellnum++);
-        cell.setCellStyle((codeSet.size() % 2 == 0 ? styleA : styleB));
         cell.setCellValue(outRecord.getIcd11Term());
         
         // Cluster/Cardinality
         cell = row.createCell(cellnum++);
-        cell.setCellStyle((codeSet.size() % 2 == 0 ? styleA : styleB));
         cell.setCellValue(outRecord.getCluster());
         cell = row.createCell(cellnum++);
-        cell.setCellStyle((codeSet.size() % 2 == 0 ? styleA : styleB));
         cell.setCellValue(outRecord.getCardinality());
         
-        // Cluster/Cardinality
-        cell = row.createCell(cellnum++);
-        cell.setCellStyle((codeSet.size() % 2 == 0 ? styleA : styleB));
-        cell.setCellValue(outRecord.getCluster());
-        cell = row.createCell(cellnum++);
-        cell.setCellStyle((codeSet.size() % 2 == 0 ? styleA : styleB));
-        cell.setCellValue(outRecord.getCardinality());
         
         List<Map<String, String>> clusters = Arrays.asList(
         		outRecord.icd11CodeCluster2, outRecord.icd11CodeCluster3, outRecord.icd11CodeCluster4,
@@ -396,10 +321,8 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
             	String key = currentCluster.entrySet().iterator().next().getKey();
             	String value = currentCluster.entrySet().iterator().next().getValue();
             	cell = row.createCell(cellnum++);
-                cell.setCellStyle((codeSet.size() % 2 == 0 ? styleA : styleB));
                 cell.setCellValue(key);
                 cell = row.createCell(cellnum++);
-                cell.setCellStyle((codeSet.size() % 2 == 0 ? styleA : styleB));
                 cell.setCellValue(value);
             }
 
@@ -407,11 +330,10 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
         cellnum = 27;
         // WHO mapping
         cell = row.createCell(cellnum++);
-        cell.setCellStyle((codeSet.size() % 2 == 0 ? styleA : styleB));
         cell.setCellValue(outRecord.getWHOMapCode());
         cell = row.createCell(cellnum++);
-        cell.setCellStyle((codeSet.size() % 2 == 0 ? styleA : styleB));
         cell.setCellValue(outRecord.getWHOMapName());
+        
 
       }
 
@@ -865,7 +787,7 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
             }
 
             // Get the first entry in the map
-            String value = currentCluster.values().iterator().next();
+            Map.Entry<String, String> value = currentCluster.entrySet().iterator().next();
 
             if (clusterBuilder.length() == 0) {
                 // First non-empty cluster starts with icd11Code
@@ -873,10 +795,10 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
             }
 
             // Append based on the value's first character
-            if (value.startsWith("X")) {
-                clusterBuilder.append("&").append(value);
+            if (value.getKey().startsWith("X")) {
+                clusterBuilder.append("&").append(value.getKey());
             } else {
-                clusterBuilder.append("/").append(value);
+            	clusterBuilder.append("/").append(value.getKey());
             }
         }
 
