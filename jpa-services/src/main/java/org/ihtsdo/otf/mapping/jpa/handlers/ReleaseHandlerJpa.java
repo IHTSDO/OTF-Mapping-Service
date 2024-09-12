@@ -572,6 +572,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           MapEntry newEntry = new MapEntryJpa();
           newEntry.setMapAdvices(me.getMapAdvices());
           newEntry.setMapGroup(me.getMapGroup());
+          newEntry.setMapPriority(me.getMapPriority());
           newEntry.setMapBlock(me.getMapBlock());
           newEntry.setMapRecord(mapRecord);
           newEntry.setRule(mapProject.isRuleBased() ? me.getRule() : "");
@@ -663,7 +664,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
             // convert this map entry into a complex map ref set member
             ComplexMapRefSetMember member =
                 getComplexMapRefSetMemberForMapEntry(mapEntry, mapRecord, mapProject, concept);
-
+            
             if (mapProject.getMapRefsetPattern() == MapRefsetPattern.SimpleMap) {
               // Run member through simple/complex conversion
               // This makes sure what was read from the database
@@ -1715,7 +1716,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    */
   @SuppressWarnings("static-method")
   private String getHash(ComplexMapRefSetMember c) {
-    return c.getRefSetId() + c.getConcept().getTerminologyId() + c.getMapGroup()
+    return c.getRefSetId() + c.getConcept().getTerminologyId() + c.getMapGroup() + c.getMapPriority()
         + (c.getMapRule() == null ? "" : c.getMapRule())
         + (c.getMapTarget() == null ? "" : c.getMapTarget());
   }
