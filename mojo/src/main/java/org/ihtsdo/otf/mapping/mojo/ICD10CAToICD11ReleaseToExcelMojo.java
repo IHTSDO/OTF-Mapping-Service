@@ -3,8 +3,10 @@
  */
 package org.ihtsdo.otf.mapping.mojo;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -13,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -23,17 +26,26 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.FillPatternType;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.ihtsdo.otf.mapping.helpers.MapRecordList;
+import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
+import org.ihtsdo.otf.mapping.jpa.helpers.TerminologyUtility;
+import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
+import org.ihtsdo.otf.mapping.model.AdditionalMapEntryInfo;
+import org.ihtsdo.otf.mapping.model.MapEntry;
+import org.ihtsdo.otf.mapping.model.MapNote;
+import org.ihtsdo.otf.mapping.model.MapProject;
+import org.ihtsdo.otf.mapping.model.MapRecord;
+import org.ihtsdo.otf.mapping.rf2.Concept;
+import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
  * Create the CIHI ICD10CA to ICD11 release file from *
@@ -61,6 +73,13 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
    * @required
    */
   private String outputFile;
+  
+  /**
+   * Map project Id (hard-coded, and may need updating if project changes).
+   */
+  private Long mapProjectId = 4L;
+    
+  private Map<String, ExternalData> sourceConceptToExternalData = new HashMap<>();
 
   /* see superclass */
   @Override
@@ -79,11 +98,139 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
       if (!rf.exists()) {
         throw new MojoExecutionException(releaseFile + " file does not exist.");
       }
+      getExternalData();
       runConvert(rf);
 
     } catch (Exception e) {
       getLog().error("Error running ICD10CA to ICD11 Release To Excel Mojo.", e);
     }
+  }
+
+  //
+  // Look up additional data not present in the release file
+  // Most are pulled from database objects, but a few are pulled from external files
+  //
+  private void getExternalData()  throws Exception {
+
+    getLog().info("Gathering mapping data stored outside of the release file");
+
+    
+    // Get all map records for the project
+    
+    MappingService mappingService = new MappingServiceJpa();
+    ContentService contentService = new ContentServiceJpa();
+    MapProject mapProject = mappingService.getMapProject(mapProjectId);
+    final String icd10caTerminology = mapProject.getSourceTerminology();
+    final String icd10caTerminologyVersion = mapProject.getSourceTerminologyVersion();
+    
+    MapRecordList allMapRecords = mappingService.getMapRecordsForMapProject(mapProjectId);
+
+    for(MapRecord mapRecord : allMapRecords.getMapRecords()) {
+      // Only process READY_FOR_PUBLICATION and PUBLISHED records
+      if(!(mapRecord.getWorkflowStatus().equals(WorkflowStatus.READY_FOR_PUBLICATION) || mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED))) {
+        continue;
+      }
+
+      //Create an External Data object, based on the source concept
+      ExternalData externalData = new ExternalData(mapRecord.getConceptId());
+      
+      // Look up if ICD10CA code is an Asterisk code
+      final Concept icd10caConcept = contentService.getConcept(mapRecord.getConceptId(), icd10caTerminology, icd10caTerminologyVersion);
+      if(icd10caConcept != null) {
+        externalData.setAsterisk(TerminologyUtility.isAsteriskCode(icd10caConcept, contentService));
+      }
+      else {
+        getLog().warn("Could not find concept for:" + icd10caTerminology + " " + icd10caTerminologyVersion + ": " + mapRecord.getConceptId());
+      }
+      
+      // Look up map notes
+      // Examples:
+      // ICD-11 Foundation Entity Name and URI and Relation:<br>Cholera due to Vibrio cholerae O1, biovar eltor<br>http://id.who.int/icd/entity/581614179<br>Equivalent entity without xcodes/stem codes
+      // ICD-11 Foundation Entity Name and URI and Relation:<br>N/A
+      Set<MapNote> mapNotes = mapRecord.getMapNotes();
+      for(MapNote mapNote : mapNotes) {
+        if(mapNote.getNote().startsWith("ICD-11 Foundation Entity Name and URI and Relation")) {
+
+          if(mapNote.getNote().endsWith("N/A")) {
+            externalData.setNoteFoundationEntityName("");
+            externalData.setNoteRelation("");
+            externalData.setNoteURI("");
+          }
+          
+          else {
+            // Split the string by <br>, <br/> or <br />
+            String[] noteParts = mapNote.getNote().split("(?i)<br\\s*/?>");
+
+            externalData.setNoteFoundationEntityName(noteParts.length >= 2 ? noteParts[1] : "");
+            externalData.setNoteURI(noteParts.length >= 3 ? noteParts[2] : "");
+            externalData.setNoteRelation(noteParts.length >= 4 ? noteParts[3] : "");
+          }
+        }
+      }
+      
+      //Look up Additional Entry Info
+      for(MapEntry mapEntry : mapRecord.getMapEntries()) {
+        for(AdditionalMapEntryInfo additionalMapEntryInfo : mapEntry.getAdditionalMapEntryInfos()) {
+          if(additionalMapEntryInfo.getField().equals("Relation - Cluster")) {
+            externalData.setRelationCluster(additionalMapEntryInfo.getValue());
+          }
+          else if(additionalMapEntryInfo.getField().equals("Relation - Target")) {
+            externalData.setRelationTarget(additionalMapEntryInfo.getValue());
+          }
+          else if(additionalMapEntryInfo.getField().equals("Unmappable Reason")) {
+            externalData.setUnmappableReason(additionalMapEntryInfo.getValue());
+          }
+          else if(additionalMapEntryInfo.getField().equals("Relation - WHO")) {
+            externalData.setRelationWHO(additionalMapEntryInfo.getValue());
+          } 
+          else if(additionalMapEntryInfo.getField().equals("Target Mismatch Reason")) {
+            externalData.setTargetMismatchReason(additionalMapEntryInfo.getValue());
+          } 
+        }
+      }
+      
+      //Add the External Data object to the map
+      sourceConceptToExternalData.put(mapRecord.getConceptId(), externalData);
+      
+    }
+    
+    //
+    // Look up additional data stored in external files
+    //
+    
+    // Look up which codes are canadian-specific from file
+    
+    String icd10caVersion = mapProject.getSourceTerminologyVersion();
+    
+    final String dataDir = ConfigUtility.getConfigProperties().getProperty("data.dir");
+    if (dataDir == null) {
+      throw new Exception("Config file must specify a data.dir property");
+    }
+
+    // Check preconditions
+    final String inputFile =
+        dataDir + "/doc/" + mapProjectId + "/projectFiles/" + icd10caTerminology.toLowerCase() + "_" + icd10caTerminologyVersion + "_CanadianCodes.txt";
+
+    if (!new File(inputFile).exists()) {
+      throw new Exception("Specified input file missing: " + inputFile);
+    }
+    
+    // Open reader and service
+    final BufferedReader canadianCodeReader = new BufferedReader(new FileReader(inputFile));
+
+    String line = null;
+    
+    while ((line = canadianCodeReader.readLine()) != null) {
+      String canadianCode = line;
+      final ExternalData externalData = sourceConceptToExternalData.get(canadianCode);
+      if(externalData != null) {
+        externalData.setCanadianSpecificCode(true);
+      }
+    }
+    
+    mappingService.close();
+    contentService.close();
+    
   }
 
   /**
@@ -175,7 +322,7 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
         previousMapPriority = Integer.toString(groupRecord.getMapPriority());
 
       }
-
+      
       final LocalDate localDate = LocalDate.now();
       final DateTimeFormatter formatter =
           DateTimeFormatter.ofPattern("yyyyMMdd");
@@ -199,28 +346,32 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
       cell.setCellValue("CIHI Map - Full Expression");
       
       cell = row.createCell(6);
-      cell.setCellValue("CIHI Map - Additional Entries");
-      
-      cell = row.createCell(24);
       cell.setCellValue("CIHI map - Mapping Parameters");
       
+      cell = row.createCell(9);
+      cell.setCellValue("CIHI Map - Additional Entries");
+
       cell = row.createCell(27);
-      cell.setCellValue("WHO map (Map Group 2)");
+      cell.setCellValue("Source Concept");
       
       cell = row.createCell(29);
-      cell.setCellValue("WHO map - Mapping Parameters");
+      cell.setCellValue("WHO map (Map Group 2)");
       
       cell = row.createCell(31);
+      cell.setCellValue("WHO map - Mapping Parameters");
+      
+      cell = row.createCell(33);
       cell.setCellValue("Notes");
       
       sheet.addMergedRegion(new CellRangeAddress(0,0,0,1));
       sheet.addMergedRegion(new CellRangeAddress(0,0,2,3));
       sheet.addMergedRegion(new CellRangeAddress(0,0,4,5));
-      sheet.addMergedRegion(new CellRangeAddress(0,0,6,23));
-      sheet.addMergedRegion(new CellRangeAddress(0,0,24,26));
+      sheet.addMergedRegion(new CellRangeAddress(0,0,6,8));
+      sheet.addMergedRegion(new CellRangeAddress(0,0,9,26));
       sheet.addMergedRegion(new CellRangeAddress(0,0,27,28));
       sheet.addMergedRegion(new CellRangeAddress(0,0,29,30));
-      sheet.addMergedRegion(new CellRangeAddress(0,0,31,33));
+      sheet.addMergedRegion(new CellRangeAddress(0,0,31,32));
+      sheet.addMergedRegion(new CellRangeAddress(0,0,33,35));
       
       row = sheet.createRow(rownum++);
       
@@ -232,7 +383,7 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
       cell.setCellValue("ICD-10-CA Code Title");
       // ICD 11
       cell = row.createCell(cellnum++);
-      cell.setCellValue("ICD-11 Code");
+      cell.setCellValue("ICD-11 Target Stem Code");
       cell = row.createCell(cellnum++);
       cell.setCellValue("ICD-11 Code Title");
       // CIHI Cluster/Cardinality
@@ -240,6 +391,15 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
       cell.setCellValue("ICD-11 Cluster");
       cell = row.createCell(cellnum++);
       cell.setCellValue("Cardinality");
+      
+
+      // CIHI Mapping Parameters
+      cell = row.createCell(cellnum++);
+      cell.setCellValue("Relation -  Target");
+      cell = row.createCell(cellnum++);
+      cell.setCellValue("Relation - Cluster");
+      cell = row.createCell(cellnum++);
+      cell.setCellValue("Unmappable Reason");
       
       for(int start = 2; start <= 10; start++) {
     	  // other clusters
@@ -249,13 +409,12 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
           cell.setCellValue("ICD-11 code title in cluster " + start);
       }
       
-      // CIHI Mapping Parameters
+      // Source Concept
       cell = row.createCell(cellnum++);
-      cell.setCellValue("Relation -  Target");
+      cell.setCellValue("Asterisk");
       cell = row.createCell(cellnum++);
-      cell.setCellValue("Relation - Cluster");
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("Unmappable Reason");
+      cell.setCellValue("Canadian Specific Code");
+      
       
       // WHO map (Map Group 2)	
       cell = row.createCell(cellnum++);
@@ -277,6 +436,8 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
       cell = row.createCell(cellnum++);
       cell.setCellValue("Relation (Foundation entity)");
       
+      
+      
       Set<String> codeSet = new HashSet<>();
       for (final Record outRecord : recordList) {
         // Add data row
@@ -285,6 +446,14 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
         cellnum = 0;
         row = sheet.createRow(rownum++);
 
+        // Lookup external data
+        ExternalData externalData = sourceConceptToExternalData.get(outRecord.getIcd10CACode());
+        //If none found, create a blank one, but also log a warning
+        if(externalData == null) {
+          externalData = new ExternalData(outRecord.getIcd10CACode());
+          getLog().warn("No external data found for source concept " + outRecord.getIcd10CACode());
+        }
+        
         // ICD 10 CA
         cell = row.createCell(cellnum++);
         cell.setCellValue(outRecord.getIcd10CACode());
@@ -302,6 +471,14 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
         cell.setCellValue(outRecord.getCluster());
         cell = row.createCell(cellnum++);
         cell.setCellValue(outRecord.getCardinality());
+
+        // Mapping Parameters
+        cell = row.createCell(cellnum++);
+        cell.setCellValue(externalData.getRelationTarget());
+        cell = row.createCell(cellnum++);
+        cell.setCellValue(externalData.getRelationCluster());
+        cell = row.createCell(cellnum++);
+        cell.setCellValue(externalData.getUnmappableReason());
         
         
         List<Map<String, String>> clusters = Arrays.asList(
@@ -327,14 +504,39 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
             }
 
         }
+     
         cellnum = 27;
+        
+        //Source Concept
+        cell = row.createCell(cellnum++);
+        cell.setCellValue(externalData.getAsterisk().toString().toUpperCase());
+        cell = row.createCell(cellnum++);
+        cell.setCellValue(externalData.getCanadianSpecificCode().toString().toUpperCase());
+        
+
         // WHO mapping
         cell = row.createCell(cellnum++);
         cell.setCellValue(outRecord.getWHOMapCode());
         cell = row.createCell(cellnum++);
         cell.setCellValue(outRecord.getWHOMapName());
-        
+       
 
+        // WHO mapping parameters
+        cell = row.createCell(cellnum++);
+        cell.setCellValue(externalData.getRelationWHO());
+        cell = row.createCell(cellnum++);
+        cell.setCellValue(externalData.getTargetMismatchReason());
+        
+        
+        // Notes
+        cell = row.createCell(cellnum++);
+        cell.setCellValue(externalData.getNoteFoundationEntityName());
+        cell = row.createCell(cellnum++);
+        cell.setCellValue(externalData.getNoteURI());
+        cell = row.createCell(cellnum++);
+        cell.setCellValue(externalData.getNoteRelation());
+        
+        
       }
 
       // write file
@@ -805,5 +1007,133 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
         return clusterBuilder.toString();
     }
 
+  }
+  
+  /**
+   * The External Data.
+   */
+  @SuppressWarnings("unused")
+  private class ExternalData {
+
+    /** The source code. */
+    private String sourceCode;
+    
+    private String relationTarget;
+    
+    private String relationCluster;
+    
+    private String unmappableReason;
+    
+    private String noteFoundationEntityName;
+
+    private String noteURI;
+
+    private String noteRelation;
+    
+    private String relationWHO;
+
+    private String targetMismatchReason;
+
+    private Boolean asterisk = false;
+    
+    private Boolean canadianSpecificCode = false;
+
+    /**
+     * Instantiates a {@link ExternalData} from the specified parameters.
+     *
+     * @param sourceCode the source ode
+     */
+    public ExternalData(final String sourceCode) {
+      super();
+      this.sourceCode = sourceCode;
+    }
+
+    public String getSourceCode() {
+      return sourceCode;
+    }
+
+    public void setSourceCode(String sourceCode) {
+      this.sourceCode = sourceCode;
+    }
+
+    public String getRelationTarget() {
+      return relationTarget;
+    }
+
+    public void setRelationTarget(String relationTarget) {
+      this.relationTarget = relationTarget;
+    }
+
+    public String getRelationCluster() {
+      return relationCluster;
+    }
+
+    public void setRelationCluster(String relationCluster) {
+      this.relationCluster = relationCluster;
+    }
+
+    public String getUnmappableReason() {
+      return unmappableReason;
+    }
+
+    public void setUnmappableReason(String unmappableReason) {
+      this.unmappableReason = unmappableReason;
+    }
+
+    public String getNoteFoundationEntityName() {
+      return noteFoundationEntityName;
+    }
+
+    public void setNoteFoundationEntityName(String noteFoundationEntityName) {
+      this.noteFoundationEntityName = noteFoundationEntityName;
+    }
+
+    public String getNoteURI() {
+      return noteURI;
+    }
+
+    public void setNoteURI(String noteURI) {
+      this.noteURI = noteURI;
+    }
+
+    public String getNoteRelation() {
+      return noteRelation;
+    }
+
+    public void setNoteRelation(String noteRelation) {
+      this.noteRelation = noteRelation;
+    }
+
+    public String getRelationWHO() {
+      return relationWHO;
+    }
+
+    public void setRelationWHO(String relationWHO) {
+      this.relationWHO = relationWHO;
+    }
+
+    public String getTargetMismatchReason() {
+      return targetMismatchReason;
+    }
+
+    public void setTargetMismatchReason(String targetMismatchReason) {
+      this.targetMismatchReason = targetMismatchReason;
+    }
+
+    public Boolean getAsterisk() {
+      return asterisk;
+    }
+
+    public void setAsterisk(Boolean asterisk) {
+      this.asterisk = asterisk;
+    }
+
+    public Boolean getCanadianSpecificCode() {
+      return canadianSpecificCode;
+    }
+
+    public void setCanadianSpecificCode(Boolean canadianSpecificCode) {
+      this.canadianSpecificCode = canadianSpecificCode;
+    }
   }
 }
