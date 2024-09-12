@@ -1,5 +1,11 @@
 /*
- * 
+ * Copyright 2020 Wci Informatics - All Rights Reserved.
+ *
+ * NOTICE:  All information contained herein is, and remains the property of Wci Informatics
+ * The intellectual and technical concepts contained herein are proprietary to
+ * Wci Informatics and may be covered by U.S. and Foreign Patents, patents in process,
+ * and are protected by trade secret or copyright law.  Dissemination of this information
+ * or reproduction of this material is strictly forbidden.
  */
 package org.ihtsdo.otf.mapping.services;
 
@@ -58,6 +64,15 @@ public interface ReportService extends RootService {
    */
   public Report getReport(Long reportId);
 
+  /**
+   * Gets the report.
+   *
+   * @param reportId the report id
+   * @param handleLazyInit the handle lazy init
+   * @return the report
+   */
+  public Report getReport(Long reportId, Boolean handleLazyInit);
+  
   /**
    * Adds the report.
    * 
