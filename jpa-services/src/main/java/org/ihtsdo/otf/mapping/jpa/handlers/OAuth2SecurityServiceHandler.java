@@ -89,7 +89,7 @@ public class OAuth2SecurityServiceHandler implements SecurityServiceHandler {
     //    "wids":["b79fbf4d-3ef9-4689-8143-76b194e85509"],
     //    "xms_st":{"sub":"tJj-QCTaB2IeQJTVoRVq6oKqqYN0iN9CGcmbA6Yc12g"},
     //    "xms_tcdt":1469199133,
-    //    "access_token": "eyJ0eXAiOiJKV1QiLCJub25jZSI6IlYyMUxubGdH...."
+    //    "access_token": "***REMOVED***"
     // }
 
     MapUser user = new MapUserJpa();
