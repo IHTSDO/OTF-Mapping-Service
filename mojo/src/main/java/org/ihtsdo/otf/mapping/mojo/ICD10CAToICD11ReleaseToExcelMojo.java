@@ -175,6 +175,12 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
         previousMapPriority = Integer.toString(groupRecord.getMapPriority());
 
       }
+      // get last record
+      if (record != null) {
+      	record.setCluster(record.getClusterValue());
+      	record.setCardinality("1:" + previousMapPriority);
+          recordList.add(record);
+      }
 
       final LocalDate localDate = LocalDate.now();
       final DateTimeFormatter formatter =
@@ -280,7 +286,7 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
       Set<String> codeSet = new HashSet<>();
       for (final Record outRecord : recordList) {
         // Add data row
-        getLog().info("Add: " + outRecord.toString());
+    	getLog().info("Add: " + outRecord.toString());
         codeSet.add(outRecord.getIcd10CACode());
         cellnum = 0;
         row = sheet.createRow(rownum++);
@@ -293,7 +299,7 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
 
         // ICD 11
         cell = row.createCell(cellnum++);
-        cell.setCellValue(outRecord.getIcd11Code());
+        cell.setCellValue(!(outRecord.getIcd11Code().isBlank() || outRecord.getIcd11Code().isEmpty()) ? outRecord.getIcd11Code() : "No target");
         cell = row.createCell(cellnum++);
         cell.setCellValue(outRecord.getIcd11Term());
         
@@ -301,7 +307,7 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
         cell = row.createCell(cellnum++);
         cell.setCellValue(outRecord.getCluster());
         cell = row.createCell(cellnum++);
-        cell.setCellValue(outRecord.getCardinality());
+        cell.setCellValue(!(outRecord.getIcd11Code().isBlank() || outRecord.getIcd11Code().isEmpty()) ? outRecord.getCardinality() : "n/a - no target");
         
         
         List<Map<String, String>> clusters = Arrays.asList(

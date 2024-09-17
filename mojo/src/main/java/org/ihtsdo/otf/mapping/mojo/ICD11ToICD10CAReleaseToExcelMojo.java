@@ -169,6 +169,11 @@ public class ICD11ToICD10CAReleaseToExcelMojo extends AbstractMojo {
         previousMapPriority = Integer.toString(groupRecord.getMapPriority());
 
       }
+      // get last record
+      if (record != null) {
+      	record.setCardinality("1:" + previousMapPriority);
+          recordList.add(record);
+      }
 
       final LocalDate localDate = LocalDate.now();
       final DateTimeFormatter formatter =
@@ -288,7 +293,7 @@ public class ICD11ToICD10CAReleaseToExcelMojo extends AbstractMojo {
 
         // ICD 10 CA
         cell = row.createCell(cellnum++);
-        cell.setCellValue(outRecord.getIcd10CACode());
+        cell.setCellValue(!(outRecord.getIcd10CACode().isEmpty() || outRecord.getIcd10CACode().isBlank()) ? outRecord.getIcd10CACode() : "No target");
         cell = row.createCell(cellnum++);
         cell.setCellValue(outRecord.getIcd10CATerm());
         // skip asterisk for now
@@ -296,7 +301,7 @@ public class ICD11ToICD10CAReleaseToExcelMojo extends AbstractMojo {
         // fill in asterisk value
         
         cell = row.createCell(cellnum++);
-        cell.setCellValue(outRecord.getCardinality());
+        cell.setCellValue(!(outRecord.getIcd10CACode().isEmpty() || outRecord.getIcd10CACode().isBlank()) ? outRecord.getCardinality() : "n/a - no target");
         
         
         List<Map<String, String>> clusters = Arrays.asList(
