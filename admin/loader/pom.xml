@@ -1059,7 +1059,7 @@
                 </goals>
                 <configuration>
                   <releaseFile>${releaseFile}</releaseFile>
-                  <outputFile>ICD10CAtoICD11_{DATE}.xlsx</outputFile>
+                  <outputFile>ICD10CAtoICD11_{FORMAT}_{DATE}.xlsx</outputFile>
                 </configuration>
               </execution>
             </executions>
@@ -1084,7 +1084,7 @@
                 </goals>
                 <configuration>
                   <releaseFile>${releaseFile}</releaseFile>
-                  <outputFile>ICD111toICD10CA_{DATE}.xlsx</outputFile>
+                  <outputFile>ICD111toICD10CA_{FORMAT}_{DATE}.xlsx</outputFile>
                 </configuration>
               </execution>
             </executions>

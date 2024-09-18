@@ -73,12 +73,12 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
    * @required
    */
   private String outputFile;
-  
+
   /**
    * Map project Id (hard-coded, and may need updating if project changes).
    */
   private Long mapProjectId = 4L;
-    
+
   private Map<String, ExternalData> sourceConceptToExternalData = new HashMap<>();
 
   /* see superclass */
@@ -108,55 +108,60 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
 
   //
   // Look up additional data not present in the release file
-  // Most are pulled from database objects, but a few are pulled from external files
+  // Most are pulled from database objects, but a few are pulled from external
+  // files
   //
-  private void getExternalData()  throws Exception {
+  private void getExternalData() throws Exception {
 
     getLog().info("Gathering mapping data stored outside of the release file");
 
-    
     // Get all map records for the project
-    
+
     MappingService mappingService = new MappingServiceJpa();
     ContentService contentService = new ContentServiceJpa();
     MapProject mapProject = mappingService.getMapProject(mapProjectId);
     final String icd10caTerminology = mapProject.getSourceTerminology();
     final String icd10caTerminologyVersion = mapProject.getSourceTerminologyVersion();
-    
+
     MapRecordList allMapRecords = mappingService.getMapRecordsForMapProject(mapProjectId);
 
-    for(MapRecord mapRecord : allMapRecords.getMapRecords()) {
+    for (MapRecord mapRecord : allMapRecords.getMapRecords()) {
       // Only process READY_FOR_PUBLICATION and PUBLISHED records
-      if(!(mapRecord.getWorkflowStatus().equals(WorkflowStatus.READY_FOR_PUBLICATION) || mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED))) {
+      if (!(mapRecord.getWorkflowStatus().equals(WorkflowStatus.READY_FOR_PUBLICATION)
+          || mapRecord.getWorkflowStatus().equals(WorkflowStatus.PUBLISHED))) {
         continue;
       }
 
-      //Create an External Data object, based on the source concept
+      // Create an External Data object, based on the source concept
       ExternalData externalData = new ExternalData(mapRecord.getConceptId());
-      
+
       // Look up if ICD10CA code is an Asterisk code
-      final Concept icd10caConcept = contentService.getConcept(mapRecord.getConceptId(), icd10caTerminology, icd10caTerminologyVersion);
-      if(icd10caConcept != null) {
+      final Concept icd10caConcept = contentService.getConcept(mapRecord.getConceptId(),
+          icd10caTerminology, icd10caTerminologyVersion);
+      if (icd10caConcept != null) {
         externalData.setAsterisk(TerminologyUtility.isAsteriskCode(icd10caConcept, contentService));
+      } else {
+        getLog().warn("Could not find concept for:" + icd10caTerminology + " "
+            + icd10caTerminologyVersion + ": " + mapRecord.getConceptId());
       }
-      else {
-        getLog().warn("Could not find concept for:" + icd10caTerminology + " " + icd10caTerminologyVersion + ": " + mapRecord.getConceptId());
-      }
-      
+
       // Look up map notes
       // Examples:
-      // ICD-11 Foundation Entity Name and URI and Relation:<br>Cholera due to Vibrio cholerae O1, biovar eltor<br>http://id.who.int/icd/entity/581614179<br>Equivalent entity without xcodes/stem codes
+      // ICD-11 Foundation Entity Name and URI and Relation:<br>Cholera due to
+      // Vibrio cholerae O1, biovar
+      // eltor<br>http://id.who.int/icd/entity/581614179<br>Equivalent entity
+      // without xcodes/stem codes
       // ICD-11 Foundation Entity Name and URI and Relation:<br>N/A
       Set<MapNote> mapNotes = mapRecord.getMapNotes();
-      for(MapNote mapNote : mapNotes) {
-        if(mapNote.getNote().startsWith("ICD-11 Foundation Entity Name and URI and Relation")) {
+      for (MapNote mapNote : mapNotes) {
+        if (mapNote.getNote().startsWith("ICD-11 Foundation Entity Name and URI and Relation")) {
 
-          if(mapNote.getNote().endsWith("N/A")) {
+          if (mapNote.getNote().endsWith("N/A")) {
             externalData.setNoteFoundationEntityName("");
             externalData.setNoteRelation("");
             externalData.setNoteURI("");
           }
-          
+
           else {
             // Split the string by <br>, <br/> or <br />
             String[] noteParts = mapNote.getNote().split("(?i)<br\\s*/?>");
@@ -167,70 +172,67 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
           }
         }
       }
-      
-      //Look up Additional Entry Info
-      for(MapEntry mapEntry : mapRecord.getMapEntries()) {
-        for(AdditionalMapEntryInfo additionalMapEntryInfo : mapEntry.getAdditionalMapEntryInfos()) {
-          if(additionalMapEntryInfo.getField().equals("Relation - Cluster")) {
+
+      // Look up Additional Entry Info
+      for (MapEntry mapEntry : mapRecord.getMapEntries()) {
+        for (AdditionalMapEntryInfo additionalMapEntryInfo : mapEntry
+            .getAdditionalMapEntryInfos()) {
+          if (additionalMapEntryInfo.getField().equals("Relation - Cluster")) {
             externalData.setRelationCluster(additionalMapEntryInfo.getValue());
-          }
-          else if(additionalMapEntryInfo.getField().equals("Relation - Target")) {
+          } else if (additionalMapEntryInfo.getField().equals("Relation - Target")) {
             externalData.setRelationTarget(additionalMapEntryInfo.getValue());
-          }
-          else if(additionalMapEntryInfo.getField().equals("Unmappable Reason")) {
+          } else if (additionalMapEntryInfo.getField().equals("Unmappable Reason")) {
             externalData.setUnmappableReason(additionalMapEntryInfo.getValue());
-          }
-          else if(additionalMapEntryInfo.getField().equals("Relation - WHO")) {
+          } else if (additionalMapEntryInfo.getField().equals("Relation - WHO")) {
             externalData.setRelationWHO(additionalMapEntryInfo.getValue());
-          } 
-          else if(additionalMapEntryInfo.getField().equals("Target Mismatch Reason")) {
+          } else if (additionalMapEntryInfo.getField().equals("Target Mismatch Reason")) {
             externalData.setTargetMismatchReason(additionalMapEntryInfo.getValue());
-          } 
+          }
         }
       }
-      
-      //Add the External Data object to the map
+
+      // Add the External Data object to the map
       sourceConceptToExternalData.put(mapRecord.getConceptId(), externalData);
-      
+
     }
-    
+
     //
     // Look up additional data stored in external files
     //
-    
+
     // Look up which codes are canadian-specific from file
-    
+
     String icd10caVersion = mapProject.getSourceTerminologyVersion();
-    
+
     final String dataDir = ConfigUtility.getConfigProperties().getProperty("data.dir");
     if (dataDir == null) {
       throw new Exception("Config file must specify a data.dir property");
     }
 
     // Check preconditions
-    final String inputFile =
-        dataDir + "/doc/" + mapProjectId + "/projectFiles/" + icd10caTerminology.toLowerCase() + "_" + icd10caTerminologyVersion + "_CanadianCodes.txt";
+    final String inputFile = dataDir + "/doc/" + mapProjectId + "/projectFiles/"
+        + icd10caTerminology.toLowerCase() + "_" + icd10caTerminologyVersion + "_CanadianCodes.txt";
 
     if (!new File(inputFile).exists()) {
       throw new Exception("Specified input file missing: " + inputFile);
     }
-    
+
     // Open reader and service
     final BufferedReader canadianCodeReader = new BufferedReader(new FileReader(inputFile));
 
     String line = null;
-    
+
     while ((line = canadianCodeReader.readLine()) != null) {
       String canadianCode = line;
       final ExternalData externalData = sourceConceptToExternalData.get(canadianCode);
-      if(externalData != null) {
+      if (externalData != null) {
         externalData.setCanadianSpecificCode(true);
       }
     }
-    
+
     mappingService.close();
     contentService.close();
-    
+
   }
 
   /**
@@ -240,8 +242,6 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
    * @throws Exception the exception
    */
   private void runConvert(final File releaseFile) throws Exception {
-
-    final Workbook wb = new XSSFWorkbook();
 
     final List<GroupRecord> groupRecordList = new ArrayList<GroupRecord>();
 
@@ -253,17 +253,14 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
         final String[] fields = line.split("\\t");
         if ("id".equals(fields[0]))
           continue;
-        groupRecordList.add(
-            new GroupRecord(fields[5], fields[6], Integer.valueOf(fields[7]),
-                Integer.valueOf(fields[8]), fields[11], fields[12]));
+        groupRecordList.add(new GroupRecord(fields[5], fields[6], Integer.valueOf(fields[7]),
+            Integer.valueOf(fields[8]), fields[11], fields[12]));
       }
 
       getLog().info("Source file rows " + groupRecordList.size());
 
-      Collections.sort(groupRecordList,
-          Comparator.comparing(GroupRecord::getCode)
-              .thenComparing(GroupRecord::getMapPriority)
-              .thenComparing(GroupRecord::getMapGroup));
+      Collections.sort(groupRecordList, Comparator.comparing(GroupRecord::getCode)
+          .thenComparing(GroupRecord::getMapPriority).thenComparing(GroupRecord::getMapGroup));
 
       // MapGroup is ICD-10-CA
 
@@ -274,292 +271,442 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
       for (final GroupRecord groupRecord : groupRecordList) {
         if (!groupRecord.getCode().equals(previousId)) {
           if (record != null) {
-        	record.setCluster(record.getClusterValue());
-        	record.setCardinality("1:" + previousMapPriority);
+            record.setCluster(record.getClusterValue());
+            record.setCardinality("1:" + previousMapPriority);
             recordList.add(record);
           }
           record = new Record(groupRecord.getCode(), groupRecord.getTermName());
         }
-        
+
         // ICD-10-CA
         if (groupRecord.getMapGroup() == 1 && groupRecord.getMapPriority() == 1) {
           record.setIcd11Code(groupRecord.getTargetTermCode());
           record.setIcd11Term(groupRecord.getTargetTermName());
         }
-        if(groupRecord.getMapGroup() == 1 && groupRecord.getMapPriority() == 2) {
-        	record.setIcd11CodeCluster2(Map.of(groupRecord.getTargetTermCode(), groupRecord.getTargetTermName()));
+        if (groupRecord.getMapGroup() == 1 && groupRecord.getMapPriority() == 2) {
+          record.setIcd11CodeCluster2(
+              Map.of(groupRecord.getTargetTermCode(), groupRecord.getTargetTermName()));
         }
-		if(groupRecord.getMapGroup() == 1 && groupRecord.getMapPriority() == 3) {
-			record.setIcd11CodeCluster3(Map.of(groupRecord.getTargetTermCode(), groupRecord.getTargetTermName())); 	
-		}
-		if(groupRecord.getMapGroup() == 1 && groupRecord.getMapPriority() == 4) {
-			record.setIcd11CodeCluster4(Map.of(groupRecord.getTargetTermCode(), groupRecord.getTargetTermName()));
-		}
-		if(groupRecord.getMapGroup() == 1 && groupRecord.getMapPriority() == 5) {
-			record.setIcd11CodeCluster5(Map.of(groupRecord.getTargetTermCode(), groupRecord.getTargetTermName()));
-		}
-		if(groupRecord.getMapGroup() == 1 && groupRecord.getMapPriority() == 6) {
-			record.setIcd11CodeCluster6(Map.of(groupRecord.getTargetTermCode(), groupRecord.getTargetTermName()));
-		}
-		if(groupRecord.getMapGroup() == 1 && groupRecord.getMapPriority() == 7) {
-			record.setIcd11CodeCluster7(Map.of(groupRecord.getTargetTermCode(), groupRecord.getTargetTermName()));
-		}
-		if(groupRecord.getMapGroup() == 1 && groupRecord.getMapPriority() == 8) {
-			record.setIcd11CodeCluster8(Map.of(groupRecord.getTargetTermCode(), groupRecord.getTargetTermName()));
-		}
-		if(groupRecord.getMapGroup() == 1 && groupRecord.getMapPriority() == 9) {
-			record.setIcd11CodeCluster9(Map.of(groupRecord.getTargetTermCode(), groupRecord.getTargetTermName()));
-		}
-		if(groupRecord.getMapGroup() == 1 && groupRecord.getMapPriority() == 10) {
-			record.setIcd11CodeCluster10(Map.of(groupRecord.getTargetTermCode(), groupRecord.getTargetTermName()));
-		}
-		if(groupRecord.getMapGroup() == 2 && groupRecord.getMapPriority() == 1) {
-			record.setWHOMapCode(groupRecord.getTargetTermCode());
-	        record.setWHOMapName(groupRecord.getTargetTermName());
-		}
-        
-		previousId = groupRecord.getCode();
+        if (groupRecord.getMapGroup() == 1 && groupRecord.getMapPriority() == 3) {
+          record.setIcd11CodeCluster3(
+              Map.of(groupRecord.getTargetTermCode(), groupRecord.getTargetTermName()));
+        }
+        if (groupRecord.getMapGroup() == 1 && groupRecord.getMapPriority() == 4) {
+          record.setIcd11CodeCluster4(
+              Map.of(groupRecord.getTargetTermCode(), groupRecord.getTargetTermName()));
+        }
+        if (groupRecord.getMapGroup() == 1 && groupRecord.getMapPriority() == 5) {
+          record.setIcd11CodeCluster5(
+              Map.of(groupRecord.getTargetTermCode(), groupRecord.getTargetTermName()));
+        }
+        if (groupRecord.getMapGroup() == 1 && groupRecord.getMapPriority() == 6) {
+          record.setIcd11CodeCluster6(
+              Map.of(groupRecord.getTargetTermCode(), groupRecord.getTargetTermName()));
+        }
+        if (groupRecord.getMapGroup() == 1 && groupRecord.getMapPriority() == 7) {
+          record.setIcd11CodeCluster7(
+              Map.of(groupRecord.getTargetTermCode(), groupRecord.getTargetTermName()));
+        }
+        if (groupRecord.getMapGroup() == 1 && groupRecord.getMapPriority() == 8) {
+          record.setIcd11CodeCluster8(
+              Map.of(groupRecord.getTargetTermCode(), groupRecord.getTargetTermName()));
+        }
+        if (groupRecord.getMapGroup() == 1 && groupRecord.getMapPriority() == 9) {
+          record.setIcd11CodeCluster9(
+              Map.of(groupRecord.getTargetTermCode(), groupRecord.getTargetTermName()));
+        }
+        if (groupRecord.getMapGroup() == 1 && groupRecord.getMapPriority() == 10) {
+          record.setIcd11CodeCluster10(
+              Map.of(groupRecord.getTargetTermCode(), groupRecord.getTargetTermName()));
+        }
+        if (groupRecord.getMapGroup() == 2 && groupRecord.getMapPriority() == 1) {
+          record.setWHOMapCode(groupRecord.getTargetTermCode());
+          record.setWHOMapName(groupRecord.getTargetTermName());
+        }
+
+        previousId = groupRecord.getCode();
         previousMapPriority = Integer.toString(groupRecord.getMapPriority());
 
       }
       // get last record
       if (record != null) {
-      	record.setCluster(record.getClusterValue());
-      	record.setCardinality("1:" + previousMapPriority);
-          recordList.add(record);
+        record.setCluster(record.getClusterValue());
+        record.setCardinality("1:" + previousMapPriority);
+        recordList.add(record);
       }
 
-      final LocalDate localDate = LocalDate.now();
-      final DateTimeFormatter formatter =
-          DateTimeFormatter.ofPattern("yyyyMMdd");
-      final Sheet sheet = wb.createSheet(
-          outputFile.replace("{DATE}", localDate.format(formatter)));
+      // Use the records to create the C&T format output file
+      createCTOutput(releaseFile, recordList);
 
-      // Create header row and add cells
-      int rownum = 0;
-      int cellnum = 0;
-
-      Row row = sheet.createRow(rownum++);
-      Cell cell = null;
-      
-      cell = row.createCell(0);
-      cell.setCellValue("Source Concept");
-      
-      cell = row.createCell(2);
-      cell.setCellValue("CIHI Map - 1st Entry (Map Group 1)	");
-      
-      cell = row.createCell(4);
-      cell.setCellValue("CIHI Map - Full Expression");
-      
-      cell = row.createCell(6);
-      cell.setCellValue("CIHI map - Mapping Parameters");
-      
-      cell = row.createCell(9);
-      cell.setCellValue("CIHI Map - Additional Entries");
-
-      cell = row.createCell(27);
-      cell.setCellValue("Source Concept");
-      
-      cell = row.createCell(29);
-      cell.setCellValue("WHO map (Map Group 2)");
-      
-      cell = row.createCell(31);
-      cell.setCellValue("WHO map - Mapping Parameters");
-      
-      cell = row.createCell(33);
-      cell.setCellValue("Notes");
-      
-      sheet.addMergedRegion(new CellRangeAddress(0,0,0,1));
-      sheet.addMergedRegion(new CellRangeAddress(0,0,2,3));
-      sheet.addMergedRegion(new CellRangeAddress(0,0,4,5));
-      sheet.addMergedRegion(new CellRangeAddress(0,0,6,8));
-      sheet.addMergedRegion(new CellRangeAddress(0,0,9,26));
-      sheet.addMergedRegion(new CellRangeAddress(0,0,27,28));
-      sheet.addMergedRegion(new CellRangeAddress(0,0,29,30));
-      sheet.addMergedRegion(new CellRangeAddress(0,0,31,32));
-      sheet.addMergedRegion(new CellRangeAddress(0,0,33,35));
-      
-      row = sheet.createRow(rownum++);
-      
-
-      // ICD 10 CA
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("ICD-10-CA Code");
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("ICD-10-CA Code Title");
-      // ICD 11
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("ICD-11 Target Stem Code");
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("ICD-11 Code Title");
-      // CIHI Cluster/Cardinality
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("ICD-11 Cluster");
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("Cardinality");
-      
-
-      // CIHI Mapping Parameters
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("Relation -  Target");
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("Relation - Cluster");
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("Unmappable Reason");
-      
-      for(int start = 2; start <= 10; start++) {
-    	  // other clusters
-          cell = row.createCell(cellnum++);
-          cell.setCellValue("ICD-11 code in cluster " + start);
-          cell = row.createCell(cellnum++);
-          cell.setCellValue("ICD-11 code title in cluster " + start);
-      }
-      
-      // Source Concept
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("Asterisk");
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("Canadian Specific Code");
-      
-      
-      // WHO map (Map Group 2)	
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("ICD-11 code");
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("ICD-11 title");
-      
-      // WHO map - Mapping Parameters	
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("Relation - WHO");
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("Target Mismatch Reason");
-      
-      // Notes		
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("Foundation entity name/title");
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("Uniform Resource Identified (URI)");
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("Relation (Foundation entity)");
-      
-      
-      
-      Set<String> codeSet = new HashSet<>();
-      for (final Record outRecord : recordList) {
-        // Add data row
-    	getLog().info("Add: " + outRecord.toString());
-        codeSet.add(outRecord.getIcd10CACode());
-        cellnum = 0;
-        row = sheet.createRow(rownum++);
-
-        // Lookup external data
-        ExternalData externalData = sourceConceptToExternalData.get(outRecord.getIcd10CACode());
-        //If none found, create a blank one, but also log a warning
-        if(externalData == null) {
-          externalData = new ExternalData(outRecord.getIcd10CACode());
-          getLog().warn("No external data found for source concept " + outRecord.getIcd10CACode());
-        }
-        
-        // ICD 10 CA
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(outRecord.getIcd10CACode());
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(outRecord.getIcd10CATerm());
-
-        // ICD 11
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(!(outRecord.getIcd11Code().isBlank() || outRecord.getIcd11Code().isEmpty()) ? outRecord.getIcd11Code() : "No target");
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(outRecord.getIcd11Term());
-        
-        // Cluster/Cardinality
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(outRecord.getCluster());
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(!(outRecord.getIcd11Code().isBlank() || outRecord.getIcd11Code().isEmpty()) ? outRecord.getCardinality() : "n/a - no target");
-
-        // Mapping Parameters
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(externalData.getRelationTarget());
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(externalData.getRelationCluster());
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(externalData.getUnmappableReason());
-        
-        
-        List<Map<String, String>> clusters = Arrays.asList(
-        		outRecord.icd11CodeCluster2, outRecord.icd11CodeCluster3, outRecord.icd11CodeCluster4,
-        		outRecord.icd11CodeCluster5, outRecord.icd11CodeCluster6, outRecord.icd11CodeCluster7,
-        		outRecord.icd11CodeCluster8, outRecord.icd11CodeCluster9, outRecord.icd11CodeCluster10
-        );
-
-        // Iterate over clusters
-        for (Map<String, String> currentCluster : clusters) {
-
-            // Check if the cluster is empty (null or empty map)
-            if (currentCluster == null || currentCluster.isEmpty()) {
-                break; // Stop if current cluster is empty
-            }
-            else {
-            	String key = currentCluster.entrySet().iterator().next().getKey();
-            	String value = currentCluster.entrySet().iterator().next().getValue();
-            	cell = row.createCell(cellnum++);
-                cell.setCellValue(key);
-                cell = row.createCell(cellnum++);
-                cell.setCellValue(value);
-            }
-
-        }
-     
-        cellnum = 27;
-        
-        //Source Concept
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(externalData.getAsterisk().toString().toUpperCase());
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(externalData.getCanadianSpecificCode().toString().toUpperCase());
-        
-
-        // WHO mapping
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(outRecord.getWHOMapCode());
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(outRecord.getWHOMapName());
-       
-
-        // WHO mapping parameters
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(externalData.getRelationWHO());
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(externalData.getTargetMismatchReason());
-        
-        
-        // Notes
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(externalData.getNoteFoundationEntityName());
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(externalData.getNoteURI());
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(externalData.getNoteRelation());
-        
-        
-      }
-
-      // write file
-      final Path fileLocation = Paths.get(releaseFile.getParent(),
-          outputFile.replace("{DATE}", localDate.format(formatter)));
-
-      try (final FileOutputStream outputStream =
-          new FileOutputStream(fileLocation.toString());) {
-        wb.write(outputStream);
-        wb.close();
-      }
-
-      getLog().info("Conversion completed " + fileLocation.toString());
+      // Now create the CaseMix format output file
+      createCaseMixOutput(releaseFile, recordList);
 
     } catch (Exception e) {
       e.printStackTrace();
     }
+
+  }
+
+  private void createCTOutput(final File releaseFile, List<Record> recordList) throws Exception {
+
+    final Workbook wb = new XSSFWorkbook();
+
+    final LocalDate localDate = LocalDate.now();
+    final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+    final Sheet sheet = wb.createSheet(
+        outputFile.replace("{FORMAT}", "C&T").replace("{DATE}", localDate.format(formatter)));
+
+    // Create header row and add cells
+    int rownum = 0;
+    int cellnum = 0;
+
+    Row row = sheet.createRow(rownum++);
+    Cell cell = null;
+
+    cell = row.createCell(0);
+    cell.setCellValue("Source Concept");
+
+    cell = row.createCell(2);
+    cell.setCellValue("CIHI Map - 1st Entry (Map Group 1) ");
+
+    cell = row.createCell(4);
+    cell.setCellValue("CIHI Map - Full Expression");
+
+    cell = row.createCell(6);
+    cell.setCellValue("CIHI map - Mapping Parameters");
+
+    cell = row.createCell(9);
+    cell.setCellValue("CIHI Map - Additional Entries");
+
+    cell = row.createCell(27);
+    cell.setCellValue("Source Concept");
+
+    cell = row.createCell(29);
+    cell.setCellValue("WHO map (Map Group 2)");
+
+    cell = row.createCell(31);
+    cell.setCellValue("WHO map - Mapping Parameters");
+
+    cell = row.createCell(33);
+    cell.setCellValue("Notes");
+
+    sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 1));
+    sheet.addMergedRegion(new CellRangeAddress(0, 0, 2, 3));
+    sheet.addMergedRegion(new CellRangeAddress(0, 0, 4, 5));
+    sheet.addMergedRegion(new CellRangeAddress(0, 0, 6, 8));
+    sheet.addMergedRegion(new CellRangeAddress(0, 0, 9, 26));
+    sheet.addMergedRegion(new CellRangeAddress(0, 0, 27, 28));
+    sheet.addMergedRegion(new CellRangeAddress(0, 0, 29, 30));
+    sheet.addMergedRegion(new CellRangeAddress(0, 0, 31, 32));
+    sheet.addMergedRegion(new CellRangeAddress(0, 0, 33, 35));
+
+    row = sheet.createRow(rownum++);
+
+    // ICD 10 CA
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("ICD-10-CA Code");
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("ICD-10-CA Code Title");
+    // ICD 11
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("ICD-11 Target Stem Code");
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("ICD-11 Code Title");
+    // CIHI Cluster/Cardinality
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("ICD-11 Cluster");
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("Cardinality");
+
+    // CIHI Mapping Parameters
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("Relation -  Target");
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("Relation - Cluster");
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("Unmappable Reason");
+
+    for (int start = 2; start <= 10; start++) {
+      // other clusters
+      cell = row.createCell(cellnum++);
+      cell.setCellValue("ICD-11 code in cluster " + start);
+      cell = row.createCell(cellnum++);
+      cell.setCellValue("ICD-11 code title in cluster " + start);
+    }
+
+    // Source Concept
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("Asterisk");
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("Canadian Specific Code");
+
+    // WHO map (Map Group 2)
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("ICD-11 code");
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("ICD-11 title");
+
+    // WHO map - Mapping Parameters
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("Relation - WHO");
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("Target Mismatch Reason");
+
+    // Notes
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("Foundation entity name/title");
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("Uniform Resource Identified (URI)");
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("Relation (Foundation entity)");
+
+    Set<String> codeSet = new HashSet<>();
+    for (final Record outRecord : recordList) {
+      // Add data row
+      getLog().info("Add: " + outRecord.toString());
+      codeSet.add(outRecord.getIcd10CACode());
+      cellnum = 0;
+      row = sheet.createRow(rownum++);
+
+      // Lookup external data
+      ExternalData externalData = sourceConceptToExternalData.get(outRecord.getIcd10CACode());
+      // If none found, create a blank one, but also log a warning
+      if (externalData == null) {
+        externalData = new ExternalData(outRecord.getIcd10CACode());
+        getLog().warn("No external data found for source concept " + outRecord.getIcd10CACode());
+      }
+
+      // ICD 10 CA
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(outRecord.getIcd10CACode());
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(outRecord.getIcd10CATerm());
+
+      // ICD 11
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(!(outRecord.getIcd11Code().isBlank() || outRecord.getIcd11Code().isEmpty())
+          ? outRecord.getIcd11Code() : "No target");
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(outRecord.getIcd11Term());
+
+      // Cluster/Cardinality
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(outRecord.getCluster());
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(!(outRecord.getIcd11Code().isBlank() || outRecord.getIcd11Code().isEmpty())
+          ? outRecord.getCardinality() : "n/a - no target");
+
+      // Mapping Parameters
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(externalData.getRelationTarget());
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(externalData.getRelationCluster());
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(externalData.getUnmappableReason());
+
+      List<Map<String, String>> clusters = Arrays.asList(outRecord.icd11CodeCluster2,
+          outRecord.icd11CodeCluster3, outRecord.icd11CodeCluster4, outRecord.icd11CodeCluster5,
+          outRecord.icd11CodeCluster6, outRecord.icd11CodeCluster7, outRecord.icd11CodeCluster8,
+          outRecord.icd11CodeCluster9, outRecord.icd11CodeCluster10);
+
+      // Iterate over clusters
+      for (Map<String, String> currentCluster : clusters) {
+
+        // Check if the cluster is empty (null or empty map)
+        if (currentCluster == null || currentCluster.isEmpty()) {
+          break; // Stop if current cluster is empty
+        } else {
+          String key = currentCluster.entrySet().iterator().next().getKey();
+          String value = currentCluster.entrySet().iterator().next().getValue();
+          cell = row.createCell(cellnum++);
+          cell.setCellValue(key);
+          cell = row.createCell(cellnum++);
+          cell.setCellValue(value);
+        }
+
+      }
+
+      cellnum = 27;
+
+      // Source Concept
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(externalData.getAsterisk().toString().toUpperCase());
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(externalData.getCanadianSpecificCode().toString().toUpperCase());
+
+      // WHO mapping
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(outRecord.getWHOMapCode());
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(outRecord.getWHOMapName());
+
+      // WHO mapping parameters
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(externalData.getRelationWHO());
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(externalData.getTargetMismatchReason());
+
+      // Notes
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(externalData.getNoteFoundationEntityName());
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(externalData.getNoteURI());
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(externalData.getNoteRelation());
+
+    }
+
+    // write file
+    final Path fileLocation = Paths.get(releaseFile.getParent(),
+        outputFile.replace("{FORMAT}", "C&T").replace("{DATE}", localDate.format(formatter)));
+
+    try (final FileOutputStream outputStream = new FileOutputStream(fileLocation.toString());) {
+      wb.write(outputStream);
+      wb.close();
+    }
+
+    getLog().info("Conversion completed " + fileLocation.toString());
+
+  }
+
+  private void createCaseMixOutput(final File releaseFile, List<Record> recordList)
+    throws Exception {
+
+    final Workbook wb = new XSSFWorkbook();
+
+    final LocalDate localDate = LocalDate.now();
+    final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+    final Sheet sheet = wb.createSheet(
+        outputFile.replace("{FORMAT}", "CaseMix").replace("{DATE}", localDate.format(formatter)));
+
+    // Create header row and add cells
+    int rownum = 0;
+    int cellnum = 0;
+
+    Row row = sheet.createRow(rownum++);
+    Cell cell = null;
+
+    cell = row.createCell(0);
+    cell.setCellValue("ICD-10-CA code");
+
+    cell = row.createCell(1);
+    cell.setCellValue("ICD-10-CA code title");
+
+    cell = row.createCell(2);
+    cell.setCellValue("Asterisk");
+
+    cell = row.createCell(3);
+    cell.setCellValue("ICD-11 target stem code");
+
+    cell = row.createCell(4);
+    cell.setCellValue("ICD-11 code title");
+
+    cell = row.createCell(5);
+    cell.setCellValue("ICD-11 Cluster");
+
+    cell = row.createCell(6);
+    cell.setCellValue("Cardinality");
+
+    cell = row.createCell(7);
+    cell.setCellValue("Relation -  Target");
+
+    cell = row.createCell(8);
+    cell.setCellValue("Relation - Cluster");
+    
+
+    Set<String> codeSet = new HashSet<>();
+    for (final Record outRecord : recordList) {
+      // Add data row
+      getLog().info("Add: " + outRecord.toString());
+      codeSet.add(outRecord.getIcd10CACode());
+      cellnum = 0;
+      row = sheet.createRow(rownum++);
+
+      // Lookup external data
+      ExternalData externalData = sourceConceptToExternalData.get(outRecord.getIcd10CACode());
+      // If none found, create a blank one, but also log a warning
+      if (externalData == null) {
+        externalData = new ExternalData(outRecord.getIcd10CACode());
+        getLog().warn("No external data found for source concept " + outRecord.getIcd10CACode());
+      }
+
+      // ICD 10 CA (Case Mix format wants decimal removed)
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(outRecord.getIcd10CACode().replace(".", ""));
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(outRecord.getIcd10CATerm());
+
+      // Asterisk
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(externalData.getAsterisk().toString().toUpperCase());
+
+      // ICD 11 (Case Mix format wants decimal removed)
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(!(outRecord.getIcd11Code().isBlank() || outRecord.getIcd11Code().isEmpty())
+          ? outRecord.getIcd11Code().replace(".", "") : "No target");
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(outRecord.getIcd11Term());
+
+      // Cluster/Cardinality
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(outRecord.getCluster());
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(!(outRecord.getIcd11Code().isBlank() || outRecord.getIcd11Code().isEmpty())
+          ? outRecord.getCardinality() : "n/a - no target");
+
+      // Mapping Parameters
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(externalData.getRelationTarget());
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(externalData.getRelationCluster());
+
+      List<Map<String, String>> clusters = Arrays.asList(outRecord.icd11CodeCluster2,
+          outRecord.icd11CodeCluster3, outRecord.icd11CodeCluster4, outRecord.icd11CodeCluster5,
+          outRecord.icd11CodeCluster6, outRecord.icd11CodeCluster7, outRecord.icd11CodeCluster8,
+          outRecord.icd11CodeCluster9, outRecord.icd11CodeCluster10);
+
+      // Iterate over clusters
+      for (Map<String, String> currentCluster : clusters) {
+
+        // Check if the cluster is empty (null or empty map)
+        if (currentCluster == null || currentCluster.isEmpty()) {
+          break; // Stop if current cluster is empty
+        } else {
+
+          // For each additional target, create a new row and populate only ICD10 and ICD11 code and titles
+          cellnum = 0;
+          row = sheet.createRow(rownum++);
+
+          // ICD 10 CA (Case Mix format wants decimal removed)
+          cell = row.createCell(cellnum++);
+          cell.setCellValue(outRecord.getIcd10CACode().replace(".", ""));
+          cell = row.createCell(cellnum++);
+          cell.setCellValue(outRecord.getIcd10CATerm());
+          
+          // Skip over Asterisk column
+          cellnum++;
+          
+          // ICD 11 (Case Mix format wants decimal removed)
+          String key = currentCluster.entrySet().iterator().next().getKey();
+          String value = currentCluster.entrySet().iterator().next().getValue();
+          cell = row.createCell(cellnum++);
+          cell.setCellValue(key.replace(".", ""));
+          cell = row.createCell(cellnum++);
+          cell.setCellValue(value);
+        }
+      }
+    }
+
+    // write file
+    final Path fileLocation = Paths.get(releaseFile.getParent(),
+        outputFile.replace("{FORMAT}", "CaseMix").replace("{DATE}", localDate.format(formatter)));
+
+    try (final FileOutputStream outputStream = new FileOutputStream(fileLocation.toString());) {
+      wb.write(outputStream);
+      wb.close();
+    }
+
+    getLog().info("Conversion completed " + fileLocation.toString());
 
   }
 
@@ -597,9 +744,8 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
      * @param targetTermCode the target term code
      * @param targetTermName the target term name
      */
-    public GroupRecord(final String code, final String termName,
-        final int mapGroup, final int mapPriority, final String targetTermCode,
-        final String targetTermName) {
+    public GroupRecord(final String code, final String termName, final int mapGroup,
+        final int mapPriority, final String targetTermCode, final String targetTermName) {
       super();
       this.code = code;
       this.termName = termName;
@@ -720,10 +866,9 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
     /* see superclass */
     @Override
     public String toString() {
-      return "GroupRecord [code=" + code + ", termName=" + termName
-          + ", mapGroup=" + mapGroup + ", mapPriority=" + mapPriority
-          + ", targetTermCode=" + targetTermCode + ", targetTermName="
-          + targetTermName + "]";
+      return "GroupRecord [code=" + code + ", termName=" + termName + ", mapGroup=" + mapGroup
+          + ", mapPriority=" + mapPriority + ", targetTermCode=" + targetTermCode
+          + ", targetTermName=" + targetTermName + "]";
     }
 
   }
@@ -745,27 +890,35 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
 
     /** The icd 11 term. */
     private String icd11Term;
-    
+
     /** The cardinality. */
     private String cardinality;
-    
+
     /** The cluster */
     private String cluster;
-    
+
     /** The other clusters. */
     private Map<String, String> icd11CodeCluster2;
+
     private Map<String, String> icd11CodeCluster3;
+
     private Map<String, String> icd11CodeCluster4;
+
     private Map<String, String> icd11CodeCluster5;
+
     private Map<String, String> icd11CodeCluster6;
+
     private Map<String, String> icd11CodeCluster7;
+
     private Map<String, String> icd11CodeCluster8;
+
     private Map<String, String> icd11CodeCluster9;
+
     private Map<String, String> icd11CodeCluster10;
-    
+
     /** The WHO map code. */
     private String WHOMapCode;
-    
+
     /** The WHO map name. */
     private String WHOMapName;
 
@@ -853,168 +1006,159 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
       this.icd11Term = icd11Term;
     }
 
-
     public String getCardinality() {
-		return cardinality;
-	}
+      return cardinality;
+    }
 
-	public void setCardinality(String cardinality) {
-		this.cardinality = cardinality;
-	}
+    public void setCardinality(String cardinality) {
+      this.cardinality = cardinality;
+    }
 
-	public String getCluster() {
-		return cluster;
-	}
+    public String getCluster() {
+      return cluster;
+    }
 
-	public void setCluster(String cluster) {
-		this.cluster = cluster;
-	}
-	
-	public Map<String, String> getIcd11CodeCluster2() {
-        return icd11CodeCluster2;
+    public void setCluster(String cluster) {
+      this.cluster = cluster;
+    }
+
+    public Map<String, String> getIcd11CodeCluster2() {
+      return icd11CodeCluster2;
     }
 
     public void setIcd11CodeCluster2(Map<String, String> icd11CodeCluster2) {
-        this.icd11CodeCluster2 = icd11CodeCluster2;
+      this.icd11CodeCluster2 = icd11CodeCluster2;
     }
 
     public Map<String, String> getIcd11CodeCluster3() {
-        return icd11CodeCluster3;
+      return icd11CodeCluster3;
     }
 
     public void setIcd11CodeCluster3(Map<String, String> icd11CodeCluster3) {
-        this.icd11CodeCluster3 = icd11CodeCluster3;
+      this.icd11CodeCluster3 = icd11CodeCluster3;
     }
 
     public Map<String, String> getIcd11CodeCluster4() {
-        return icd11CodeCluster4;
+      return icd11CodeCluster4;
     }
 
     public void setIcd11CodeCluster4(Map<String, String> icd11CodeCluster4) {
-        this.icd11CodeCluster4 = icd11CodeCluster4;
+      this.icd11CodeCluster4 = icd11CodeCluster4;
     }
 
     public Map<String, String> getIcd11CodeCluster5() {
-        return icd11CodeCluster5;
+      return icd11CodeCluster5;
     }
 
     public void setIcd11CodeCluster5(Map<String, String> icd11CodeCluster5) {
-        this.icd11CodeCluster5 = icd11CodeCluster5;
+      this.icd11CodeCluster5 = icd11CodeCluster5;
     }
 
     public Map<String, String> getIcd11CodeCluster6() {
-        return icd11CodeCluster6;
+      return icd11CodeCluster6;
     }
 
     public void setIcd11CodeCluster6(Map<String, String> icd11CodeCluster6) {
-        this.icd11CodeCluster6 = icd11CodeCluster6;
+      this.icd11CodeCluster6 = icd11CodeCluster6;
     }
 
     public Map<String, String> getIcd11CodeCluster7() {
-        return icd11CodeCluster7;
+      return icd11CodeCluster7;
     }
 
     public void setIcd11CodeCluster7(Map<String, String> icd11CodeCluster7) {
-        this.icd11CodeCluster7 = icd11CodeCluster7;
+      this.icd11CodeCluster7 = icd11CodeCluster7;
     }
 
     public Map<String, String> getIcd11CodeCluster8() {
-        return icd11CodeCluster8;
+      return icd11CodeCluster8;
     }
 
     public void setIcd11CodeCluster8(Map<String, String> icd11CodeCluster8) {
-        this.icd11CodeCluster8 = icd11CodeCluster8;
+      this.icd11CodeCluster8 = icd11CodeCluster8;
     }
 
     public Map<String, String> getIcd11CodeCluster9() {
-        return icd11CodeCluster9;
+      return icd11CodeCluster9;
     }
 
     public void setIcd11CodeCluster9(Map<String, String> icd11CodeCluster9) {
-        this.icd11CodeCluster9 = icd11CodeCluster9;
+      this.icd11CodeCluster9 = icd11CodeCluster9;
     }
 
     public Map<String, String> getIcd11CodeCluster10() {
-        return icd11CodeCluster10;
+      return icd11CodeCluster10;
     }
 
     public void setIcd11CodeCluster10(Map<String, String> icd11CodeCluster10) {
-        this.icd11CodeCluster10 = icd11CodeCluster10;
+      this.icd11CodeCluster10 = icd11CodeCluster10;
     }
 
-	public String getWHOMapCode() {
-		return WHOMapCode;
-	}
+    public String getWHOMapCode() {
+      return WHOMapCode;
+    }
 
-	public void setWHOMapCode(String wHOMapCode) {
-		WHOMapCode = wHOMapCode;
-	}
+    public void setWHOMapCode(String wHOMapCode) {
+      WHOMapCode = wHOMapCode;
+    }
 
-	public String getWHOMapName() {
-		return WHOMapName;
-	}
+    public String getWHOMapName() {
+      return WHOMapName;
+    }
 
-	public void setWHOMapName(String wHOMapName) {
-		WHOMapName = wHOMapName;
-	}
+    public void setWHOMapName(String wHOMapName) {
+      WHOMapName = wHOMapName;
+    }
 
-	/* see superclass */
+    /* see superclass */
     @Override
     public String toString() {
-    	return "Record [icd10Code=" + icd10CACode + ", icd10Term=" + icd10CATerm
-        + ", icd11Code=" + icd11Code + ", icd11Term=" + icd11Term
-        + ", cardinality=" + cardinality + ", cluster=" + cluster
-        + ", icd11CodeCluster2=" + icd11CodeCluster2
-        + ", icd11CodeCluster3=" + icd11CodeCluster3
-        + ", icd11CodeCluster4=" + icd11CodeCluster4
-        + ", icd11CodeCluster5=" + icd11CodeCluster5
-        + ", icd11CodeCluster6=" + icd11CodeCluster6
-        + ", icd11CodeCluster7=" + icd11CodeCluster7
-        + ", icd11CodeCluster8=" + icd11CodeCluster8
-        + ", icd11CodeCluster9=" + icd11CodeCluster9
-        + ", icd11CodeCluster10=" + icd11CodeCluster10
-        + ", WHOMapCode=" + WHOMapCode
-        + ", WHOMapName=" + WHOMapName +"]";
+      return "Record [icd10Code=" + icd10CACode + ", icd10Term=" + icd10CATerm + ", icd11Code="
+          + icd11Code + ", icd11Term=" + icd11Term + ", cardinality=" + cardinality + ", cluster="
+          + cluster + ", icd11CodeCluster2=" + icd11CodeCluster2 + ", icd11CodeCluster3="
+          + icd11CodeCluster3 + ", icd11CodeCluster4=" + icd11CodeCluster4 + ", icd11CodeCluster5="
+          + icd11CodeCluster5 + ", icd11CodeCluster6=" + icd11CodeCluster6 + ", icd11CodeCluster7="
+          + icd11CodeCluster7 + ", icd11CodeCluster8=" + icd11CodeCluster8 + ", icd11CodeCluster9="
+          + icd11CodeCluster9 + ", icd11CodeCluster10=" + icd11CodeCluster10 + ", WHOMapCode="
+          + WHOMapCode + ", WHOMapName=" + WHOMapName + "]";
     }
-    
+
     public String getClusterValue() {
-        StringBuilder clusterBuilder = new StringBuilder();
+      StringBuilder clusterBuilder = new StringBuilder();
 
-        List<Map<String, String>> clusters = Arrays.asList(
-                icd11CodeCluster2, icd11CodeCluster3, icd11CodeCluster4,
-                icd11CodeCluster5, icd11CodeCluster6, icd11CodeCluster7,
-                icd11CodeCluster8, icd11CodeCluster9, icd11CodeCluster10
-        );
+      List<Map<String, String>> clusters = Arrays.asList(icd11CodeCluster2, icd11CodeCluster3,
+          icd11CodeCluster4, icd11CodeCluster5, icd11CodeCluster6, icd11CodeCluster7,
+          icd11CodeCluster8, icd11CodeCluster9, icd11CodeCluster10);
 
-        // Iterate over clusters
-        for (Map<String, String> currentCluster : clusters) {
+      // Iterate over clusters
+      for (Map<String, String> currentCluster : clusters) {
 
-            // Check if the cluster is empty (null or empty map)
-            if (currentCluster == null || currentCluster.isEmpty()) {
-                break; // Stop if current cluster is empty
-            }
-
-            // Get the first entry in the map
-            Map.Entry<String, String> value = currentCluster.entrySet().iterator().next();
-
-            if (clusterBuilder.length() == 0) {
-                // First non-empty cluster starts with icd11Code
-                clusterBuilder.append(icd11Code);
-            }
-
-            // Append based on the value's first character
-            if (value.getKey().startsWith("X")) {
-                clusterBuilder.append("&").append(value.getKey());
-            } else {
-            	clusterBuilder.append("/").append(value.getKey());
-            }
+        // Check if the cluster is empty (null or empty map)
+        if (currentCluster == null || currentCluster.isEmpty()) {
+          break; // Stop if current cluster is empty
         }
 
-        return clusterBuilder.toString();
+        // Get the first entry in the map
+        Map.Entry<String, String> value = currentCluster.entrySet().iterator().next();
+
+        if (clusterBuilder.length() == 0) {
+          // First non-empty cluster starts with icd11Code
+          clusterBuilder.append(icd11Code);
+        }
+
+        // Append based on the value's first character
+        if (value.getKey().startsWith("X")) {
+          clusterBuilder.append("&").append(value.getKey());
+        } else {
+          clusterBuilder.append("/").append(value.getKey());
+        }
+      }
+
+      return clusterBuilder.toString();
     }
 
   }
-  
+
   /**
    * The External Data.
    */
@@ -1023,25 +1167,25 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
 
     /** The source code. */
     private String sourceCode;
-    
+
     private String relationTarget;
-    
+
     private String relationCluster;
-    
+
     private String unmappableReason;
-    
+
     private String noteFoundationEntityName;
 
     private String noteURI;
 
     private String noteRelation;
-    
+
     private String relationWHO;
 
     private String targetMismatchReason;
 
     private Boolean asterisk = false;
-    
+
     private Boolean canadianSpecificCode = false;
 
     /**
