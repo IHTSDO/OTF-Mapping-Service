@@ -176,8 +176,6 @@ public class ICD11ToICD10CAReleaseToExcelMojo extends AbstractMojo {
    */
   private void runConvert(final File releaseFile) throws Exception {
 
-    final Workbook wb = new XSSFWorkbook();
-
     final List<GroupRecord> groupRecordList = new ArrayList<GroupRecord>();
 
     try {
@@ -262,191 +260,339 @@ public class ICD11ToICD10CAReleaseToExcelMojo extends AbstractMojo {
           recordList.add(record);
       }
 
-      final LocalDate localDate = LocalDate.now();
-      final DateTimeFormatter formatter =
-          DateTimeFormatter.ofPattern("yyyyMMdd");
-      final Sheet sheet = wb.createSheet(
-          outputFile.replace("{DATE}", localDate.format(formatter)));
+      // Use the records to create the C&T format output file
+      createCTOutput(releaseFile, recordList);
 
-      // Create header row and add cells
-      int rownum = 0;
-      int cellnum = 0;
-
-      Row row = sheet.createRow(rownum++);
-      Cell cell = null;
+      // Now create the CaseMix format output file
+      createCaseMixOutput(releaseFile, recordList);      
       
-      cell = row.createCell(0);
-      cell.setCellValue("Source Concept");
-      
-      cell = row.createCell(2);
-      cell.setCellValue("CIHI Map - 1st Entry (Map Group 1)");
-      
-      cell = row.createCell(5);
-      cell.setCellValue("CIHI Map - Full Expression");
-
-      cell = row.createCell(6);
-      cell.setCellValue("CIHI map - Mapping Parameters");
-      
-      cell = row.createCell(8);
-      cell.setCellValue("CIHI Map - Additional Entries");
-      
-      cell = row.createCell(35);
-      cell.setCellValue("WHO map (Map Group 2)");
-      
-      cell = row.createCell(37);
-      cell.setCellValue("WHO - Mapping Parameters");
-      
-      sheet.addMergedRegion(new CellRangeAddress(0,0,0,1));
-      sheet.addMergedRegion(new CellRangeAddress(0,0,2,4));
-      sheet.addMergedRegion(new CellRangeAddress(0,0,6,7));
-      sheet.addMergedRegion(new CellRangeAddress(0,0,8,34));
-      sheet.addMergedRegion(new CellRangeAddress(0,0,35,36));
-      
-      row = sheet.createRow(rownum++);
-      
-
-      // ICD 11
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("ICD-11 Code");
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("ICD-11 Code Title");
-      // ICD 10CA
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("ICD-10-CA Code");
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("ICD-10-CA Code Title");
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("ICD-10-CA Code Asterisk");
-      // CIHI Cardinality
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("Cardinality");
-
-      // CIHI Mapping Parameters
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("Relation -  Target");
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("Unmappable Reason");
-      
-      for(int start = 2; start <= 10; start++) {
-    	  // other clusters
-          cell = row.createCell(cellnum++);
-          cell.setCellValue("ICD-10-CA Code " + start);
-          cell = row.createCell(cellnum++);
-          cell.setCellValue("ICD-10-CA Code Title " + start);
-          cell = row.createCell(cellnum++);
-          cell.setCellValue("ICD-10-CA Asterisk " + start);
-      }
-      
-      // WHO map (Map Group 2)	
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("ICD-10 Code");
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("ICD-10 Title");
-      
-      // WHO map - Mapping Parameters	
-      cell = row.createCell(cellnum++);
-      cell.setCellValue("Target Mismatch Reason");
-      
-      Set<String> codeSet = new HashSet<>();
-      for (final Record outRecord : recordList) {
-        // Add data row
-        getLog().info("Add: " + outRecord.toString());
-        codeSet.add(outRecord.getIcd11Code());
-        cellnum = 0;
-        row = sheet.createRow(rownum++);
-
-
-        // Lookup external data
-        ExternalData externalData = sourceConceptToExternalData.get(outRecord.getIcd11Code());
-        //If none found, create a blank one, but also log a warning
-        if(externalData == null) {
-          externalData = new ExternalData(outRecord.getIcd11Code());
-          getLog().warn("No external data found for source concept " + outRecord.getIcd11Code());
-        }        
-        
-        // ICD 11
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(outRecord.getIcd11Code());
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(outRecord.getIcd11Term());
-
-        // ICD 10 CA
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(!(outRecord.getIcd10CACode().isEmpty() || outRecord.getIcd10CACode().isBlank()) ? outRecord.getIcd10CACode() : "No target");
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(outRecord.getIcd10CATerm());
-        // skip asterisk for now
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(Boolean.valueOf(icd10caAsteriskCodes.contains(outRecord.getIcd10CACode())).toString().toUpperCase());
-        
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(!(outRecord.getIcd10CACode().isEmpty() || outRecord.getIcd10CACode().isBlank()) ? outRecord.getCardinality() : "n/a - no target");
-        
-
-        // Mapping Parameters
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(externalData.getRelationTarget());
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(externalData.getUnmappableReason());
-
-        
-        List<Map<String, String>> clusters = Arrays.asList(
-        		outRecord.Icd10CACodeCluster2, outRecord.Icd10CACodeCluster3, outRecord.Icd10CACodeCluster4,
-        		outRecord.Icd10CACodeCluster5, outRecord.Icd10CACodeCluster6, outRecord.Icd10CACodeCluster7,
-        		outRecord.Icd10CACodeCluster8, outRecord.Icd10CACodeCluster9, outRecord.Icd10CACodeCluster10
-        );
-
-        // Iterate over clusters
-        for (Map<String, String> currentCluster : clusters) {
-
-            // Check if the cluster is empty (null or empty map)
-            if (currentCluster == null || currentCluster.isEmpty()) {
-                break; // Stop if current cluster is empty
-            }
-            else {
-            	String key = currentCluster.entrySet().iterator().next().getKey();
-            	String value = currentCluster.entrySet().iterator().next().getValue();
-            	cell = row.createCell(cellnum++);
-                cell.setCellValue(key);
-                cell = row.createCell(cellnum++);
-                cell.setCellValue(value);
-                cell = row.createCell(cellnum++);
-                cell.setCellValue(Boolean.valueOf(icd10caAsteriskCodes.contains(key)).toString().toUpperCase());
-            }
-
-        }
-        cellnum = 35;
-        
-        // WHO mapping
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(outRecord.getWHOMapCode());
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(outRecord.getWHOMapName());
-
-        // WHO mapping parameters
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(externalData.getTargetMismatchReason());
-        
-
-      }
-
-      // write file
-      final Path fileLocation = Paths.get(releaseFile.getParent(),
-          outputFile.replace("{DATE}", localDate.format(formatter)));
-
-      try (final FileOutputStream outputStream =
-          new FileOutputStream(fileLocation.toString());) {
-        wb.write(outputStream);
-        wb.close();
-      }
-
-      getLog().info("Conversion completed " + fileLocation.toString());
-
     } catch (Exception e) {
       e.printStackTrace();
     }
 
   }
+
+
+  private void createCTOutput(File releaseFile, List<Record> recordList) throws Exception {
+
+    final Workbook wb = new XSSFWorkbook();
+
+    final LocalDate localDate = LocalDate.now();
+    final DateTimeFormatter formatter =
+        DateTimeFormatter.ofPattern("yyyyMMdd");
+    final Sheet sheet = wb.createSheet(
+        outputFile.replace("{FORMAT}", "C&T").replace("{DATE}", localDate.format(formatter)));
+
+    // Create header row and add cells
+    int rownum = 0;
+    int cellnum = 0;
+
+    Row row = sheet.createRow(rownum++);
+    Cell cell = null;
+    
+    cell = row.createCell(0);
+    cell.setCellValue("Source Concept");
+    
+    cell = row.createCell(2);
+    cell.setCellValue("CIHI Map - 1st Entry (Map Group 1)");
+    
+    cell = row.createCell(5);
+    cell.setCellValue("CIHI Map - Full Expression");
+
+    cell = row.createCell(6);
+    cell.setCellValue("CIHI map - Mapping Parameters");
+    
+    cell = row.createCell(8);
+    cell.setCellValue("CIHI Map - Additional Entries");
+    
+    cell = row.createCell(35);
+    cell.setCellValue("WHO map (Map Group 2)");
+    
+    cell = row.createCell(37);
+    cell.setCellValue("WHO - Mapping Parameters");
+    
+    sheet.addMergedRegion(new CellRangeAddress(0,0,0,1));
+    sheet.addMergedRegion(new CellRangeAddress(0,0,2,4));
+    sheet.addMergedRegion(new CellRangeAddress(0,0,6,7));
+    sheet.addMergedRegion(new CellRangeAddress(0,0,8,34));
+    sheet.addMergedRegion(new CellRangeAddress(0,0,35,36));
+    
+    row = sheet.createRow(rownum++);
+    
+
+    // ICD 11
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("ICD-11 Code");
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("ICD-11 Code Title");
+    // ICD 10CA
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("ICD-10-CA Code");
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("ICD-10-CA Code Title");
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("ICD-10-CA Code Asterisk");
+    // CIHI Cardinality
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("Cardinality");
+
+    // CIHI Mapping Parameters
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("Relation -  Target");
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("Unmappable Reason");
+    
+    for(int start = 2; start <= 10; start++) {
+        // other clusters
+        cell = row.createCell(cellnum++);
+        cell.setCellValue("ICD-10-CA Code " + start);
+        cell = row.createCell(cellnum++);
+        cell.setCellValue("ICD-10-CA Code Title " + start);
+        cell = row.createCell(cellnum++);
+        cell.setCellValue("ICD-10-CA Asterisk " + start);
+    }
+    
+    // WHO map (Map Group 2)  
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("ICD-10 Code");
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("ICD-10 Title");
+    
+    // WHO map - Mapping Parameters   
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("Target Mismatch Reason");
+    
+    Set<String> codeSet = new HashSet<>();
+    for (final Record outRecord : recordList) {
+      // Add data row
+      getLog().info("Add: " + outRecord.toString());
+      codeSet.add(outRecord.getIcd11Code());
+      cellnum = 0;
+      row = sheet.createRow(rownum++);
+
+
+      // Lookup external data
+      ExternalData externalData = sourceConceptToExternalData.get(outRecord.getIcd11Code());
+      //If none found, create a blank one, but also log a warning
+      if(externalData == null) {
+        externalData = new ExternalData(outRecord.getIcd11Code());
+        getLog().warn("No external data found for source concept " + outRecord.getIcd11Code());
+      }        
+      
+      // ICD 11
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(outRecord.getIcd11Code());
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(outRecord.getIcd11Term());
+
+      // ICD 10 CA
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(!(outRecord.getIcd10CACode().isEmpty() || outRecord.getIcd10CACode().isBlank()) ? outRecord.getIcd10CACode() : "No target");
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(outRecord.getIcd10CATerm());
+      // skip asterisk for now
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(Boolean.valueOf(icd10caAsteriskCodes.contains(outRecord.getIcd10CACode())).toString().toUpperCase());
+      
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(!(outRecord.getIcd10CACode().isEmpty() || outRecord.getIcd10CACode().isBlank()) ? outRecord.getCardinality() : "n/a - no target");
+      
+
+      // Mapping Parameters
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(externalData.getRelationTarget());
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(externalData.getUnmappableReason());
+
+      
+      List<Map<String, String>> clusters = Arrays.asList(
+              outRecord.Icd10CACodeCluster2, outRecord.Icd10CACodeCluster3, outRecord.Icd10CACodeCluster4,
+              outRecord.Icd10CACodeCluster5, outRecord.Icd10CACodeCluster6, outRecord.Icd10CACodeCluster7,
+              outRecord.Icd10CACodeCluster8, outRecord.Icd10CACodeCluster9, outRecord.Icd10CACodeCluster10
+      );
+
+      // Iterate over clusters
+      for (Map<String, String> currentCluster : clusters) {
+
+          // Check if the cluster is empty (null or empty map)
+          if (currentCluster == null || currentCluster.isEmpty()) {
+              break; // Stop if current cluster is empty
+          }
+          else {
+              String key = currentCluster.entrySet().iterator().next().getKey();
+              String value = currentCluster.entrySet().iterator().next().getValue();
+              cell = row.createCell(cellnum++);
+              cell.setCellValue(key);
+              cell = row.createCell(cellnum++);
+              cell.setCellValue(value);
+              cell = row.createCell(cellnum++);
+              cell.setCellValue(Boolean.valueOf(icd10caAsteriskCodes.contains(key)).toString().toUpperCase());
+          }
+
+      }
+      cellnum = 35;
+      
+      // WHO mapping
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(outRecord.getWHOMapCode());
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(outRecord.getWHOMapName());
+
+      // WHO mapping parameters
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(externalData.getTargetMismatchReason());
+      
+
+    }
+
+    // write file
+    final Path fileLocation = Paths.get(releaseFile.getParent(),
+        outputFile.replace("{FORMAT}", "C&T").replace("{DATE}", localDate.format(formatter)));
+
+    try (final FileOutputStream outputStream =
+        new FileOutputStream(fileLocation.toString());) {
+      wb.write(outputStream);
+      wb.close();
+    }
+
+    getLog().info("Conversion completed " + fileLocation.toString());
+  
+}
+  
+  
+  private void createCaseMixOutput(File releaseFile, List<Record> recordList) throws Exception  {
+
+    final Workbook wb = new XSSFWorkbook();
+
+    final LocalDate localDate = LocalDate.now();
+    final DateTimeFormatter formatter =
+        DateTimeFormatter.ofPattern("yyyyMMdd");
+    final Sheet sheet = wb.createSheet(
+        outputFile.replace("{FORMAT}", "CaseMix").replace("{DATE}", localDate.format(formatter)));
+
+    // Create header row and add cells
+    int rownum = 0;
+    int cellnum = 0;
+
+    Row row = sheet.createRow(rownum++);
+    Cell cell = null;
+    
+    cell = row.createCell(0);
+    cell.setCellValue("ICD-11 code");
+
+    cell = row.createCell(1);
+    cell.setCellValue("ICD-11 code title");
+
+    cell = row.createCell(2);
+    cell.setCellValue("ICD-10-CA code");
+
+    cell = row.createCell(3);
+    cell.setCellValue("ICD-10-CA title");
+
+    cell = row.createCell(4);
+    cell.setCellValue("ICD-10-CA asterisk");
+
+    cell = row.createCell(5);
+    cell.setCellValue("Cardinality");
+
+    cell = row.createCell(6);
+    cell.setCellValue("Relation -  Target");
+
+    
+    Set<String> codeSet = new HashSet<>();
+    for (final Record outRecord : recordList) {
+      // Add data row
+      getLog().info("Add: " + outRecord.toString());
+      codeSet.add(outRecord.getIcd11Code());
+      cellnum = 0;
+      row = sheet.createRow(rownum++);
+
+
+      // Lookup external data
+      ExternalData externalData = sourceConceptToExternalData.get(outRecord.getIcd11Code());
+      //If none found, create a blank one, but also log a warning
+      if(externalData == null) {
+        externalData = new ExternalData(outRecord.getIcd11Code());
+        getLog().warn("No external data found for source concept " + outRecord.getIcd11Code());
+      }        
+      
+      // ICD 11 (Case Mix format wants decimal removed)
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(outRecord.getIcd11Code().replace(".", ""));
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(outRecord.getIcd11Term());
+
+      // ICD 10 CA (Case Mix format wants decimal removed)
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(!(outRecord.getIcd10CACode().isEmpty() || outRecord.getIcd10CACode().isBlank()) ? outRecord.getIcd10CACode().replace(".", "") : "No target");
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(outRecord.getIcd10CATerm());
+      
+      // Asterisk and Cardinality
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(Boolean.valueOf(icd10caAsteriskCodes.contains(outRecord.getIcd10CACode())).toString().toUpperCase());
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(!(outRecord.getIcd10CACode().isEmpty() || outRecord.getIcd10CACode().isBlank()) ? outRecord.getCardinality() : "n/a - no target");
+      
+
+      // Mapping Parameters
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(externalData.getRelationTarget());
+
+      
+      List<Map<String, String>> clusters = Arrays.asList(
+              outRecord.Icd10CACodeCluster2, outRecord.Icd10CACodeCluster3, outRecord.Icd10CACodeCluster4,
+              outRecord.Icd10CACodeCluster5, outRecord.Icd10CACodeCluster6, outRecord.Icd10CACodeCluster7,
+              outRecord.Icd10CACodeCluster8, outRecord.Icd10CACodeCluster9, outRecord.Icd10CACodeCluster10
+      );
+
+      // Iterate over clusters
+      for (Map<String, String> currentCluster : clusters) {
+
+          // Check if the cluster is empty (null or empty map)
+          if (currentCluster == null || currentCluster.isEmpty()) {
+              break; // Stop if current cluster is empty
+          }
+          else {
+            
+              // For each additional target, create a new row and populate only ICD11 and ICD10CA code and titles, and ICD10CA Asterisk
+              cellnum = 0;
+              row = sheet.createRow(rownum++);
+              
+              // ICD 11 (Case Mix format wants decimal removed)
+              cell = row.createCell(cellnum++);
+              cell.setCellValue(outRecord.getIcd11Code().replace(".", ""));
+              cell = row.createCell(cellnum++);
+              cell.setCellValue(outRecord.getIcd11Term());
+              
+              // ICD 10 CA (Case Mix format wants decimal removed)
+              String key = currentCluster.entrySet().iterator().next().getKey();
+              String value = currentCluster.entrySet().iterator().next().getValue();
+              cell = row.createCell(cellnum++);
+              cell.setCellValue(key.replace(".", ""));
+              cell = row.createCell(cellnum++);
+              cell.setCellValue(value);
+              cell = row.createCell(cellnum++);
+              cell.setCellValue(Boolean.valueOf(icd10caAsteriskCodes.contains(key)).toString().toUpperCase());
+          }
+
+      }
+    }
+
+    // write file
+    final Path fileLocation = Paths.get(releaseFile.getParent(),
+        outputFile.replace("{FORMAT}", "CaseMix").replace("{DATE}", localDate.format(formatter)));
+
+    try (final FileOutputStream outputStream =
+        new FileOutputStream(fileLocation.toString());) {
+      wb.write(outputStream);
+      wb.close();
+    }
+
+    getLog().info("Conversion completed " + fileLocation.toString());
+  
+  
+}
 
   /**
    * The Class GroupRecord.
