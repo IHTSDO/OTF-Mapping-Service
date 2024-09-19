@@ -147,7 +147,7 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
           'startIndex' : (page - 1) * $scope.recordsPerPage,
           'maxResults' : $scope.recordsPerPage,
           'sortField' : (sortField['feedback']) ? sortField['feedback'] : 'lastModified',
-          'ascending' : sortAscending['feedback'],   
+          'ascending' : (sortAscending['feedback']) ? sortAscending['feedback'] : 'false',   
         };
         
         console.log("pfsParameterObj", pfsParameterObj);
