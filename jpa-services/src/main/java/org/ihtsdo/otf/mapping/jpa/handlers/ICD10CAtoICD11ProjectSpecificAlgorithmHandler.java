@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,8 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
   final static Logger LOGGER =
       LoggerFactory.getLogger(ICD11toICD10CAProjectSpecificAlgorithmHandler.class);
 
+  final static List<String> allowableWHOTargets = new ArrayList(Arrays.asList("n/a - not applicable","No 1:1 WHO map"));
+
   /* see superclass */
   @Override
   public void initialize() throws Exception {
@@ -50,6 +53,13 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
       // "No target" targets are valid
       if (mapEntry.getTargetId() != null && mapEntry.getTargetId().isBlank()) {
         continue;
+      }
+      
+      // For WHO targets, specific non-terminologyId entries are allowed
+      if(mapEntry.getMapGroup() == 2) {
+        if(allowableWHOTargets.contains(mapEntry.getTargetId())) {
+          continue;
+        }
       }
 
       // Target code must be an existing concept
@@ -83,6 +93,11 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
   @Override
   public boolean isTargetCodeValid(final String terminologyId) throws Exception {
 
+    //Check if one of the allowable WHO targets
+    if(allowableWHOTargets.contains(terminologyId)) {
+      return true;
+    }
+    
     try (final ContentService contentService = new ContentServiceJpa();) {
       // verify concept exists in database
       final Concept concept = contentService.getConcept(terminologyId,
