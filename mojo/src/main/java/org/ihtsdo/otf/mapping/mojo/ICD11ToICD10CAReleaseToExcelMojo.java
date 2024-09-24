@@ -3,8 +3,10 @@
  */
 package org.ihtsdo.otf.mapping.mojo;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -43,6 +45,7 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
 /**
  * Create the CIHI ICD11 to ICD10CA release file from *
@@ -79,6 +82,8 @@ public class ICD11ToICD10CAReleaseToExcelMojo extends AbstractMojo {
   private Map<String, ExternalData> sourceConceptToExternalData = new HashMap<>();  
   
   private Set<String> icd10caAsteriskCodes = new HashSet<>();
+  
+  private Set<String> icd10caCanadianCodes = new HashSet<>();
   
   /* see superclass */
   @Override
@@ -154,6 +159,37 @@ public class ICD11ToICD10CAReleaseToExcelMojo extends AbstractMojo {
       
     }
     
+    //
+    // Look up additional data stored in external files
+    //
+
+    // Look up which codes are canadian-specific from file
+    String icd10caVersion = mapProject.getSourceTerminologyVersion();
+
+    final String dataDir = ConfigUtility.getConfigProperties().getProperty("data.dir");
+    if (dataDir == null) {
+      throw new Exception("Config file must specify a data.dir property");
+    }
+
+    // Check preconditions
+    final String inputFile = dataDir + "/doc/" + mapProjectId + "/projectFiles/"
+        + icd10caTerminology.toLowerCase() + "_" + icd10caTerminologyVersion + "_CanadianCodes.txt";
+
+    if (!new File(inputFile).exists()) {
+      throw new Exception("Specified input file missing: " + inputFile);
+    }
+
+    // Open reader and service
+    final BufferedReader canadianCodeReader = new BufferedReader(new FileReader(inputFile));
+
+    String line = null;
+
+    while ((line = canadianCodeReader.readLine()) != null) {
+      String canadianCode = line;
+      icd10caCanadianCodes.add(canadianCode);
+    }
+    
+    
     //Identify which ICD10CA concepts have an asterisk
     ConceptList icd10caConcepts = contentService.getAllConcepts(icd10caTerminology, icd10caTerminologyVersion);
     for(Concept concept : icd10caConcepts.getConcepts()) {
@@ -162,6 +198,7 @@ public class ICD11ToICD10CAReleaseToExcelMojo extends AbstractMojo {
       }
     }
     
+    canadianCodeReader.close();
     mappingService.close();
     contentService.close();
     
@@ -296,26 +333,26 @@ public class ICD11ToICD10CAReleaseToExcelMojo extends AbstractMojo {
     cell = row.createCell(2);
     cell.setCellValue("CIHI Map - 1st Entry (Map Group 1)");
     
-    cell = row.createCell(5);
+    cell = row.createCell(6);
     cell.setCellValue("CIHI Map - Full Expression");
 
-    cell = row.createCell(6);
+    cell = row.createCell(7);
     cell.setCellValue("CIHI map - Mapping Parameters");
     
-    cell = row.createCell(8);
+    cell = row.createCell(9);
     cell.setCellValue("CIHI Map - Additional Entries");
     
-    cell = row.createCell(35);
+    cell = row.createCell(45);
     cell.setCellValue("WHO map (Map Group 2)");
     
-    cell = row.createCell(37);
+    cell = row.createCell(47);
     cell.setCellValue("WHO - Mapping Parameters");
     
     sheet.addMergedRegion(new CellRangeAddress(0,0,0,1));
-    sheet.addMergedRegion(new CellRangeAddress(0,0,2,4));
-    sheet.addMergedRegion(new CellRangeAddress(0,0,6,7));
-    sheet.addMergedRegion(new CellRangeAddress(0,0,8,34));
-    sheet.addMergedRegion(new CellRangeAddress(0,0,35,36));
+    sheet.addMergedRegion(new CellRangeAddress(0,0,2,5));
+    sheet.addMergedRegion(new CellRangeAddress(0,0,7,8));
+    sheet.addMergedRegion(new CellRangeAddress(0,0,9,44));
+    sheet.addMergedRegion(new CellRangeAddress(0,0,45,46));
     
     row = sheet.createRow(rownum++);
     
@@ -332,6 +369,8 @@ public class ICD11ToICD10CAReleaseToExcelMojo extends AbstractMojo {
     cell.setCellValue("ICD-10-CA Code Title");
     cell = row.createCell(cellnum++);
     cell.setCellValue("ICD-10-CA Code Asterisk");
+    cell = row.createCell(cellnum++);
+    cell.setCellValue("ICD-10-CA Canadian Specific Code");
     // CIHI Cardinality
     cell = row.createCell(cellnum++);
     cell.setCellValue("Cardinality");
@@ -350,6 +389,8 @@ public class ICD11ToICD10CAReleaseToExcelMojo extends AbstractMojo {
         cell.setCellValue("ICD-10-CA Code Title " + start);
         cell = row.createCell(cellnum++);
         cell.setCellValue("ICD-10-CA Asterisk " + start);
+        cell = row.createCell(cellnum++);
+        cell.setCellValue("ICD-10-CA Canadian Specific Code " + start);
     }
     
     // WHO map (Map Group 2)  
@@ -390,9 +431,10 @@ public class ICD11ToICD10CAReleaseToExcelMojo extends AbstractMojo {
       cell.setCellValue(!(outRecord.getIcd10CACode().isEmpty() || outRecord.getIcd10CACode().isBlank()) ? outRecord.getIcd10CACode() : "No target");
       cell = row.createCell(cellnum++);
       cell.setCellValue(outRecord.getIcd10CATerm());
-      // skip asterisk for now
       cell = row.createCell(cellnum++);
       cell.setCellValue(Boolean.valueOf(icd10caAsteriskCodes.contains(outRecord.getIcd10CACode())).toString().toUpperCase());
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(Boolean.valueOf(icd10caCanadianCodes.contains(outRecord.getIcd10CACode())).toString().toUpperCase());
       
       cell = row.createCell(cellnum++);
       cell.setCellValue(!(outRecord.getIcd10CACode().isEmpty() || outRecord.getIcd10CACode().isBlank()) ? outRecord.getCardinality() : "n/a - no target");
@@ -427,10 +469,12 @@ public class ICD11ToICD10CAReleaseToExcelMojo extends AbstractMojo {
               cell.setCellValue(value);
               cell = row.createCell(cellnum++);
               cell.setCellValue(Boolean.valueOf(icd10caAsteriskCodes.contains(key)).toString().toUpperCase());
+              cell = row.createCell(cellnum++);
+              cell.setCellValue(Boolean.valueOf(icd10caCanadianCodes.contains(key)).toString().toUpperCase());
           }
 
       }
-      cellnum = 35;
+      cellnum = 45;
       
       // WHO mapping
       cell = row.createCell(cellnum++);
@@ -493,9 +537,12 @@ public class ICD11ToICD10CAReleaseToExcelMojo extends AbstractMojo {
     cell.setCellValue("ICD-10-CA asterisk");
 
     cell = row.createCell(5);
-    cell.setCellValue("Cardinality");
+    cell.setCellValue("ICD-10-CA canadian specific code");
 
     cell = row.createCell(6);
+    cell.setCellValue("Cardinality");
+
+    cell = row.createCell(7);
     cell.setCellValue("Relation -  Target");
 
     
@@ -528,9 +575,11 @@ public class ICD11ToICD10CAReleaseToExcelMojo extends AbstractMojo {
       cell = row.createCell(cellnum++);
       cell.setCellValue(outRecord.getIcd10CATerm());
       
-      // Asterisk and Cardinality
+      // Asterisk, Canadian Specific Code, and Cardinality
       cell = row.createCell(cellnum++);
       cell.setCellValue(Boolean.valueOf(icd10caAsteriskCodes.contains(outRecord.getIcd10CACode())).toString().toUpperCase());
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(Boolean.valueOf(icd10caCanadianCodes.contains(outRecord.getIcd10CACode())).toString().toUpperCase());
       cell = row.createCell(cellnum++);
       cell.setCellValue(!(outRecord.getIcd10CACode().isEmpty() || outRecord.getIcd10CACode().isBlank()) ? outRecord.getCardinality() : "n/a - no target");
       
@@ -574,6 +623,8 @@ public class ICD11ToICD10CAReleaseToExcelMojo extends AbstractMojo {
               cell.setCellValue(value);
               cell = row.createCell(cellnum++);
               cell.setCellValue(Boolean.valueOf(icd10caAsteriskCodes.contains(key)).toString().toUpperCase());
+              cell = row.createCell(cellnum++);
+              cell.setCellValue(Boolean.valueOf(icd10caCanadianCodes.contains(key)).toString().toUpperCase());
           }
 
       }

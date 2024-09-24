@@ -46,6 +46,8 @@ import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 /**
  * Create the CIHI ICD10CA to ICD11 release file from *
@@ -154,21 +156,47 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
       // ICD-11 Foundation Entity Name and URI and Relation:<br>N/A
       Set<MapNote> mapNotes = mapRecord.getMapNotes();
       for (MapNote mapNote : mapNotes) {
-        if (mapNote.getNote().startsWith("ICD-11 Foundation Entity Name and URI and Relation")) {
+        String mapNoteText = mapNote.getNote();
+        
+        // Cleaning
+        // Get rid of carriage returns
+        mapNoteText = mapNoteText.replaceAll("\r\n", "");
+        // Get rid of spaces between html tags
+        mapNoteText = mapNoteText.replaceAll(">\\s+<","><");
+        // Turn one paragraph ending and another starting into a line break
+        mapNoteText = mapNoteText.replaceAll("</p><p>","<br />");
+        // Get rid of any remaining paragraph tags
+        mapNoteText = mapNoteText.replaceAll("</?p>","");
+        
+        if (mapNoteText.startsWith("ICD-11 Foundation Entity Name and URI and Relation")) {
 
-          if (mapNote.getNote().endsWith("N/A")) {
+          if (mapNoteText.endsWith("N/A")) {
             externalData.setNoteFoundationEntityName("");
             externalData.setNoteRelation("");
             externalData.setNoteURI("");
           }
 
           else {
-            // Split the string by <br>, <br/> or <br />
-            String[] noteParts = mapNote.getNote().split("(?i)<br\\s*/?>");
+            
+            // Parse the HTML
+            Document doc = Jsoup.parse(mapNoteText);
+            
+            // Replace line break tags with a pipe delimiter
+            String cleanedHtml = doc.html().replaceAll("<br ?/?>", "|");
 
-            externalData.setNoteFoundationEntityName(noteParts.length >= 2 ? noteParts[1] : "");
-            externalData.setNoteURI(noteParts.length >= 3 ? noteParts[2] : "");
-            externalData.setNoteRelation(noteParts.length >= 4 ? noteParts[3] : "");
+            // Get text content only, without HTML tags
+            String textContent = Jsoup.parse(cleanedHtml).text();
+            
+            // Split the content on newline (which was the line break tag)
+            String[] noteParts = textContent.split("\\|");
+            
+            String foundationEntityName = noteParts.length >= 2 ? noteParts[1] : "";
+            String uri = noteParts.length >= 3 ? noteParts[2] : "";
+            String relation = noteParts.length >= 4 ? noteParts[3] : "";
+
+            externalData.setNoteFoundationEntityName(foundationEntityName);
+            externalData.setNoteURI(uri);
+            externalData.setNoteRelation(relation);
           }
         }
       }
@@ -229,7 +257,8 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
         externalData.setCanadianSpecificCode(true);
       }
     }
-
+    
+    canadianCodeReader.close();
     mappingService.close();
     contentService.close();
 
@@ -596,21 +625,24 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
     cell.setCellValue("Asterisk");
 
     cell = row.createCell(3);
-    cell.setCellValue("ICD-11 target stem code");
+    cell.setCellValue("Canadian Specific Code");
 
     cell = row.createCell(4);
-    cell.setCellValue("ICD-11 code title");
+    cell.setCellValue("ICD-11 target stem code");
 
     cell = row.createCell(5);
-    cell.setCellValue("ICD-11 Cluster");
+    cell.setCellValue("ICD-11 code title");
 
     cell = row.createCell(6);
-    cell.setCellValue("Cardinality");
+    cell.setCellValue("ICD-11 Cluster");
 
     cell = row.createCell(7);
-    cell.setCellValue("Relation -  Target");
+    cell.setCellValue("Cardinality");
 
     cell = row.createCell(8);
+    cell.setCellValue("Relation -  Target");
+
+    cell = row.createCell(9);
     cell.setCellValue("Relation - Cluster");
     
 
@@ -639,6 +671,10 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
       // Asterisk
       cell = row.createCell(cellnum++);
       cell.setCellValue(externalData.getAsterisk().toString().toUpperCase());
+
+      // Canadian Specific Code
+      cell = row.createCell(cellnum++);
+      cell.setCellValue(externalData.getCanadianSpecificCode().toString().toUpperCase());      
 
       // ICD 11 (Case Mix format wants decimal removed)
       cell = row.createCell(cellnum++);
@@ -683,7 +719,8 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
           cell = row.createCell(cellnum++);
           cell.setCellValue(outRecord.getIcd10CATerm());
           
-          // Skip over Asterisk column
+          // Skip over Asterisk and Canadian Specific Code columns
+          cellnum++;
           cellnum++;
           
           // ICD 11 (Case Mix format wants decimal removed)
