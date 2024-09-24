@@ -4791,6 +4791,16 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
           c.setTerminologyVersion(result.getTerminologyVersion());
           c.setId(result.getId());
         }
+        //ICD10CA <-> ICD11 projects also allow a small list of non-terminologyId targets.
+        //If isValid is true but c == null, it's one of those situations.
+        if (c == null &&
+            ((mapProject.getSourceTerminology().equals("ICD10CA") && mapProject.getDestinationTerminology().equals("ICD11"))
+                || (mapProject.getSourceTerminology().equals("ICD11") && mapProject.getDestinationTerminology().equals("ICD10CA")))){
+          
+          c = new ConceptJpa();
+          c.setTerminologyId(terminologyId);
+          c.setDefaultPreferredName("Target name could not be determined");
+        }        
         // Empty descriptions/relationships
         if (c != null) {
           c.setDescriptions(new HashSet<Description>());
