@@ -17,8 +17,10 @@
 
   <properties>
     <!-- Specify index viewer data -->
-    <index.viewer.groupId>org.ihtsdo.otf.mapping</index.viewer.groupId>
+    <index.viewer.groupId>org.ihtsdo.otf.mapping</index.viewer.groupId>    
+    <!-- 
     <index.viewer.artifactId>index-viewer-data-empty</index.viewer.artifactId>
+    -->
     <index.viewer.version>${releaseVersion}</index.viewer.version>
   </properties>
 
