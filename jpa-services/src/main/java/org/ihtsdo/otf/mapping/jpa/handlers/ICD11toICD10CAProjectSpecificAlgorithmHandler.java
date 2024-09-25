@@ -32,7 +32,7 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
   final static Logger LOGGER =
       LoggerFactory.getLogger(ICD11toICD10CAProjectSpecificAlgorithmHandler.class);
 
-  final static List<String> allowableWHOTargets = new ArrayList(Arrays.asList("No 1:1 WHO map"));  
+  final static List<String> allowableWHOTargets = new ArrayList(Arrays.asList("n/a - not applicable","No 1:1 WHO map"));  
   
   /* see superclass */
   @Override
