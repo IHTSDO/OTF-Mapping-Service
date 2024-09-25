@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.7.55-SNAPSHOT</version>
+    <version>1.7.55</version>
     <relativePath>../../parent</relativePath>
   </parent>
 
