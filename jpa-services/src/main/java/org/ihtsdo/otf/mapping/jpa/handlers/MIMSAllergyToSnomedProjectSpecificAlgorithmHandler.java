@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.ConceptList;
@@ -51,6 +52,7 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
   @Override
   public void initialize() throws Exception {
     Logger.getLogger(getClass()).info("Running initialize for " + getClass().getSimpleName());
+    super.initialize();
     // Populate any project-specific caches.
     cacheAutomaps();
   }  
@@ -218,6 +220,11 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
    * @throws Exception the exception
    */
   private void cacheAutomaps() throws Exception {
+    
+    if (!automaps.isEmpty()) {
+      return;
+    }
+    
     // Lookup if this concept has an existing, auto-generated map record to pre-load
     // Generated automap file must be saved here:
     // {data.dir}/MIMS-Allergy/automap/results.xls
@@ -323,13 +330,12 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
         // Add the entry to the record, and put the updated record in the map
         mimsAllergyAutomapRecord.addMapEntry(mapEntry);
         automaps.put(conceptId, mimsAllergyAutomapRecord);
-        
+
       }
     }
 
 
     Logger.getLogger(getClass()).info("Done caching maps");
-
     preloadMapReader.close();
     contentService.close();
 

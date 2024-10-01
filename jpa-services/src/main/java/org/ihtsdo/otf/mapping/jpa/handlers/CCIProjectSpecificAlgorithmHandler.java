@@ -88,6 +88,7 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
   @Override
   public void initialize() throws Exception {
     Logger.getLogger(getClass()).info("Running initialize for " + getClass().getSimpleName());
+    super.initialize();
     // Populate any project-specific caches.
     cacheCodeRubricsToAdvices();
   }
