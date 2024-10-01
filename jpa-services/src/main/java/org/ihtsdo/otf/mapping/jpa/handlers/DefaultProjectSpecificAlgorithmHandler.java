@@ -63,9 +63,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
   /* see superclass */
   @Override
   public void initialize() throws Exception {
-    final Runnable lookup = new CacheScopeConceptsThread(mapProject.getId());
-    final Thread t = new Thread(lookup);
-    t.start();
+    Set<String> scopeConcepts = ConfigUtility.getScopeConceptsForMapProject(mapProject.getId());
+    if (scopeConcepts == null || scopeConcepts.isEmpty()) {
+      final Runnable lookup = new CacheScopeConceptsThread(mapProject.getId());
+      final Thread t = new Thread(lookup);
+      t.start();
+    }
   }
 
   /* see superclass */

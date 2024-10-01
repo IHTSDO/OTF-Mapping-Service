@@ -117,6 +117,8 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
   @Override
   public void initialize() throws Exception {
     LOGGER.info("Running initialize for " + getClass().getSimpleName());
+    super.initialize();
+    
     // Populate any project-specific caches.
     cacheExistingMaps();
     cacheCodes();
@@ -1360,6 +1362,10 @@ public class ICD10CAProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
     // Up to date map release file must be saved here:
     // {data.dir}/doc/{projectNumber}/preloadMaps/ExtendedMapSnapshot.txt
 
+    if (!existingIcd10Maps.isEmpty()) {
+      return;
+    }
+    
     final ContentService contentService = new ContentServiceJpa();
 
     LOGGER.info("Caching the existing ICD10 maps");
