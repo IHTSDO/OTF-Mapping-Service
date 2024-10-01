@@ -3092,9 +3092,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           }
           member.setMapTarget(fields[10]);
           if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap) {
-            member.setMapRelationId(Long.valueOf(fields[11]));
+            member.setMapRelationId(!fields[11].matches("\\d+") ? null : Long.valueOf(fields[11]));
           } else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ExtendedMap) {
-            member.setMapRelationId(Long.valueOf(fields[12]));
+            member.setMapRelationId(!fields[12].matches("\\d+") ? null : Long.valueOf(fields[12]));
 
           } else {
             throw new Exception("Unsupported map type " + mapProject.getMapRefsetPattern());
