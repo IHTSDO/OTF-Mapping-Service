@@ -65,7 +65,7 @@
     <maven.war.plugin.version>2.6</maven.war.plugin.version>
 
     <!-- <mysql.connector.java.version>8.0.28</mysql.connector.java.version> -->
-    <mysql.connector.java.version>8.0.33</mysql.connector.java.version>
+    <mysql.connector.java.version>8.2.0</mysql.connector.java.version>
     
     <org.apache.commons.lang3.version>3.9</org.apache.commons.lang3.version>
     <org.json.version>20231013</org.json.version>
