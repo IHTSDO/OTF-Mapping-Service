@@ -173,7 +173,7 @@ public class NorwayReplacementTranslationReportMojo extends AbstractOtfMappingMo
 
       int returnedConceptsCount = 0;
       
-      String targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/codesystems?forBranch=MAIN%2FSNOMEDCT-NO%2FREFSETS";
+      String targetUri = "https://dailybuild.terminologi.helsedirektoratet.no/snowstorm/snomed-ct/codesystems?forBranch=MAIN%2FSNOMEDCT-NO%2FREFSETS";
       WebTarget target = client.target(targetUri);
       target = client.target(targetUri);
       Logger.getLogger(getClass()).info(targetUri);
@@ -226,7 +226,7 @@ public class NorwayReplacementTranslationReportMojo extends AbstractOtfMappingMo
         
         returnedConceptsCount = 0;
         
-        targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/"+previousVersionBranch.replaceAll("/", "%2F")+"/concepts?activeFilter=true&returnIdOnly=true&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
+        targetUri = "https://dailybuild.terminologi.helsedirektoratet.no/snowstorm/snomed-ct/"+previousVersionBranch.replaceAll("/", "%2F")+"/concepts?activeFilter=true&returnIdOnly=true&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
         target = client.target(targetUri);
         Logger.getLogger(getClass()).info(targetUri);
      
@@ -271,7 +271,7 @@ public class NorwayReplacementTranslationReportMojo extends AbstractOtfMappingMo
         
         returnedConceptsCount = 0;
         
-        targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/"+currentBranch.replaceAll("/", "%2F")+"/concepts?activeFilter=false&returnIdOnly=true&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
+        targetUri = "https://dailybuild.terminologi.helsedirektoratet.no/snowstorm/snomed-ct/"+currentBranch.replaceAll("/", "%2F")+"/concepts?activeFilter=false&returnIdOnly=true&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
         target = client.target(targetUri);
         Logger.getLogger(getClass()).info(targetUri);
      
@@ -364,7 +364,7 @@ public class NorwayReplacementTranslationReportMojo extends AbstractOtfMappingMo
       
       while (!reachedFinalConcept && inactiveConceptsCount != 0) {
         
-        targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/browser/MAIN%2FSNOMEDCT-NO/concepts?";
+        targetUri = "https://dailybuild.terminologi.helsedirektoratet.no/snowstorm/snomed-ct/browser/MAIN%2FSNOMEDCT-NO/concepts?";
         for(int i=0; i < batchSize; i++ ) {
           targetUri = targetUri + "conceptIds=" + inactivedScopeConcepts.get(counter) + "&";
           counter++;
@@ -468,7 +468,7 @@ public class NorwayReplacementTranslationReportMojo extends AbstractOtfMappingMo
         
         returnedConceptsCount = 0;
         
-        targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/MAIN%2FSNOMEDCT-NO/descriptions?";
+        targetUri = "https://dailybuild.terminologi.helsedirektoratet.no/snowstorm/snomed-ct/MAIN%2FSNOMEDCT-NO/descriptions?";
         for(int i=0; i < batchSize; i++ ) {
           targetUri = targetUri + "conceptIds=" + inactiveAndReplacementTargets.get(counter) + "&";
           counter++;
@@ -690,7 +690,7 @@ public class NorwayReplacementTranslationReportMojo extends AbstractOtfMappingMo
       int returnedConceptsCount = 0;
       
       
-      String targetUri = "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/MAIN%2FSNOMEDCT-NO%2FREFSETS/members?referenceSet="+refsetId+"&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
+      String targetUri = "https://dailybuild.terminologi.helsedirektoratet.no/snowstorm/snomed-ct/MAIN%2FSNOMEDCT-NO%2FREFSETS/members?referenceSet="+refsetId+"&limit="+limit+ (searchAfter != null ? "&searchAfter=" + searchAfter : "");
       WebTarget target = client.target(targetUri);
       target = client.target(targetUri);
       Logger.getLogger(getClass()).info(targetUri);

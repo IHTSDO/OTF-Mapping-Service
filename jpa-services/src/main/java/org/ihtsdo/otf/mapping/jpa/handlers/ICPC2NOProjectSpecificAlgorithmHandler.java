@@ -171,7 +171,7 @@ public class ICPC2NOProjectSpecificAlgorithmHandler extends DefaultProjectSpecif
       // If so, return a pre-populated record with its information
       // If not, return null
       final String url =
-          "https://dailybuild.terminologi.ehelse.no/snowstorm/snomed-ct/browser/MAIN%2FSNOMEDCT-NO%2FREFSETS/members";
+          "https://dailybuild.terminologi.helsedirektoratet.no/snowstorm/snomed-ct/browser/MAIN%2FSNOMEDCT-NO%2FREFSETS/members";
 
       final Client client = ClientBuilder.newClient();
       final String accept = "*/*";
