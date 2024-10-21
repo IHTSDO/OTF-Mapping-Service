@@ -77,8 +77,8 @@
             class="btn btn-xs btn-primary" ng-click="addMapEntry(group)">Add
             Entry</button></li>   
       </ol>     
-      <!-- For ICD10CA to ICD11 project only, show Full at the end of map group 1 -->
-  	  <div ng-show="showFullExpression(group) && project.name == 'v2022 ICD-10-CA to v2022 ICD-11'">Full Expression: {{record.fullexpression}}</div>
+      <!-- For specific projects, show Full at the end of map group 1 -->
+  	  <div ng-show="showFullExpression(group) && showFullExpression(project)">Full Expression: {{record.fullexpression}}</div>
       <hr>
     </li>
   </ol>

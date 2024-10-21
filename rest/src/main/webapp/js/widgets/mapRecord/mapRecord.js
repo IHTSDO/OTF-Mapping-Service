@@ -1027,6 +1027,16 @@ angular
           return false;
         }
 
+		// Only show full expression for projects from ICD10CA to IC11
+        $scope.showFullExpression = function(project) {
+	      if (!project || !project.name) {
+        	return false; // Return false if project or project.name is not defined
+    	  }
+
+    	  const regex = /ICD10CA.*ICD11/;
+    	  return regex.test(project.name);
+        }
+
         // discard changes
         $scope.cancelMapRecord = function() {
 
