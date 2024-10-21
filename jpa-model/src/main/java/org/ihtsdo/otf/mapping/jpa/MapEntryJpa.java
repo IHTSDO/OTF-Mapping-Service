@@ -506,10 +506,9 @@ public class MapEntryJpa implements MapEntry {
     }
 
     // rules must be identical
-    if (this.rule == null && me.getRule() != null) {
-      return false;
-    }
-    if (this.rule != null && !this.rule.equals(me.getRule())) {
+    final String rule1 = this.rule == null ? "" : this.rule;
+    final String rule2 = me.getRule() == null ? "" : me.getRule();
+    if (!rule1.equals(rule2)) {
       return false;
     }
 
@@ -550,7 +549,7 @@ public class MapEntryJpa implements MapEntry {
     }
 
     // additional map entry info must be identical
-    if (this.additionalMapEntryInfos == null && me.getAdditionalMapEntryInfos() != null) {
+    /*if (this.additionalMapEntryInfos == null && me.getAdditionalMapEntryInfos() != null) {
       return false;
     } else if (this.additionalMapEntryInfos != null && me.getAdditionalMapEntryInfos() == null) {
       return false;
@@ -563,7 +562,7 @@ public class MapEntryJpa implements MapEntry {
           return false;
         }
       }
-    }
+    }*/
 
     return true;
   }

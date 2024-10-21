@@ -1728,7 +1728,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @return the hash
    */
   private String getHash(MapEntry entry) {
-    return mapProject.getRefSetId() + entry.getMapRecord().getConceptId() + entry.getMapGroup()
+    return mapProject.getRefSetId() + entry.getMapRecord().getConceptId() + entry.getMapGroup() + entry.getMapPriority()
         + (entry.getRule() == null ? "" : entry.getRule())
         + (entry.getTargetId() == null ? "" : entry.getTargetId());
   }
@@ -2962,11 +2962,19 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           member.setMapAdvice(fields[9]);
           member.setMapTarget(fields[10]);
           if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ComplexMap) {
-            member.setMapRelationId(Long.valueOf(fields[11]));
-          } else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ExtendedMap) {
-            member.setMapRelationId(Long.valueOf(fields[12]));
-
-          } else {
+        	    if (isValidLong(fields[11])) {
+        	        member.setMapRelationId(Long.valueOf(fields[11]));
+        	    } else {
+        	        member.setMapRelationId(0L);  // Set to 0 if invalid
+        	    }
+        	} else if (mapProject.getMapRefsetPattern() == MapRefsetPattern.ExtendedMap) {
+        	    if (isValidLong(fields[12])) {
+        	        member.setMapRelationId(Long.valueOf(fields[12]));
+        	    } else {
+        	        member.setMapRelationId(0L);  // Set to 0 if invalid
+        	    }
+        	}
+          else {
             throw new Exception("Unsupported map type " + mapProject.getMapRefsetPattern());
           }
           // ComplexMap unique attributes NOT set by file (mapBlock
@@ -3015,6 +3023,19 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
     reader.close();
 
   }
+  
+  // helper to parse values in writing to files
+  private boolean isValidLong(String value) {
+	    if (value == null || value.isEmpty()) {
+	        return false;
+	    }
+	    try {
+	        Long.parseLong(value);
+	        return true;
+	    } catch (NumberFormatException e) {
+	        return false;
+	    }
+	}
 
   /**
    * Load map refset from file.
