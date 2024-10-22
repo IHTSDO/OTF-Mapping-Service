@@ -40,9 +40,6 @@ angular
       $scope.appConfig = appConfig;
       $scope.page = 'records';
 
-      // the project id, extracted from route params
-      $scope.projectId = $routeParams.projectId;
-
       // whether the terminology has viewable index
       $scope.indexViewerExists = false;
 
@@ -62,10 +59,8 @@ angular
 
       $scope.conversation = null;
 
-	  // Additional map entry ordering information
-	  $scope.additionalMapEntryInfoOrderingMap = utilService.processOrderingInfo(appConfig['deploy.additional.map.entry.info.ordering']);
-      
-      $scope.notes = utilService.getNotes($scope.projectId);
+      // Additional map entry ordering information
+      $scope.additionalMapEntryInfoOrderingMap = utilService.processOrderingInfo(appConfig['deploy.additional.map.entry.info.ordering']);
 
       // watch for changes to focus project
       $scope.$on('localStorageModule.notification.setFocusProject', function(
@@ -84,6 +79,11 @@ angular
       $scope.currentUser = localStorageService.get('currentUser');
       $scope.currentRole = localStorageService.get('currentRole');
       $scope.preferences = localStorageService.get('preferences');
+
+      $scope.notes = utilService.getNotes($scope.projectId);
+
+      // the project id, extracted from route params
+      $scope.projectId = $routeParams.projectId || $scope.focusProject.id;
 
       // once focus project retrieved, retrieve the concept and records
       $scope.userToken = localStorageService.get('userToken');
