@@ -94,7 +94,7 @@ mapProjectApp
 		    }
 	        
 	        // Skip if no auth header yet
-		    if ($http.defaults.headers.common.Authorization) {
+		    if ($http.defaults.headers.common.Authorization && projectId != undefined) {
 		      gpService.increment();
 		      $http.get(root_mapping + 'mapProject/' + projectId + '/notes').then(
 		        // Success
@@ -127,6 +127,7 @@ mapProjectApp
         // Get notes for this project id
         // Mechanism for asterisk/dagger in ICD10
         this.getNotes = function(projectId) {
+
           var notes = localStorageService.get('notes');
 		  if (notes == null || notes.length == 0) {
 			this.initializeTerminologyNotes(projectId).then(() => {
@@ -135,7 +136,7 @@ mapProjectApp
 		     console.error('Error initializing terminology notes', error);
 		    });
 		  }
-          return notes[projectId];
+          return (notes != undefined) ? notes[projectId] : null;
         };
         
 		// Transform the entries into a post-coordinated expression
