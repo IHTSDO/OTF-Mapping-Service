@@ -80,10 +80,10 @@ angular
       $scope.currentRole = localStorageService.get('currentRole');
       $scope.preferences = localStorageService.get('preferences');
 
-      $scope.notes = utilService.getNotes($scope.projectId);
-
       // the project id, extracted from route params
       $scope.projectId = $routeParams.projectId || $scope.focusProject.id;
+
+      $scope.notes = utilService.getNotes($scope.projectId);
 
       // once focus project retrieved, retrieve the concept and records
       $scope.userToken = localStorageService.get('userToken');
