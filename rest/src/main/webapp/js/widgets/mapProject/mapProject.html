@@ -21,12 +21,12 @@
     </button>
 	
     <!--  destination browsers -->
-    <button ng-show="project.desintationTerminology.includes('SNOMED')"
+    <button ng-show="project.destinationTerminology.includes('SNOMED')"
         class="btn btn-xs btn-primary"
         ng-click="openConceptBrowser()">SNOMEDCT Browser
     </button>
     
-    <button ng-show="!project.desintationTerminology.includes('SNOMED')"
+    <button ng-show="!project.destinationTerminology.includes('SNOMED')"
         class="btn btn-xs btn-primary"		
 		ng-click="openTerminologyBrowser('destination')">{{project.destinationTerminology}} Browser
     </button>
