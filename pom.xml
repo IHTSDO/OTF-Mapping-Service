@@ -1,72 +1,96 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-  <!-- Module Metadata - no parent -->
-  <groupId>org.ihtsdo.otf.mapping</groupId>
-  <artifactId>ihtsdo-mapping-service</artifactId>
-  <version>1.7.59-SNAPSHOT</version>
-  <packaging>pom</packaging>
-  <name>IHTSDO RF2 Data Model</name>
-  <description>Aggregator and parent for interfaces and default implementations of RF2 data model for OTF services</description>
-  <properties>
-  	<tmp>TMP</tmp>
+	<!-- Module Metadata - no parent -->
+	<groupId>org.ihtsdo.otf.mapping</groupId>
+	<artifactId>ihtsdo-mapping-service</artifactId>
+	<version>1.7.59-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>IHTSDO RF2 Data Model</name>
+	<description>Aggregator and parent for interfaces and default
+		implementations of RF2 data model for OTF services</description>
+	<properties>
+		<tmp>TMP</tmp>
 	</properties>
-  
-  <!-- Sub-modules -->
-  <modules>
-    <module>parent</module>
-    <module>config</module>
-    <module>model</module>
-    <module>jpa-model</module>
-    <module>services</module>
-    <module>jpa-services</module>
-	<module>reports</module>
-    <module>rest</module>
-	<module>rest-client</module>
-    <module>admin</module>
-	<module>mojo</module>
-    <module>integration-tests</module>
-  </modules>
 
-  <build>
-    <plugins>
+	<!-- Sub-modules -->
+	<modules>
+		<module>parent</module>
+		<module>config</module>
+		<module>model</module>
+		<module>jpa-model</module>
+		<module>services</module>
+		<module>jpa-services</module>
+		<module>reports</module>
+		<module>rest</module>
+		<module>rest-client</module>
+		<module>admin</module>
+		<module>mojo</module>
+		<module>integration-tests</module>
+	</modules>
 
-      <!-- JGitflow configuration -->
-      <plugin>
-        <groupId>external.atlassian.jgitflow</groupId>
-        <artifactId>jgitflow-maven-plugin</artifactId>
-        <version>1.0-m4.3</version>
-        <configuration>
-          <autoVersionSubmodules>true</autoVersionSubmodules>
-          <enableSshAgent>true</enableSshAgent>
-          <noDeploy>true</noDeploy>
-          <flowInitContext>
-            <masterBranchName>master</masterBranchName>
-            <developBranchName>develop</developBranchName>
-            <featureBranchPrefix>feature-</featureBranchPrefix>
-            <releaseBranchPrefix>release-</releaseBranchPrefix>
-            <hotfixBranchPrefix>hotfix-</hotfixBranchPrefix>
-            <versionTagPrefix>version-</versionTagPrefix>
-          </flowInitContext>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+	<build>
+		<plugins>
 
-  <!-- Distribution management -->
-  <distributionManagement>
-    <repository>
-      <id>ihtsdo-public-nexus</id>
-      <name>IHTSDO Public Nexus Releases</name>
-      <url>https://maven3.ihtsdotools.org/repository/maven-releases/</url>
-    </repository>
-    <snapshotRepository>
-      <id>ihtsdo-public-nexus</id>
-      <name>IHTSDO Public Nexus Snapshots</name>
-      <url>https://maven3.ihtsdotools.org/repository/maven-snapshots/</url>
-    </snapshotRepository>
-  </distributionManagement>
+			<!-- JGitflow configuration -->
+			<plugin>
+				<groupId>external.atlassian.jgitflow</groupId>
+				<artifactId>jgitflow-maven-plugin</artifactId>
+				<version>1.0-m4.3</version>
+				<configuration>
+					<autoVersionSubmodules>true</autoVersionSubmodules>
+					<enableSshAgent>true</enableSshAgent>
+					<noDeploy>true</noDeploy>
+					<flowInitContext>
+						<masterBranchName>master</masterBranchName>
+						<developBranchName>develop</developBranchName>
+						<featureBranchPrefix>feature-</featureBranchPrefix>
+						<releaseBranchPrefix>release-</releaseBranchPrefix>
+						<hotfixBranchPrefix>hotfix-</hotfixBranchPrefix>
+						<versionTagPrefix>version-</versionTagPrefix>
+					</flowInitContext>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.owasp</groupId>
+				<artifactId>dependency-check-maven</artifactId>
+				<version>7.1.0</version>
+				<configuration>
+					<ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
+					<retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
+					<nuspecAnalyzerEnabled>false</nuspecAnalyzerEnabled>
+					<assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+					<skipProvidedScope>true</skipProvidedScope>
+					<suppressionFiles>${basedir}/suppressed.xml</suppressionFiles>
+					<failBuildOnCVSS>7</failBuildOnCVSS>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+	</build>
+
+	<!-- Distribution management -->
+	<distributionManagement>
+		<repository>
+			<id>ihtsdo-public-nexus</id>
+			<name>IHTSDO Public Nexus Releases</name>
+			<url>https://maven3.ihtsdotools.org/repository/maven-releases/</url>
+		</repository>
+		<snapshotRepository>
+			<id>ihtsdo-public-nexus</id>
+			<name>IHTSDO Public Nexus Snapshots</name>
+			<url>https://maven3.ihtsdotools.org/repository/maven-snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
 
 </project>
