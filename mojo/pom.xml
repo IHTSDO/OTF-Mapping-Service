@@ -45,7 +45,7 @@
       <artifactId>mapping-rest</artifactId>
       <classifier>classes</classifier>
     </dependency>
-    
+
 
     <!-- Maven invoker -->
     <dependency>
@@ -54,7 +54,7 @@
     </dependency>
 
     <!-- JPA dependencies -->
-    <!-- <dependency> <groupId>org.hibernate.javax.persistence</groupId> <artifactId>hibernate-jpa-2.0-api</artifactId> 
+    <!-- <dependency> <groupId>org.hibernate.javax.persistence</groupId> <artifactId>hibernate-jpa-2.0-api</artifactId>
       </dependency> -->
     <dependency>
       <groupId>javax.transaction</groupId>
@@ -73,7 +73,7 @@
       <artifactId>hibernate-envers</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.hibernate</groupId>
+      <groupId>org.hibernate.validator</groupId>
       <artifactId>hibernate-validator</artifactId>
     </dependency>
     <dependency>
@@ -89,10 +89,14 @@
       <artifactId>maven-plugin-api</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.apache.maven.plugin-tools</groupId>
+      <artifactId>maven-plugin-annotations</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>xom</groupId>
       <artifactId>xom</artifactId>
     </dependency>
-
     <dependency>
       <groupId>org.glassfish.jaxb</groupId>
       <artifactId>jaxb-runtime</artifactId>
@@ -101,7 +105,6 @@
       <groupId>javax.xml.bind</groupId>
       <artifactId>jaxb-api</artifactId>
     </dependency>
-
     <dependency>
       <groupId>sax</groupId>
       <artifactId>sax</artifactId>
@@ -110,8 +113,7 @@
       <groupId>org.jsoup</groupId>
       <artifactId>jsoup</artifactId>
     </dependency>
-    
-    
+
   </dependencies>
 
   <build>
@@ -119,9 +121,19 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
-        <version>3.6.0</version>
+        <configuration>
+          <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
+        </configuration>
+        <executions>
+          <execution>
+            <id>default-descriptor</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>descriptor</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
-      <!-- other plugins -->
     </plugins>
   </build>
 </project>

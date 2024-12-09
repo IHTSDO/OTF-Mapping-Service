@@ -33,7 +33,7 @@
     </dependency>
 
     <!-- JPA dependencies -->
-    <!-- 
+    <!--
     <dependency>
       <groupId>org.hibernate.javax.persistence</groupId>
       <artifactId>hibernate-jpa-2.0-api</artifactId>
@@ -64,7 +64,7 @@
       <artifactId>hibernate-envers</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.hibernate</groupId>
+      <groupId>org.hibernate.validator</groupId>
       <artifactId>hibernate-validator</artifactId>
     </dependency>
     <dependency>
@@ -131,12 +131,12 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
     </dependency>
-    
+
     <dependency>
     	<groupId>commons-net</groupId>
     	<artifactId>commons-net</artifactId>
