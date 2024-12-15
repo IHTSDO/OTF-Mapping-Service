@@ -28,11 +28,11 @@
       <groupId>com.sun.mail</groupId>
       <artifactId>javax.mail</artifactId>
     </dependency>
-    
+
     <!-- Logging -->
     <dependency>
       <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
+      <artifactId>slf4j-reload4j</artifactId>
     </dependency>
 
     <!-- Jersey integration -->
@@ -45,17 +45,17 @@
     	<groupId>org.reflections</groupId>
     	<artifactId>reflections</artifactId>
 	</dependency>
-	
+
 	<dependency>
-	  <groupId>com.amazonaws</groupId>
-	  <artifactId>aws-java-sdk</artifactId>
+	  <groupId>software.amazon.awssdk</groupId>
+	  <artifactId>s3</artifactId>
 	</dependency>
-  
+
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
     </dependency>
-	
+
   </dependencies>
 
 </project>

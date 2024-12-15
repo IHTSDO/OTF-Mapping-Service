@@ -75,7 +75,7 @@
     <!-- Logging -->
     <dependency>
       <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
+      <artifactId>slf4j-reload4j</artifactId>
     </dependency>
 
     <!-- Lucene -->
@@ -157,9 +157,14 @@
 	    <scope>compile</scope>
 	</dependency>
 
+  <dependency>
+    <groupId>jakarta.validation</groupId>
+    <artifactId>jakarta.validation-api</artifactId>
+  </dependency>
+
 	<dependency>
-	  <groupId>com.amazonaws</groupId>
-	  <artifactId>aws-java-sdk</artifactId>
+	  <groupId>software.amazon.awssdk</groupId>
+	  <artifactId>s3</artifactId>
 	</dependency>
 
   </dependencies>

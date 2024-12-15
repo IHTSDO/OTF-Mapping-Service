@@ -54,18 +54,26 @@
 					</flowInitContext>
 				</configuration>
 			</plugin>
+
 			<plugin>
 				<groupId>org.owasp</groupId>
 				<artifactId>dependency-check-maven</artifactId>
-				<version>7.1.0</version>
+				<version>7.4.4</version>
 				<configuration>
-					<ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
-					<retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
-					<nuspecAnalyzerEnabled>false</nuspecAnalyzerEnabled>
-					<assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
-					<skipProvidedScope>true</skipProvidedScope>
-					<suppressionFiles>${basedir}/suppressed.xml</suppressionFiles>
 					<failBuildOnCVSS>7</failBuildOnCVSS>
+					<formats>
+						<format>HTML</format>
+						<format>JSON</format>
+					</formats>
+					<failOnError>false</failOnError>
+					<skipSystemScope>true</skipSystemScope>
+					<assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+					<retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
+					<nodeAnalyzerEnabled>false</nodeAnalyzerEnabled>
+					<nodeAuditAnalyzerEnabled>false</nodeAuditAnalyzerEnabled>
+					<suppressionFiles>
+					<suppressionFiles>${maven.multiModuleProjectDirectory}/suppressed.xml</suppressionFiles>
+					</suppressionFiles>
 				</configuration>
 				<executions>
 					<execution>

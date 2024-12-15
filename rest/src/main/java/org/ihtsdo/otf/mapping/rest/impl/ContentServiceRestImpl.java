@@ -15,6 +15,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -97,16 +98,19 @@ import org.ihtsdo.otf.mapping.services.MetadataService;
 import org.ihtsdo.otf.mapping.services.SecurityService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.common.collect.LinkedListMultimap;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.core.sync.ResponseTransformer;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
 /**
  * REST implementation for content service.
@@ -1647,10 +1651,11 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
     try {
       // Access zipped awsFile
-      AmazonS3 s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
+      final S3Client s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
 
       final String bucketName = "release-ihtsdo-prod-published";
-      S3Object s3object = s3Client.getObject(bucketName, awsZipFileName);
+      final GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(awsZipFileName)
+          .build();
 
       // Download awsFile to temp directory
       File tempDir = FileUtils.getTempDirectory();
@@ -1661,11 +1666,12 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       Logger.getLogger(getClass())
           .info("loadTerminologyAwsRf2Snapshot - downloading " + terminology
               + " " + version + " to " + placementDir);
-      S3ObjectInputStream inputStream = s3object.getObjectContent();
-      File zippedFile = new File(placementDir,
-          awsZipFileName.substring(awsZipFileName.lastIndexOf('/') + 1));
-      FileUtils.copyInputStreamToFile(inputStream, zippedFile);
-      inputStream.close();
+
+      s3Client.getObject(getObjectRequest,
+          ResponseTransformer.toFile(Paths.get(placementDir.getAbsolutePath(),
+              awsZipFileName.substring(awsZipFileName.lastIndexOf('/') + 1))));
+
+      final File zippedFile = new File(placementDir, awsZipFileName.substring(awsZipFileName.lastIndexOf('/') + 1));
 
       // UNZIP to Placement
       unzipToDirectory(zippedFile, placementDir);
@@ -1689,8 +1695,10 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
     } finally {
       // Remove directory
       FileUtils.deleteDirectory(placementDir);
+      if (algo != null) {
       algo.close();
     }
+  }
   }
 
   /* see superclass */
@@ -2061,10 +2069,11 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
       try {
         // Access zipped awsFile
-        AmazonS3 s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
+        final S3Client s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
 
         final String bucketName = "release-ihtsdo-prod-published";
-        S3Object s3object = s3Client.getObject(bucketName, awsZipFileName);
+        final GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(awsZipFileName)
+            .build();
 
         // Download awsFile to temp directory
         File tempDir = FileUtils.getTempDirectory();
@@ -2072,13 +2081,10 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
             + "TerminologyLoad_" + startTimeOrig);
         placementDir.mkdir();
 
-        Logger.getLogger(getClass()).info("Downloading " + terminology + " "
-            + loadVersion + " to " + placementDir);
-        S3ObjectInputStream inputStream = s3object.getObjectContent();
-        File zippedFile = new File(placementDir,
-            awsZipFileName.substring(awsZipFileName.lastIndexOf('/') + 1));
-        FileUtils.copyInputStreamToFile(inputStream, zippedFile);
-        inputStream.close();
+        Logger.getLogger(getClass())
+            .info("Downloading " + terminology + " " + loadVersion + " to " + placementDir);
+        final File zippedFile = new File(placementDir, awsZipFileName.substring(awsZipFileName.lastIndexOf('/') + 1));
+        s3Client.getObject(getObjectRequest, ResponseTransformer.toFile(zippedFile.toPath()));
 
         // UNZIP to Placement
         Logger.getLogger(getClass()).info("Decompressing " + zippedFile);
@@ -2280,10 +2286,12 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
       File placementDir = null;
       try {
         // Access zipped awsFile
-        AmazonS3 s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
+        final S3Client s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
 
         final String bucketName = "release-ihtsdo-prod-published";
-        S3Object s3object = s3Client.getObject(bucketName, awsFileName);
+        final GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(awsFileName)
+            .build();
+        final ResponseInputStream<GetObjectResponse> s3object = s3Client.getObject(getObjectRequest);
 
         // Save awsFile to temp directory
         File tempDir = FileUtils.getTempDirectory();
@@ -2291,13 +2299,10 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
             + "TerminologyLoad_" + startTimeOrig);
         placementDir.mkdir();
 
-        Logger.getLogger(getClass())
-            .info("Downloading " + awsFileName + " to " + placementDir);
-        S3ObjectInputStream inputStream = s3object.getObjectContent();
-        File downloadedFile = new File(placementDir,
-            awsFileName.substring(awsFileName.lastIndexOf('/') + 1));
-        FileUtils.copyInputStreamToFile(inputStream, downloadedFile);
-        inputStream.close();
+        Logger.getLogger(getClass()).info("Downloading " + awsFileName + " to " + placementDir);
+        final File downloadedFile = new File(placementDir, awsFileName.substring(awsFileName.lastIndexOf('/') + 1));
+        FileUtils.copyInputStreamToFile(s3object, downloadedFile);
+        s3object.close();
 
         // Remove any inactive rows
         File filteredFile = new File(placementDir,
@@ -2544,10 +2549,11 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
         }
 
         // Access zipped awsFile
-        AmazonS3 s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
+        final S3Client s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
 
         final String bucketName = "release-ihtsdo-prod-published";
-        S3Object s3object = s3Client.getObject(bucketName, awsFileName);
+        final GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(awsFileName)
+            .build();
 
         // Save awsFile to temp directory
         File tempDir = FileUtils.getTempDirectory();
@@ -2555,11 +2561,9 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
             + "TerminologyLoad_" + startTimeOrig);
         placementDir.mkdir();
 
-        Logger.getLogger(getClass())
-            .info("Downloading " + awsFileName + " to " + placementDir);
-        S3ObjectInputStream inputStream = s3object.getObjectContent();
-        File downloadedFile = new File(placementDir,
-            awsFileName.substring(awsFileName.lastIndexOf('/') + 1));
+        Logger.getLogger(getClass()).info("Downloading " + awsFileName + " to " + placementDir);
+        final ResponseInputStream<GetObjectResponse> inputStream = s3Client.getObject(getObjectRequest);
+        final File downloadedFile = new File(placementDir, awsFileName.substring(awsFileName.lastIndexOf('/') + 1));
         FileUtils.copyInputStreamToFile(inputStream, downloadedFile);
         inputStream.close();
 
@@ -2657,32 +2661,31 @@ public class ContentServiceRestImpl extends RootServiceRestImpl
 
       // Connect to server
       final String bucketName = "release-ihtsdo-prod-published";
-      AmazonS3 s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
+      final S3Client s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
 
-      List<S3ObjectSummary> fullKeyList = new ArrayList<S3ObjectSummary>();
-      ObjectListing objects = s3Client.listObjects(bucketName, "international");
+      final List<S3Object> fullKeyList = new ArrayList<>();
+      String continuationToken = null;
 
-      fullKeyList = objects.getObjectSummaries();
+      do {
+        final ListObjectsV2Request listObjectsRequest = ListObjectsV2Request.builder()
+            .bucket(bucketName)
+            .prefix("international")
+            .continuationToken(continuationToken)
+            .build();
 
-      objects = s3Client.listNextBatchOfObjects(objects);
+        final ListObjectsV2Response listObjectsResponse = s3Client.listObjectsV2(listObjectsRequest);
+        fullKeyList.addAll(listObjectsResponse.contents());
+        continuationToken = listObjectsResponse.nextContinuationToken();
+      } while (continuationToken != null);
 
-      while (objects.isTruncated()) {
-        fullKeyList.addAll(objects.getObjectSummaries());
-        objects = s3Client.listNextBatchOfObjects(objects);
-      }
-
-      fullKeyList.addAll(objects.getObjectSummaries());
-      TerminologyVersionList returnList = new TerminologyVersionList();
-      for (S3ObjectSummary obj : fullKeyList) {
-        if (obj.getKey().endsWith("zip") && obj.getKey().contains(terminology)
-            && !obj.getKey().contains("published_build_backup")
-            && (obj.getKey().contains(lastYear)
-                || obj.getKey().contains(currentYear)
-                || obj.getKey().contains(nextYear))
-            && (obj.getKey().matches(".*\\d.zip")
-                || obj.getKey().matches(".*\\dZ.zip"))) {
-          TerminologyVersion tv =
-              new TerminologyVersion(obj.getKey(), terminology);
+      final TerminologyVersionList returnList = new TerminologyVersionList();
+      for (final S3Object obj : fullKeyList) {
+        if (obj.key().endsWith("zip") && obj.key().contains(terminology)
+            && !obj.key().contains("published_build_backup")
+            && (obj.key().contains(lastYear) || obj.key().contains(currentYear)
+                || obj.key().contains(nextYear))
+            && (obj.key().matches(".*\\d.zip") || obj.key().matches(".*\\dZ.zip"))) {
+          final TerminologyVersion tv = new TerminologyVersion(obj.key(), terminology);
           tv.identifyScope();
           returnList.addTerminologyVersion(tv);
         }

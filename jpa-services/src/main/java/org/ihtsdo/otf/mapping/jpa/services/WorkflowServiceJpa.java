@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 import javax.persistence.NoResultException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.FeedbackConversationList;
 import org.ihtsdo.otf.mapping.helpers.FeedbackConversationListJpa;
@@ -75,7 +76,6 @@ import org.ihtsdo.otf.mapping.workflow.TrackingRecordJpa;
 import org.ihtsdo.otf.mapping.workflow.WorkflowException;
 import org.ihtsdo.otf.mapping.workflow.WorkflowExceptionJpa;
 
-import com.amazonaws.util.StringUtils;
 
 /**
  * Default workflow service implementation.
@@ -1077,7 +1077,7 @@ public class WorkflowServiceJpa extends MappingServiceJpa
       if (mapProject.isTeamBased() && !teamAssignedConcepts.isEmpty()) {
         String team = teamAssignedConcepts
             .get(mapProject.getId() + "||" + concept.getTerminologyId());
-        if (!StringUtils.isNullOrEmpty(team)) {
+        if (!StringUtils.isBlank(team)) {
 
           Logger.getLogger(getClass()).info("Tracking record set team name:"
               + team + " for: " + trackingRecord.getTerminologyId());

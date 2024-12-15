@@ -32,7 +32,7 @@
     <!-- Logger -->
     <dependency>
       <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
+      <artifactId>slf4j-reload4j</artifactId>
     </dependency>
 
     <!-- Websocket API -->
@@ -47,12 +47,12 @@
 <!--       <groupId>org.glassfish.jersey.core</groupId> -->
 <!--       <artifactId>jersey-client</artifactId> -->
 <!--     </dependency> -->
-    
+
 <!--     <dependency> -->
 <!--       <groupId>org.glassfish.jersey.media</groupId> -->
 <!--       <artifactId>jersey-media-json-jackson</artifactId> -->
 <!--     </dependency> -->
-    
+
 <!--     <dependency> -->
 <!--       <groupId>org.glassfish.jersey.media</groupId> -->
 <!--       <artifactId>jersey-media-multipart</artifactId> -->
