@@ -69,4 +69,10 @@
     <cve>CVE-2024-7254</cve>
   </suppress>
 
+  <!-- CVE-2023-45960 was marked as a false positive but is still scanned -->
+  <suppress>
+    <notes><![CDATA[file name: org.dom4j-2.1.3.jar]]></notes>
+    <packageUrl regex="true">^pkg:maven/org.dom4j/dom4j@2.1.3</packageUrl>
+    <cve>CVE-2023-45960</cve>
+  </suppress>
 </suppressions>
