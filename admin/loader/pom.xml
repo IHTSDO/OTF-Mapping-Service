@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.7.58</version>
+    <version>1.7.59</version>
     <relativePath>../../parent</relativePath>
   </parent>
 
@@ -1094,6 +1094,58 @@
     </profile>    
     
     
+    <profile>
+      <id>CihiICD10CAToICD11ReleaseToRF2Import</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>cihi-icd10ca-to-icd11-release-to-rf2-import</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>cihi-icd10ca-to-icd11-release-to-rf2-import</goal>
+                </goals>
+                <configuration>
+                  <releaseFile>${releaseFile}</releaseFile>
+                  <currentRefsetId>${current.refset.id}</currentRefsetId>
+                  <newRefsetId>${new.refset.id}</newRefsetId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>  
+    
+    <profile>
+      <id>CihiICD11ToICD10CAReleaseToRF2Import</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>cihi-icd11-to-icd10ca-release-to-rf2-import</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>cihi-icd11-to-icd10ca-release-to-rf2-import</goal>
+                </goals>
+                <configuration>
+                  <releaseFile>${releaseFile}</releaseFile>
+                  <currentRefsetId>${current.refset.id}</currentRefsetId>
+                  <newRefsetId>${new.refset.id}</newRefsetId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>     
+     
     <profile>
       <id>MappingCompareReport</id>
       <build>
