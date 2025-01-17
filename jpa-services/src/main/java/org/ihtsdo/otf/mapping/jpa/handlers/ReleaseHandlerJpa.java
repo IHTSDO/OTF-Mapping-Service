@@ -572,7 +572,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           MapEntry newEntry = new MapEntryJpa();
           newEntry.setMapAdvices(me.getMapAdvices());
           newEntry.setMapGroup(me.getMapGroup());
-          newEntry.setMapPriority(me.getMapPriority());
+          //newEntry.setMapPriority(me.getMapPriority()); TODO Reinstate
           newEntry.setMapBlock(me.getMapBlock());
           newEntry.setMapRecord(mapRecord);
           newEntry.setRule(mapProject.isRuleBased() ? me.getRule() : "");
@@ -1716,7 +1716,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    */
   @SuppressWarnings("static-method")
   private String getHash(ComplexMapRefSetMember c) {
-    return c.getRefSetId() + c.getConcept().getTerminologyId() + c.getMapGroup() + c.getMapPriority()
+    return c.getRefSetId() + c.getConcept().getTerminologyId() + c.getMapGroup() //+ c.getMapPriority() TODO: Reinstate
         + (c.getMapRule() == null ? "" : c.getMapRule())
         + (c.getMapTarget() == null ? "" : c.getMapTarget());
   }
@@ -1728,7 +1728,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @return the hash
    */
   private String getHash(MapEntry entry) {
-    return mapProject.getRefSetId() + entry.getMapRecord().getConceptId() + entry.getMapGroup() + entry.getMapPriority()
+    return mapProject.getRefSetId() + entry.getMapRecord().getConceptId() + entry.getMapGroup() //+ entry.getMapPriority() TODO: Reinstate
         + (entry.getRule() == null ? "" : entry.getRule())
         + (entry.getTargetId() == null ? "" : entry.getTargetId());
   }
