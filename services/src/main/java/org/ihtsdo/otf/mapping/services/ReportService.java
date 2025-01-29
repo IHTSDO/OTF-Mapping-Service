@@ -283,13 +283,15 @@ public interface ReportService extends RootService {
    * Removes the reports for map project in the specified date range. If a null
    * start date is passed 01/01/1970 is used. If a null end date is passed "now"
    * is used.
+   * If keepManualRuns is set to True, it will only delete auto-run reports, and will keep reports that were run manually 
    *
    * @param mapProject the map project
    * @param startDate the start date
    * @param endDate the end date
+   * @param keepManualRuns the keep Manual Runs
    */
   public void removeReportsForMapProject(MapProject mapProject, Date startDate,
-    Date endDate);
+    Date endDate, boolean keepManualRuns);
 
   /**
    * Gets the report result items for report result.

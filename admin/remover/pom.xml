@@ -280,6 +280,7 @@
                   <refsetId>${refset.id}</refsetId>
                   <startDate>${start.date}</startDate>
                   <endDate>${end.date}</endDate>
+                  <keepManualRuns>${keep.manual.runs}</keepManualRuns>
                 </configuration>
               </execution>
             </executions>
