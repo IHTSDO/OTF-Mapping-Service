@@ -455,7 +455,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           continue;
         }
 
-        prevMembersHashMap.put(getHash(member), member);
+        prevMembersHashMap.put(getHash(member, mapProject.isPropagatedFlag()), member);
       }
 
       // output size of each collection
@@ -572,7 +572,9 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
           MapEntry newEntry = new MapEntryJpa();
           newEntry.setMapAdvices(me.getMapAdvices());
           newEntry.setMapGroup(me.getMapGroup());
-          //newEntry.setMapPriority(me.getMapPriority()); TODO Reinstate
+          if (!mapProject.isPropagatedFlag()) {
+        	  newEntry.setMapPriority(me.getMapPriority());
+          }
           newEntry.setMapBlock(me.getMapBlock());
           newEntry.setMapRecord(mapRecord);
           newEntry.setRule(mapProject.isRuleBased() ? me.getRule() : "");
@@ -673,7 +675,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
               member = new ComplexMapRefSetMemberJpa(new SimpleMapRefSetMemberJpa(member));
             }
 
-            final String uuidStr = getHash(member);
+            final String uuidStr = getHash(member, mapProject.isPropagatedFlag());
 
             // attempt to retrieve any existing complex map ref set
             // member
@@ -1715,8 +1717,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @return the string
    */
   @SuppressWarnings("static-method")
-  private String getHash(ComplexMapRefSetMember c) {
-    return c.getRefSetId() + c.getConcept().getTerminologyId() + c.getMapGroup() //+ c.getMapPriority() TODO: Reinstate
+  private String getHash(ComplexMapRefSetMember c, boolean isUpPropogated) {
+    return c.getRefSetId() + c.getConcept().getTerminologyId() + c.getMapGroup() + (!isUpPropogated ? c.getMapPriority() : "")
         + (c.getMapRule() == null ? "" : c.getMapRule())
         + (c.getMapTarget() == null ? "" : c.getMapTarget());
   }
@@ -1727,8 +1729,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * @param entry the entry
    * @return the hash
    */
-  private String getHash(MapEntry entry) {
-    return mapProject.getRefSetId() + entry.getMapRecord().getConceptId() + entry.getMapGroup() //+ entry.getMapPriority() TODO: Reinstate
+  private String getHash(MapEntry entry, boolean isUpPropogated) {
+    return mapProject.getRefSetId() + entry.getMapRecord().getConceptId() + entry.getMapGroup() + (!isUpPropogated ? entry.getMapPriority() : "")
         + (entry.getRule() == null ? "" : entry.getRule())
         + (entry.getTargetId() == null ? "" : entry.getTargetId());
   }
@@ -3287,7 +3289,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         for (MapEntry recordEntry : mapRecord.getMapEntries()) {
           boolean entryMatched = false;
           for (ComplexMapRefSetMember member : members) {
-            if (getHash(recordEntry).equals(getHash(member))) {
+            if (getHash(recordEntry, mapProject.isPropagatedFlag()).equals(getHash(member, mapProject.isPropagatedFlag()))) {
               entryMatched = true;
               break;
             }
@@ -3306,7 +3308,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
         int priorMapPriority = 0;
         for (ComplexMapRefSetMember member : members) {
 
-          final String memberHash = getHash(member);
+          final String memberHash = getHash(member, mapProject.isPropagatedFlag());
 
           MapEntry releaseEntry = this.getMapEntryForComplexMapRefSetMember(member);
           releaseEntry.setMapRecord(mapRecord);
@@ -3322,7 +3324,7 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
 
           boolean entryMatched = false;
           for (MapEntry recordEntry : mapRecord.getMapEntries()) {
-            if (getHash(recordEntry).equals(memberHash)) {
+            if (getHash(recordEntry, mapProject.isPropagatedFlag()).equals(memberHash)) {
               entryMatched = true;
               if (entryMatched && !releaseEntry.isEquivalent(recordEntry)) {
                 logger.info(
