@@ -125,6 +125,13 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
       throw e;
     }
   }
+  
+
+  /* see superclass */
+  @Override
+  public Boolean getClearAdditionalMapEntryInfoOnChange() {
+    return Boolean.TRUE;
+  }  
 
   /* see superclass */
   @Override
