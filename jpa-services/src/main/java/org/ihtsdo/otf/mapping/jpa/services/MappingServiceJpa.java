@@ -2739,6 +2739,20 @@ public class MappingServiceJpa extends RootServiceJpa
       return new SearchResultListJpa();
     }
   }
+  
+  /* see superclass */
+  @Override
+  public Boolean getClearDataOnChangeForMapProject(Long mapProjectId)
+    throws Exception {
+    Logger.getLogger(MappingServiceJpa.class)
+        .info("Getting clear data on change for project - " + mapProjectId);
+
+    ProjectSpecificAlgorithmHandler algorithmHandler = getProjectSpecificAlgorithmHandler(
+        getMapProject(mapProjectId));
+    
+    return algorithmHandler.getClearAdditionalMapEntryInfoOnChange();
+    
+  }  
 
   /* see superclass */
   @Override

@@ -719,7 +719,18 @@ public interface MappingServiceRest {
      */
     SearchResultList getTagsForMapProject(Long mapProjectId, String authToken)
           throws Exception;	
-	
+
+    /**
+     * Returns whether map project is set to clear data on map target change.
+     *
+     * @param mapProjectId the map project id
+     * @param authToken the auth token
+     * @return the Boolean clear data on change
+     * @throws Exception the exception
+     */
+    Boolean getClearDataOnChange(Long mapProjectId, String authToken)
+          throws Exception;     
+    
 	// ///////////////////////////////////////////////
 	// Role Management Services
 	// ///////////////////////////////////////////////
