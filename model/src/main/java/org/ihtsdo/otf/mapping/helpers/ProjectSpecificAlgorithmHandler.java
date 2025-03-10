@@ -201,6 +201,13 @@ public interface ProjectSpecificAlgorithmHandler extends Configurable {
    * @return the module dependency ref set id
    */
   public String getModuleDependencyRefSetId();
+  
+  /**
+   * Returns the clear additional map entry info on change.
+   *
+   * @return the clear additional map entry info on change
+   */
+  public Boolean getClearAdditionalMapEntryInfoOnChange();
 
   /**
    * Validate for release.

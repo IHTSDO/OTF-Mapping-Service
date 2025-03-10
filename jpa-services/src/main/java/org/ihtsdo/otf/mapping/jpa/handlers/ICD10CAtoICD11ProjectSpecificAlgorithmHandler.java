@@ -129,6 +129,12 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
 
   /* see superclass */
   @Override
+  public Boolean getClearAdditionalMapEntryInfoOnChange() {
+    return Boolean.TRUE;
+  }  
+  
+  /* see superclass */
+  @Override
   public boolean isSourceCodeValid(final String terminologyId) throws Exception {
 
     try (final ContentService contentService = new ContentServiceJpa();) {
@@ -353,6 +359,58 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
       }
 
       //
+      // PREDICATE: 2nd Group (WHO target) target mismatch reason must be "n/a - match" if it matches 1st Group (CIHI target)
+      //
+      String WHOTarget = "";
+      String CIHITarget = "";
+      String targetMismatchReason = "";
+      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+        final MapEntry entry = mapRecord.getMapEntries().get(i);
+        if (entry.getMapGroup() == 1 && entry.getMapPriority() == 1) {
+          CIHITarget = entry.getTargetId();
+        }
+        if (entry.getMapGroup() == 2 && entry.getMapPriority() == 1) {
+          WHOTarget = entry.getTargetId();
+          for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
+              .getAdditionalMapEntryInfos()) {
+            if (additionalMapEntryInfo.getField().equals("Target Mismatch Reason")) {
+              targetMismatchReason = additionalMapEntryInfo.getValue();
+            }
+          }
+        }
+      }      
+      if(WHOTarget.equals(CIHITarget) && !targetMismatchReason.equals("n/a - Match"))
+      {
+        result.addError("1st Group (CIHI Target) and 2nd Group (WHO target) match, but Target Mismatch Reason is not set to 'n/a - Match'");
+      }
+      
+      //
+      // PREDICATE: 2nd Group (WHO target) target mismatch reason cannot be "n/a - match" if it doesn't match 1st Group (CIHI target)
+      //
+      WHOTarget = "";
+      CIHITarget = "";
+      targetMismatchReason = "";
+      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+        final MapEntry entry = mapRecord.getMapEntries().get(i);
+        if (entry.getMapGroup() == 1 && entry.getMapPriority() == 1) {
+          CIHITarget = entry.getTargetId();
+        }
+        if (entry.getMapGroup() == 2 && entry.getMapPriority() == 1) {
+          WHOTarget = entry.getTargetId();
+          for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
+              .getAdditionalMapEntryInfos()) {
+            if (additionalMapEntryInfo.getField().equals("Target Mismatch Reason")) {
+              targetMismatchReason = additionalMapEntryInfo.getValue();
+            }
+          }
+        }
+      }   
+      if(!WHOTarget.equals(CIHITarget) && targetMismatchReason.equals("n/a - Match"))
+      {
+        result.addError("1st Group (CIHI Target) and 2nd Group (WHO target) do not match, but Target Mismatch Reason is set to 'n/a - Match'");
+      }
+      
+      //
       // PREDICATE: 1st Group (CIHI target) cannot have a target mismatch reason
       //
       for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
@@ -391,7 +449,7 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
       }
 
       //
-      // PREDICATE: 1st Group (CIHI target) cannot have a target mismatch reason
+      // PREDICATE: 1st Group (CIHI target) cannot have a Relation - WHO
       //
       for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
         final MapEntry entry = mapRecord.getMapEntries().get(i);
