@@ -572,6 +572,7 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
     // If invalid, set target Id to "No 1:1 WHO map", 
     // and set Target Mismatch Reason to “WHO map is not a valid target code ”
     Boolean targetCodeValid = true;
+    String validatedTargetCode = "";
     if (targetId != null) {
       targetCodeValid = isTargetCodeValid(targetId);
     }
@@ -580,7 +581,7 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
     mapEntry.setMapGroup(mapGroup);
     mapEntry.setMapPriority(mapPriority);
     String targetConceptName =
-        (targetId == null) ? "No target" : destinationIdToName.get(targetId);
+        (mapEntry.getTargetId() == null) ? "No target" : destinationIdToName.get(mapEntry.getTargetId());
 
     if (targetConceptName != null) {
       mapEntry.setTargetName(targetConceptName);
