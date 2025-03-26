@@ -892,6 +892,7 @@ angular
               if (data) {
 			    gpService.decrement();
 				if(data === true){
+				  window.alert("Target change detected - content will be cleared for this map entry.  Make sure to review the other entries as well.");
 				  $scope.clearAdditionalMapEntryInfosForEntry(entry);
 				}
 				

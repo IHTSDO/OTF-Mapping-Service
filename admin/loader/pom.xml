@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.7.61</version>
+    <version>1.7.62</version>
     <relativePath>../../parent</relativePath>
   </parent>
 
@@ -258,6 +258,32 @@
         </plugins>
       </build>
     </profile>
+
+    <profile>
+      <id>CihiCCIReleaseToRF2Import</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.ihtsdo.otf.mapping</groupId>
+            <artifactId>mapping-admin-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>cihi-cci-release-to-rf2-import</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>cihi-cci-release-to-rf2-import</goal>
+                </goals>
+                <configuration>
+                  <releaseFile>${releaseFile}</releaseFile>
+                  <currentRefsetId>${current.refset.id}</currentRefsetId>
+                  <newRefsetId>${new.refset.id}</newRefsetId>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>  
 
     <!-- Load ClaML -Drun.config=.. must also be specified. -->
     <profile>

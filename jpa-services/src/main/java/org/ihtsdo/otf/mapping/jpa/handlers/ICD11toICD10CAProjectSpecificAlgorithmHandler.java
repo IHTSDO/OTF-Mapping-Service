@@ -3,6 +3,9 @@
  */
 package org.ihtsdo.otf.mapping.jpa.handlers;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -10,9 +13,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.ihtsdo.otf.mapping.helpers.ConceptList;
 import org.ihtsdo.otf.mapping.helpers.TreePositionList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
+import org.ihtsdo.otf.mapping.jpa.AdditionalMapEntryInfoJpa;
+import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
+import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.model.AdditionalMapEntryInfo;
 import org.ihtsdo.otf.mapping.model.MapEntry;
@@ -20,6 +27,7 @@ import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,13 +42,17 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
 
   final static List<String> allowableWHOTargets = new ArrayList(Arrays.asList("n/a - not applicable","No 1:1 WHO map"));  
   
+  /** The WHO icd11 to icd10 maps for preloading. */
+  private static Map<String, MapRecord> existingWHOICD11toICD10Maps = new HashMap<>();  
+  
   /* see superclass */
   @Override
   public void initialize() throws Exception {
     LOGGER.info("Running initialize for " + getClass().getSimpleName());
     super.initialize();
-    
-    // Populate any project-specific caches.
+    if(!mapProject.isPublished()) {
+      cacheExistingMaps();
+    }
   }
 
   /* see superclass */
@@ -91,6 +103,26 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
     return validationResult;
   }
 
+  /* see superclass */
+  @Override
+  public MapRecord computeInitialMapRecord(final MapRecord mapRecord) throws Exception {
+
+    try {
+      
+      if (existingWHOICD11toICD10Maps.isEmpty()) {
+        cacheExistingMaps();
+      }
+
+      final MapRecord existingMapRecord = existingWHOICD11toICD10Maps.get(mapRecord.getConceptId());
+
+      return existingMapRecord;
+    } catch (final Exception e) {
+      throw e;
+    } finally {
+      // n/a
+    }
+  }  
+  
   /* see superclass */
   @Override
   public boolean isTargetCodeValid(final String terminologyId) throws Exception {
@@ -226,7 +258,7 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
               unmappableReasonPresent = true;
             }
           }
-          if (entry.getTargetId().isBlank() && !unmappableReasonPresent) {
+          if ((entry.getTargetId() == null || entry.getTargetId().isBlank()) && !unmappableReasonPresent) {
             result.addError(
                 "1st Group (CIHI target), when Target code is blank “Unmappable reason” must have a value entered.");
           }
@@ -247,7 +279,7 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
               unmappableReasonPresent = true;
             }
           }
-          if (!entry.getTargetId().isBlank() && unmappableReasonPresent) {
+          if (!(entry.getTargetId() == null || entry.getTargetId().isBlank()) && unmappableReasonPresent) {
             result.addError(
                 "1st Group (CIHI target), when Target code is not blank, “Unmappable reason” cannot have a value filled in.");
           }
@@ -426,4 +458,147 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
     return validationResult;
   }
 
+  /**
+   * Cache existing maps.
+   *
+   * @throws Exception the exception
+   */
+  private void cacheExistingMaps() throws Exception {
+    // Cache existing WHO ICD11 to ICD10 map records to pre-populate the maps.
+    // Up to date file from ICD11 brower website must be saved here:
+    // {data.dir}/doc/{projectNumber}/preloadMaps/11To10MapToOneCategory.txt
+    //
+    // This creates a partial map, with only a Group 2 Priority 1 entry included, and the mappers will need
+    // to fill in the Group 1 information.
+
+    if (!existingWHOICD11toICD10Maps.isEmpty()) {
+      return;
+    }
+    
+    final ContentService contentService = new ContentServiceJpa();
+
+    LOGGER.info("Caching the existing WHO maps");
+
+    final String dataDir = ConfigUtility.getConfigProperties().getProperty("data.dir");
+    if (dataDir == null) {
+      throw new Exception("Config file must specify a data.dir property");
+    }
+
+    // Check preconditions
+    String inputFile = dataDir + "/doc/" + mapProject.getId() + "/preloadMaps/11To10MapToOneCategory.txt";
+
+    if (!new File(inputFile).exists()) {
+      throw new Exception("Specified input file missing: " + inputFile);
+    }
+
+    // Preload all concepts and create terminologyId->name maps, to avoid having
+    // to do individual lookups later
+    ConceptList sourceConcepts = contentService.getAllConcepts(mapProject.getSourceTerminology(),
+        mapProject.getSourceTerminologyVersion());
+    ConceptList destinationConcepts = contentService.getAllConcepts(
+        mapProject.getDestinationTerminology(), mapProject.getDestinationTerminologyVersion());
+
+    Map<String, String> sourceIdToName = new HashMap<>();
+    Map<String, String> destinationIdToName = new HashMap<>();
+
+    for (final Concept concept : sourceConcepts.getConcepts()) {
+      sourceIdToName.put(concept.getTerminologyId(), concept.getDefaultPreferredName());
+    }
+    for (final Concept concept : destinationConcepts.getConcepts()) {
+      destinationIdToName.put(concept.getTerminologyId(), concept.getDefaultPreferredName());
+    }
+    
+    // Add the WHO targets in as well, and set name to "Target name could not be determined"
+    for(final String WHOTarget : allowableWHOTargets) {
+      destinationIdToName.put(WHOTarget, "Target name could not be determined");
+    }
+
+    // Open reader and service
+    BufferedReader preloadMapReader = new BufferedReader(new FileReader(inputFile));
+
+    String line = null;
+
+    while ((line = preloadMapReader.readLine()) != null) {
+      String fields[] = line.split("\t");
+
+      final String conceptId = fields[1];
+
+      // The first time a conceptId is encountered, set up the map (only need
+      // very limited information for the purpose of this function
+      if (existingWHOICD11toICD10Maps.get(conceptId) == null) {
+        MapRecord ICD11toICD10MapRecord = new MapRecordJpa();
+        ICD11toICD10MapRecord.setConceptId(conceptId);
+        String sourceConceptName = sourceIdToName.get(conceptId);
+        if (sourceConceptName != null) {
+          ICD11toICD10MapRecord.setConceptName(sourceConceptName);
+        } else {
+          ICD11toICD10MapRecord
+              .setConceptName("CONCEPT DOES NOT EXIST IN " + mapProject.getSourceTerminology());
+        }
+
+        existingWHOICD11toICD10Maps.put(conceptId, ICD11toICD10MapRecord);
+      }
+      MapRecord ICD11toICD10MapRecord = existingWHOICD11toICD10Maps.get(conceptId);
+
+      // Create a blank map entry at Group 1 Priority 1, for the mappers to fil in
+      MapEntry blankMapEntry = createMapEntry(null, 1, 1, destinationIdToName);
+     
+      
+      // Create a single map entry at Group 2 Priority 1, to store the WHO information
+      // and attach it to the record
+      MapEntry WHOmapEntry = createMapEntry(fields[4], 2, 1, destinationIdToName);
+
+      // Add the entry to the record, and put the updated record in the map
+      ICD11toICD10MapRecord.addMapEntry(blankMapEntry);
+      ICD11toICD10MapRecord.addMapEntry(WHOmapEntry);
+      existingWHOICD11toICD10Maps.put(conceptId, ICD11toICD10MapRecord);
+
+    }
+
+    LOGGER.info("Done caching maps");
+
+    preloadMapReader.close();
+    contentService.close();
+
+  }  
+  
+
+  private MapEntry createMapEntry(String targetId, int mapGroup, int mapPriority,
+    Map<String, String> destinationIdToName) throws Exception {
+    MapEntry mapEntry = new MapEntryJpa();
+
+    // Check if target Id is a valid code (valid = exists and is a leaf node).
+    // If valid, leave as is.
+    // If invalid, set target Id to "No 1:1 WHO map", 
+    // and set Target Mismatch Reason to “WHO map is not a valid target code ”
+    Boolean targetCodeValid = true;
+    String validatedTargetCode = "";
+    if (targetId != null) {
+      targetCodeValid = isTargetCodeValid(targetId);
+    }
+    
+    mapEntry.setTargetId(targetCodeValid ? targetId : "No 1:1 WHO map");
+    mapEntry.setMapGroup(mapGroup);
+    mapEntry.setMapPriority(mapPriority);
+    String targetConceptName =
+        (mapEntry.getTargetId() == null) ? "No target" : destinationIdToName.get(mapEntry.getTargetId());
+
+    if (targetConceptName != null) {
+      mapEntry.setTargetName(targetConceptName);
+    } else {
+      mapEntry.setTargetName("CONCEPT DOES NOT EXIST IN " + mapProject.getDestinationTerminology());
+    }
+
+    if(!targetCodeValid) {
+      Set<AdditionalMapEntryInfo> additionalMapEntryInfos = mapProject.getAdditionalMapEntryInfos();
+      for(AdditionalMapEntryInfo additionalMapEntryInfo : additionalMapEntryInfos) {
+        if(additionalMapEntryInfo.getField().equals("Target Mismatch Reason") && additionalMapEntryInfo.getValue().equals("WHO map is not a valid target code")) {
+          mapEntry.addAdditionalMapEntryInfo(additionalMapEntryInfo);
+        }
+      }
+    }
+    
+    return mapEntry;
+  }  
+  
 }
