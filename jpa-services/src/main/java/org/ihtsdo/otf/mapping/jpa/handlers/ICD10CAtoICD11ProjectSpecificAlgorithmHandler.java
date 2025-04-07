@@ -529,7 +529,7 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
       }
       
       //
-      // PREDICATE: When CIHI Target Code (1/1) is a Canadian Code, 
+      // PREDICATE: When Source Code is a Canadian Code, 
       // then WHO Map (2/1) must be N/A – NOT APPLICABLE 
       // and Target Mismatch Reason must be N/A – CANADIAN CODE
       //
@@ -537,11 +537,11 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
       Boolean isCanadianCode = false;
       WHOTarget = "";
       targetMismatchReason = "";
+      if(icd10caCanadianCodes.contains(mapRecord.getConceptId())) {
+        isCanadianCode = true;
+      }
       for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
         final MapEntry entry = mapRecord.getMapEntries().get(i);
-        if (entry.getMapGroup() == 1 && entry.getMapPriority() == 1 && icd10caCanadianCodes.contains(entry.getTargetId())) {
-          isCanadianCode = true;
-        }
         if (entry.getMapGroup() == 2 && entry.getMapPriority() == 1) {
           WHOTarget = entry.getTargetId();
           for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
@@ -554,11 +554,11 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
       }   
       if(isCanadianCode && !targetMismatchReason.equals("n/a - Canadian code"))
       {
-        result.addError("When 1st Group (CIHI Target) is a canadian code, Target Mismatch Reason must be set to 'n/a - Canadian code'");
+        result.addError("When Source Code is a canadian code, Target Mismatch Reason must be set to 'n/a - Canadian code'");
       }      
       if(isCanadianCode && !WHOTarget.equals("n/a - not applicable"))
       {
-        result.addError("When 1st Group (CIHI Target) is a canadian code, WHO Map (2/1) must be 'n/a - not applicable'");
+        result.addError("When Source Code is a canadian code, WHO Map (2/1) must be 'n/a - not applicable'");
       }        
 
     } catch (final Exception e) {
