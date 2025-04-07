@@ -700,6 +700,11 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
   //
   private void cacheICD10CACodes()  throws Exception {
 
+    // Check if codes are already cached
+    if (!icd10caCanadianCodes.isEmpty()) {
+      return;
+    }
+    
     LOGGER.info("Caching ICD10 canadian codes");
    
     MappingService mappingService = new MappingServiceJpa();
