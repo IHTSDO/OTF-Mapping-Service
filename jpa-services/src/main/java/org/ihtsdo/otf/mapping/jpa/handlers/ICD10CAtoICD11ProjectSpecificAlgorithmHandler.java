@@ -383,22 +383,24 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
       // PREDICATE: When CIHI Target Code (1/1) is NOT BLANK,
       // “Relation - Cluster” cannot be blank.
       //
+      Boolean cihiTargetCodeBlank = false;
+      Boolean relationClusterPresent = false;
       for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
         final MapEntry entry = mapRecord.getMapEntries().get(i);
-        if (entry.getMapGroup() == 1 && entry.getMapPriority() == 1) {
-          Boolean relationClusterPresent = false;
-          for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
-              .getAdditionalMapEntryInfos()) {
-            if (additionalMapEntryInfo.getField().equals("Relation - Cluster")) {
-              relationClusterPresent = true;
-            }
-          }
-          if (!entry.getTargetId().isBlank() && !relationClusterPresent) {
-            result.addError(
-                "When CIHI Target Code (1/1) is NOT BLANK, “Relation - Cluster” cannot be blank.");
+        if (entry.getMapGroup() == 1 && entry.getMapPriority() == 1 && entry.getTargetId().isBlank()) {
+          cihiTargetCodeBlank = true;
+        }
+        for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
+            .getAdditionalMapEntryInfos()) {
+          if (additionalMapEntryInfo.getField().equals("Relation - Cluster")) {
+            relationClusterPresent = true;
           }
         }
-      }  
+      }
+      if (cihiTargetCodeBlank && !relationClusterPresent) {
+        result.addError(
+            "When CIHI Target Code (1/1) is NOT BLANK, “Relation - Cluster” cannot be blank.");
+      }
       
       //
       // PREDICATE: 2nd Group (WHO target) must have a target mismatch reason
