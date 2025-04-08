@@ -324,6 +324,27 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
         }
       }
 
+      //
+      // PREDICATE: When CIHI Target Code (1/1) is NOT BLANK,
+      // “Relation - Target” cannot be blank.
+      //
+      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+        final MapEntry entry = mapRecord.getMapEntries().get(i);
+        if (entry.getMapGroup() == 1 && entry.getMapPriority() == 1) {
+          Boolean relationTargetPresent = false;
+          for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
+              .getAdditionalMapEntryInfos()) {
+            if (additionalMapEntryInfo.getField().equals("Relation - Target")) {
+              relationTargetPresent = true;
+            }
+          }
+          if (!entry.getTargetId().isBlank() && !relationTargetPresent) {
+            result.addError(
+                "When CIHI Target Code (1/1) is NOT BLANK, “Relation - Target” cannot be blank.");
+          }
+        }
+      }   
+      
     } catch (final Exception e) {
       throw e;
     } finally {
