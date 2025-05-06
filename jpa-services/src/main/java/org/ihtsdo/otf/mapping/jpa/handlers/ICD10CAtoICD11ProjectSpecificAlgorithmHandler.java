@@ -305,14 +305,14 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
 
       //
       // PREDICATE: When Target code is blank then Relation-Target and
-      // Relation-Cluster cannot be E, B, N or n/a (must be blank).
+      // Relation-Cluster cannot be E, B, or N (must be n/a).
       //
       for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
         final MapEntry entry = mapRecord.getMapEntries().get(i);
         if (entry.getTargetId().isBlank()
-            && (!relationTarget.isBlank() || !relationCluster.isBlank())) {
+            && (!relationTarget.equals("n/a - not applicable") || !relationCluster.equals("n/a - not applicable"))) {
           result.addError(
-              "When Target code is blank then Relation-Target and Relation-Cluster cannot be E, B, N or n/a (must be blank).");
+              "When Target code is blank then Relation-Target and Relation-Cluster cannot be E, B, or N (must be n/a).");
         }
       }
 
