@@ -325,7 +325,7 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
       }
 
       //
-      // PREDICATE: When CIHI Target Code (1/1) is NOT BLANK,
+      // PREDICATE: For CIHI Target Code (1/1),
       // “Relation - Target” cannot be blank.
       //
       for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
@@ -338,12 +338,34 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
               relationTargetPresent = true;
             }
           }
-          if (!entry.getTargetId().isBlank() && !relationTargetPresent) {
+          if (!relationTargetPresent) {
             result.addError(
-                "When CIHI Target Code (1/1) is NOT BLANK, “Relation - Target” cannot be blank.");
+                "For CIHI Target Code (1/1), “Relation - Target” cannot be blank.");
           }
         }
       }   
+    
+
+      //
+      // PREDICATE: When CIHI Target Code (1/1) is BLANK,
+      // “Relation - Target” cannot be E, B, or N (must be n/a).
+      //
+      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+        final MapEntry entry = mapRecord.getMapEntries().get(i);
+        if (entry.getMapGroup() == 1 && entry.getMapPriority() == 1) {
+          String relationTarget = "";
+          for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
+              .getAdditionalMapEntryInfos()) {
+            if (additionalMapEntryInfo.getField().equals("Relation - Target")) {
+              relationTarget = additionalMapEntryInfo.getValue();
+            }
+          }
+          if (entry.getTargetId().isBlank() && !relationTarget.equals("n/a - not applicable")) {
+            result.addError(
+                "When CIHI Target Code (1/1) is BLANK, “Relation - Target” cannot be E, B, or N (must be n/a).");
+          }
+        }
+      }         
       
     } catch (final Exception e) {
       throw e;
