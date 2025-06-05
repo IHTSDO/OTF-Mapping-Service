@@ -1085,6 +1085,7 @@
                 </goals>
                 <configuration>
                   <releaseFile>${releaseFile}</releaseFile>
+                  <refsetId>${refset.id}</refsetId>
                   <outputFile>ICD10CAtoICD11_{FORMAT}_{DATE}.xlsx</outputFile>
                 </configuration>
               </execution>
@@ -1110,6 +1111,7 @@
                 </goals>
                 <configuration>
                   <releaseFile>${releaseFile}</releaseFile>
+                  <refsetId>${refset.id}</refsetId>
                   <outputFile>ICD111toICD10CA_{FORMAT}_{DATE}.xlsx</outputFile>
                 </configuration>
               </execution>

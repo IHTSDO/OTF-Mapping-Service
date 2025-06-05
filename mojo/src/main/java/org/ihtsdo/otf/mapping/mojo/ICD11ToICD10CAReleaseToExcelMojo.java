@@ -75,9 +75,16 @@ public class ICD11ToICD10CAReleaseToExcelMojo extends AbstractMojo {
   private String outputFile;
 
   /**
-   * Map project Id (hard-coded, and may need updating if project changes).
+   * The specified refsetId
+   * @parameter
+   * @required
    */
-  private Long mapProjectId = 6L;
+  private String refsetId = null;
+
+  /**
+   * Map project Id.
+   */
+  private Long mapProjectId;
   
   private Map<String, ExternalData> sourceConceptToExternalData = new HashMap<>();  
   
@@ -96,8 +103,16 @@ public class ICD11ToICD10CAReleaseToExcelMojo extends AbstractMojo {
       throw new MojoExecutionException("Parameter releaseFile is empty.");
     }
 
-    try {
+    try (final MappingService mappingService = new MappingServiceJpa();) {
 
+      MapProject mapProject = mappingService.getMapProjectForRefSetId(refsetId);
+
+      if(mapProject == null) {
+        throw new MojoExecutionException("Map Project does not exist for refsetId=" + refsetId);
+      }
+      
+      mapProjectId=mapProject.getId();
+      
       final File rf = new File(releaseFile);
       if (!rf.exists()) {
         throw new MojoExecutionException(releaseFile + " file does not exist.");
