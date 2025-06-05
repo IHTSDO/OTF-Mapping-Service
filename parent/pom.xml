@@ -22,7 +22,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
     <amazonaws.version>1.11.623</amazonaws.version>
-    <apache.poi>4.1.1</apache.poi>
+    <apache.poi>5.4.0</apache.poi>
     <asm.version>20041228.180559</asm.version>
     <cglib.version>3.3.0</cglib.version>
     <commons-io.version>2.14.0</commons-io.version>
