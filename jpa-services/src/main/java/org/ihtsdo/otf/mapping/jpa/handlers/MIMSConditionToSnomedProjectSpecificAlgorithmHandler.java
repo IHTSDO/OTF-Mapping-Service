@@ -20,6 +20,7 @@ import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
+import org.ihtsdo.otf.mapping.jpa.helpers.TerminologyUtility;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapRecord;
@@ -183,6 +184,13 @@ public class MIMSConditionToSnomedProjectSpecificAlgorithmHandler
     // word.");
     // }
 
+    // If a map entry has no target, it cannot have the "INCLUDE CHILDREN" map advice
+    for (final MapEntry entry : mapRecord.getMapEntries()) {
+      if ((entry.getTargetId() == null || entry.getTargetId().isEmpty()) && TerminologyUtility.hasAdvice(entry, "INCLUDE CHILDREN")) {
+        result.addError("Map entry " + entry.getMapPriority() + " has no target, and so cannot have the INCLUDE CHILDREN advice.");
+        }
+      }
+    
     return result;
   }
 
