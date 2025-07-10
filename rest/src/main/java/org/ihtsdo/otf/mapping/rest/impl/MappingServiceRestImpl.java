@@ -6071,7 +6071,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
       final Client client = ClientBuilder.newClient();
       final WebTarget target =
-          client.target(authoringUrl + "/traceability-service/activities?conceptId=" + conceptId);
+          client.target(authoringUrl + "/authoring-traceability-service/activities?conceptId=" + conceptId);
 
       final Response response = target.request(MediaType.APPLICATION_JSON_TYPE)
           .header("Authorization", authoringAuthHeader).accept("application/json").get();
@@ -6186,7 +6186,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
       final Client client = ClientBuilder.newClient();
       final WebTarget target =
-          client.target(authoringUrl + "/traceability-service/activities?conceptId=" + conceptId);
+          client.target(authoringUrl + "/authoring-traceability-service/activities?conceptId=" + conceptId);
 
       final Response response = target.request(MediaType.APPLICATION_JSON_TYPE)
           .header("Cookie", ConfigUtility.getGenericUserCookie())
