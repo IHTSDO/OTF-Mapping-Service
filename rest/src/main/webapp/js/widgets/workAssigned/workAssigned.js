@@ -551,9 +551,29 @@ angular
           }
         }).success(function(data) {
           gpService.decrement();
-          for (var i = 0; i < data.searchResult.length; i++) {
-			$scope.allTags.push({ id: i+1, tag: data.searchResult[i].value });
-          }
+	  		// 1. Initialize a temporary object to track seen tags.
+		    //    The keys will be the 'tag' values, and the values can be anything (e.g., true, or the actual tag object).
+		    const uniqueTagsMap = {};
+		    // 2. Initialize a new array for the unique tags.
+		    const newAllTagsArray = [];
+		
+		    for (var i = 0; i < data.searchResult.length; i++) {
+		      const tagValue = data.searchResult[i].value;
+		
+		      // Check if we've already seen this tag value
+		      if (!uniqueTagsMap[tagValue]) {
+		        // If not, add it to our map and to the new array
+		        uniqueTagsMap[tagValue] = true; // Mark as seen
+		        newAllTagsArray.push({ id: i + 1, tag: tagValue });
+		      }
+		    }
+		
+		    // 3. Replace the old $scope.allTags with the newly generated unique array.
+		    $scope.allTags = newAllTagsArray;
+	
+//          for (var i = 0; i < data.searchResult.length; i++) {
+//			$scope.allTags.push({ id: i+1, tag: data.searchResult[i].value });
+//          }
         }).error(function(data, status, headers, config) {
           gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);

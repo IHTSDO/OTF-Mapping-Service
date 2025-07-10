@@ -75,6 +75,9 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
   /** The code rubric to advices map. */
   private static Map<String, Set<String>> codeRubricToAdvicesMap = new HashMap<>();
 
+  /** The tags associated with concept Ids*/
+  private static Map<String, Set<String>> conceptTags = new HashMap<>();
+
   /**
    * The parser.
    *
@@ -91,6 +94,7 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
     super.initialize();
     // Populate any project-specific caches.
     cacheCodeRubricsToAdvices();
+    cacheConceptTags();
   }
 
   /* see superclass */
@@ -594,6 +598,27 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
     }
   }
 
+  
+  /* see superclass */
+  @Override
+  public Set<String> loadTags(String conceptId) throws Exception {
+
+    try {
+
+      if (conceptTags.isEmpty()) {
+        cacheConceptTags();
+      }
+
+      Set<String> tags = conceptTags.get(conceptId);
+
+      return tags;
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      // n/a
+    }
+  }    
+  
   /* see superclass */
   @Override
   public boolean isTargetCodeValid(String terminologyId) throws Exception {
@@ -698,4 +723,65 @@ public class CCIProjectSpecificAlgorithmHandler extends DefaultProjectSpecificAl
       return null;
     }
   }
+  
+
+  /**
+   * Cache concept tags.
+   *
+   * @throws Exception the exception
+   */
+  private void cacheConceptTags() throws Exception {
+    if (!conceptTags.isEmpty()) {
+      return;
+    }
+    
+    // Lookup if this concept has client-provided tags associated with it.
+    // Tag document must be saved here:
+    // {data.dir}/doc/{projectNumber}/ConceptTags.txt
+    //
+    // Using the format: {conceptId}|{Tag 1}|{Tag 2}|etc...
+    //
+    // Example:
+    // 83291003|Cardiology|HP-Prioritert
+    // 359649009|Ikke Tildelt
+
+    Logger.getLogger(CCIProjectSpecificAlgorithmHandler.class)
+        .info("Caching the concept tags maps");
+
+    final String dataDir = ConfigUtility.getConfigProperties().getProperty("data.dir");
+    if (dataDir == null) {
+      throw new Exception("Config file must specify a data.dir property");
+    }
+
+    // Check preconditions
+    String inputFile =
+        dataDir + "/doc/" + mapProject.getId() + "/ConceptTags.txt";
+
+    if (!new File(inputFile).exists()) {
+      throw new Exception("Specified input file missing: " + inputFile);
+    }
+
+    // Open reader and service
+    BufferedReader conceptTagReader = new BufferedReader(new FileReader(inputFile));
+
+    String line = null;
+
+    while ((line = conceptTagReader.readLine()) != null) {
+      String fields[] = line.split("\\|");
+
+      final String conceptId = fields[0];
+      Set<String> tags = new HashSet<>();
+      
+      for (int i = 1; i < fields.length; i++) {
+        tags.add(fields[i]);
+      }
+      
+      // Add the line to the cached map
+      conceptTags.put(conceptId, tags);
+    }
+
+    Logger.getLogger(getClass()).info("Done caching concept tags");
+
+    conceptTagReader.close();
+  }  
 }
