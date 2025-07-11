@@ -366,20 +366,22 @@ angular
 			for(var j = 0; j < $scope.allTags.length; j++) {
 				if($scope.selectedTags[i].id == $scope.allTags[j].id){
 					if(pselectedTags == ""){
-						pselectedTags = $scope.allTags[j].tag;
+						pselectedTags = 'tags:(\"' + $scope.allTags[j].tag + '\"';
 					}
 					else{
-						pselectedTags = pselectedTags.concat(' AND ', $scope.allTags[j].tag);
+						pselectedTags = pselectedTags.concat(' OR "', $scope.allTags[j].tag,'\"');
 					}
 				}
 			}
           }
 
-		if(query == null){
-			query = pselectedTags;
-		}
-		if(query != null && pselectedTags != ""){
-			query = query.concat(' AND ', pselectedTags);
+		if (pselectedTags != "") {
+			if (query != null && query != ""){
+				query = query.concat(' AND ', pselectedTags,')');
+			}
+			else{
+				query = pselectedTags + ')';
+			}
 		}
 
         // construct a paging/filtering/sorting object
@@ -624,20 +626,20 @@ angular
 			for(var j = 0; j < $scope.allTags.length; j++) {
 				if($scope.selectedTags[i].id == $scope.allTags[j].id){
 					if(pselectedTags == ""){
-						pselectedTags = $scope.allTags[j].tag;
+						pselectedTags = 'tags:' + $scope.allTags[j].tag;
 					}
 					else{
-						pselectedTags = pselectedTags.concat(' AND ', $scope.allTags[j].tag);
+						pselectedTags = pselectedTags.concat(' OR tags:', $scope.allTags[j].tag);
 					}
 				}
 			}
           }
 
 		if(query == null){
-			query = pselectedTags;
+			query = '(' + pselectedTags + ')';
 		}
 		if(query != null && pselectedTags != ""){
-			query = query.concat(' AND ', pselectedTags);
+			query = query.concat(' AND (', pselectedTags,')');
 		}
 
         // construct a paging/filtering/sorting object
@@ -757,20 +759,20 @@ angular
 			for(var j = 0; j < $scope.allTags.length; j++) {
 				if($scope.selectedTags[i].id == $scope.allTags[j].id){
 					if(pselectedTags == ""){
-						pselectedTags = $scope.allTags[j].tag;
+						pselectedTags = 'tags:' + $scope.allTags[j].tag;
 					}
 					else{
-						pselectedTags = pselectedTags.concat(' AND ', $scope.allTags[j].tag);
+						pselectedTags = pselectedTags.concat(' OR tags:', $scope.allTags[j].tag);
 					}
 				}
 			}
           }
 
 		if(query == null){
-			query = pselectedTags;
+			query = '(' + pselectedTags + ')';
 		}
 		if(query != null && pselectedTags != ""){
-			query = query.concat(' AND ', pselectedTags);
+			query = query.concat(' AND (', pselectedTags,')');
 		}
 
         // construct a paging/filtering/sorting object
