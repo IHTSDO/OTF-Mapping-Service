@@ -30,6 +30,7 @@ import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.mapping.model.MapEntry;
+import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -563,7 +564,9 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
               for (MapEntry mapEntry : newRecord.getMapEntries()) {
                 mapEntry.setMapRecord(newRecord);
               }
-              newRecord.setMapNotes(existingMapRecord.getMapNotes());
+              for(MapNote mapNote : existingMapRecord.getMapNotes()) {
+                newRecord.addMapNote(mapNote);
+              }
             }        
           }
           
