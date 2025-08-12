@@ -15,6 +15,7 @@ import org.ihtsdo.otf.mapping.helpers.MapRecordListJpa;
 import org.ihtsdo.otf.mapping.helpers.MapUserRole;
 import org.ihtsdo.otf.mapping.helpers.PfsParameter;
 import org.ihtsdo.otf.mapping.helpers.PfsParameterJpa;
+import org.ihtsdo.otf.mapping.helpers.ProjectSpecificAlgorithmHandler;
 import org.ihtsdo.otf.mapping.helpers.SearchResult;
 import org.ihtsdo.otf.mapping.helpers.SearchResultJpa;
 import org.ihtsdo.otf.mapping.helpers.SearchResultList;
@@ -28,6 +29,8 @@ import org.ihtsdo.otf.mapping.helpers.WorkflowStatusCombination;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.jpa.services.WorkflowServiceJpa;
+import org.ihtsdo.otf.mapping.model.MapEntry;
+import org.ihtsdo.otf.mapping.model.MapNote;
 import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.model.MapUser;
@@ -546,6 +549,27 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
           // deep copy the map record
           MapRecord newRecord = new MapRecordJpa(mapRecord, false);
 
+          // If this concept has no targets AND has an entry in the project's automap suggestions,
+          // populate the automaps into the QA record
+          if(newRecord.getMapEntries().size() == 1 && newRecord.getMapEntries().get(0).getTargetName().equals("No target")) {
+            
+            ProjectSpecificAlgorithmHandler handler = (ProjectSpecificAlgorithmHandler) Class
+                .forName(mapProject.getProjectSpecificAlgorithmHandlerClass())
+                .getDeclaredConstructor().newInstance();
+            handler.setMapProject(mapProject);
+            
+            MapRecord existingMapRecord = handler.computeInitialMapRecord(newRecord);
+            if (existingMapRecord != null) {
+              newRecord.setMapEntries(existingMapRecord.getMapEntries());
+              for (MapEntry mapEntry : newRecord.getMapEntries()) {
+                mapEntry.setMapRecord(newRecord);
+              }
+              for(MapNote mapNote : existingMapRecord.getMapNotes()) {
+                newRecord.addMapNote(mapNote);
+              }
+            }        
+          }
+          
           // set origin ids
           newRecord.addOrigin(mapRecord.getId());
           newRecord.addOrigins(mapRecord.getOriginIds());
@@ -589,6 +613,7 @@ public class WorkflowQaPathHandler extends AbstractWorkflowPathHandler {
             qaRecord.setFlagForConsensusReview(record.isFlagForConsensusReview());
             qaRecord.setFlagForEditorialReview(record.isFlagForEditorialReview());
             qaRecord.setFlagForMapLeadReview(record.isFlagForMapLeadReview());
+            
           }
         }
 
