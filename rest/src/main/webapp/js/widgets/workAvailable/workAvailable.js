@@ -611,13 +611,11 @@ angular
 
         // clear the existing work
         $scope.availableReviewWork = null;
-
         // set query to null if undefined
         if (query == undefined)
           query = null;
 
         // if null query, reset the search field
-        if (query == null)
           $scope.queryAvailable = null;
 
 		// copy tag filter and add to query
@@ -626,22 +624,24 @@ angular
 			for(var j = 0; j < $scope.allTags.length; j++) {
 				if($scope.selectedTags[i].id == $scope.allTags[j].id){
 					if(pselectedTags == ""){
-						pselectedTags = 'tags:' + $scope.allTags[j].tag;
+						pselectedTags = 'tags:(\"' + $scope.allTags[j].tag + '\"';
 					}
 					else{
-						pselectedTags = pselectedTags.concat(' OR tags:', $scope.allTags[j].tag);
+						pselectedTags = pselectedTags.concat(' OR "', $scope.allTags[j].tag,'\"');
 					}
 				}
 			}
           }
 
-		if(query == null){
-			query = '(' + pselectedTags + ')';
+		if (pselectedTags != "") {
+			if (query != null && query != ""){
+				query = query.concat(' AND ', pselectedTags,')');
+			}
+			else{
+				query = pselectedTags + ')';
+			}
 		}
-		if(query != null && pselectedTags != ""){
-			query = query.concat(' AND (', pselectedTags,')');
-		}
-
+		
         // construct a paging/filtering/sorting object
         var pfsParameterObj = {
           'startIndex' : (page - 1) * $scope.itemsPerPage,
@@ -759,20 +759,22 @@ angular
 			for(var j = 0; j < $scope.allTags.length; j++) {
 				if($scope.selectedTags[i].id == $scope.allTags[j].id){
 					if(pselectedTags == ""){
-						pselectedTags = 'tags:' + $scope.allTags[j].tag;
+						pselectedTags = 'tags:(\"' + $scope.allTags[j].tag + '\"';
 					}
 					else{
-						pselectedTags = pselectedTags.concat(' OR tags:', $scope.allTags[j].tag);
+						pselectedTags = pselectedTags.concat(' OR "', $scope.allTags[j].tag,'\"');
 					}
 				}
 			}
           }
 
-		if(query == null){
-			query = '(' + pselectedTags + ')';
-		}
-		if(query != null && pselectedTags != ""){
-			query = query.concat(' AND (', pselectedTags,')');
+		if (pselectedTags != "") {
+			if (query != null && query != ""){
+				query = query.concat(' AND ', pselectedTags,')');
+			}
+			else{
+				query = pselectedTags + ')';
+			}
 		}
 
         // construct a paging/filtering/sorting object
