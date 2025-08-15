@@ -67,7 +67,7 @@
     <!-- <mysql.connector.java.version>8.0.28</mysql.connector.java.version> -->
     <mysql.connector.java.version>8.2.0</mysql.connector.java.version>
     
-    <org.apache.commons.lang3.version>3.9</org.apache.commons.lang3.version>
+    <org.apache.commons.lang3.version>3.18.0</org.apache.commons.lang3.version>
     <org.json.version>20231013</org.json.version>
     <org.reflections.version>0.9.10</org.reflections.version>
     <sax.version>2.0.1</sax.version>
