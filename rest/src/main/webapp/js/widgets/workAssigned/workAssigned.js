@@ -25,6 +25,8 @@ angular
       $scope.assignedRecords = [];
       $scope.authorsList = [];
 
+	  localStorageService.add('workQuery', null);
+
       // retrieve the necessary scope variables from local storage service
       $scope.currentUser = localStorageService.get('currentUser');
       $scope.currentRole = localStorageService.get('currentRole');
@@ -1014,24 +1016,59 @@ angular
 
       $scope.goEditRecord = function(id) {
         var path = '/record/recordId/' + id;
+		if($scope.queryAssigned !== null || $scope.selectedTags.length > 0){
+			var query = $scope.queryAssigned;
+			var pselectedTags = "";
+				for (var i = 0; i < $scope.selectedTags.length; i++) {
+				for(var j = 0; j < $scope.allTags.length; j++) {
+					if($scope.selectedTags[i].id == $scope.allTags[j].id){
+						if(pselectedTags == ""){
+							pselectedTags = 'tags:(\"' + $scope.allTags[j].tag + '\"';
+						}
+						else{
+							pselectedTags = pselectedTags.concat(' OR "', $scope.allTags[j].tag,'\"');
+						}
+					}
+				}
+	          }
+	
+			if (pselectedTags != "") {
+				if (query != null && query != ""){
+					query = query.concat(' AND ', pselectedTags,')');
+				}
+				else{
+					query = pselectedTags + ')';
+				}
+			}
+			localStorageService.add('workQuery', query);
+		}
         // redirect page
         $location.path(path);
       };
 
       $scope.goEditConflict = function(id) {
         var path = '/record/conflicts/' + id;
+		if($scope.queryAssigned !== null){
+			localStorageService.add('workQuery', $scope.queryConflict);
+		}
         // redirect page
         $location.path(path);
       };
 
       $scope.goEditReviewWork = function(id) {
         var path = '/record/review/' + id;
+		if($scope.queryAssigned !== null){
+			localStorageService.add('workQuery', $scope.queryReviewWork);
+		}
         // redirect page
         $location.path(path);
       };
 
       $scope.goEditQAWork = function(id) {
         var path = '/record/review/' + id;
+		if($scope.queryAssigned !== null){
+			localStorageService.add('workQuery', $scope.queryQAWork);
+		}
         // redirect page
         $location.path(path);
       };
