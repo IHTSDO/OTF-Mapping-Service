@@ -33,7 +33,7 @@
     <hibernate.entitymanager.version>5.4.24.Final</hibernate.entitymanager.version>
     <hibernate.envers.version>5.4.24.Final</hibernate.envers.version>
     <hibernate.search.version>5.11.2.Final</hibernate.search.version>
-    <hibernate.validator.version>6.0.17.Final</hibernate.validator.version>
+    <hibernate.validator.version>6.2.0.Final</hibernate.validator.version>
     
     <java.version>11</java.version>
     <javax.mail.version>1.6.2</javax.mail.version>
