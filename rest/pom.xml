@@ -8,7 +8,7 @@
   <parent>
     <groupId>org.ihtsdo.otf.mapping</groupId>
     <artifactId>mapping-parent</artifactId>
-    <version>1.7.69</version>
+    <version>1.7.70</version>
     <relativePath>../parent</relativePath>
   </parent>
 
@@ -24,12 +24,12 @@
     <config.groupId>org.ihtsdo.otf.mapping</config.groupId>
     <config.artifactId>mapping-config-prod</config.artifactId>
     <config.version>${project.version}</config.version>
-    
+
 		<tomcat9-maven-plugin-version>2.2</tomcat9-maven-plugin-version>
-		<jdeb.version>1.1.1</jdeb.version>  
+		<jdeb.version>1.1.1</jdeb.version>
 		<webapp-runner.version>9.0.89.0</webapp-runner.version>
     <pom.root>mapping-admin</pom.root>
-    
+
   </properties>
 
   <dependencies>
@@ -81,7 +81,7 @@
       <artifactId>hibernate-entitymanager</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.hibernate</groupId>
+      <groupId>org.hibernate.validator</groupId>
       <artifactId>hibernate-validator</artifactId>
     </dependency>
     <dependency>
@@ -92,7 +92,7 @@
     <!-- Logging -->
     <dependency>
       <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
+      <artifactId>slf4j-reload4j</artifactId>
     </dependency>
 
     <!-- Required for Jersey and JSON -->
@@ -124,17 +124,16 @@
       <groupId>org.codehaus.jettison</groupId>
       <artifactId>jettison</artifactId>
     </dependency>
-    <!-- <dependency> <groupId>asm</groupId> <artifactId>asm</artifactId> </dependency> -->
     <dependency>
       <groupId>io.swagger</groupId>
       <artifactId>swagger-jersey2-jaxrs</artifactId>
     </dependency>
 
 	<dependency>
-	  <groupId>com.amazonaws</groupId>
-	  <artifactId>aws-java-sdk</artifactId>
+	  <groupId>software.amazon.awssdk</groupId>
+	  <artifactId>s3</artifactId>
 	</dependency>
-	  
+
     <!-- Sending email -->
     <dependency>
       <groupId>com.sun.mail</groupId>
@@ -286,12 +285,12 @@
                   </mapper>
                 </data>
                 -->
-                <!-- 
+                <!--
                 <data>
                   <src>${basedir}/src/deb/tomcat/context.xml</src>
                   <dst>/opt/${packageName}/conf/context.xml</dst>
                   <type>file</type>
-                 < ! - -  <conffile>true</conffile> - - > 
+                 < ! - -  <conffile>true</conffile> - - >
                   <mapper>
                     <type>perm</type>
                     <group>${packageName}</group>
@@ -304,7 +303,7 @@
                   <src>${basedir}/src/deb/tomcat/server.xml</src>
                   <dst>/opt/${packageName}/conf/server.xml</dst>
                   <type>file</type>
-                 < ! - -  <conffile>true</conffile> - - > 
+                 < ! - -  <conffile>true</conffile> - - >
                   <mapper>
                     <type>perm</type>
                     <group>${packageName}</group>
@@ -428,13 +427,13 @@
                     <prefix>/opt/${pom.root}/updatedb/</prefix>
                   </mapper>
                 </data>
-                <!-- <data> <type>template</type> <paths> <path>/etc/opt/${packageName}</path> 
-                  <path>/opt/${packageName}</path> </paths> </data> <data> <type>template</type> <paths> 
-                  <path>/var/opt/${packageName}</path> <path>/var/opt/${packageName}/run</path> <path>/var/opt/${packageName}/logs</path> 
-                  <path>/opt/${packageName}</path> <path>/opt/${packageName}/run</path> <path>/opt/${packageName}/logs</path> 
-                  <path>/opt/tomcat8/logs</path> <path>/var/cache/tomcat7</path> <path>/opt/tomcat8</path> 
-                  <path>/opt/tomcat8/indexes/lucene/indexes</path> </paths> <mapper> <type>perm</type> 
-                  <user>${packageName}</user> <group>${packageName}</group> <dirmode>0750</dirmode> 
+                <!-- <data> <type>template</type> <paths> <path>/etc/opt/${packageName}</path>
+                  <path>/opt/${packageName}</path> </paths> </data> <data> <type>template</type> <paths>
+                  <path>/var/opt/${packageName}</path> <path>/var/opt/${packageName}/run</path> <path>/var/opt/${packageName}/logs</path>
+                  <path>/opt/${packageName}</path> <path>/opt/${packageName}/run</path> <path>/opt/${packageName}/logs</path>
+                  <path>/opt/tomcat8/logs</path> <path>/var/cache/tomcat7</path> <path>/opt/tomcat8</path>
+                  <path>/opt/tomcat8/indexes/lucene/indexes</path> </paths> <mapper> <type>perm</type>
+                  <user>${packageName}</user> <group>${packageName}</group> <dirmode>0750</dirmode>
                   <filemode>0750</filemode> </mapper> </data> -->
                 <data>
                   <type>link</type>

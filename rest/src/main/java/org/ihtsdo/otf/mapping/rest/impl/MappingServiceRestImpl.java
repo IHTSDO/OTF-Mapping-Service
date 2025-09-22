@@ -42,7 +42,6 @@ import java.util.regex.Pattern;
 
 import javax.naming.AuthenticationException;
 import javax.ws.rs.Consumes;
-//import javax.ws.rs.CookieParam;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -142,9 +141,6 @@ import org.ihtsdo.otf.mapping.services.helpers.ReleaseHandler;
 import org.ihtsdo.otf.mapping.services.helpers.WorkflowPathHandler;
 import org.ihtsdo.otf.mapping.workflow.TrackingRecord;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.S3Object;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -152,6 +148,9 @@ import com.google.common.collect.Maps;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
 /**
  * REST implementation for mapping service.
@@ -6305,8 +6304,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       String olderInputFile1 = files.get(0);
       String newerInputFile2 = files.get(1);
 
-      AmazonS3 s3Client = null;
-      s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
+      final S3Client s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
 
       // Process first file
       // open first file either from aws or current release on file system
@@ -6330,9 +6328,9 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
         // if it is not a current local file, stream file1 from aws
       } else {
-        file1 = s3Client
-            .getObject(new GetObjectRequest("release-ihtsdo-prod-published", olderInputFile1));
-        objectData1 = file1.getObjectContent();
+        final GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+            .bucket("release-ihtsdo-prod-published").key(olderInputFile1).build();
+        objectData1 = s3Client.getObject(getObjectRequest);
       }
 
       // Process second file
@@ -6362,9 +6360,9 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
         // if it is not a current local file, stream file2 from aws
       } else {
-        file2 = s3Client
-            .getObject(new GetObjectRequest("release-ihtsdo-prod-published", newerInputFile2));
-        objectData2 = file2.getObjectContent();
+        final GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+            .bucket("release-ihtsdo-prod-published").key(newerInputFile2).build();
+        objectData2 = s3Client.getObject(getObjectRequest);
       }
 
       InputStream reportInputStream = null;
@@ -6924,13 +6922,12 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
       user = authorizeApp(authToken, MapUserRole.ADMINISTRATOR, "download file from aws",
           securityService);
 
-      AmazonS3 s3Client = null;
-      s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
+      final S3Client s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
 
       // stream first file from aws
-      S3Object file1 =
-          s3Client.getObject(new GetObjectRequest("release-ihtsdo-prod-published", filePath));
-      InputStream objectData1 = file1.getObjectContent();
+      final GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket("release-ihtsdo-prod-published")
+          .key(filePath).build();
+      final InputStream objectData1 = s3Client.getObject(getObjectRequest);
 
       return objectData1;
 

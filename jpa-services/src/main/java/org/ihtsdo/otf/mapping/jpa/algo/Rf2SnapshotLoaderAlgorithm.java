@@ -16,6 +16,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.algo.Algorithm;
@@ -46,8 +50,6 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.ihtsdo.otf.mapping.services.helpers.FileSorter;
 import org.ihtsdo.otf.mapping.services.helpers.ProgressEvent;
 import org.ihtsdo.otf.mapping.services.helpers.ProgressListener;
-
-import com.google.common.io.Files;
 
 public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
     implements Algorithm, AutoCloseable {
@@ -803,12 +805,10 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
           0);
     }
     // Sort text definitions file
-    if (coreTextDefinitionInputFile != null
-        && coreDescriptionInputFile != null) {
+    if (coreTextDefinitionInputFile != null && coreDescriptionInputFile != null) {
 
       // sort the text definition file
-      sortRf2File(coreTextDefinitionInputFile,
-          descriptionsTextByDescriptionFile, 0);
+      sortRf2File(coreTextDefinitionInputFile, descriptionsTextByDescriptionFile, 0);
 
       // merge the two description files
       log.info("        Merging description files...");
@@ -823,12 +823,17 @@ public class Rf2SnapshotLoaderAlgorithm extends RootServiceJpa
           }, outputDir, ""); // header line
 
       // rename the temporary file
-      Files.move(mergedDesc, descriptionsByDescriptionFile);
+      // Files.move(mergedDesc, descriptionsByDescriptionFile);
+      final Path sourcePath = Paths.get(mergedDesc.getAbsolutePath());
+      final Path targetPath = Paths.get(descriptionsByDescriptionFile.getAbsolutePath());
+      Files.move(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
 
     } else {
       // copy the core descriptions file
-      Files.copy(descriptionsCoreByDescriptionFile,
-          descriptionsByDescriptionFile);
+      // Files.copy(descriptionsCoreByDescriptionFile, descriptionsByDescriptionFile);
+      final Path sourcePath = Paths.get(descriptionsCoreByDescriptionFile.getAbsolutePath());
+      final Path targetPath = Paths.get(descriptionsByDescriptionFile.getAbsolutePath());
+      Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
     }
 
     // Sort relationships file

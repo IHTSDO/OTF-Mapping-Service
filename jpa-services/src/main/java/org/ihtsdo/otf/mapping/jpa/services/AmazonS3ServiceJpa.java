@@ -23,21 +23,22 @@ import org.ihtsdo.otf.mapping.model.MapProject;
 import org.ihtsdo.otf.mapping.services.AmazonS3Service;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 
-import com.amazonaws.SdkClientException;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.auth.InstanceProfileCredentialsProvider;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.InstanceProfileCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
 /**
  * JPA implementation of the {@link AmazonS3Service}.
  */
 public class AmazonS3ServiceJpa extends RootServiceJpa
     implements AmazonS3Service {
+
+  private S3Client s3Client;
 
   /**
    * Instantiates an empty {@link AmazonS3ServiceJpa}.
@@ -46,6 +47,27 @@ public class AmazonS3ServiceJpa extends RootServiceJpa
    */
   public AmazonS3ServiceJpa() throws Exception {
     super();
+    initializeS3Client();
+  }
+
+  /**
+   * Initialize the S3 client.
+   */
+  private void initializeS3Client() throws Exception {
+    // Example using basic credentials
+    final AwsBasicCredentials awsCreds = AwsBasicCredentials.create(
+        ConfigUtility.getConfigProperties().getProperty("aws.access.key.id"),
+        ConfigUtility.getConfigProperties().getProperty("aws.secret.access.key"));
+    s3Client = S3Client.builder()
+        .region(Region.US_EAST_1)
+        .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
+        .build();
+
+    // Example using instance profile credentials
+    // s3Client = S3Client.builder()
+    // .region(Region.US_EAST_1)
+    // .credentialsProvider(InstanceProfileCredentialsProvider.create())
+    // .build();
   }
 
   /**
@@ -58,33 +80,38 @@ public class AmazonS3ServiceJpa extends RootServiceJpa
     if (manager.isOpen()) {
       manager.close();
     }
+    if (s3Client != null) {
+      s3Client.close();
+    }
   }
 
   /**
-   * Gets an AmazonS3 object based first on InstanceProfileCredentialsProvider.
-   * If not available, will then use AWSStaticCredentialsProvider.
+   * Gets an S3Client object based first on InstanceProfileCredentialsProvider.
+   * If not available, will then use StaticCredentialsProvider.
    * 
-   * @return AmazonS3 AWS S3 client
+   * @return S3Client AWS S3 client
    * @throws Exception the exception
    */
-  public static AmazonS3 connectToAmazonS3() throws Exception {
+  public static S3Client connectToAmazonS3() throws Exception {
     // Connect to server using instance profile credentials
-    AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-        .withRegion(Regions.US_EAST_1)
-        .withCredentials(new InstanceProfileCredentialsProvider(false)).build();
+    S3Client s3Client = S3Client.builder()
+        .region(Region.US_EAST_1)
+        .credentialsProvider(InstanceProfileCredentialsProvider.create())
+        .build();
 
     // Check if connection was successful. If not, try to connect with static
     // keys instead
     try {
       s3Client.listBuckets();
-    } catch (SdkClientException e) {
+    } catch (final Exception e) {
       // Connect to server with static keys
-      BasicAWSCredentials awsCreds = new BasicAWSCredentials(
+      final AwsBasicCredentials awsCreds = AwsBasicCredentials.create(
           ConfigUtility.getConfigProperties().getProperty("aws.access.key.id"),
-          ConfigUtility.getConfigProperties()
-              .getProperty("aws.secret.access.key"));
-      s3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1)
-          .withCredentials(new AWSStaticCredentialsProvider(awsCreds)).build();
+          ConfigUtility.getConfigProperties().getProperty("aws.secret.access.key"));
+      s3Client = S3Client.builder()
+          .region(Region.US_EAST_1)
+          .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
+          .build();
 
       // Check connection again. If this fails as well, it will throw the
       // exception to the calling method
@@ -95,7 +122,8 @@ public class AmazonS3ServiceJpa extends RootServiceJpa
   }
 
   /* see superclass */
-  public SearchResultList getFileListFromAmazonS3(MapProject mapProject)
+  @Override
+  public SearchResultList getFileListFromAmazonS3(final MapProject mapProject)
     throws Exception {
 
     String sourceTerminology = mapProject.getSourceTerminology();
@@ -123,8 +151,7 @@ public class AmazonS3ServiceJpa extends RootServiceJpa
     } else if (removeSpaces(sourceTerminology).equals("SNOMEDCT")) {
       filterTerminology = "InternationalRF2";
     } else if (sourceTerminology.startsWith("ICNP")) {
-      filterTerminology =
-          sourceTerminology.substring(0, sourceTerminology.indexOf(" "))
+      filterTerminology = sourceTerminology.substring(0, sourceTerminology.indexOf(" "))
               + sourceTerminology.substring(sourceTerminology.indexOf(" ") + 1);
     }
 
@@ -134,42 +161,48 @@ public class AmazonS3ServiceJpa extends RootServiceJpa
     String lastYear = Integer.toString(year - 1);
 
     // Determine international or U.S.
-    String nationalPrefix =
-        sourceTerminology.equals("SNOMEDCT_US") ? "us" : "international";
+    String nationalPrefix = sourceTerminology.equals("SNOMEDCT_US") ? "us" : "international";
 
     String bucketName = "release-ihtsdo-prod-published";
     SearchResultList searchResults = new SearchResultListJpa();
 
     // Connect to server
-    AmazonS3 s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
+    final S3Client s3Client = AmazonS3ServiceJpa.connectToAmazonS3();
 
     // Get full list of files on aws s3
-    List<S3ObjectSummary> fullKeyList = new ArrayList<S3ObjectSummary>();
+    final List<S3Object> fullKeyList = new ArrayList<>();
 
-    ObjectListing objects = s3Client.listObjects(bucketName, nationalPrefix);
-    fullKeyList = objects.getObjectSummaries();
-    objects = s3Client.listNextBatchOfObjects(objects);
+    ListObjectsV2Request listObjectsReqManual = ListObjectsV2Request.builder()
+        .bucket(bucketName)
+        .prefix(nationalPrefix)
+        .build();
+
+    ListObjectsV2Response objects = s3Client.listObjectsV2(listObjectsReqManual);
+    fullKeyList.addAll(objects.contents());
 
     while (objects.isTruncated()) {
-      fullKeyList.addAll(objects.getObjectSummaries());
-      objects = s3Client.listNextBatchOfObjects(objects);
+      listObjectsReqManual = ListObjectsV2Request.builder()
+          .bucket(bucketName)
+          .prefix(nationalPrefix)
+          .continuationToken(objects.nextContinuationToken())
+          .build();
+      objects = s3Client.listObjectsV2(listObjectsReqManual);
+      fullKeyList.addAll(objects.contents());
     }
 
-    fullKeyList.addAll(objects.getObjectSummaries());
-
     // start filtering full list, to keep only relevant zip files
-    TerminologyVersionList returnList = new TerminologyVersionList();
-    for (S3ObjectSummary obj : fullKeyList) {
-      if (obj.getKey().endsWith("zip")
-          && obj.getKey().contains(filterTerminology)
-          && !obj.getKey().contains("published_build_backup")
-          && (obj.getKey().contains(lastYear)
-              || obj.getKey().contains(currentYear)
-              || obj.getKey().contains(nextYear))
-          && (obj.getKey().matches(".*\\d.zip")
-              || obj.getKey().matches(".*\\dZ.zip"))) {
-        TerminologyVersion tv = new TerminologyVersion(
-            obj.getKey().replace(".zip", "").replace(nationalPrefix + '/', ""),
+    final TerminologyVersionList returnList = new TerminologyVersionList();
+    for (final S3Object obj : fullKeyList) {
+      if (obj.key().endsWith("zip")
+          && obj.key().contains(filterTerminology)
+          && !obj.key().contains("published_build_backup")
+          && (obj.key().contains(lastYear)
+              || obj.key().contains(currentYear)
+              || obj.key().contains(nextYear))
+          && (obj.key().matches(".*\\d.zip")
+              || obj.key().matches(".*\\dZ.zip"))) {
+        final TerminologyVersion tv = new TerminologyVersion(
+            obj.key().replace(".zip", "").replace(nationalPrefix + '/', ""),
             filterTerminology);
         tv.identifyScope();
         returnList.addTerminologyVersion(tv);
@@ -209,8 +242,8 @@ public class AmazonS3ServiceJpa extends RootServiceJpa
       result = constructAwsFileFromZipInfo(mapProject, result, tv, "Snapshot",
           nationalPrefix, fullKeyList, filterTerminology);
       // confirm file exists on aws before adding to result list
-      for (S3ObjectSummary obj : fullKeyList) {
-        if (obj.getKey().equals(result.getValue2())) {
+      for (final S3Object obj : fullKeyList) {
+        if (obj.key().equals(result.getValue2())) {
           searchResults.addSearchResult(result);
         }
       }
@@ -222,8 +255,8 @@ public class AmazonS3ServiceJpa extends RootServiceJpa
         deltaResult.setTerminologyVersion(result.getTerminologyVersion());
         deltaResult = constructAwsFileFromZipInfo(mapProject, deltaResult, tv,
             "Delta", nationalPrefix, fullKeyList, filterTerminology);
-        for (S3ObjectSummary obj : fullKeyList) {
-          if (obj.getKey().equals(deltaResult.getValue2())) {
+        for (final S3Object obj : fullKeyList) {
+          if (obj.key().equals(deltaResult.getValue2())) {
             searchResults.addSearchResult(deltaResult);
           }
         }
@@ -277,15 +310,16 @@ public class AmazonS3ServiceJpa extends RootServiceJpa
    * @param filterTerminology the filter terminology
    * @return the search result
    */  
-  private SearchResult constructAwsFileFromZipInfo(MapProject mapProject,
-    SearchResult result, TerminologyVersion tv, String type,
-    String nationalPrefix, List<S3ObjectSummary> fullKeyList,
-    String filterTerminology) {
+  private SearchResult constructAwsFileFromZipInfo(final MapProject mapProject,
+      final SearchResult result, final TerminologyVersion tv, final String type,
+      final String nationalPrefix, final List<S3Object> fullKeyList,
+      final String filterTerminology) {
 
     if (filterTerminology.equals("InternationalRF2")) {
       if (mapProject.getMapRefsetPattern()
           .equals(MapRefsetPattern.ExtendedMap)) {
-        result.setValue(((result.getTerminology().equals("FINAL") || result.getTerminology().equals("MEMBER")) ? "" : "x")
+        result
+            .setValue(((result.getTerminology().equals("FINAL") || result.getTerminology().equals("MEMBER")) ? "" : "x")
             + "der2_iisssccRefset_ExtendedMap" + type + "_INT_"
             + tv.getVersion() + ".txt");
         result.setValue2(nationalPrefix + '/' + tv.getAwsZipFileName()
@@ -297,12 +331,14 @@ public class AmazonS3ServiceJpa extends RootServiceJpa
             + tv.getVersion() + ".txt");
       } else if (mapProject.getMapRefsetPattern()
           .equals(MapRefsetPattern.SimpleMap)) {
-        result.setValue(((result.getTerminology().equals("FINAL") || result.getTerminology().equals("MEMBER")) ? "" : "x")
+        result
+            .setValue(((result.getTerminology().equals("FINAL") || result.getTerminology().equals("MEMBER")) ? "" : "x")
             + "der2_sRefset_SimpleMap" + type + "_INT_" + tv.getVersion()
             + ".txt");
         result.setValue2(nationalPrefix + '/' + tv.getAwsZipFileName()
             + ((result.getTerminology().equals("FINAL") || result.getTerminology().equals("MEMBER"))
-                ? '/' + tv.getAwsZipFileName() : "")
+                ? '/' + tv.getAwsZipFileName()
+                : "")
             + "/" + type + "/Refset/Map/"
             + ((result.getTerminology().equals("FINAL") || result.getTerminology().equals("MEMBER")) ? "" : "x")
             + "der2_sRefset_SimpleMap" + type + "_INT_" + tv.getVersion()
@@ -311,13 +347,13 @@ public class AmazonS3ServiceJpa extends RootServiceJpa
       // special processing for other projects bc the zip file has a different
       // version date from the file name
     } else {
-      for (S3ObjectSummary obj : fullKeyList) {
-        if (obj.getKey()
+      for (final S3Object obj : fullKeyList) {
+        if (obj.key()
             .startsWith(nationalPrefix + '/' + tv.getAwsZipFileName() + '/'
                 + tv.getAwsZipFileName() + '/' + type + "/Refset/Map/")) {
           result.setValue(
-              obj.getKey().substring(obj.getKey().lastIndexOf('/') + 1));
-          result.setValue2(obj.getKey());
+              obj.key().substring(obj.key().lastIndexOf('/') + 1));
+          result.setValue2(obj.key());
           return result;
         }
       }
