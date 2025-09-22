@@ -19,7 +19,7 @@ import org.ihtsdo.otf.mapping.services.ReportService;
 /**
  * 
  * 
- * See admin/loader/pom.xml for a sample execution.
+ * See admin/remover/pom.xml for a sample execution.
  * 
  * @goal remove-reports
  * @phase package
@@ -42,6 +42,12 @@ public class ReportRemoverMojo extends AbstractOtfMappingMojo {
    * @parameter
    */
   private String endDate = null;
+  
+  /**
+   * A keep manual runs
+   * @parameter
+   */
+  private boolean keepManualRuns = false;
 
   /**
    * Executes the plugin.
@@ -53,6 +59,7 @@ public class ReportRemoverMojo extends AbstractOtfMappingMojo {
     getLog().info("Starting to remove reports");
     getLog().info("  refsetId = " + refsetId);
     getLog().info("  startDate = " + startDate);
+    getLog().info("  keepManualRuns = " + keepManualRuns);
     getLog().info("  endDate = " + endDate);
 
     setupBindInfoPackage();
@@ -97,7 +104,7 @@ public class ReportRemoverMojo extends AbstractOtfMappingMojo {
       // Remove reports
       ReportService reportService = new ReportServiceJpa();
       for (MapProject mapProject : mapProjects) {
-        reportService.removeReportsForMapProject(mapProject, start, end);
+        reportService.removeReportsForMapProject(mapProject, start, end, keepManualRuns);
       }
 
       mappingService.close();

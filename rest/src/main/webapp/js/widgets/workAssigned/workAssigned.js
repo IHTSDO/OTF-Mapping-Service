@@ -25,6 +25,8 @@ angular
       $scope.assignedRecords = [];
       $scope.authorsList = [];
 
+	  localStorageService.add('workQuery', null);
+
       // retrieve the necessary scope variables from local storage service
       $scope.currentUser = localStorageService.get('currentUser');
       $scope.currentRole = localStorageService.get('currentRole');
@@ -458,20 +460,22 @@ angular
 			for(var j = 0; j < $scope.allTags.length; j++) {
 				if($scope.selectedTags[i].id == $scope.allTags[j].id){
 					if(pselectedTags == ""){
-						pselectedTags = $scope.allTags[j].tag;
+						pselectedTags = 'tags:(\"' + $scope.allTags[j].tag + '\"';
 					}
 					else{
-						pselectedTags = pselectedTags.concat(' AND ', $scope.allTags[j].tag);
+						pselectedTags = pselectedTags.concat(' OR "', $scope.allTags[j].tag,'\"');
 					}
 				}
 			}
           }
 
-		if(query == null){
-			query = pselectedTags;
-		}
-		if(query != null && pselectedTags != ""){
-			query = query.concat(' AND ', pselectedTags);
+		if (pselectedTags != "") {
+			if (query != null && query != ""){
+				query = query.concat(' AND ', pselectedTags,')');
+			}
+			else{
+				query = pselectedTags + ')';
+			}
 		}
 
         // construct a paging/filtering/sorting object
@@ -551,9 +555,29 @@ angular
           }
         }).success(function(data) {
           gpService.decrement();
-          for (var i = 0; i < data.searchResult.length; i++) {
-			$scope.allTags.push({ id: i+1, tag: data.searchResult[i].value });
-          }
+	  		// 1. Initialize a temporary object to track seen tags.
+		    //    The keys will be the 'tag' values, and the values can be anything (e.g., true, or the actual tag object).
+		    const uniqueTagsMap = {};
+		    // 2. Initialize a new array for the unique tags.
+		    const newAllTagsArray = [];
+		
+		    for (var i = 0; i < data.searchResult.length; i++) {
+		      const tagValue = data.searchResult[i].value;
+		
+		      // Check if we've already seen this tag value
+		      if (!uniqueTagsMap[tagValue]) {
+		        // If not, add it to our map and to the new array
+		        uniqueTagsMap[tagValue] = true; // Mark as seen
+		        newAllTagsArray.push({ id: i + 1, tag: tagValue });
+		      }
+		    }
+		
+		    // 3. Replace the old $scope.allTags with the newly generated unique array.
+		    $scope.allTags = newAllTagsArray;
+	
+//          for (var i = 0; i < data.searchResult.length; i++) {
+//			$scope.allTags.push({ id: i+1, tag: data.searchResult[i].value });
+//          }
         }).error(function(data, status, headers, config) {
           gpService.decrement();
           $rootScope.handleHttpError(data, status, headers, config);
@@ -658,20 +682,22 @@ angular
 			for(var j = 0; j < $scope.allTags.length; j++) {
 				if($scope.selectedTags[i].id == $scope.allTags[j].id){
 					if(pselectedTags == ""){
-						pselectedTags = $scope.allTags[j].tag;
+						pselectedTags = 'tags:(\"' + $scope.allTags[j].tag + '\"';
 					}
 					else{
-						pselectedTags = pselectedTags.concat(' AND ', $scope.allTags[j].tag);
+						pselectedTags = pselectedTags.concat(' OR "', $scope.allTags[j].tag,'\"');
 					}
 				}
 			}
           }
 
-		if(query == null){
-			query = pselectedTags;
-		}
-		if(query != null && pselectedTags != ""){
-			query = query.concat(' AND ', pselectedTags);
+		if (pselectedTags != "") {
+			if (query != null && query != ""){
+				query = query.concat(' AND ', pselectedTags,')');
+			}
+			else{
+				query = pselectedTags + ')';
+			}
 		}
 
         // construct a paging/filtering/sorting object
@@ -990,24 +1016,59 @@ angular
 
       $scope.goEditRecord = function(id) {
         var path = '/record/recordId/' + id;
+		if($scope.queryAssigned !== null || $scope.selectedTags.length > 0){
+			var query = $scope.queryAssigned;
+			var pselectedTags = "";
+				for (var i = 0; i < $scope.selectedTags.length; i++) {
+				for(var j = 0; j < $scope.allTags.length; j++) {
+					if($scope.selectedTags[i].id == $scope.allTags[j].id){
+						if(pselectedTags == ""){
+							pselectedTags = 'tags:(\"' + $scope.allTags[j].tag + '\"';
+						}
+						else{
+							pselectedTags = pselectedTags.concat(' OR "', $scope.allTags[j].tag,'\"');
+						}
+					}
+				}
+	          }
+	
+			if (pselectedTags != "") {
+				if (query != null && query != ""){
+					query = query.concat(' AND ', pselectedTags,')');
+				}
+				else{
+					query = pselectedTags + ')';
+				}
+			}
+			localStorageService.add('workQuery', query);
+		}
         // redirect page
         $location.path(path);
       };
 
       $scope.goEditConflict = function(id) {
         var path = '/record/conflicts/' + id;
+		if($scope.queryAssigned !== null){
+			localStorageService.add('workQuery', $scope.queryConflict);
+		}
         // redirect page
         $location.path(path);
       };
 
       $scope.goEditReviewWork = function(id) {
         var path = '/record/review/' + id;
+		if($scope.queryAssigned !== null){
+			localStorageService.add('workQuery', $scope.queryReviewWork);
+		}
         // redirect page
         $location.path(path);
       };
 
       $scope.goEditQAWork = function(id) {
         var path = '/record/review/' + id;
+		if($scope.queryAssigned !== null){
+			localStorageService.add('workQuery', $scope.queryQAWork);
+		}
         // redirect page
         $location.path(path);
       };

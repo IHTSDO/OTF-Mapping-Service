@@ -730,6 +730,13 @@ public class MappingClientRest extends RootClientRest
     // TODO Auto-generated method stub
     return null;
   }
+  
+  @Override
+  public Boolean getClearDataOnChange(Long mapProjectId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }  
 
   @Override
   public String updateMapProjectVersion(String version, Long mapProjectId, String authToken)

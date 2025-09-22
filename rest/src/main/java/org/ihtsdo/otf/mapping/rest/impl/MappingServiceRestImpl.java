@@ -3745,6 +3745,48 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
     }
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.ihtsdo.otf.mapping.rest.impl.ReportServiceRest#getQALabels(java.lang.
+   * Long, java.lang.String)
+   */
+  @Override
+  @GET
+  @Path("/clearDataOnChange/{mapProjectId}")
+  @ApiOperation(value = "Gets clear data on change", notes = "Returns whether map project is set to clear data on a target change",
+      response = SearchResultList.class)
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public Boolean getClearDataOnChange(
+    @ApiParam(value = "Map Project id",
+        required = true) @PathParam("mapProjectId") Long mapProjectId,
+    @ApiParam(value = "Authorization token",
+        required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(MappingServiceRestImpl.class).info("RESTful call:  /clearDataOnChange/" + mapProjectId);
+
+    String user = null;
+    final MappingService mappingService = new MappingServiceJpa();
+    try {
+      // authorize call
+      user = authorizeApp(authToken, MapUserRole.VIEWER, "get tags", securityService);
+
+      final Boolean clearDataOnChange = mappingService.getClearDataOnChangeForMapProject(mapProjectId);
+
+      return clearDataOnChange;
+
+    } catch (Exception e) {
+      handleException(e, "trying to get clear data on change", user, "", "");
+      return null;
+    } finally {
+      mappingService.close();
+      securityService.close();
+    }
+  }  
+  
   // ///////////////////////////////////////////////
   // Role Management Services
   // ///////////////////////////////////////////////
@@ -6028,7 +6070,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
       final Client client = ClientBuilder.newClient();
       final WebTarget target =
-          client.target(authoringUrl + "/traceability-service/activities?conceptId=" + conceptId);
+          client.target(authoringUrl + "/authoring-traceability-service/activities?conceptId=" + conceptId);
 
       final Response response = target.request(MediaType.APPLICATION_JSON_TYPE)
           .header("Authorization", authoringAuthHeader).accept("application/json").get();
@@ -6143,7 +6185,7 @@ public class MappingServiceRestImpl extends RootServiceRestImpl implements Mappi
 
       final Client client = ClientBuilder.newClient();
       final WebTarget target =
-          client.target(authoringUrl + "/traceability-service/activities?conceptId=" + conceptId);
+          client.target(authoringUrl + "/authoring-traceability-service/activities?conceptId=" + conceptId);
 
       final Response response = target.request(MediaType.APPLICATION_JSON_TYPE)
           .header("Cookie", ConfigUtility.getGenericUserCookie())

@@ -767,6 +767,15 @@ public interface MappingService extends RootService {
   public SearchResultList getTagsForMapProject(Long mapProjectId) throws Exception;
 
   /**
+   * Returns the clear data on change for map project.
+   *
+   * @param mapProjectId the map project id
+   * @return the clear data on change boolean for map project
+   * @throws Exception the exception
+   */
+  public Boolean getClearDataOnChangeForMapProject(Long mapProjectId) throws Exception;
+  
+  /**
    * Returns the map user role.
    * 
    * @param userName the user name

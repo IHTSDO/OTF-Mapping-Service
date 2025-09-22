@@ -637,7 +637,9 @@ public class WorkflowConditionalReviewProjectPathHandler extends AbstractWorkflo
             for (MapEntry mapEntry : newRecord.getMapEntries()) {
               mapEntry.setMapRecord(newRecord);
             }
-            newRecord.setMapNotes(existingMapRecord.getMapNotes());
+            for(MapNote mapNote : existingMapRecord.getMapNotes()) {
+              newRecord.addMapNote(mapNote);
+            }
           }
 
         } else {

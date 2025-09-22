@@ -4,16 +4,15 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<!-- Module Metadata - no parent -->
-	<groupId>org.ihtsdo.otf.mapping</groupId>
-	<artifactId>ihtsdo-mapping-service</artifactId>
-	<version>1.7.59-SNAPSHOT</version>
-	<packaging>pom</packaging>
-	<name>IHTSDO RF2 Data Model</name>
-	<description>Aggregator and parent for interfaces and default
-		implementations of RF2 data model for OTF services</description>
-	<properties>
-		<tmp>TMP</tmp>
+  <!-- Module Metadata - no parent -->
+  <groupId>org.ihtsdo.otf.mapping</groupId>
+  <artifactId>ihtsdo-mapping-service</artifactId>
+  <version>1.7.70-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>IHTSDO RF2 Data Model</name>
+  <description>Aggregator and parent for interfaces and default implementations of RF2 data model for OTF services</description>
+  <properties>
+  	<tmp>TMP</tmp>
 	</properties>
 
 	<!-- Sub-modules -->

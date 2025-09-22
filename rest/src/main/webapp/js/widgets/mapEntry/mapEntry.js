@@ -155,6 +155,10 @@ angular
               console.debug('  valid target = ', data)
               // if target found and valid
               if (data) {
+				
+				if ($scope.entry.targetName != data.defaultPreferredName) {
+					$scope.clearDataOnChange($scope.entry);
+				}
 
                 $scope.entry.targetId = data.terminologyId;
                 $scope.entry.targetName = data.defaultPreferredName;
@@ -869,6 +873,46 @@ angular
           }
         };
 
+		// Check if the project requires clearing out of other information on a change
+		// like advices, additional map entry info, etc.
+        $scope.clearDataOnChange = function(entry) {
+
+          var deferred = $q.defer();
+
+          gpService.increment();
+          
+          $http({
+            url : root_mapping + 'clearDataOnChange/' + $scope.project.id,
+            method : 'GET',
+            headers : {
+              'Content-Type' : 'application/json'
+            }
+          }).success(
+            function(data) {
+              if (data) {
+			    gpService.decrement();
+				if(data === true){
+				  $scope.clearAdditionalMapEntryInfosForEntry(entry);
+				}
+				
+
+                // return the promise
+                deferred.resolve(entry);
+              } else {
+                gpService.decrement();
+                deferred.resolve(entry);	
+			  }
+            }).error(function(data, status, headers, config) {
+            gpService.decrement();
+            $rootScope.handleHttpError(data, status, headers, config);
+
+            // reject the promise
+            deferred.reject();
+          });
+
+          return deferred.promise;
+        };
+
         // ///////////////////////////////////////////
         // Functions for additional map entry infos///
         // //////////////////////////////////////////
@@ -975,6 +1019,16 @@ angular
 			else{
 				return true;
 			}
+		}
+		
+		$scope.clearAdditionalMapEntryInfosForEntry = function(entry) {
+			entry['additionalMapEntryInfo'] = [];
+
+			$scope.allowableMapEntryInfos[additionalMapEntryInfo.field] = 
+				$scope.getAllowableMapEntryInfosForField(entry, additionalMapEntryInfo.field);
+
+			
+			updateEntry($scope.entry);
 		}
 
         // Function for MapAdvice and MapRelations, returns allowable lists

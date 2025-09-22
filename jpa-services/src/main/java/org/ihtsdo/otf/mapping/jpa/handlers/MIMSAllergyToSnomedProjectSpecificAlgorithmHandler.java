@@ -8,32 +8,24 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.mapping.helpers.ConceptList;
-import org.ihtsdo.otf.mapping.helpers.MapAdviceList;
 import org.ihtsdo.otf.mapping.helpers.ValidationResult;
 import org.ihtsdo.otf.mapping.helpers.ValidationResultJpa;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
-import org.ihtsdo.otf.mapping.jpa.helpers.TerminologyUtility;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
-import org.ihtsdo.otf.mapping.model.MapAdvice;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapRecord;
-import org.ihtsdo.otf.mapping.model.MapRelation;
 import org.ihtsdo.otf.mapping.rf2.Concept;
-import org.ihtsdo.otf.mapping.rf2.Description;
 import org.ihtsdo.otf.mapping.services.ContentService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
-import org.ihtsdo.otf.mapping.services.helpers.FileSorter;
 
 /**
  * Implementation for sample allergy mapping project. Require valid codes to be
@@ -46,6 +38,8 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
   /** The auto-generated map suggestions for preloading. */
   private static Map<String, MapRecord> automaps = new HashMap<>();
   
+  /** The confidence level . */
+  private static Long confidenceThreshold = 40L;
   
   
   /* see superclass */
@@ -227,7 +221,7 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
     
     // Lookup if this concept has an existing, auto-generated map record to pre-load
     // Generated automap file must be saved here:
-    // {data.dir}/MIMS-Allergy/automap/results.xls
+    // {data.dir}/MIMS-Allergy/automap/results-confidence.xls
 
     final ContentService contentService = new ContentServiceJpa();
 
@@ -241,7 +235,7 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
 
     // Check preconditions
     String inputFile =
-        dataDir + "/MIMS-Allergy/automap/results.xls";
+        dataDir + "/MIMS-Allergy/automap/results-confidence.xls";
 
     if (!new File(inputFile).exists()) {
       throw new Exception("Specified input file missing: " + inputFile);
@@ -271,6 +265,10 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
 
     while ((line = preloadMapReader.readLine()) != null) {
       String fields[] = line.split("\t");
+      
+      if (fields.length == 0) {
+        continue;
+      }
 
       final String conceptId = fields[0];
 
@@ -290,7 +288,7 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
         automaps.put(conceptId, mimsAllergyAutomapRecord);
       }
             
-      for (int i = 2; i < fields.length; i += 2) {
+      for (int i = 2; i < fields.length; i += 3) {
         
         if(fields[i] == null || fields[i].isBlank()) {
           continue;
@@ -298,6 +296,13 @@ public class MIMSAllergyToSnomedProjectSpecificAlgorithmHandler
         
         MapRecord mimsAllergyAutomapRecord = automaps.get(conceptId);      
         final String mapTarget = fields[i];
+        
+        // Only use suggested map target if the confidence meets the project threshold.
+        final Double mapConfidence = Double.parseDouble(fields[i+2]);
+        
+        if(mapConfidence < confidenceThreshold) {
+          continue;
+        }
         
         // For each suggested map target, check if it has already been added to map.
         Boolean targetAlreadyAdded = false;

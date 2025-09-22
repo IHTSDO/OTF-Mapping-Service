@@ -36,6 +36,9 @@ public class MIMSIndicationToSnomedProjectSpecificAlgorithmHandler
   /** The auto-generated map suggestions for preloading. */
   private static Map<String, MapRecord> automaps = new HashMap<>();
 
+  /** The confidence level . */
+  private static Long confidenceThreshold = 100L;
+
   /* see superclass */
   @Override
   public void initialize() throws Exception {
@@ -218,11 +221,14 @@ public class MIMSIndicationToSnomedProjectSpecificAlgorithmHandler
    * @throws Exception the exception
    */
   private void cacheAutomaps() throws Exception {
-    // {data.dir}/MIMS-Indication/automap/mims-snomed-map.txt
-    
+
     if (!automaps.isEmpty()) {
       return;
     }
+    
+    // Lookup if this concept has an existing, auto-generated map record to pre-load
+    // Generated automap file must be saved here:
+    // {data.dir}/MIMS-Indication/automap/results-confidence.xls
 
     final ContentService contentService = new ContentServiceJpa();
 
@@ -235,7 +241,8 @@ public class MIMSIndicationToSnomedProjectSpecificAlgorithmHandler
     }
 
     // Check preconditions
-    String inputFile = dataDir + "/MIMS-Indication/automap/mims-snomed-map.txt";
+    String inputFile =
+        dataDir + "/MIMS-Indication/automap/results-confidence.xls";
 
     if (!new File(inputFile).exists()) {
       throw new Exception("Specified input file missing: " + inputFile);
@@ -265,73 +272,85 @@ public class MIMSIndicationToSnomedProjectSpecificAlgorithmHandler
 
     while ((line = preloadMapReader.readLine()) != null) {
       String fields[] = line.split("\t");
+      
+      if (fields.length == 0) {
+        continue;
+      }
 
-      final String mimsCodeId = fields[0];
+      final String conceptId = fields[0];
 
       // The first time a conceptId is encountered, set up the map (only need
       // very limited information for the purpose of this function
-      if (automaps.get(mimsCodeId) == null) {
-        MapRecord mimsConditionAutomapRecord = new MapRecordJpa();
-        mimsConditionAutomapRecord.setConceptId(mimsCodeId);
-        String sourceConceptName = sourceIdToName.get(mimsCodeId);
+      if (automaps.get(conceptId) == null) {
+        MapRecord mimsIndicationAutomapRecord = new MapRecordJpa();
+        mimsIndicationAutomapRecord.setConceptId(conceptId);
+        String sourceConceptName = sourceIdToName.get(conceptId);
         if (sourceConceptName != null) {
-          mimsConditionAutomapRecord.setConceptName(sourceConceptName);
+          mimsIndicationAutomapRecord.setConceptName(sourceConceptName);
         } else {
-          mimsConditionAutomapRecord
+          mimsIndicationAutomapRecord
               .setConceptName("CONCEPT DOES NOT EXIST IN " + mapProject.getSourceTerminology());
         }
 
-        automaps.put(mimsCodeId, mimsConditionAutomapRecord);
+        automaps.put(conceptId, mimsIndicationAutomapRecord);
       }
-
-      final String snomedId = fields[1];
-
-      if (snomedId == null || snomedId.isBlank()) {
-        continue;
-      }
-
-      MapRecord mimsConditionAutomapRecord = automaps.get(mimsCodeId);
-      final String mapTarget = snomedId;
-
-      // For each suggested map target, check if it has already been added to
-      // map.
-      Boolean targetAlreadyAdded = false;
-      for (MapEntry existingMapEntry : mimsConditionAutomapRecord.getMapEntries()) {
-        if (existingMapEntry.getTargetId().equals(mapTarget)) {
-          targetAlreadyAdded = true;
+            
+      for (int i = 2; i < fields.length; i += 3) {
+        
+        if(fields[i] == null || fields[i].isBlank()) {
+          continue;
         }
+        
+        MapRecord mimsIndicationAutomapRecord = automaps.get(conceptId);      
+        final String mapTarget = fields[i];
+        
+        // Only use suggested map target if the confidence meets the project threshold.
+        final Double mapConfidence = Double.parseDouble(fields[i+2]);
+        
+        if(mapConfidence < confidenceThreshold) {
+          continue;
+        }
+        
+        // For each suggested map target, check if it has already been added to map.
+        Boolean targetAlreadyAdded = false;
+        for(MapEntry existingMapEntry : mimsIndicationAutomapRecord.getMapEntries()) {
+          if(existingMapEntry.getTargetId().equals(mapTarget)) {
+            targetAlreadyAdded = true;
+          }
+        }
+        
+        // Don't add a target twice
+        if(targetAlreadyAdded) {
+          continue;
+        }
+        
+        // If this is a new suggested target, create a map entry, and attach it to the record
+        MapEntry mapEntry = new MapEntryJpa();
+        mapEntry.setMapGroup(1);
+        mapEntry.setMapPriority(mimsIndicationAutomapRecord.getMapEntries().size() + 1);
+        mapEntry.setTargetId(mapTarget);
+        String targetConceptName = destinationIdToName.get(mapTarget);
+
+        if (targetConceptName != null) {
+          mapEntry.setTargetName(targetConceptName);
+        } else {
+          mapEntry
+              .setTargetName("CONCEPT DOES NOT EXIST IN " + mapProject.getDestinationTerminology());
+        }
+
+
+        // Add the entry to the record, and put the updated record in the map
+        mimsIndicationAutomapRecord.addMapEntry(mapEntry);
+        automaps.put(conceptId, mimsIndicationAutomapRecord);
+
       }
-
-      // Don't add a target twice
-      if (targetAlreadyAdded) {
-        continue;
-      }
-
-      // If this is a new suggested target, create a map entry, and attach it to
-      // the record
-      MapEntry mapEntry = new MapEntryJpa();
-      mapEntry.setMapGroup(1);
-      mapEntry.setMapPriority(mimsConditionAutomapRecord.getMapEntries().size() + 1);
-      mapEntry.setTargetId(mapTarget);
-      String targetConceptName = destinationIdToName.get(mapTarget);
-
-      if (targetConceptName != null) {
-        mapEntry.setTargetName(targetConceptName);
-      } else {
-        mapEntry
-            .setTargetName("CONCEPT DOES NOT EXIST IN " + mapProject.getDestinationTerminology());
-      }
-
-      // Add the entry to the record, and put the updated record in the map
-      mimsConditionAutomapRecord.addMapEntry(mapEntry);
-      automaps.put(mimsCodeId, mimsConditionAutomapRecord);
-
     }
 
-    Logger.getLogger(getClass()).info("Done caching maps");
 
+    Logger.getLogger(getClass()).info("Done caching maps");
     preloadMapReader.close();
     contentService.close();
+
 
   }
 

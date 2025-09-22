@@ -1008,6 +1008,12 @@ public class DefaultProjectSpecificAlgorithmHandler implements ProjectSpecificAl
 
   /* see superclass */
   @Override
+  public Boolean getClearAdditionalMapEntryInfoOnChange() {
+    return Boolean.FALSE;
+  }
+  
+  /* see superclass */
+  @Override
   public ValidationResult validateForRelease(final ComplexMapRefSetMember member) throws Exception {
     // do nothing
     return new ValidationResultJpa();

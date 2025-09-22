@@ -736,14 +736,16 @@ angular
               'queryRestriction' : 'NEW'
             };
 
+			var query = localStorageService.get('workQuery');
+
             // get the assigned work list
             gpService.increment();
             console.debug('Get assigned concepts', $scope.project.id);
             $http(
               {
                 url : root_workflow + 'project/id/' + $scope.project.id + '/user/id/'
-                  + $scope.user.userName + '/assignedConcepts',
-
+                  + $scope.user.userName + '/assignedConcepts?query='
+             	  + encodeURIComponent(query ? query : ''),
                 dataType : 'json',
                 data : pfsParameterObj,
                 method : 'POST',
