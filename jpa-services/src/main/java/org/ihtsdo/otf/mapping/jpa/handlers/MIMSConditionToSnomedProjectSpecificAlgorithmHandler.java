@@ -38,7 +38,7 @@ public class MIMSConditionToSnomedProjectSpecificAlgorithmHandler
   private static Map<String, MapRecord> automaps = new HashMap<>();
 
   /** The confidence level . */
-  private static Long confidenceThreshold = 100L;
+  private static Long confidenceThreshold = 40L;
 
   /* see superclass */
   @Override
