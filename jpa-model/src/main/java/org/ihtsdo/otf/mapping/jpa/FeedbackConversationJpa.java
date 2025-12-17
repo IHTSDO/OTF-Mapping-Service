@@ -101,7 +101,7 @@ public class FeedbackConversationJpa implements FeedbackConversation {
   private String terminologyNote;
 
   /** The title. */
-  @Column(nullable = true, length = 4000)
+  @Column(nullable = true, length = 4096)
   private String title;
 
   /** The default preferred name. */

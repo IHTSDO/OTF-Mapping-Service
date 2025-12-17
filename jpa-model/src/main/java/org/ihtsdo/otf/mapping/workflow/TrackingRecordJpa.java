@@ -67,7 +67,7 @@ public class TrackingRecordJpa implements TrackingRecord {
   private String terminologyVersion;
 
   /** The default preferred name. */
-  @Column(nullable = false)
+  @Column(nullable = false, length = 4096)
   private String defaultPreferredName;
 
   /** The sort key. */

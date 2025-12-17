@@ -117,7 +117,7 @@ public class MapRecordJpa implements MapRecord {
   private String conceptId;
 
   /** The concept name. */
-  @Column(nullable = false)
+  @Column(nullable = false, length = 4096)
   private String conceptName;
 
   /** The map entries. */

@@ -72,7 +72,7 @@ public class TreePositionJpa implements TreePosition {
   private String terminologyVersion;
 
   /** The default preferred name. */
-  @Column(nullable = false, length = 4000)
+  @Column(nullable = false, length = 4096)
   private String defaultPreferredName;
 
   /** Flag for whether this tree position is assignable (not persisted). */
