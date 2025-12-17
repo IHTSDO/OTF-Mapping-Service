@@ -286,22 +286,31 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
       }
 
       //
-      // PREDICATE: When Relation – target is B-Broader then Relation –
-      // cluster cannot be blank
+      // PREDICATE: Relation – target and Relation – cluster cannot be blank
       //
-      if (relationTarget.startsWith("B") && relationCluster.isBlank()) {
-        result.addError(
-            "When Relation – target is B-Broader then Relation – cluster cannot be blank");
-      }
+      if (relationTarget.isBlank() || relationCluster.isBlank()) {
+          result.addError(
+              "Relation – target and Relation – cluster cannot be blank");
+        }      
+      
+        // 2025/12/17 - replaced with blanket "Relation Target/Cluster cannot be blank"
+//      //
+//      // PREDICATE: When Relation – target is B-Broader then Relation –
+//      // cluster cannot be blank
+//      //
+//      if (relationTarget.startsWith("B") && relationCluster.isBlank()) {
+//        result.addError(
+//            "When Relation – target is B-Broader then Relation – cluster cannot be blank");
+//      }
 
-      //
-      // PREDICATE: When Relation – target is N-Narrower then Relation –
-      // cluster cannot be blank
-      //
-      if (relationTarget.startsWith("N") && relationCluster.isBlank()) {
-        result.addError(
-            "When Relation – target is N-Narrower then Relation – cluster cannot be blank");
-      }
+//      //
+//      // PREDICATE: When Relation – target is N-Narrower then Relation –
+//      // cluster cannot be blank
+//      //
+//      if (relationTarget.startsWith("N") && relationCluster.isBlank()) {
+//        result.addError(
+//            "When Relation – target is N-Narrower then Relation – cluster cannot be blank");
+//      }
 
       //
       // PREDICATE: When Target code is blank then Relation-Target and
@@ -358,49 +367,50 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
         }
       }
       
-      //
-      // PREDICATE: When CIHI Target Code (1/1) is NOT BLANK,
-      // “Relation - Target” cannot be blank.
-      //
-      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
-        final MapEntry entry = mapRecord.getMapEntries().get(i);
-        if (entry.getMapGroup() == 1 && entry.getMapPriority() == 1) {
-          Boolean relationTargetPresent = false;
-          for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
-              .getAdditionalMapEntryInfos()) {
-            if (additionalMapEntryInfo.getField().equals("Relation - Target")) {
-              relationTargetPresent = true;
-            }
-          }
-          if (!entry.getTargetId().isBlank() && !relationTargetPresent) {
-            result.addError(
-                "When CIHI Target Code (1/1) is NOT BLANK, “Relation - Target” cannot be blank.");
-          }
-        }
-      }      
-      
-      //
-      // PREDICATE: When CIHI Target Code (1/1) is NOT BLANK,
-      // “Relation - Cluster” cannot be blank.
-      //
-      Boolean cihiTargetCodeBlank = false;
-      Boolean relationClusterPresent = false;
-      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
-        final MapEntry entry = mapRecord.getMapEntries().get(i);
-        if (entry.getMapGroup() == 1 && entry.getMapPriority() == 1 && entry.getTargetId().isBlank()) {
-          cihiTargetCodeBlank = true;
-        }
-        for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
-            .getAdditionalMapEntryInfos()) {
-          if (additionalMapEntryInfo.getField().equals("Relation - Cluster")) {
-            relationClusterPresent = true;
-          }
-        }
-      }
-      if (cihiTargetCodeBlank && !relationClusterPresent) {
-        result.addError(
-            "When CIHI Target Code (1/1) is NOT BLANK, “Relation - Cluster” cannot be blank.");
-      }
+   // 2025/12/17 - replaced with blanket "Relation Target/Cluster cannot be blank"
+//      //
+//      // PREDICATE: When CIHI Target Code (1/1) is NOT BLANK,
+//      // “Relation - Target” cannot be blank.
+//      //
+//      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+//        final MapEntry entry = mapRecord.getMapEntries().get(i);
+//        if (entry.getMapGroup() == 1 && entry.getMapPriority() == 1) {
+//          Boolean relationTargetPresent = false;
+//          for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
+//              .getAdditionalMapEntryInfos()) {
+//            if (additionalMapEntryInfo.getField().equals("Relation - Target")) {
+//              relationTargetPresent = true;
+//            }
+//          }
+//          if (!entry.getTargetId().isBlank() && !relationTargetPresent) {
+//            result.addError(
+//                "When CIHI Target Code (1/1) is NOT BLANK, “Relation - Target” cannot be blank.");
+//          }
+//        }
+//      }      
+//      
+//      //
+//      // PREDICATE: When CIHI Target Code (1/1) is NOT BLANK,
+//      // “Relation - Cluster” cannot be blank.
+//      //
+//      Boolean cihiTargetCodeBlank = false;
+//      Boolean relationClusterPresent = false;
+//      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+//        final MapEntry entry = mapRecord.getMapEntries().get(i);
+//        if (entry.getMapGroup() == 1 && entry.getMapPriority() == 1 && entry.getTargetId().isBlank()) {
+//          cihiTargetCodeBlank = true;
+//        }
+//        for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
+//            .getAdditionalMapEntryInfos()) {
+//          if (additionalMapEntryInfo.getField().equals("Relation - Cluster")) {
+//            relationClusterPresent = true;
+//          }
+//        }
+//      }
+//      if (cihiTargetCodeBlank && !relationClusterPresent) {
+//        result.addError(
+//            "When CIHI Target Code (1/1) is NOT BLANK, “Relation - Cluster” cannot be blank.");
+//      }
       
       //
       // PREDICATE: 2nd Group (WHO target) must have a target mismatch reason
