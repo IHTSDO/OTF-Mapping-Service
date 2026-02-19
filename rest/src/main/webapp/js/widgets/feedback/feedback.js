@@ -41,10 +41,10 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
       $scope.mapUserViewed == null;
       $scope.searchPerformed = false; // initialize variable to track whether
       // search was performed
-      $scope.feedbackType = 'All Feedback';
-      $scope.resolvedType = 'Active';
-      $scope.reviewedType = 'All';
-      $scope.ownedByMe = 'All';
+      $scope.feedbackType = localStorageService.get('feedbackType') || 'All Feedback';
+      $scope.resolvedType = localStorageService.get('resolved') || 'Active';
+      $scope.reviewedType = localStorageService.get('viewed') || 'All';
+      $scope.ownedByMe = localStorageService.get('ownedBy') || 'All'; 
       $scope.recordIdOwnerMap = new Array();
 
       // pagination variables
@@ -178,6 +178,11 @@ angular.module('mapProjectApp.widgets.feedback', [ 'adf.provider' ]).config(
           $rootScope.handleHttpError(data, status, headers, config);
         });
 
+      };
+
+      $scope.setFeedbackFilter = function(filter, status) {
+        // add to the local storage service for the next visit       
+        localStorageService.add(filter, status);
       };
 
       // if any of the feedbacks are not yet viewed, return false indicating

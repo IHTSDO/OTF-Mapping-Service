@@ -10,22 +10,22 @@
 <div style="margin-top: 10px">
   <select tooltip-placement="top" uib-tooltip="Feedback Type"
     ng-init="feedbackType" ng-model="feedbackType"
-    ng-change="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, ownedByMe, query)"
+    ng-change="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, ownedByMe, query); setFeedbackFilter('feedbackType',feedbackType)"
     ng-options="item as item for item in feedbackTypes">
   </select>
   <select tooltip-placement="top" uib-tooltip="Viewed Status"
     ng-init="reviewedType" ng-model="reviewedType"
-    ng-change="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, ownedByMe, query)"
+    ng-change="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, ownedByMe, query); setFeedbackFilter('viewed',reviewedType)"
     ng-options="item as item for item in reviewedTypes">
   </select>
   <select tooltip-placement="top" uib-tooltip="Resolved Status"
     ng-init="resolvedType" ng-model="resolvedType"
-    ng-change="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, ownedByMe, query)"
+    ng-change="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, ownedByMe, query); setFeedbackFilter('resolved',resolvedType)"
     ng-options="item as item for item in resolvedTypes">
   </select>
   <select tooltip-placement="top" uib-tooltip="Owned By"
     ng-init="ownedByMe" ng-model="ownedByMe"
-    ng-change="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, ownedByMe, query)"
+    ng-change="retrieveFeedback(1, feedbackType, reviewedType, resolvedType, ownedByMe, query); setFeedbackFilter('ownedBy',ownedByMe)"
     ng-options="item as item for item in ownedByList">
   </select>
 </div>
