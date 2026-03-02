@@ -48,7 +48,7 @@
     <sun.xml.jaxb-core.version>2.3.0.1</sun.xml.jaxb-core.version>
     <sun.xml.jaxb-impl.version>2.3.2</sun.xml.jaxb-impl.version>
 
-    <jackson.version>2.18.2</jackson.version>
+    <jackson.version>2.18.6</jackson.version>
     <jersey.core.version>2.45</jersey.core.version>
     <jersey.media.version>2.45</jersey.media.version>
     <jersey.version>2.45</jersey.version>
