@@ -130,10 +130,21 @@ public class ICD10CAToICD11ReleaseToRF2ImportMojo extends AbstractMojo {
       // Create an External Data object, based on the source concept
       ExternalData externalData = new ExternalData(mapRecord.getConceptId());
 
-      // Look up map notes
+   // Look up map notes
       Set<MapNote> mapNotes = mapRecord.getMapNotes();
-      if(mapNotes != null) {
-        externalData.setMapNotes(mapNotes);
+      if (mapNotes != null) {
+          for (MapNote mapNote : mapNotes) {
+              String noteString = mapNote.getNote();
+              
+              if (noteString != null) {
+                  // \r?\n catches both \n and \r\n
+                  // We use replaceAll because it supports regex
+                  String noteStringFlattened = noteString.replaceAll("\\r?\\n", "<br>");
+                  mapNote.setNote(noteStringFlattened);
+              }
+          }
+          // You can pass the original set since you've modified the objects inside it
+          externalData.setMapNotes(mapNotes);
       }
       
       // Look up Additional Entry Info
