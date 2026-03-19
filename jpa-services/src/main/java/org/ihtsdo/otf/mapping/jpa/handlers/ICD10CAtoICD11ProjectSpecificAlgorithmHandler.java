@@ -571,7 +571,25 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
       if(isCanadianCode && !WHOTarget.equals("n/a - not applicable"))
       {
         result.addError("When Source Code is a canadian code, WHO Map (2/1) must be 'n/a - not applicable'");
-      }        
+      }
+      
+      //
+      // PREDICATE: There cannot be duplicate stem codes in the Canadian maps
+      //
+      Set<String> stemCodes = new HashSet<>();
+      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+        final MapEntry entry = mapRecord.getMapEntries().get(i);
+        if (entry.getMapGroup() == 1) {
+        	CIHITarget = entry.getTargetId();
+        	if(stemCodes.contains(CIHITarget)) {
+        		result.addError("Duplicate stem code identified: " + CIHITarget);
+        		break;
+        	}
+        	else {
+        		stemCodes.add(CIHITarget);
+        	}
+        }
+      }      
 
     } catch (final Exception e) {
       throw e;

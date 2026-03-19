@@ -254,16 +254,16 @@ public class ICD10CAToICD11ReleaseToRF2ImportMojo extends AbstractMojo {
               final String group = columns[6];
               final String priority = columns[7];
                             
-              //Group 1 Priority 1 gets the relation target, if there is a target
-              if(group.equals("1") && priority.equals("1") && !columns[10].contentEquals("")) {
+              //Group 1 Priority 1 gets the relation target
+              if(group.equals("1") && priority.equals("1")) {
                 newLine.append("\t").append(externalData.getRelationTarget());
               }
               else {
                 newLine.append("\t").append("");
               }
               
-              //Group 1, final priority gets the relation cluster, if there is a target
-              if(group.equals("1") && externalData.getRelationClusterPriority() != null && priority.equals(externalData.getRelationClusterPriority().toString()) && columns[5] != null) {
+              //Group 1, Priority 1 gets the relation cluster
+              if(group.equals("1") && priority.equals("1")) {
                 newLine.append("\t").append(externalData.getRelationCluster());
               }
               else {
