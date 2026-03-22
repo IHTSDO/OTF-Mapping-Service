@@ -307,14 +307,14 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
       //
       String WHOTarget = "";
       String CIHITarget = "";
-      Boolean isCanadianCode = false;
+      Boolean isCanadianTargetCode = false;
       String targetMismatchReason = "";
       for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
         final MapEntry entry = mapRecord.getMapEntries().get(i);
         if (entry.getMapGroup() == 1 && entry.getMapPriority() == 1) {
     		CIHITarget = entry.getTargetId() != null ? entry.getTargetId() : "";
     		if(icd10caCanadianCodes.contains(CIHITarget)) {
-        		isCanadianCode = true;
+        		isCanadianTargetCode = true;
         	}
         }
         if (entry.getMapGroup() == 2 && entry.getMapPriority() == 1) {
@@ -327,26 +327,36 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
           }
         }
       }
-      if(CIHITarget.isBlank() && !targetMismatchReason.equals("n/a - see unmappable reason"))
+      // Note: doing this weird double-if statement to ensure the final "else" only runs when all other situations are not met.
+      if(CIHITarget.isBlank()) 
       {
-        result.addError("1st Group (CIHI Target) is blank, but Target Mismatch Reason is not set to 'n/a - see unmappable reason'");
+    	  if(!targetMismatchReason.equals("n/a - see unmappable reason")){
+    		  result.addError("1st Group (CIHI Target) is blank, but Target Mismatch Reason is not set to 'n/a - see unmappable reason'");
+    	  }
+        
       }     
-      else if(isCanadianCode && !targetMismatchReason.equals("n/a - Canadian code"))
+      else if(isCanadianTargetCode)
       {
-    	result.addError("When Target Code is a canadian code, Target Mismatch Reason must be set to 'n/a - Canadian code'");
+    	  if(!targetMismatchReason.equals("n/a - Canadian code")) {
+    		  result.addError("When Target Code is a canadian code, Target Mismatch Reason must be set to 'n/a - Canadian code'");
+    	  }
+    	
       } 
-      else if(WHOTarget.equals(CIHITarget) && !targetMismatchReason.equals("n/a - Match"))
+      else if(WHOTarget.equals(CIHITarget)) 
       {
-        result.addError("1st Group (CIHI Target) and 2nd Group (WHO target) match, but Target Mismatch Reason is not set to 'n/a - Match'");
+    	  if(!targetMismatchReason.equals("n/a - Match")){
+    		  result.addError("1st Group (CIHI Target) and 2nd Group (WHO target) match, but Target Mismatch Reason is not set to 'n/a - Match'");
+    	  }
       }
-      else if(WHOTarget.equals("No 1:1 WHO map") && !targetMismatchReason.equals("WHO map is not a valid target code"))
+      else if(WHOTarget.equals("No 1:1 WHO map")) 
       {
-        result.addError("2nd Group (WHO target) is 'No 1:1 WHO map', but Target Mismatch Reason is not set to 'WHO map is not a valid target code'");
+    	  if(!targetMismatchReason.equals("WHO map is not a valid target code")) {
+    		  result.addError("2nd Group (WHO target) is 'No 1:1 WHO map', but Target Mismatch Reason is not set to 'WHO map is not a valid target code'");
+    	  }   
       } 
       else {
     	result.addError("Target Mismatch Reason should be set to 'n/a - see unmappable reason'");
       }
-                     
       
       //
       // PREDICATE: For CIHI Target Code (1/1),
