@@ -327,20 +327,18 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
           }
         }
       }
-      // Note: doing this weird double-if statement to ensure the final "else" only runs when all other situations are not met.
+      // Note: doing this weird double-if statement to ensure the final "else" only runs if all other situations are not met.
       if(CIHITarget.isBlank()) 
       {
     	  if(!targetMismatchReason.equals("n/a - see unmappable reason")){
     		  result.addError("1st Group (CIHI Target) is blank, but Target Mismatch Reason is not set to 'n/a - see unmappable reason'");
     	  }
-        
       }     
       else if(isCanadianTargetCode)
       {
     	  if(!targetMismatchReason.equals("n/a - Canadian code")) {
     		  result.addError("When Target Code is a canadian code, Target Mismatch Reason must be set to 'n/a - Canadian code'");
     	  }
-    	
       } 
       else if(WHOTarget.equals(CIHITarget)) 
       {
@@ -355,7 +353,7 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
     	  }   
       } 
       else {
-    	result.addError("Target Mismatch Reason should be set to 'n/a - see unmappable reason'");
+    	result.addError("Target Mismatch Reason should be set to 'Undetermined'");
       }
       
       //
