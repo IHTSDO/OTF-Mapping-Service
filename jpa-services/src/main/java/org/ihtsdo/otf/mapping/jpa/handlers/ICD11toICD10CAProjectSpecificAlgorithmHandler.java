@@ -353,7 +353,9 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
     	  }   
       } 
       else {
-    	result.addError("Target Mismatch Reason should be set to 'Undetermined'");
+    	  if(!targetMismatchReason.equals("Undetermined")) {
+    		  result.addError("Target Mismatch Reason should be set to 'Undetermined'");
+    	  }       	  
       }
       
       //
