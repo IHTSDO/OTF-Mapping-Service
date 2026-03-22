@@ -484,6 +484,31 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
       }
       
       //
+      // PREDICATE: When CIHI Target Code (1/1) = NO TARGET, 
+      // then Target Mismatch Reason must be n/a - see unmappable reason.
+      //
+      Boolean CIHITargetIsBlank = false;
+      targetMismatchReason = "";
+      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+        final MapEntry entry = mapRecord.getMapEntries().get(i);
+        if(entry.getTargetId().isBlank()) {
+        	CIHITargetIsBlank = true;
+        }
+        if (entry.getMapGroup() == 2 && entry.getMapPriority() == 1) {
+          for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
+              .getAdditionalMapEntryInfos()) {
+            if (additionalMapEntryInfo.getField().equals("Target Mismatch Reason")) {
+              targetMismatchReason = additionalMapEntryInfo.getValue();
+            }
+          }
+        }
+      }      
+      if(CIHITargetIsBlank && !targetMismatchReason.equals("n/a - see unmappable reason"))
+      {
+        result.addError("1st Group (CIHI Target) is blank, but Target Mismatch Reason is not set to 'n/a - see unmappable reason'");
+      }   
+      
+      //
       // PREDICATE: 1st Group (CIHI target) cannot have a target mismatch reason
       //
       for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
@@ -574,7 +599,7 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
       }
       
       //
-      // PREDICATE: There cannot be duplicate stem codes in the Canadian maps
+      // PREDICATE: There cannot be duplicate stem codes in the CIHI targets
       //
       Set<String> stemCodes = new HashSet<>();
       for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {

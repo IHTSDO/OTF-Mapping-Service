@@ -9,6 +9,7 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,12 +22,14 @@ import org.ihtsdo.otf.mapping.jpa.AdditionalMapEntryInfoJpa;
 import org.ihtsdo.otf.mapping.jpa.MapEntryJpa;
 import org.ihtsdo.otf.mapping.jpa.MapRecordJpa;
 import org.ihtsdo.otf.mapping.jpa.services.ContentServiceJpa;
+import org.ihtsdo.otf.mapping.jpa.services.MappingServiceJpa;
 import org.ihtsdo.otf.mapping.model.AdditionalMapEntryInfo;
 import org.ihtsdo.otf.mapping.model.MapEntry;
 import org.ihtsdo.otf.mapping.model.MapRecord;
 import org.ihtsdo.otf.mapping.rf2.Concept;
 import org.ihtsdo.otf.mapping.rf2.TreePosition;
 import org.ihtsdo.otf.mapping.services.ContentService;
+import org.ihtsdo.otf.mapping.services.MappingService;
 import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +45,10 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
 
   final static List<String> allowableWHOTargets = new ArrayList(Arrays.asList("n/a - not applicable","No 1:1 WHO map"));  
   
+  /** The canadian ICD10 codes. */
+  private static Set<String> icd10caCanadianCodes = new HashSet<>();  
+ 
+  
   /** The WHO icd11 to icd10 maps for preloading. */
   private static Map<String, MapRecord> existingWHOICD11toICD10Maps = new HashMap<>();  
   
@@ -52,6 +59,7 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
     super.initialize();
     if(!mapProject.isPublished()) {
       cacheExistingMaps();
+      cacheICD10CACodes();
     }
   }
 
@@ -306,6 +314,83 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
       }
 
       //
+      // PREDICATE: 2nd Group (WHO target) target mismatch reason must be "n/a - match" if it matches 1st Group (CIHI target)
+      //
+      String WHOTarget = "";
+      String CIHITarget = "";
+      String targetMismatchReason = "";
+      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+        final MapEntry entry = mapRecord.getMapEntries().get(i);
+        if (entry.getMapGroup() == 1 && entry.getMapPriority() == 1) {
+          CIHITarget = entry.getTargetId();
+        }
+        if (entry.getMapGroup() == 2 && entry.getMapPriority() == 1) {
+          WHOTarget = entry.getTargetId();
+          for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
+              .getAdditionalMapEntryInfos()) {
+            if (additionalMapEntryInfo.getField().equals("Target Mismatch Reason")) {
+              targetMismatchReason = additionalMapEntryInfo.getValue();
+            }
+          }
+        }
+      }      
+      if(WHOTarget.equals(CIHITarget) && !targetMismatchReason.equals("n/a - Match"))
+      {
+        result.addError("1st Group (CIHI Target) and 2nd Group (WHO target) match, but Target Mismatch Reason is not set to 'n/a - Match'");
+      }
+      
+      //
+      // PREDICATE: 2nd Group (WHO target) target mismatch reason cannot be "n/a - match" if it doesn't match 1st Group (CIHI target)
+      //
+      WHOTarget = "";
+      CIHITarget = "";
+      targetMismatchReason = "";
+      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+        final MapEntry entry = mapRecord.getMapEntries().get(i);
+        if (entry.getMapGroup() == 1 && entry.getMapPriority() == 1) {
+          CIHITarget = entry.getTargetId();
+        }
+        if (entry.getMapGroup() == 2 && entry.getMapPriority() == 1) {
+          WHOTarget = entry.getTargetId();
+          for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
+              .getAdditionalMapEntryInfos()) {
+            if (additionalMapEntryInfo.getField().equals("Target Mismatch Reason")) {
+              targetMismatchReason = additionalMapEntryInfo.getValue();
+            }
+          }
+        }
+      }   
+      if(!WHOTarget.equals(CIHITarget) && targetMismatchReason.equals("n/a - Match"))
+      {
+        result.addError("1st Group (CIHI Target) and 2nd Group (WHO target) do not match, but Target Mismatch Reason is set to 'n/a - Match'");
+      }      
+      
+      //
+      // PREDICATE: When CIHI Target Code (1/1) = NO TARGET, 
+      // then Target Mismatch Reason must be n/a - see unmappable reason.
+      //
+      Boolean CIHITargetIsBlank = false;
+      targetMismatchReason = "";
+      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+        final MapEntry entry = mapRecord.getMapEntries().get(i);
+        if(entry.getTargetId().isBlank()) {
+        	CIHITargetIsBlank = true;
+        }
+        if (entry.getMapGroup() == 2 && entry.getMapPriority() == 1) {
+          for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
+              .getAdditionalMapEntryInfos()) {
+            if (additionalMapEntryInfo.getField().equals("Target Mismatch Reason")) {
+              targetMismatchReason = additionalMapEntryInfo.getValue();
+            }
+          }
+        }
+      }      
+      if(CIHITargetIsBlank && !targetMismatchReason.equals("n/a - see unmappable reason"))
+      {
+        result.addError("1st Group (CIHI Target) is blank, but Target Mismatch Reason is not set to 'n/a - see unmappable reason'");
+      }         
+      
+      //
       // PREDICATE: 1st Group (CIHI target) cannot have a target mismatch reason
       //
       for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
@@ -324,6 +409,83 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
         }
       }
 
+      //
+      // PREDICATE: When CIHI Target Code is a Canadian Code, 
+      // then WHO Map (2/1) must be N/A – NOT APPLICABLE 
+      // and Target Mismatch Reason must be N/A – CANADIAN CODE
+      //
+      
+      Boolean isCanadianCode = false;
+      CIHITarget = "";
+      WHOTarget = "";
+      targetMismatchReason = "";
+      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+        final MapEntry entry = mapRecord.getMapEntries().get(i);
+        if (entry.getMapGroup() == 1 && entry.getMapPriority() == 1) {
+        	CIHITarget = entry.getTargetId();
+        	if(icd10caCanadianCodes.contains(CIHITarget)) {
+        		isCanadianCode = true;
+        	}
+        }
+        if (entry.getMapGroup() == 2 && entry.getMapPriority() == 1) {
+          WHOTarget = entry.getTargetId();
+          for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
+              .getAdditionalMapEntryInfos()) {
+            if (additionalMapEntryInfo.getField().equals("Target Mismatch Reason")) {
+              targetMismatchReason = additionalMapEntryInfo.getValue();
+            }
+          }
+        }
+      }   
+      if(isCanadianCode && !targetMismatchReason.equals("n/a - Canadian code"))
+      {
+        result.addError("When Source Code is a canadian code, Target Mismatch Reason must be set to 'n/a - Canadian code'");
+      }      
+      if(isCanadianCode && !WHOTarget.equals("n/a - not applicable"))
+      {
+        result.addError("When Source Code is a canadian code, WHO Map (2/1) must be 'n/a - not applicable'");
+      }   
+      
+      //
+      // PREDICATE: When CIHI Target Code (1/1) is not NO TARGET,
+      // CIHI Target Code is not a Canadian Code,
+      // and CIHI Target Code does not match WHO Map (2/1)
+      // then Target Mismatch Reason must be Undetermined
+      //
+      
+      isCanadianCode = false;
+      CIHITargetIsBlank = false;
+      CIHITarget = "";
+      WHOTarget = "";
+      targetMismatchReason = "";
+      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+        final MapEntry entry = mapRecord.getMapEntries().get(i);
+        if (entry.getMapGroup() == 1 && entry.getMapPriority() == 1) {
+        	if(entry.getTargetId().isBlank()) {
+        		CIHITargetIsBlank = true;
+        	}
+        	else {
+        		CIHITarget = entry.getTargetId();
+        		if(icd10caCanadianCodes.contains(CIHITarget)) {
+            		isCanadianCode = true;
+            	}
+        	}
+        }
+        if (entry.getMapGroup() == 2 && entry.getMapPriority() == 1) {
+          WHOTarget = entry.getTargetId();
+          for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
+              .getAdditionalMapEntryInfos()) {
+            if (additionalMapEntryInfo.getField().equals("Target Mismatch Reason")) {
+              targetMismatchReason = additionalMapEntryInfo.getValue();
+            }
+          }
+        }
+      }   
+      if(!isCanadianCode && !CIHITargetIsBlank && CIHITarget != WHOTarget && !targetMismatchReason.equals("Undetermined"))
+      {
+        result.addError("When CIHI target is not blank or a Canadian Code, and CIHI target does not equal WHO target, Target Mismatch Reason must be set to 'Undetermined'");
+      }           
+      
       //
       // PREDICATE: For CIHI Target Code (1/1),
       // “Relation - Target” cannot be blank.
@@ -643,5 +805,55 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
     
     return mapEntry;
   }  
+  
+  //
+  // Look up the canadian codes from the saved file in the project folder
+  //
+  private void cacheICD10CACodes()  throws Exception {
+
+    // Check if codes are already cached
+    if (!icd10caCanadianCodes.isEmpty()) {
+      return;
+    }
+    
+    LOGGER.info("Caching ICD10 canadian codes");
+   
+    MappingService mappingService = new MappingServiceJpa();
+    ContentService contentService = new ContentServiceJpa();
+    final String icd10caTerminology = mapProject.getSourceTerminology();
+    final String icd10caTerminologyVersion = mapProject.getSourceTerminologyVersion();
+
+
+    // Look up which codes are canadian-specific from file
+    String icd10caVersion = mapProject.getSourceTerminologyVersion();
+
+    final String dataDir = ConfigUtility.getConfigProperties().getProperty("data.dir");
+    if (dataDir == null) {
+      throw new Exception("Config file must specify a data.dir property");
+    }
+
+    // Check preconditions
+    final String inputFile = dataDir + "/doc/" + mapProject.getId() + "/projectFiles/"
+        + icd10caTerminology.toLowerCase() + "_" + icd10caTerminologyVersion + "_CanadianCodes.txt";
+
+    if (!new File(inputFile).exists()) {
+      throw new Exception("Specified input file missing: " + inputFile);
+    }
+
+    // Open reader and service
+    final BufferedReader canadianCodeReader = new BufferedReader(new FileReader(inputFile));
+
+    String line = null;
+
+    while ((line = canadianCodeReader.readLine()) != null) {
+      String canadianCode = line;
+      icd10caCanadianCodes.add(canadianCode);
+    }
+    
+    canadianCodeReader.close();
+    mappingService.close();
+    contentService.close();
+    
+  }    
   
 }
