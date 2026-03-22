@@ -312,7 +312,7 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
       for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
         final MapEntry entry = mapRecord.getMapEntries().get(i);
         if (entry.getMapGroup() == 1 && entry.getMapPriority() == 1) {
-    		CIHITarget = entry.getTargetId();
+    		CIHITarget = entry.getTargetId() != null ? entry.getTargetId() : "";
     		if(icd10caCanadianCodes.contains(CIHITarget)) {
         		isCanadianCode = true;
         	}

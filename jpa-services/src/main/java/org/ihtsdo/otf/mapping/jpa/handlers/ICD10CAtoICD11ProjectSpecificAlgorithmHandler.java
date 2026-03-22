@@ -507,25 +507,6 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
       {
         result.addError("1st Group (CIHI Target) is blank, but Target Mismatch Reason is not set to 'n/a - see unmappable reason'");
       }   
-      
-      //
-      // PREDICATE: 1st Group (CIHI target) cannot have a target mismatch reason
-      //
-      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
-        final MapEntry entry = mapRecord.getMapEntries().get(i);
-        if (entry.getMapGroup() == 1) {
-          Boolean targetMismatchReasonPresent = false;
-          for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
-              .getAdditionalMapEntryInfos()) {
-            if (additionalMapEntryInfo.getField().equals("Target Mismatch Reason")) {
-              targetMismatchReasonPresent = true;
-            }
-          }
-          if (targetMismatchReasonPresent) {
-            result.addError("1st Group (CIHI target) cannot have a target mismatch reason");
-          }
-        }
-      }
 
       //
       // PREDICATE: 2nd Group (WHO target) must have a relation - WHO
