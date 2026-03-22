@@ -820,8 +820,8 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
    
     MappingService mappingService = new MappingServiceJpa();
     ContentService contentService = new ContentServiceJpa();
-    final String icd10caTerminology = mapProject.getSourceTerminology();
-    final String icd10caTerminologyVersion = mapProject.getSourceTerminologyVersion();
+    final String icd10caTerminology = mapProject.getDestinationTerminology();
+    final String icd10caTerminologyVersion = mapProject.getDestinationTerminologyVersion();
 
 
     // Look up which codes are canadian-specific from file
