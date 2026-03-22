@@ -293,137 +293,27 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
           }
         }
       }
-
+     
       //
-      // PREDICATE: 2nd Group (WHO target) must have a target mismatch reason
+      // PREDICATE: When CIHI Target Code (1/1) = NO TARGET, then Target Mismatch Reason must be "n/a - see unmappable reason".
       //
-      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
-        final MapEntry entry = mapRecord.getMapEntries().get(i);
-        if (entry.getMapGroup() == 2) {
-          Boolean targetMismatchReasonPresent = false;
-          for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
-              .getAdditionalMapEntryInfos()) {
-            if (additionalMapEntryInfo.getField().equals("Target Mismatch Reason")) {
-              targetMismatchReasonPresent = true;
-            }
-          }
-          if (!targetMismatchReasonPresent) {
-            result.addError("2nd Group (WHO target) must have a target mismatch reason");
-          }
-        }
-      }
-
+      // When CIHI Target Code (1/1) is a Canadian Code, then Target Mismatch Reason must be "n/a - Canadian code".
       //
-      // PREDICATE: 2nd Group (WHO target) target mismatch reason must be "n/a - match" if it matches 1st Group (CIHI target)
+      // If CIHI Target Code (1/1) matches WHO Target Code (2/1), then Target Mismatch Reason must be "n/a - match".
+      //
+      // When WHO Target Code (2/1) is "No 1:1 WHO map", then Target Mismatch Reason must be "WHO map is not a valid target code".
+      //
+      // For all other cases, Target Mismatch Reason must be "Undetermined".
       //
       String WHOTarget = "";
       String CIHITarget = "";
+      Boolean isCanadianCode = false;
       String targetMismatchReason = "";
       for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
         final MapEntry entry = mapRecord.getMapEntries().get(i);
         if (entry.getMapGroup() == 1 && entry.getMapPriority() == 1) {
-          CIHITarget = entry.getTargetId();
-        }
-        if (entry.getMapGroup() == 2 && entry.getMapPriority() == 1) {
-          WHOTarget = entry.getTargetId();
-          for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
-              .getAdditionalMapEntryInfos()) {
-            if (additionalMapEntryInfo.getField().equals("Target Mismatch Reason")) {
-              targetMismatchReason = additionalMapEntryInfo.getValue();
-            }
-          }
-        }
-      }      
-      if(WHOTarget.equals(CIHITarget) && !targetMismatchReason.equals("n/a - Match"))
-      {
-        result.addError("1st Group (CIHI Target) and 2nd Group (WHO target) match, but Target Mismatch Reason is not set to 'n/a - Match'");
-      }
-      
-      //
-      // PREDICATE: 2nd Group (WHO target) target mismatch reason cannot be "n/a - match" if it doesn't match 1st Group (CIHI target)
-      //
-      WHOTarget = "";
-      CIHITarget = "";
-      targetMismatchReason = "";
-      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
-        final MapEntry entry = mapRecord.getMapEntries().get(i);
-        if (entry.getMapGroup() == 1 && entry.getMapPriority() == 1) {
-          CIHITarget = entry.getTargetId();
-        }
-        if (entry.getMapGroup() == 2 && entry.getMapPriority() == 1) {
-          WHOTarget = entry.getTargetId();
-          for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
-              .getAdditionalMapEntryInfos()) {
-            if (additionalMapEntryInfo.getField().equals("Target Mismatch Reason")) {
-              targetMismatchReason = additionalMapEntryInfo.getValue();
-            }
-          }
-        }
-      }   
-      if(!WHOTarget.equals(CIHITarget) && targetMismatchReason.equals("n/a - Match"))
-      {
-        result.addError("1st Group (CIHI Target) and 2nd Group (WHO target) do not match, but Target Mismatch Reason is set to 'n/a - Match'");
-      }      
-      
-      //
-      // PREDICATE: When CIHI Target Code (1/1) = NO TARGET, 
-      // then Target Mismatch Reason must be n/a - see unmappable reason.
-      //
-      Boolean CIHITargetIsBlank = false;
-      targetMismatchReason = "";
-      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
-        final MapEntry entry = mapRecord.getMapEntries().get(i);
-        if(entry.getTargetId().isBlank()) {
-        	CIHITargetIsBlank = true;
-        }
-        if (entry.getMapGroup() == 2 && entry.getMapPriority() == 1) {
-          for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
-              .getAdditionalMapEntryInfos()) {
-            if (additionalMapEntryInfo.getField().equals("Target Mismatch Reason")) {
-              targetMismatchReason = additionalMapEntryInfo.getValue();
-            }
-          }
-        }
-      }      
-      if(CIHITargetIsBlank && !targetMismatchReason.equals("n/a - see unmappable reason"))
-      {
-        result.addError("1st Group (CIHI Target) is blank, but Target Mismatch Reason is not set to 'n/a - see unmappable reason'");
-      }         
-      
-      //
-      // PREDICATE: 1st Group (CIHI target) cannot have a target mismatch reason
-      //
-      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
-        final MapEntry entry = mapRecord.getMapEntries().get(i);
-        if (entry.getMapGroup() == 1) {
-          Boolean targetMismatchReasonPresent = false;
-          for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
-              .getAdditionalMapEntryInfos()) {
-            if (additionalMapEntryInfo.getField().equals("Target Mismatch Reason")) {
-              targetMismatchReasonPresent = true;
-            }
-          }
-          if (targetMismatchReasonPresent) {
-            result.addError("1st Group (CIHI target) cannot have a target mismatch reason");
-          }
-        }
-      }
-
-      //
-      // PREDICATE: When CIHI Target Code is a Canadian Code, 
-      // then WHO Map (2/1) must be N/A – NOT APPLICABLE 
-      // and Target Mismatch Reason must be N/A – CANADIAN CODE
-      //
-      
-      Boolean isCanadianCode = false;
-      CIHITarget = "";
-      WHOTarget = "";
-      targetMismatchReason = "";
-      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
-        final MapEntry entry = mapRecord.getMapEntries().get(i);
-        if (entry.getMapGroup() == 1 && entry.getMapPriority() == 1) {
-        	CIHITarget = entry.getTargetId();
-        	if(icd10caCanadianCodes.contains(CIHITarget)) {
+    		CIHITarget = entry.getTargetId();
+    		if(icd10caCanadianCodes.contains(CIHITarget)) {
         		isCanadianCode = true;
         	}
         }
@@ -436,55 +326,27 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
             }
           }
         }
-      }   
-      if(isCanadianCode && !targetMismatchReason.equals("n/a - Canadian code"))
+      }
+      if(CIHITarget.isBlank() && !targetMismatchReason.equals("n/a - see unmappable reason"))
       {
-        result.addError("When Source Code is a canadian code, Target Mismatch Reason must be set to 'n/a - Canadian code'");
-      }      
-      if(isCanadianCode && !WHOTarget.equals("n/a - not applicable"))
+        result.addError("1st Group (CIHI Target) is blank, but Target Mismatch Reason is not set to 'n/a - see unmappable reason'");
+      }     
+      else if(isCanadianCode && !targetMismatchReason.equals("n/a - Canadian code"))
       {
-        result.addError("When Source Code is a canadian code, WHO Map (2/1) must be 'n/a - not applicable'");
-      }   
-      
-      //
-      // PREDICATE: When CIHI Target Code (1/1) is not NO TARGET,
-      // CIHI Target Code is not a Canadian Code,
-      // and CIHI Target Code does not match WHO Map (2/1)
-      // then Target Mismatch Reason must be Undetermined
-      //
-      
-      isCanadianCode = false;
-      CIHITargetIsBlank = false;
-      CIHITarget = "";
-      WHOTarget = "";
-      targetMismatchReason = "";
-      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
-        final MapEntry entry = mapRecord.getMapEntries().get(i);
-        if (entry.getMapGroup() == 1 && entry.getMapPriority() == 1) {
-        	if(entry.getTargetId().isBlank()) {
-        		CIHITargetIsBlank = true;
-        	}
-        	else {
-        		CIHITarget = entry.getTargetId();
-        		if(icd10caCanadianCodes.contains(CIHITarget)) {
-            		isCanadianCode = true;
-            	}
-        	}
-        }
-        if (entry.getMapGroup() == 2 && entry.getMapPriority() == 1) {
-          WHOTarget = entry.getTargetId();
-          for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
-              .getAdditionalMapEntryInfos()) {
-            if (additionalMapEntryInfo.getField().equals("Target Mismatch Reason")) {
-              targetMismatchReason = additionalMapEntryInfo.getValue();
-            }
-          }
-        }
-      }   
-      if(!isCanadianCode && !CIHITargetIsBlank && CIHITarget != WHOTarget && !targetMismatchReason.equals("Undetermined"))
+    	result.addError("When Target Code is a canadian code, Target Mismatch Reason must be set to 'n/a - Canadian code'");
+      } 
+      else if(WHOTarget.equals(CIHITarget) && !targetMismatchReason.equals("n/a - Match"))
       {
-        result.addError("When CIHI target is not blank or a Canadian Code, and CIHI target does not equal WHO target, Target Mismatch Reason must be set to 'Undetermined'");
-      }           
+        result.addError("1st Group (CIHI Target) and 2nd Group (WHO target) match, but Target Mismatch Reason is not set to 'n/a - Match'");
+      }
+      else if(WHOTarget.equals("No 1:1 WHO map") && !targetMismatchReason.equals("WHO map is not a valid target code"))
+      {
+        result.addError("2nd Group (WHO target) is 'No 1:1 WHO map', but Target Mismatch Reason is not set to 'WHO map is not a valid target code'");
+      } 
+      else {
+    	result.addError("Target Mismatch Reason should be set to 'n/a - see unmappable reason'");
+      }
+                     
       
       //
       // PREDICATE: For CIHI Target Code (1/1),
