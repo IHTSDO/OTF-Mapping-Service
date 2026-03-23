@@ -25,9 +25,9 @@
     <config.artifactId>mapping-config-prod</config.artifactId>
     <config.version>${project.version}</config.version>
 
-		<tomcat9-maven-plugin-version>2.2</tomcat9-maven-plugin-version>
+		<!-- <tomcat9-maven-plugin-version>2.2</tomcat9-maven-plugin-version> -->
 		<jdeb.version>1.1.1</jdeb.version>
-		<webapp-runner.version>9.0.89.0</webapp-runner.version>
+		<webapp-runner.version>9.0.116.0</webapp-runner.version>
     <pom.root>mapping-admin</pom.root>
 
   </properties>
