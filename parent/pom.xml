@@ -51,7 +51,7 @@
     <jackson.version>2.18.2</jackson.version>
     <jersey.core.version>2.45</jersey.core.version>
     <jersey.media.version>2.45</jersey.media.version>
-    <jersey.version>2.45</jersey.version>
+    <jersey.version>2.46</jersey.version>
     <jettison.version>1.5.4</jettison.version>
     <junit.version>4.13.1</junit.version>
     <lucene.version>5.5.5</lucene.version>
