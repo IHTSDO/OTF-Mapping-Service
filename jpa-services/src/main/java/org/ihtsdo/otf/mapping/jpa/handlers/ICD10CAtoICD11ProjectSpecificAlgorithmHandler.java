@@ -485,10 +485,16 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
       
       //
       // PREDICATE: When CIHI Target Code (1/1) = NO TARGET, 
-      // then Target Mismatch Reason must be n/a - see unmappable reason.
+      // then Target Mismatch Reason must be either N/A - SEE UNMAPPABLE REASON or N/A – CANADIAN CODE. 
+      // When both values apply to a specific code, the value of 
+      // “N/A – CANADIAN CODE” takes precedence over “N/A – SEE UNMAPPABLE REASON”.
       //
       Boolean CIHITargetIsBlank = false;
+      Boolean isCanadianCode = false;     
       targetMismatchReason = "";
+      if(icd10caCanadianCodes.contains(mapRecord.getConceptId())) {
+          isCanadianCode = true;
+        }      
       for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
         final MapEntry entry = mapRecord.getMapEntries().get(i);
         if(entry.getTargetId().isBlank()) {
@@ -503,10 +509,14 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
           }
         }
       }      
-      if(CIHITargetIsBlank && !targetMismatchReason.equals("n/a - see unmappable reason"))
+      if(CIHITargetIsBlank && !isCanadianCode && !targetMismatchReason.equals("n/a - see unmappable reason"))
       {
-        result.addError("1st Group (CIHI Target) is blank, but Target Mismatch Reason is not set to 'n/a - see unmappable reason'");
-      }   
+        result.addError("1st Group (CIHI Target) is blank and source is not a canadian code, but Target Mismatch Reason is not set to 'n/a - see unmappable reason'");
+      }
+      if(CIHITargetIsBlank && isCanadianCode && !targetMismatchReason.equals("n/a - Canadian code"))
+      {
+        result.addError("1st Group (CIHI Target) is blank and source is a canadian code, but Target Mismatch Reason is not set to 'n/a - Canadian code'");    	  
+      }
 
       //
       // PREDICATE: 2nd Group (WHO target) must have a relation - WHO
@@ -552,7 +562,7 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
       // and Target Mismatch Reason must be N/A – CANADIAN CODE
       //
       
-      Boolean isCanadianCode = false;
+      isCanadianCode = false;
       WHOTarget = "";
       targetMismatchReason = "";
       if(icd10caCanadianCodes.contains(mapRecord.getConceptId())) {
