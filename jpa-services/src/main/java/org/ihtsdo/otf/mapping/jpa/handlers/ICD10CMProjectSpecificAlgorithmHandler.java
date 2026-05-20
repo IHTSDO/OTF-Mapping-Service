@@ -792,13 +792,8 @@ public class ICD10CMProjectSpecificAlgorithmHandler
     final ContentService contentService = new ContentServiceJpa();
 
     try {
-      // check that code has at least three characters, that the second
-      // character
-      // is a number, and does not contain a dash
-      if (!terminologyId.matches(".[0-9].*") || terminologyId.contains("-")) { // "(.*?[0-9]){3,}")
-        // ||
-        // terminologyId.contains("-"))
-        // {
+      // check that code has at least three characters and does not contain a dash
+      if (terminologyId.contains("-") || terminologyId.length()<3) {
         return false;
       }
 
