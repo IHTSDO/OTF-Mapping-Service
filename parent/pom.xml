@@ -10,7 +10,7 @@
 
   <groupId>org.ihtsdo.otf.mapping</groupId>
   <artifactId>mapping-parent</artifactId>
-  <version>1.8.2</version>
+  <version>1.8.3</version>
   <packaging>pom</packaging>
   <name>IHTSDO Mapping Service Parent</name>
   <description>Parent project for mapping service</description>
@@ -42,6 +42,7 @@
     <javax.transaction.version>1.1</javax.transaction.version>
     <javax.ws.version>2.1.1</javax.ws.version>
     <javax.xml.bind.version>2.3.1</javax.xml.bind.version>
+    <javax.validation.version>2.0.1.Final</javax.validation.version>
     <jakarta.validation.version>2.0.2</jakarta.validation.version>
 
     <jaxb.runtime.version>2.4.0-b180830.0438</jaxb.runtime.version>
@@ -68,9 +69,6 @@
     <maven.resources.plugin.version>2.7</maven.resources.plugin.version>
     <maven.surefire.plugin.version>3.1.2</maven.surefire.plugin.version>
     <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
-    <mysql.connector.java.version>9.1.0</mysql.connector.java.version>
-
-    <!-- <mysql.connector.java.version>8.0.28</mysql.connector.java.version> -->
     <mysql.connector.java.version>8.2.0</mysql.connector.java.version>
     
     <org.apache.commons.lang3.version>3.9</org.apache.commons.lang3.version>
@@ -445,10 +443,15 @@
       <!-- End Jackson dependencies -->
 
       <dependency>
-    <groupId>jakarta.validation</groupId>
-    <artifactId>jakarta.validation-api</artifactId>
+	    <groupId>jakarta.validation</groupId>
+	    <artifactId>jakarta.validation-api</artifactId>
         <version>${jakarta.validation.version}</version>
       </dependency>
+	  <dependency>
+	    <groupId>javax.validation</groupId>
+	    <artifactId>validation-api</artifactId>
+	    <version>${javax.validation.version}</version>
+	  </dependency>      
     </dependencies>
   </dependencyManagement>
 
@@ -485,7 +488,7 @@
             <dependency>
               <groupId>org.ow2.asm</groupId>
               <artifactId>asm</artifactId>
-              <version>6.2</version>
+              <version>${asm.version}</version>
             </dependency>
           </dependencies>
         </plugin>
@@ -624,7 +627,7 @@
     </repository>
     <repository>
       <id>jvnet-nexus-staging</id>
-      <url>http://maven.java.net/content/repositories/staging/</url>
+      <url>https://maven.java.net/content/repositories/staging/</url>
       <layout>default</layout>
     </repository>
   </repositories>
