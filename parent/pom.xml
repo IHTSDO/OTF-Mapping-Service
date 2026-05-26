@@ -625,11 +625,6 @@
       <name>IHTSDO Public Nexus Snapshots</name>
       <url>https://maven3.ihtsdotools.org/repository/maven-snapshots/</url>
     </repository>
-    <repository>
-      <id>jvnet-nexus-staging</id>
-      <url>https://maven.java.net/content/repositories/staging/</url>
-      <layout>default</layout>
-    </repository>
   </repositories>
 
   <distributionManagement>
