@@ -15,6 +15,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
+import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -60,9 +61,10 @@ public abstract class RootServiceJpa implements RootService {
   /**
    * Instantiates an empty {@link RootServiceJpa}.
    *
-   * @throws Exception the exception
+   * @throws PersistenceException if the factory or entity manager fails to initialize
    */
-  public RootServiceJpa() throws Exception {
+  public RootServiceJpa() {
+	try {
     // created once or if the factory has closed
     if (factory == null || !factory.isOpen()) {
       openFactory();
@@ -71,6 +73,9 @@ public abstract class RootServiceJpa implements RootService {
     // created on each instantiation
     manager = factory.createEntityManager();
     tx = manager.getTransaction();
+	} catch (Exception e) {
+		throw new PersistenceException("Failed to create Entity Manager in RootServiceJpa", e);
+	}
   }
 
   /* see superclass */

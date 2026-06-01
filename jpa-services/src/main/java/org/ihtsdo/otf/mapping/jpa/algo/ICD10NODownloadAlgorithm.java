@@ -39,9 +39,8 @@ public class ICD10NODownloadAlgorithm extends RootServiceJpa implements Algorith
   /**
    * Instantiates an empty {@link ICD10NODownloadAlgorithm}.
    *
-   * @throws Exception the exception
    */
-  public ICD10NODownloadAlgorithm() throws Exception {
+  public ICD10NODownloadAlgorithm() {
     super();
   }
 

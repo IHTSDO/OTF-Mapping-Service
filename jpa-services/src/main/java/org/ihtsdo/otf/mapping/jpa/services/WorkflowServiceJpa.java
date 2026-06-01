@@ -86,9 +86,8 @@ public class WorkflowServiceJpa extends MappingServiceJpa
   /**
    * Instantiates an empty {@link WorkflowServiceJpa}.
    *
-   * @throws Exception the exception
    */
-  public WorkflowServiceJpa() throws Exception {
+  public WorkflowServiceJpa() {
     super();
 
   }

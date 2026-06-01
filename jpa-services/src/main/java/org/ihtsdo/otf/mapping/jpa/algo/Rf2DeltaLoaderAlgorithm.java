@@ -500,7 +500,7 @@ public class Rf2DeltaLoaderAlgorithm extends RootServiceJpa
     }
 
     // Load text definitions
-    if (descriptionReader != null) {
+    if (textDefinitionReader != null) {
       log.info("    Loading Text Definitions...");
       startTime = System.nanoTime();
       loadDescriptions(textDefinitionReader);

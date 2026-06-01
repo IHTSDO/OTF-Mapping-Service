@@ -20,9 +20,8 @@ public class SnomedMetadataServiceJpaHelper extends RootServiceJpa implements
   /**
    * Instantiates an empty {@link SnomedMetadataServiceJpaHelper}.
    *
-   * @throws Exception the exception
    */
-  public SnomedMetadataServiceJpaHelper() throws Exception {
+  public SnomedMetadataServiceJpaHelper() {
     super();
   }
 

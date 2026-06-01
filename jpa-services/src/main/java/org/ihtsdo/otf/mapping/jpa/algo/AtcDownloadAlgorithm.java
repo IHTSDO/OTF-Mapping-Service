@@ -38,9 +38,8 @@ public class AtcDownloadAlgorithm extends RootServiceJpa implements Algorithm {
   /**
    * Instantiates an empty {@link AtcDownloadAlgorithm}.
    *
-   * @throws Exception the exception
    */
-  public AtcDownloadAlgorithm() throws Exception {
+  public AtcDownloadAlgorithm() {
     super();
   }
 

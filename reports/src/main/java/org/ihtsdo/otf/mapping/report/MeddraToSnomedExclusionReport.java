@@ -48,10 +48,11 @@ public class MeddraToSnomedExclusionReport extends AbstractOtfMappingReport {
 
     LOGGER.info("Start Meddra To Snomed Exclusion Report");
     
+    final EntityManager sourceManager = manager;
     
     try (final ContentService service = new ContentServiceJpa() {
         {
-        	MeddraToSnomedExclusionReport.manager = manager;
+        	MeddraToSnomedExclusionReport.manager = sourceManager;
         }
       };) {
     	

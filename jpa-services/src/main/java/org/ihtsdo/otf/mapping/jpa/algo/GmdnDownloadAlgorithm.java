@@ -35,9 +35,8 @@ public class GmdnDownloadAlgorithm extends RootServiceJpa implements Algorithm {
   /**
    * Instantiates an empty {@link GmdnDownloadAlgorithm}.
    *
-   * @throws Exception the exception
    */
-  public GmdnDownloadAlgorithm() throws Exception {
+  public GmdnDownloadAlgorithm() {
     super();
   }
 
