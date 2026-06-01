@@ -243,9 +243,8 @@ public class ReleaseHandlerJpa implements ReleaseHandler {
    * Instantiates an empty {@link ReleaseHandlerJpa}.
    *
    * @param testModeFlag the test mode flag
-   * @throws Exception the exception
    */
-  public ReleaseHandlerJpa(boolean testModeFlag) throws Exception {
+  public ReleaseHandlerJpa(boolean testModeFlag) {
 
     // instantiate services
     mappingService = new MappingServiceJpa();
