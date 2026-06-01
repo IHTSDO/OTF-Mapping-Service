@@ -63,7 +63,7 @@ public abstract class RootServiceJpa implements RootService {
    *
    * @throws PersistenceException if the factory or entity manager fails to initialize
    */
-  public RootServiceJpa() {
+  protected RootServiceJpa() {
 	try {
     // created once or if the factory has closed
     if (factory == null || !factory.isOpen()) {

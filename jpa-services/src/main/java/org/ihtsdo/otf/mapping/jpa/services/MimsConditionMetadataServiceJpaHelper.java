@@ -29,9 +29,8 @@ public class MimsConditionMetadataServiceJpaHelper extends RootServiceJpa
   /**
    * Instantiates an empty {@link MimsConditionMetadataServiceJpaHelper}.
    * 
-   * @throws Exception the exception
    */
-  public MimsConditionMetadataServiceJpaHelper() throws Exception {
+  public MimsConditionMetadataServiceJpaHelper() {
     super();
   }
 
