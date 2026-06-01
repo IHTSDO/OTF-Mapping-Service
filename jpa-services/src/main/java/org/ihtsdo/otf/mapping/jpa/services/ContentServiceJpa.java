@@ -95,9 +95,8 @@ public class ContentServiceJpa extends RootServiceJpa
   /**
    * Instantiates an empty {@link ContentServiceJpa}.
    *
-   * @throws Exception the exception
    */
-  public ContentServiceJpa() throws Exception {
+  public ContentServiceJpa() {
     super();
 
   }

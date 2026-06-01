@@ -56,9 +56,8 @@ public class ReportServiceJpa extends RootServiceJpa implements ReportService {
   /**
    * Instantiates a new report service jpa.
    * 
-   * @throws Exception the exception
    */
-  public ReportServiceJpa() throws Exception {
+  public ReportServiceJpa() {
     super();
   }
 

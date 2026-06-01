@@ -29,9 +29,8 @@ public class MimsAllergyMetadataServiceJpaHelper extends RootServiceJpa
   /**
    * Instantiates an empty {@link MimsAllergyMetadataServiceJpaHelper}.
    * 
-   * @throws Exception the exception
    */
-  public MimsAllergyMetadataServiceJpaHelper() throws Exception {
+  public MimsAllergyMetadataServiceJpaHelper() {
     super();
   }
 

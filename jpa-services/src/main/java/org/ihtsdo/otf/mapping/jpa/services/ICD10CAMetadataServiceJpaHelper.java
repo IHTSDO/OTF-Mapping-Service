@@ -29,9 +29,8 @@ public class ICD10CAMetadataServiceJpaHelper extends RootServiceJpa
   /**
    * Instantiates an empty {@link ICD10CAMetadataServiceJpaHelper}.
    * 
-   * @throws Exception the exception
    */
-  public ICD10CAMetadataServiceJpaHelper() throws Exception {
+  public ICD10CAMetadataServiceJpaHelper() {
     super();
   }
 

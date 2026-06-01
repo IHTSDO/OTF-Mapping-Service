@@ -29,9 +29,8 @@ public class MeddraMetadataServiceJpaHelper extends RootServiceJpa
   /**
    * Instantiates an empty {@link MeddraMetadataServiceJpaHelper}.
    * 
-   * @throws Exception the exception
    */
-  public MeddraMetadataServiceJpaHelper() throws Exception {
+  public MeddraMetadataServiceJpaHelper() {
     super();
   }
 

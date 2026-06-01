@@ -33,9 +33,8 @@ public class ClamlMetadataServiceJpaHelper extends RootServiceJpa
   /**
    * Instantiates an empty {@link ClamlMetadataServiceJpaHelper}.
    * 
-   * @throws Exception the exception
    */
-  public ClamlMetadataServiceJpaHelper() throws Exception {
+  public ClamlMetadataServiceJpaHelper() {
     super();
   }
 

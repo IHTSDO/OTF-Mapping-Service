@@ -10,7 +10,7 @@
 
   <groupId>org.ihtsdo.otf.mapping</groupId>
   <artifactId>mapping-parent</artifactId>
-  <version>1.8.3</version>
+  <version>1.8.4</version>
   <packaging>pom</packaging>
   <name>IHTSDO Mapping Service Parent</name>
   <description>Parent project for mapping service</description>
@@ -624,11 +624,6 @@
       <id>ihtsdo-public-nexus-snapshot</id>
       <name>IHTSDO Public Nexus Snapshots</name>
       <url>https://maven3.ihtsdotools.org/repository/maven-snapshots/</url>
-    </repository>
-    <repository>
-      <id>jvnet-nexus-staging</id>
-      <url>https://maven.java.net/content/repositories/staging/</url>
-      <layout>default</layout>
     </repository>
   </repositories>
 

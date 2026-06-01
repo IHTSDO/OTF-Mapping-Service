@@ -38,9 +38,8 @@ public class ICPC2NODownloadAlgorithm extends RootServiceJpa implements Algorith
   /**
    * Instantiates an empty {@link ICPC2NODownloadAlgorithm}.
    *
-   * @throws Exception the exception
    */
-  public ICPC2NODownloadAlgorithm() throws Exception {
+  public ICPC2NODownloadAlgorithm() {
     super();
   }
 

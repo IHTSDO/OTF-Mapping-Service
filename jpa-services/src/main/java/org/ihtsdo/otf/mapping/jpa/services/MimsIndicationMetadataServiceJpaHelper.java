@@ -29,9 +29,8 @@ public class MimsIndicationMetadataServiceJpaHelper extends RootServiceJpa
   /**
    * Instantiates an empty {@link MimsIndicationMetadataServiceJpaHelper}.
    * 
-   * @throws Exception the exception
    */
-  public MimsIndicationMetadataServiceJpaHelper() throws Exception {
+  public MimsIndicationMetadataServiceJpaHelper() {
     super();
   }
 
