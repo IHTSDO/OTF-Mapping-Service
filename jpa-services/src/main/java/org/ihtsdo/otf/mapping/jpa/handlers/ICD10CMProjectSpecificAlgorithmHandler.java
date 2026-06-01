@@ -88,8 +88,8 @@ public class ICD10CMProjectSpecificAlgorithmHandler
 
   /**
    * For ICD10, a target code is valid if: - Concept exists - Concept has at
-   * least 3 characters - The second character is a number (e.g. XVII is
-   * invalid, but B10 is) - Concept does not contain a dash (-) character
+   * least 3 characters - Concept does not contain a dash (-) character
+   * 
    *
    * @param mapRecord the map record
    * @return the validation result
@@ -143,11 +143,11 @@ public class ICD10CMProjectSpecificAlgorithmHandler
 
         // first, check terminology id based on above rules
         if (!mapEntry.getTargetId().equals("")
-            && (!mapEntry.getTargetId().matches(".[0-9].*")
+            && (mapEntry.getTargetId().length() < 3
                 || mapEntry.getTargetId().contains("-"))) {
           validationResult
               .addError("Invalid target code " + mapEntry.getTargetId()
-                  + "!  For ICD10, valid target codes must contain 3 digits and must not contain a dash."
+                  + "!  For ICD10, valid target codes must contain at least 3 characters and must not contain a dash."
                   + " Entry:"
                   + (mapProject.isGroupStructure() ? " group "
                       + Integer.toString(mapEntry.getMapGroup()) + "," : "")
