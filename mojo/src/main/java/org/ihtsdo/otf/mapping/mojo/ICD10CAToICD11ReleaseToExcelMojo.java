@@ -37,7 +37,6 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.AreaReference;
-import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -522,22 +521,23 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
           outRecord.icd11CodeCluster6, outRecord.icd11CodeCluster7, outRecord.icd11CodeCluster8,
           outRecord.icd11CodeCluster9, outRecord.icd11CodeCluster10);
 
-      // Iterate over clusters
-      for (Map<String, String> currentCluster : clusters) {
-
-        // Check if the cluster is empty (null or empty map)
+      // Iterate over clusters - always write all cluster columns for a valid table range
+      for (final Map<String, String> currentCluster : clusters) {
         if (currentCluster == null || currentCluster.isEmpty()) {
-          break; // Stop if current cluster is empty
+          cell = row.createCell(cellnum++);
+          cell.setCellValue("");
+          cell = row.createCell(cellnum++);
+          cell.setCellValue("");
         } else {
-          String key = currentCluster.entrySet().iterator().next().getKey();
-          String value = currentCluster.entrySet().iterator().next().getValue();
+          final String key = currentCluster.entrySet().iterator().next().getKey();
+          final String value = currentCluster.entrySet().iterator().next().getValue();
           cell = row.createCell(cellnum++);
           cell.setCellValue(key);
           cell = row.createCell(cellnum++);
           cell.setCellValue(value);
         }
-
       }
+      ensureCtRowWidth(row, CT_COLUMN_COUNT);
     }
 
     applyCTSheetFormatting(sheet, rownum - 1);
@@ -632,22 +632,62 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
 
   private void applyCTSheetFormatting(final XSSFSheet sheet, final int lastRowIndex) {
     sheet.createFreezePane(1, 1);
-    sheet.setAutoFilter(
-        new CellRangeAddress(0, lastRowIndex, 0, CT_COLUMN_COUNT - 1));
+    if (lastRowIndex < 1) {
+      return;
+    }
+
     final AreaReference tableArea = new AreaReference(new CellReference(0, 0),
         new CellReference(lastRowIndex, CT_COLUMN_COUNT - 1), SpreadsheetVersion.EXCEL2007);
+    final String tableRef = tableArea.formatAsString();
+
     final XSSFTable table = sheet.createTable(tableArea);
     table.setName("Table1");
     table.setDisplayName("Table1");
-    if (!table.getCTTable().isSetTableStyleInfo()) {
-      table.getCTTable().addNewTableStyleInfo();
+    table.setStyleName(CT_TABLE_STYLE);
+
+    table.getCTTable().setRef(tableRef);
+    table.getCTTable().setHeaderRowCount(1);
+    table.getCTTable().setTotalsRowShown(false);
+    repairCTTableColumnIds(table, sheet);
+
+    if (table.getCTTable().isSetAutoFilter()) {
+      table.getCTTable().getAutoFilter().setRef(tableRef);
+    } else {
+      table.getCTTable().addNewAutoFilter().setRef(tableRef);
     }
+
+    if (sheet.getCTWorksheet().isSetAutoFilter()) {
+      sheet.getCTWorksheet().unsetAutoFilter();
+    }
+
     final XSSFTableStyleInfo tableStyle = (XSSFTableStyleInfo) table.getStyle();
-    tableStyle.setName(CT_TABLE_STYLE);
-    tableStyle.setShowRowStripes(true);
-    tableStyle.setShowColumnStripes(false);
-    tableStyle.setFirstColumn(false);
-    tableStyle.setLastColumn(false);
+    if (tableStyle != null) {
+      tableStyle.setShowRowStripes(true);
+      tableStyle.setShowColumnStripes(false);
+      tableStyle.setFirstColumn(false);
+      tableStyle.setLastColumn(false);
+    }
+  }
+
+  private void repairCTTableColumnIds(final XSSFTable table, final XSSFSheet sheet) {
+    final Row headerRow = sheet.getRow(0);
+    for (int i = 0; i < table.getCTTable().getTableColumns().sizeOfTableColumnArray(); i++) {
+      table.getCTTable().getTableColumns().getTableColumnArray(i).setId(i + 1L);
+      if (headerRow != null && headerRow.getCell(i) != null) {
+        final String headerName = headerRow.getCell(i).getStringCellValue();
+        if (headerName != null && !headerName.isEmpty()) {
+          table.getCTTable().getTableColumns().getTableColumnArray(i).setName(headerName);
+        }
+      }
+    }
+  }
+
+  private void ensureCtRowWidth(final Row row, final int columnCount) {
+    for (int col = 0; col < columnCount; col++) {
+      if (row.getCell(col) == null) {
+        row.createCell(col).setCellValue("");
+      }
+    }
   }
 
   private void createCaseMixOutput(final File releaseFile, List<Record> recordList)

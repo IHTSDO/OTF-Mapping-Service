@@ -37,7 +37,6 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.AreaReference;
-import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -344,7 +343,8 @@ public class ICD11ToICD10CAReleaseToExcelMojo extends AbstractMojo {
       createCTOutput(releaseFile, recordList);
 
       // Now create the CaseMix format output file
-      createCaseMixOutput(releaseFile, recordList);      
+      // No longer needed, but will keep code in case it comes up again.
+      //createCaseMixOutput(releaseFile, recordList);      
       
     } catch (Exception e) {
       e.printStackTrace();
@@ -389,40 +389,42 @@ public class ICD11ToICD10CAReleaseToExcelMojo extends AbstractMojo {
 
       // ICD 11
       cell = row.createCell(cellnum++);
-      cell.setCellValue(outRecord.getIcd11Code());
+      cell.setCellValue(nullToEmpty(outRecord.getIcd11Code()));
       cell = row.createCell(cellnum++);
-      cell.setCellValue(outRecord.getIcd11Term());
+      cell.setCellValue(nullToEmpty(outRecord.getIcd11Term()));
 
       // ICD 10 CA
+      final String icd10caCode = outRecord.getIcd10CACode();
+      final boolean hasIcd10caTarget =
+          icd10caCode != null && !icd10caCode.isEmpty() && !icd10caCode.isBlank();
       cell = row.createCell(cellnum++);
-      cell.setCellValue(!(outRecord.getIcd10CACode().isEmpty() || outRecord.getIcd10CACode().isBlank())
-          ? outRecord.getIcd10CACode() : "No target");
+      cell.setCellValue(hasIcd10caTarget ? icd10caCode : "No target");
       cell = row.createCell(cellnum++);
-      cell.setCellValue(outRecord.getIcd10CATerm());
+      cell.setCellValue(nullToEmpty(outRecord.getIcd10CATerm()));
       cell = row.createCell(cellnum++);
-      cell.setCellValue(Boolean.valueOf(icd10caAsteriskCodes.contains(outRecord.getIcd10CACode()))
-          .toString().toUpperCase());
+      cell.setCellValue(Boolean.valueOf(icd10caAsteriskCodes.contains(icd10caCode)).toString()
+          .toUpperCase());
       cell = row.createCell(cellnum++);
-      cell.setCellValue(Boolean.valueOf(icd10caCanadianCodes.contains(outRecord.getIcd10CACode()))
-          .toString().toUpperCase());
+      cell.setCellValue(Boolean.valueOf(icd10caCanadianCodes.contains(icd10caCode)).toString()
+          .toUpperCase());
 
       cell = row.createCell(cellnum++);
-      cell.setCellValue(!(outRecord.getIcd10CACode().isEmpty() || outRecord.getIcd10CACode().isBlank())
-          ? outRecord.getCardinality() : "n/a - no target");
+      cell.setCellValue(hasIcd10caTarget ? nullToEmpty(outRecord.getCardinality())
+          : "n/a - no target");
 
       // Mapping Parameters
       cell = row.createCell(cellnum++);
-      cell.setCellValue(externalData.getRelationTarget());
+      cell.setCellValue(nullToEmpty(externalData.getRelationTarget()));
       cell = row.createCell(cellnum++);
-      cell.setCellValue(externalData.getUnmappableReason());
+      cell.setCellValue(nullToEmpty(externalData.getUnmappableReason()));
 
       // WHO mapping
       cell = row.createCell(cellnum++);
-      cell.setCellValue(outRecord.getWHOMapCode());
+      cell.setCellValue(nullToEmpty(outRecord.getWHOMapCode()));
       cell = row.createCell(cellnum++);
-      cell.setCellValue(outRecord.getWHOMapName());
+      cell.setCellValue(nullToEmpty(outRecord.getWHOMapName()));
       cell = row.createCell(cellnum++);
-      cell.setCellValue(externalData.getTargetMismatchReason());
+      cell.setCellValue(nullToEmpty(externalData.getTargetMismatchReason()));
 
       final List<Map<String, String>> clusters = Arrays.asList(outRecord.Icd10CACodeCluster2,
           outRecord.Icd10CACodeCluster3, outRecord.Icd10CACodeCluster4, outRecord.Icd10CACodeCluster5,
@@ -431,19 +433,28 @@ public class ICD11ToICD10CAReleaseToExcelMojo extends AbstractMojo {
 
       for (final Map<String, String> currentCluster : clusters) {
         if (currentCluster == null || currentCluster.isEmpty()) {
-          break;
+          cell = row.createCell(cellnum++);
+          cell.setCellValue("");
+          cell = row.createCell(cellnum++);
+          cell.setCellValue("");
+          cell = row.createCell(cellnum++);
+          cell.setCellValue("");
+          cell = row.createCell(cellnum++);
+          cell.setCellValue("");
+        } else {
+          final String key = currentCluster.entrySet().iterator().next().getKey();
+          final String value = currentCluster.entrySet().iterator().next().getValue();
+          cell = row.createCell(cellnum++);
+          cell.setCellValue(key);
+          cell = row.createCell(cellnum++);
+          cell.setCellValue(value);
+          cell = row.createCell(cellnum++);
+          cell.setCellValue(Boolean.valueOf(icd10caAsteriskCodes.contains(key)).toString().toUpperCase());
+          cell = row.createCell(cellnum++);
+          cell.setCellValue(Boolean.valueOf(icd10caCanadianCodes.contains(key)).toString().toUpperCase());
         }
-        final String key = currentCluster.entrySet().iterator().next().getKey();
-        final String value = currentCluster.entrySet().iterator().next().getValue();
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(key);
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(value);
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(Boolean.valueOf(icd10caAsteriskCodes.contains(key)).toString().toUpperCase());
-        cell = row.createCell(cellnum++);
-        cell.setCellValue(Boolean.valueOf(icd10caCanadianCodes.contains(key)).toString().toUpperCase());
       }
+      ensureCtRowWidth(row, CT_COLUMN_COUNT);
     }
 
     applyCTSheetFormatting(sheet, rownum - 1);
@@ -527,22 +538,66 @@ public class ICD11ToICD10CAReleaseToExcelMojo extends AbstractMojo {
 
   private void applyCTSheetFormatting(final XSSFSheet sheet, final int lastRowIndex) {
     sheet.createFreezePane(1, 1);
-    sheet.setAutoFilter(
-        new CellRangeAddress(0, lastRowIndex, 0, CT_COLUMN_COUNT - 1));
+    if (lastRowIndex < 1) {
+      return;
+    }
+
     final AreaReference tableArea = new AreaReference(new CellReference(0, 0),
         new CellReference(lastRowIndex, CT_COLUMN_COUNT - 1), SpreadsheetVersion.EXCEL2007);
+    final String tableRef = tableArea.formatAsString();
+
     final XSSFTable table = sheet.createTable(tableArea);
     table.setName("Table1");
     table.setDisplayName("Table1");
-    if (!table.getCTTable().isSetTableStyleInfo()) {
-      table.getCTTable().addNewTableStyleInfo();
+    table.setStyleName(CT_TABLE_STYLE);
+
+    table.getCTTable().setRef(tableRef);
+    table.getCTTable().setHeaderRowCount(1);
+    table.getCTTable().setTotalsRowShown(false);
+    repairCTTableColumnIds(table, sheet);
+
+    if (table.getCTTable().isSetAutoFilter()) {
+      table.getCTTable().getAutoFilter().setRef(tableRef);
+    } else {
+      table.getCTTable().addNewAutoFilter().setRef(tableRef);
     }
+
+    if (sheet.getCTWorksheet().isSetAutoFilter()) {
+      sheet.getCTWorksheet().unsetAutoFilter();
+    }
+
     final XSSFTableStyleInfo tableStyle = (XSSFTableStyleInfo) table.getStyle();
-    tableStyle.setName(CT_TABLE_STYLE);
-    tableStyle.setShowRowStripes(true);
-    tableStyle.setShowColumnStripes(false);
-    tableStyle.setFirstColumn(false);
-    tableStyle.setLastColumn(false);
+    if (tableStyle != null) {
+      tableStyle.setShowRowStripes(true);
+      tableStyle.setShowColumnStripes(false);
+      tableStyle.setFirstColumn(false);
+      tableStyle.setLastColumn(false);
+    }
+  }
+
+  private void repairCTTableColumnIds(final XSSFTable table, final XSSFSheet sheet) {
+    final Row headerRow = sheet.getRow(0);
+    for (int i = 0; i < table.getCTTable().getTableColumns().sizeOfTableColumnArray(); i++) {
+      table.getCTTable().getTableColumns().getTableColumnArray(i).setId(i + 1L);
+      if (headerRow != null && headerRow.getCell(i) != null) {
+        final String headerName = headerRow.getCell(i).getStringCellValue();
+        if (headerName != null && !headerName.isEmpty()) {
+          table.getCTTable().getTableColumns().getTableColumnArray(i).setName(headerName);
+        }
+      }
+    }
+  }
+
+  private void ensureCtRowWidth(final Row row, final int columnCount) {
+    for (int col = 0; col < columnCount; col++) {
+      if (row.getCell(col) == null) {
+        row.createCell(col).setCellValue("");
+      }
+    }
+  }
+
+  private String nullToEmpty(final String value) {
+    return value == null ? "" : value;
   }
 
   private void createCaseMixOutput(File releaseFile, List<Record> recordList) throws Exception  {
