@@ -37,10 +37,12 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.AreaReference;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFTable;
+import org.apache.poi.xssf.usermodel.XSSFTableStyleInfo;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
 import org.ihtsdo.otf.mapping.helpers.WorkflowStatus;
@@ -85,6 +87,8 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
   private static final String CT_COLOR_WHO = "F48120";
 
   private static final String CT_COLOR_CLUSTERS = "F8BF3F";
+
+  private static final String CT_TABLE_STYLE = "TableStyleMedium2";
 
   /**
    * Comma delimited list of project ids.
@@ -627,12 +631,23 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
   }
 
   private void applyCTSheetFormatting(final XSSFSheet sheet, final int lastRowIndex) {
-    sheet.createFreezePane(12, 1);
+    sheet.createFreezePane(1, 1);
+    sheet.setAutoFilter(
+        new CellRangeAddress(0, lastRowIndex, 0, CT_COLUMN_COUNT - 1));
     final AreaReference tableArea = new AreaReference(new CellReference(0, 0),
         new CellReference(lastRowIndex, CT_COLUMN_COUNT - 1), SpreadsheetVersion.EXCEL2007);
     final XSSFTable table = sheet.createTable(tableArea);
     table.setName("Table1");
     table.setDisplayName("Table1");
+    if (!table.getCTTable().isSetTableStyleInfo()) {
+      table.getCTTable().addNewTableStyleInfo();
+    }
+    final XSSFTableStyleInfo tableStyle = (XSSFTableStyleInfo) table.getStyle();
+    tableStyle.setName(CT_TABLE_STYLE);
+    tableStyle.setShowRowStripes(true);
+    tableStyle.setShowColumnStripes(false);
+    tableStyle.setFirstColumn(false);
+    tableStyle.setLastColumn(false);
   }
 
   private void createCaseMixOutput(final File releaseFile, List<Record> recordList)
