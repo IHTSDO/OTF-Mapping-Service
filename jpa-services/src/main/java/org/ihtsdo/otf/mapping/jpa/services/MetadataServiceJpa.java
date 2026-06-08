@@ -38,14 +38,14 @@ public class MetadataServiceJpa extends RootServiceJpa implements
 
   /**
    * Instantiates an empty {@link MetadataServiceJpa}.
-   * @throws Exception
+   * @throws IllegalStateException if the helper map is not properly initialized
    */
-  public MetadataServiceJpa() throws Exception {
+  public MetadataServiceJpa() {
     super();
 
     if (helperMap == null) {
-      throw new Exception("Helper map not properly initialized, serious error.");
-    }
+        throw new IllegalStateException("Helper map not properly initialized, serious error.");
+      }
   }
 
   /*

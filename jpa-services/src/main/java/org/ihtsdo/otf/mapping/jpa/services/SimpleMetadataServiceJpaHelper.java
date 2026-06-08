@@ -29,9 +29,8 @@ public class SimpleMetadataServiceJpaHelper extends RootServiceJpa
   /**
    * Instantiates an empty {@link SimpleMetadataServiceJpaHelper}.
    * 
-   * @throws Exception the exception
    */
-  public SimpleMetadataServiceJpaHelper() throws Exception {
+  public SimpleMetadataServiceJpaHelper() {
     super();
   }
 

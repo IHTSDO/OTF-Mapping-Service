@@ -49,9 +49,8 @@ public class SecurityServiceJpa extends RootServiceJpa implements
   /**
    * Instantiates an empty {@link SecurityServiceJpa}.
    *
-   * @throws Exception the exception
    */
-  public SecurityServiceJpa() throws Exception {
+  public SecurityServiceJpa() {
     super();
   }
 

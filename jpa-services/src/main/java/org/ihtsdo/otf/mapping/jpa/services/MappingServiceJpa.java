@@ -118,9 +118,8 @@ public class MappingServiceJpa extends RootServiceJpa
   /**
    * Instantiates an empty {@link MappingServiceJpa}.
    * 
-   * @throws Exception the exception
    */
-  public MappingServiceJpa() throws Exception {
+  public MappingServiceJpa() {
     super();
   }
 
