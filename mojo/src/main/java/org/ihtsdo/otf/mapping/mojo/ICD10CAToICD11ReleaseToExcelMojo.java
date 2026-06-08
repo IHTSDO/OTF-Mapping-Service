@@ -540,7 +540,7 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
       ensureCtRowWidth(row, CT_COLUMN_COUNT);
     }
 
-    applyCTSheetFormatting(sheet, rownum - 1);
+    applyCTSheetFormatting(sheet, rownum - 1, headerStyles);
 
     // write file
     final Path fileLocation = Paths.get(releaseFile.getParent(),
@@ -622,50 +622,62 @@ public class ICD10CAToICD11ReleaseToExcelMojo extends AbstractMojo {
     final XSSFColor color = new XSSFColor(Color.decode("#" + hexRgb), null);
     style.setFillForegroundColor(color);
     style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-    if (whiteFont) {
-      final Font font = wb.createFont();
-      font.setColor(IndexedColors.WHITE.getIndex());
-      style.setFont(font);
-    }
+    final Font font = wb.createFont();
+    font.setColor(whiteFont ? IndexedColors.WHITE.getIndex() : IndexedColors.BLACK.getIndex());
+    style.setFont(font);
     return style;
   }
 
-  private void applyCTSheetFormatting(final XSSFSheet sheet, final int lastRowIndex) {
+  private void applyCTSheetFormatting(final XSSFSheet sheet, final int lastRowIndex,
+      final CellStyle[] headerStyles) {
     sheet.createFreezePane(1, 1);
-    if (lastRowIndex < 1) {
+    if (lastRowIndex >= 1) {
+      final AreaReference tableArea = new AreaReference(new CellReference(0, 0),
+          new CellReference(lastRowIndex, CT_COLUMN_COUNT - 1), SpreadsheetVersion.EXCEL2007);
+      final String tableRef = tableArea.formatAsString();
+
+      final XSSFTable table = sheet.createTable(tableArea);
+      table.setName("Table1");
+      table.setDisplayName("Table1");
+      table.setStyleName(CT_TABLE_STYLE);
+
+      table.getCTTable().setRef(tableRef);
+      table.getCTTable().setHeaderRowCount(1);
+      table.getCTTable().setTotalsRowShown(false);
+      repairCTTableColumnIds(table, sheet);
+
+      if (table.getCTTable().isSetAutoFilter()) {
+        table.getCTTable().getAutoFilter().setRef(tableRef);
+      } else {
+        table.getCTTable().addNewAutoFilter().setRef(tableRef);
+      }
+
+      if (sheet.getCTWorksheet().isSetAutoFilter()) {
+        sheet.getCTWorksheet().unsetAutoFilter();
+      }
+
+      final XSSFTableStyleInfo tableStyle = (XSSFTableStyleInfo) table.getStyle();
+      if (tableStyle != null) {
+        tableStyle.setShowRowStripes(true);
+        tableStyle.setShowColumnStripes(false);
+        tableStyle.setFirstColumn(false);
+        tableStyle.setLastColumn(false);
+      }
+    }
+
+    reapplyCTHeaderStyles(sheet, headerStyles);
+  }
+
+  private void reapplyCTHeaderStyles(final XSSFSheet sheet, final CellStyle[] headerStyles) {
+    final Row headerRow = sheet.getRow(0);
+    if (headerRow == null) {
       return;
     }
-
-    final AreaReference tableArea = new AreaReference(new CellReference(0, 0),
-        new CellReference(lastRowIndex, CT_COLUMN_COUNT - 1), SpreadsheetVersion.EXCEL2007);
-    final String tableRef = tableArea.formatAsString();
-
-    final XSSFTable table = sheet.createTable(tableArea);
-    table.setName("Table1");
-    table.setDisplayName("Table1");
-    table.setStyleName(CT_TABLE_STYLE);
-
-    table.getCTTable().setRef(tableRef);
-    table.getCTTable().setHeaderRowCount(1);
-    table.getCTTable().setTotalsRowShown(false);
-    repairCTTableColumnIds(table, sheet);
-
-    if (table.getCTTable().isSetAutoFilter()) {
-      table.getCTTable().getAutoFilter().setRef(tableRef);
-    } else {
-      table.getCTTable().addNewAutoFilter().setRef(tableRef);
-    }
-
-    if (sheet.getCTWorksheet().isSetAutoFilter()) {
-      sheet.getCTWorksheet().unsetAutoFilter();
-    }
-
-    final XSSFTableStyleInfo tableStyle = (XSSFTableStyleInfo) table.getStyle();
-    if (tableStyle != null) {
-      tableStyle.setShowRowStripes(true);
-      tableStyle.setShowColumnStripes(false);
-      tableStyle.setFirstColumn(false);
-      tableStyle.setLastColumn(false);
+    for (int col = 0; col < CT_COLUMN_COUNT; col++) {
+      final Cell cell = headerRow.getCell(col);
+      if (cell != null) {
+        cell.setCellStyle(headerStyles[col]);
+      }
     }
   }
 
