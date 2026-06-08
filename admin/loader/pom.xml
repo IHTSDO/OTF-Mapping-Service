@@ -1112,7 +1112,7 @@
                 <configuration>
                   <releaseFile>${releaseFile}</releaseFile>
                   <refsetId>${refset.id}</refsetId>
-                  <outputFile>ICD111toICD10CA_{FORMAT}_{DATE}.xlsx</outputFile>
+                  <outputFile>ICD11toICD10CA_{FORMAT}_{DATE}.xlsx</outputFile>
                 </configuration>
               </execution>
             </executions>
