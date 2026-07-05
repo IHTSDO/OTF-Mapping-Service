@@ -540,7 +540,7 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
       }      
       if(!CIHITargetIsBlank && targetMismatchReason.equals("n/a - see unmappable reason"))
       {
-        result.addError("1st Group (CIHI Target) is not blank, but Target Mismatch Reason is not set to 'n/a - see unmappable reason'");
+        result.addError("1st Group (CIHI Target) is not blank, but Target Mismatch Reason is set to 'n/a - see unmappable reason'");
       }      
 
       //
