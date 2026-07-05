@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.mapping.mojo;
 
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -26,11 +27,21 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.AreaReference;
+import org.apache.poi.ss.util.CellReference;
+import org.apache.poi.xssf.usermodel.XSSFColor;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFTable;
+import org.apache.poi.xssf.usermodel.XSSFTableStyleInfo;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.ihtsdo.otf.mapping.helpers.ConceptList;
 import org.ihtsdo.otf.mapping.helpers.MapRecordList;
@@ -57,6 +68,22 @@ import org.ihtsdo.otf.mapping.services.helpers.ConfigUtility;
  * @goal cihi-icd11-to-icd10ca-release-to-excel
  */
 public class ICD11ToICD10CAReleaseToExcelMojo extends AbstractMojo {
+
+  private static final int CT_COLUMN_COUNT = 48;
+
+  private static final String CT_COLOR_ICD11 = "00A199";
+
+  private static final String CT_COLOR_ICD10CA = "33BDB7";
+
+  private static final String CT_COLOR_CARDINALITY = "CFE8E3";
+
+  private static final String CT_COLOR_RELATION = "C8DA3F";
+
+  private static final String CT_COLOR_WHO = "F48120";
+
+  private static final String CT_COLOR_CLUSTERS = "F8BF3F";
+
+  private static final String CT_TABLE_STYLE = "TableStyleMedium2";
 
   /**
    * Comma delimited list of project ids.
@@ -316,7 +343,8 @@ public class ICD11ToICD10CAReleaseToExcelMojo extends AbstractMojo {
       createCTOutput(releaseFile, recordList);
 
       // Now create the CaseMix format output file
-      createCaseMixOutput(releaseFile, recordList);      
+      // No longer needed, but will keep code in case it comes up again.
+      //createCaseMixOutput(releaseFile, recordList);      
       
     } catch (Exception e) {
       e.printStackTrace();
@@ -325,200 +353,265 @@ public class ICD11ToICD10CAReleaseToExcelMojo extends AbstractMojo {
   }
 
 
-  private void createCTOutput(File releaseFile, List<Record> recordList) throws Exception {
+  private void createCTOutput(final File releaseFile, final List<Record> recordList) throws Exception {
 
-    final Workbook wb = new XSSFWorkbook();
+    final XSSFWorkbook wb = new XSSFWorkbook();
 
     final LocalDate localDate = LocalDate.now();
-    final DateTimeFormatter formatter =
-        DateTimeFormatter.ofPattern("yyyyMMdd");
-    final Sheet sheet = wb.createSheet(
+    final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+    final XSSFSheet sheet = wb.createSheet(
         outputFile.replace("{FORMAT}", "C&T").replace("{DATE}", localDate.format(formatter)));
 
-    // Create header row and add cells
+    final CellStyle[] headerStyles = createCTHeaderStyles(wb);
+
     int rownum = 0;
     int cellnum = 0;
+    Cell cell;
 
-    Row row = sheet.createRow(rownum++);
-    Cell cell = null;
-    
-    cell = row.createCell(0);
-    cell.setCellValue("Source Concept");
-    
-    cell = row.createCell(2);
-    cell.setCellValue("CIHI Map - 1st Entry (Map Group 1)");
-    
-    cell = row.createCell(6);
-    cell.setCellValue("CIHI Map - Full Expression");
-
-    cell = row.createCell(7);
-    cell.setCellValue("CIHI map - Mapping Parameters");
-    
-    cell = row.createCell(9);
-    cell.setCellValue("CIHI Map - Additional Entries");
-    
-    cell = row.createCell(45);
-    cell.setCellValue("WHO map (Map Group 2)");
-    
-    cell = row.createCell(47);
-    cell.setCellValue("WHO - Mapping Parameters");
-    
-    sheet.addMergedRegion(new CellRangeAddress(0,0,0,1));
-    sheet.addMergedRegion(new CellRangeAddress(0,0,2,5));
-    sheet.addMergedRegion(new CellRangeAddress(0,0,7,8));
-    sheet.addMergedRegion(new CellRangeAddress(0,0,9,44));
-    sheet.addMergedRegion(new CellRangeAddress(0,0,45,46));
-    
-    row = sheet.createRow(rownum++);
-    
-
-    // ICD 11
-    cell = row.createCell(cellnum++);
-    cell.setCellValue("ICD-11 Code");
-    cell = row.createCell(cellnum++);
-    cell.setCellValue("ICD-11 Code Title");
-    // ICD 10CA
-    cell = row.createCell(cellnum++);
-    cell.setCellValue("ICD-10-CA Code");
-    cell = row.createCell(cellnum++);
-    cell.setCellValue("ICD-10-CA Code Title");
-    cell = row.createCell(cellnum++);
-    cell.setCellValue("ICD-10-CA Code Asterisk");
-    cell = row.createCell(cellnum++);
-    cell.setCellValue("ICD-10-CA Canadian Specific Code");
-    // CIHI Cardinality
-    cell = row.createCell(cellnum++);
-    cell.setCellValue("Cardinality");
-
-    // CIHI Mapping Parameters
-    cell = row.createCell(cellnum++);
-    cell.setCellValue("Relation -  Target");
-    cell = row.createCell(cellnum++);
-    cell.setCellValue("Unmappable Reason");
-    
-    for(int start = 2; start <= 10; start++) {
-        // other clusters
-        cell = row.createCell(cellnum++);
-        cell.setCellValue("ICD-10-CA Code " + start);
-        cell = row.createCell(cellnum++);
-        cell.setCellValue("ICD-10-CA Code Title " + start);
-        cell = row.createCell(cellnum++);
-        cell.setCellValue("ICD-10-CA Asterisk " + start);
-        cell = row.createCell(cellnum++);
-        cell.setCellValue("ICD-10-CA Canadian Specific Code " + start);
+    final Row headerRow = sheet.createRow(rownum++);
+    for (final String header : getCTHeaders()) {
+      cell = headerRow.createCell(cellnum);
+      cell.setCellValue(header);
+      cell.setCellStyle(headerStyles[cellnum]);
+      cellnum++;
     }
-    
-    // WHO map (Map Group 2)  
-    cell = row.createCell(cellnum++);
-    cell.setCellValue("ICD-10 Code");
-    cell = row.createCell(cellnum++);
-    cell.setCellValue("ICD-10 Title");
-    
-    // WHO map - Mapping Parameters   
-    cell = row.createCell(cellnum++);
-    cell.setCellValue("Target Mismatch Reason");
-    
-    Set<String> codeSet = new HashSet<>();
+
     for (final Record outRecord : recordList) {
-      // Add data row
       getLog().info("Add: " + outRecord.toString());
-      codeSet.add(outRecord.getIcd11Code());
       cellnum = 0;
-      row = sheet.createRow(rownum++);
+      final Row row = sheet.createRow(rownum++);
 
-
-      // Lookup external data
       ExternalData externalData = sourceConceptToExternalData.get(outRecord.getIcd11Code());
-      //If none found, create a blank one, but also log a warning
-      if(externalData == null) {
+      if (externalData == null) {
         externalData = new ExternalData(outRecord.getIcd11Code());
         getLog().warn("No external data found for source concept " + outRecord.getIcd11Code());
-      }        
-      
+      }
+
       // ICD 11
       cell = row.createCell(cellnum++);
-      cell.setCellValue(outRecord.getIcd11Code());
+      cell.setCellValue(nullToEmpty(outRecord.getIcd11Code()));
       cell = row.createCell(cellnum++);
-      cell.setCellValue(outRecord.getIcd11Term());
+      cell.setCellValue(nullToEmpty(outRecord.getIcd11Term()));
 
       // ICD 10 CA
+      final String icd10caCode = outRecord.getIcd10CACode();
+      final boolean hasIcd10caTarget =
+          icd10caCode != null && !icd10caCode.isEmpty() && !icd10caCode.isBlank();
       cell = row.createCell(cellnum++);
-      cell.setCellValue(!(outRecord.getIcd10CACode().isEmpty() || outRecord.getIcd10CACode().isBlank()) ? outRecord.getIcd10CACode() : "No target");
+      cell.setCellValue(hasIcd10caTarget ? icd10caCode : "No target");
       cell = row.createCell(cellnum++);
-      cell.setCellValue(outRecord.getIcd10CATerm());
+      cell.setCellValue(nullToEmpty(outRecord.getIcd10CATerm()));
       cell = row.createCell(cellnum++);
-      cell.setCellValue(Boolean.valueOf(icd10caAsteriskCodes.contains(outRecord.getIcd10CACode())).toString().toUpperCase());
+      cell.setCellValue(Boolean.valueOf(icd10caAsteriskCodes.contains(icd10caCode)).toString()
+          .toUpperCase());
       cell = row.createCell(cellnum++);
-      cell.setCellValue(Boolean.valueOf(icd10caCanadianCodes.contains(outRecord.getIcd10CACode())).toString().toUpperCase());
-      
+      cell.setCellValue(Boolean.valueOf(icd10caCanadianCodes.contains(icd10caCode)).toString()
+          .toUpperCase());
+
       cell = row.createCell(cellnum++);
-      cell.setCellValue(!(outRecord.getIcd10CACode().isEmpty() || outRecord.getIcd10CACode().isBlank()) ? outRecord.getCardinality() : "n/a - no target");
-      
+      cell.setCellValue(hasIcd10caTarget ? nullToEmpty(outRecord.getCardinality())
+          : "n/a - no target");
 
       // Mapping Parameters
       cell = row.createCell(cellnum++);
-      cell.setCellValue(externalData.getRelationTarget());
+      cell.setCellValue(nullToEmpty(externalData.getRelationTarget()));
       cell = row.createCell(cellnum++);
-      cell.setCellValue(externalData.getUnmappableReason());
+      cell.setCellValue(nullToEmpty(externalData.getUnmappableReason()));
 
-      
-      List<Map<String, String>> clusters = Arrays.asList(
-              outRecord.Icd10CACodeCluster2, outRecord.Icd10CACodeCluster3, outRecord.Icd10CACodeCluster4,
-              outRecord.Icd10CACodeCluster5, outRecord.Icd10CACodeCluster6, outRecord.Icd10CACodeCluster7,
-              outRecord.Icd10CACodeCluster8, outRecord.Icd10CACodeCluster9, outRecord.Icd10CACodeCluster10
-      );
-
-      // Iterate over clusters
-      for (Map<String, String> currentCluster : clusters) {
-
-          // Check if the cluster is empty (null or empty map)
-          if (currentCluster == null || currentCluster.isEmpty()) {
-              break; // Stop if current cluster is empty
-          }
-          else {
-              String key = currentCluster.entrySet().iterator().next().getKey();
-              String value = currentCluster.entrySet().iterator().next().getValue();
-              cell = row.createCell(cellnum++);
-              cell.setCellValue(key);
-              cell = row.createCell(cellnum++);
-              cell.setCellValue(value);
-              cell = row.createCell(cellnum++);
-              cell.setCellValue(Boolean.valueOf(icd10caAsteriskCodes.contains(key)).toString().toUpperCase());
-              cell = row.createCell(cellnum++);
-              cell.setCellValue(Boolean.valueOf(icd10caCanadianCodes.contains(key)).toString().toUpperCase());
-          }
-
-      }
-      cellnum = 45;
-      
       // WHO mapping
       cell = row.createCell(cellnum++);
-      cell.setCellValue(outRecord.getWHOMapCode());
+      cell.setCellValue(nullToEmpty(outRecord.getWHOMapCode()));
       cell = row.createCell(cellnum++);
-      cell.setCellValue(outRecord.getWHOMapName());
-
-      // WHO mapping parameters
+      cell.setCellValue(nullToEmpty(outRecord.getWHOMapName()));
       cell = row.createCell(cellnum++);
-      cell.setCellValue(externalData.getTargetMismatchReason());
-      
+      cell.setCellValue(nullToEmpty(externalData.getTargetMismatchReason()));
 
+      final List<Map<String, String>> clusters = Arrays.asList(outRecord.Icd10CACodeCluster2,
+          outRecord.Icd10CACodeCluster3, outRecord.Icd10CACodeCluster4, outRecord.Icd10CACodeCluster5,
+          outRecord.Icd10CACodeCluster6, outRecord.Icd10CACodeCluster7, outRecord.Icd10CACodeCluster8,
+          outRecord.Icd10CACodeCluster9, outRecord.Icd10CACodeCluster10);
+
+      for (final Map<String, String> currentCluster : clusters) {
+        if (currentCluster == null || currentCluster.isEmpty()) {
+          cell = row.createCell(cellnum++);
+          cell.setCellValue("");
+          cell = row.createCell(cellnum++);
+          cell.setCellValue("");
+          cell = row.createCell(cellnum++);
+          cell.setCellValue("");
+          cell = row.createCell(cellnum++);
+          cell.setCellValue("");
+        } else {
+          final String key = currentCluster.entrySet().iterator().next().getKey();
+          final String value = currentCluster.entrySet().iterator().next().getValue();
+          cell = row.createCell(cellnum++);
+          cell.setCellValue(key);
+          cell = row.createCell(cellnum++);
+          cell.setCellValue(value);
+          cell = row.createCell(cellnum++);
+          cell.setCellValue(Boolean.valueOf(icd10caAsteriskCodes.contains(key)).toString().toUpperCase());
+          cell = row.createCell(cellnum++);
+          cell.setCellValue(Boolean.valueOf(icd10caCanadianCodes.contains(key)).toString().toUpperCase());
+        }
+      }
+      ensureCtRowWidth(row, CT_COLUMN_COUNT);
     }
 
-    // write file
+    applyCTSheetFormatting(sheet, rownum - 1, headerStyles);
+
     final Path fileLocation = Paths.get(releaseFile.getParent(),
         outputFile.replace("{FORMAT}", "C&T").replace("{DATE}", localDate.format(formatter)));
 
-    try (final FileOutputStream outputStream =
-        new FileOutputStream(fileLocation.toString());) {
+    try (final FileOutputStream outputStream = new FileOutputStream(fileLocation.toString());) {
       wb.write(outputStream);
       wb.close();
     }
 
     getLog().info("Conversion completed " + fileLocation.toString());
-  
-}
-  
-  
+
+  }
+
+  private String[] getCTHeaders() {
+    final List<String> headers = new ArrayList<>();
+    headers.add("ICD-11 Code");
+    headers.add("ICD-11 Code Title");
+    headers.add("ICD-10-CA Code");
+    headers.add("ICD-10-CA Code Title");
+    headers.add("ICD-10-CA Code Asterisk");
+    headers.add("ICD-10-CA Canadian Specific Code");
+    headers.add("Cardinality");
+    headers.add("Relation -  Target");
+    headers.add("Unmappable Reason");
+    headers.add("ICD-10 Code - WHO");
+    headers.add("ICD-10 Code Title - WHO");
+    headers.add("Target Mismatch Reason");
+    for (int start = 2; start <= 10; start++) {
+      headers.add("ICD-10-CA Code " + start);
+      headers.add("ICD-10-CA Code Title " + start);
+      headers.add("ICD-10-CA Asterisk " + start);
+      headers.add("ICD-10-CA Canadian Specific Code " + start);
+    }
+    return headers.toArray(new String[0]);
+  }
+
+  private CellStyle[] createCTHeaderStyles(final XSSFWorkbook wb) {
+    final CellStyle icd11Style = createCTHeaderStyle(wb, CT_COLOR_ICD11, true);
+    final CellStyle icd10caStyle = createCTHeaderStyle(wb, CT_COLOR_ICD10CA, true);
+    final CellStyle cardinalityStyle = createCTHeaderStyle(wb, CT_COLOR_CARDINALITY, false);
+    final CellStyle relationStyle = createCTHeaderStyle(wb, CT_COLOR_RELATION, false);
+    final CellStyle whoStyle = createCTHeaderStyle(wb, CT_COLOR_WHO, false);
+    final CellStyle clustersStyle = createCTHeaderStyle(wb, CT_COLOR_CLUSTERS, false);
+
+    final CellStyle[] styles = new CellStyle[CT_COLUMN_COUNT];
+    for (int col = 0; col < 2; col++) {
+      styles[col] = icd11Style;
+    }
+    for (int col = 2; col < 6; col++) {
+      styles[col] = icd10caStyle;
+    }
+    styles[6] = cardinalityStyle;
+    for (int col = 7; col < 9; col++) {
+      styles[col] = relationStyle;
+    }
+    for (int col = 9; col < 12; col++) {
+      styles[col] = whoStyle;
+    }
+    for (int col = 12; col < CT_COLUMN_COUNT; col++) {
+      styles[col] = clustersStyle;
+    }
+    return styles;
+  }
+
+  private CellStyle createCTHeaderStyle(final XSSFWorkbook wb, final String hexRgb,
+      final boolean whiteFont) {
+    final CellStyle style = wb.createCellStyle();
+    final XSSFColor color = new XSSFColor(Color.decode("#" + hexRgb), null);
+    style.setFillForegroundColor(color);
+    style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+    final Font font = wb.createFont();
+    font.setColor(whiteFont ? IndexedColors.WHITE.getIndex() : IndexedColors.BLACK.getIndex());
+    style.setFont(font);
+    return style;
+  }
+
+  private void applyCTSheetFormatting(final XSSFSheet sheet, final int lastRowIndex,
+      final CellStyle[] headerStyles) {
+    sheet.createFreezePane(1, 1);
+    if (lastRowIndex >= 1) {
+      final AreaReference tableArea = new AreaReference(new CellReference(0, 0),
+          new CellReference(lastRowIndex, CT_COLUMN_COUNT - 1), SpreadsheetVersion.EXCEL2007);
+      final String tableRef = tableArea.formatAsString();
+
+      final XSSFTable table = sheet.createTable(tableArea);
+      table.setName("Table1");
+      table.setDisplayName("Table1");
+      table.setStyleName(CT_TABLE_STYLE);
+
+      table.getCTTable().setRef(tableRef);
+      table.getCTTable().setHeaderRowCount(1);
+      table.getCTTable().setTotalsRowShown(false);
+      repairCTTableColumnIds(table, sheet);
+
+      if (table.getCTTable().isSetAutoFilter()) {
+        table.getCTTable().getAutoFilter().setRef(tableRef);
+      } else {
+        table.getCTTable().addNewAutoFilter().setRef(tableRef);
+      }
+
+      if (sheet.getCTWorksheet().isSetAutoFilter()) {
+        sheet.getCTWorksheet().unsetAutoFilter();
+      }
+
+      final XSSFTableStyleInfo tableStyle = (XSSFTableStyleInfo) table.getStyle();
+      if (tableStyle != null) {
+        tableStyle.setShowRowStripes(true);
+        tableStyle.setShowColumnStripes(false);
+        tableStyle.setFirstColumn(false);
+        tableStyle.setLastColumn(false);
+      }
+    }
+
+    reapplyCTHeaderStyles(sheet, headerStyles);
+  }
+
+  private void reapplyCTHeaderStyles(final XSSFSheet sheet, final CellStyle[] headerStyles) {
+    final Row headerRow = sheet.getRow(0);
+    if (headerRow == null) {
+      return;
+    }
+    for (int col = 0; col < CT_COLUMN_COUNT; col++) {
+      final Cell cell = headerRow.getCell(col);
+      if (cell != null) {
+        cell.setCellStyle(headerStyles[col]);
+      }
+    }
+  }
+
+  private void repairCTTableColumnIds(final XSSFTable table, final XSSFSheet sheet) {
+    final Row headerRow = sheet.getRow(0);
+    for (int i = 0; i < table.getCTTable().getTableColumns().sizeOfTableColumnArray(); i++) {
+      table.getCTTable().getTableColumns().getTableColumnArray(i).setId(i + 1L);
+      if (headerRow != null && headerRow.getCell(i) != null) {
+        final String headerName = headerRow.getCell(i).getStringCellValue();
+        if (headerName != null && !headerName.isEmpty()) {
+          table.getCTTable().getTableColumns().getTableColumnArray(i).setName(headerName);
+        }
+      }
+    }
+  }
+
+  private void ensureCtRowWidth(final Row row, final int columnCount) {
+    for (int col = 0; col < columnCount; col++) {
+      if (row.getCell(col) == null) {
+        row.createCell(col).setCellValue("");
+      }
+    }
+  }
+
+  private String nullToEmpty(final String value) {
+    return value == null ? "" : value;
+  }
+
   private void createCaseMixOutput(File releaseFile, List<Record> recordList) throws Exception  {
 
     final Workbook wb = new XSSFWorkbook();
