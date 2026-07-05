@@ -517,6 +517,31 @@ public class ICD10CAtoICD11ProjectSpecificAlgorithmHandler
       {
         result.addError("1st Group (CIHI Target) is blank and source is a canadian code, but Target Mismatch Reason is not set to 'n/a - Canadian code'");    	  
       }
+      
+      //
+      // PREDICATE: When CIHI Target Code (1/1) is not NO TARGET, 
+      // then Target Mismatch Reason cannot be N/A - SEE UNMAPPABLE REASON.
+      //
+      CIHITargetIsBlank = false;
+      targetMismatchReason = "";
+      for (int i = 0; i < mapRecord.getMapEntries().size(); i++) {
+        final MapEntry entry = mapRecord.getMapEntries().get(i);
+        if(entry.getMapGroup() == 1 && entry.getMapPriority() == 1 && entry.getTargetId().isBlank()) {
+        	CIHITargetIsBlank = true;
+        }
+        if (entry.getMapGroup() == 2 && entry.getMapPriority() == 1) {
+          for (final AdditionalMapEntryInfo additionalMapEntryInfo : entry
+              .getAdditionalMapEntryInfos()) {
+            if (additionalMapEntryInfo.getField().equals("Target Mismatch Reason")) {
+              targetMismatchReason = additionalMapEntryInfo.getValue();
+            }
+          }
+        }
+      }      
+      if(!CIHITargetIsBlank && targetMismatchReason.equals("n/a - see unmappable reason"))
+      {
+        result.addError("1st Group (CIHI Target) is not blank, but Target Mismatch Reason is not set to 'n/a - see unmappable reason'");
+      }      
 
       //
       // PREDICATE: 2nd Group (WHO target) must have a relation - WHO

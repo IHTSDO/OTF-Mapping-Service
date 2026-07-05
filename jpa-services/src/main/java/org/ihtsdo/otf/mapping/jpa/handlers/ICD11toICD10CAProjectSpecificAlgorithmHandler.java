@@ -297,7 +297,7 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
       //
       // PREDICATE: When CIHI Target Code (1/1) = NO TARGET, then Target Mismatch Reason must be "n/a - see unmappable reason".
       //
-      // When CIHI Target Code (1/1) is a Canadian Code, then Target Mismatch Reason must be "n/a - Canadian code".
+      // When CIHI Target Code (1/1) is a Canadian Code, then Target Mismatch Reason must be "n/a - Canadian code" and WHO Map 2/1 must be “n/a – not applicable”.
       //
       // If CIHI Target Code (1/1) matches WHO Target Code (2/1), then Target Mismatch Reason must be "n/a - match".
       //
@@ -338,6 +338,9 @@ public class ICD11toICD10CAProjectSpecificAlgorithmHandler
       {
     	  if(!targetMismatchReason.equals("n/a - Canadian code")) {
     		  result.addError("When Target Code is a canadian code, Target Mismatch Reason must be set to 'n/a - Canadian code'");
+    	  }
+    	  if(!WHOTarget.equals("n/a - not applicable")) {
+    		  result.addError("When Target Code is a canadian code, WHO Target must be set to 'n/a - not applicable'");   		  
     	  }
       } 
       else if(WHOTarget.equals(CIHITarget)) 
