@@ -214,6 +214,7 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
       }
       // Add/override name specified in file, so it is used over name specified in CLaML, or calculated by this algorithm
       terminologyIdToNameOverride.put(terminologyId, name);
+      terminologyIdToName.put(terminologyId, name);
     }
 
     partialNameOverrideReader.close();
@@ -372,13 +373,19 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
     // relationship) for the new partial concepts.
 
     for (final String newConceptTerminologyId : newConceptTerminologyIds) {
+      final String conceptName = getPartialConceptName(newConceptTerminologyId);
+      if (conceptName == null || conceptName.isEmpty()) {
+        throw new Exception("No name available for new CCI partial concept " + newConceptTerminologyId
+            + ". Add it to partialNameOverride.txt or ensure the name calculator produced one.");
+      }
+
       // Create the new concept
       Concept newConcept = new ConceptJpa();
       newConcept.setTerminologyId(newConceptTerminologyId);
       newConcept.setTerminology(terminology);
       newConcept.setTerminologyVersion(terminologyVersion);
       newConcept.setEffectiveTime(dt.parse(effectiveTime));
-      newConcept.setDefaultPreferredName(terminologyIdToName.get(newConceptTerminologyId));
+      newConcept.setDefaultPreferredName(conceptName);
       newConcept.setActive(true);
       newConcept.setDefinitionStatusId(1L);
       newConcept.setModuleId(2L);
@@ -391,7 +398,7 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
       desc.setModuleId(2L);
       desc.setTerminology(terminology);
       desc.setTerminologyVersion(terminologyVersion);
-      desc.setTerm(terminologyIdToName.get(newConceptTerminologyId));
+      desc.setTerm(conceptName);
       desc.setConcept(newConcept);
       desc.setCaseSignificanceId(3L);
       desc.setLanguageCode("en");
@@ -938,5 +945,17 @@ public class CCIPostLoadFixerMojo extends AbstractOtfMappingMojo {
     }
     
     return terminologyId.substring(0, 8).concat("^^");
+  }
+
+  /**
+   * Resolve the name for a new partial concept. Override names win over
+   * calculated names so codes added only via partialNameOverride.txt are
+   * created with a non-null defaultPreferredName.
+   */
+  private String getPartialConceptName(String terminologyId) {
+    if (terminologyIdToNameOverride.containsKey(terminologyId)) {
+      return terminologyIdToNameOverride.get(terminologyId);
+    }
+    return terminologyIdToName.get(terminologyId);
   }
 }
